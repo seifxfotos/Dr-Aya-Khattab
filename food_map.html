@@ -13,12 +13,14 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); padding: 20px; }
         .container { max-width: 500px; margin: 20px auto; padding: 30px; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         .logo-box { text-align: center; margin-bottom: 20px; }
-        .logo-box img { width: 100%; max-width: 250px; height: auto; display: block; margin: 0 auto; }
+        .logo-box img { width: 112.5px; height: auto; display: block; margin: 0 auto; }
         h1 { color: var(--brand-blue); text-align: center; margin-bottom: 30px; font-size: 28px; border-bottom: 3px solid var(--brand-green); padding-bottom: 10px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; color: var(--brand-blue); font-weight: 600; }
         input, select { width: 100%; padding: 14px; border: 2px solid #e1e1e1; border-radius: 12px; box-sizing: border-box; }
+        input:focus { border-color: var(--brand-green); outline: none; }
         button { width: 100%; padding: 16px; background: var(--brand-green); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #68a82d; }
         #output { margin-top: 25px; padding: 25px; background: #f9f9f9; border-radius: 15px; border: 1px solid var(--brand-green); display: none; }
     </style>
 </head>
@@ -74,7 +76,7 @@
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('output').style.display = 'block';
         } catch (e) {
-            alert("حدث خطأ في الاتصال.");
+            alert("حدث خطأ في الاتصال، تأكد من إعدادات الـ Script.");
         }
     }
 </script>
