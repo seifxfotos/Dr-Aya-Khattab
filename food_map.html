@@ -2,40 +2,47 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>د. آية خطاب</title>
+    <title>حاسبة الدايت - د. آية خطاب</title>
     <style>
         :root { --primary-blue: #2c3e50; --primary-green: #27ae60; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
         .container { max-width: 600px; margin: 30px auto; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h1 { color: var(--primary-blue); text-align: center; border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: var(--primary-blue); font-weight: bold; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: var(--primary-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; }
+        #output { margin-top: 20px; padding: 20px; background: #e8f8f0; border-radius: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>حاسبة الدايت - د. آية خطاب</h1>
-    <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
-    <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
-    <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
-    <div class="form-group"><label>الماكروز (مثل 40/30/30):</label><input type="text" id="macros"></div>
-    <div class="form-group"><label>نوع الدايت:</label>
-        <select id="dietType">
-            <option value="balanced">متوازن</option>
-            <option value="keto">كيتو</option>
-            <option value="low-carb">كارب منخفض</option>
-        </select>
+    <div id="inputForm">
+        <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
+        <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
+        <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
+        <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
+        <div class="form-group"><label>نوع الدايت:</label>
+            <select id="dietType">
+                <option value="balanced">متوازن</option>
+                <option value="keto">كيتو</option>
+            </select>
+        </div>
+        <button onclick="processDiet()">تسجيل وعرض الدايت</button>
     </div>
-    <button onclick="submitData()">تسجيل البيانات</button>
+
+    <div id="output">
+        <h3>نتائج دايت المريض</h3>
+        <div id="dietResult"></div>
+        <button onclick="window.print()">طباعة</button>
+    </div>
 </div>
 
 <script>
-    async function submitData() {
-        const payload = {
+    async function processDiet() {
+        const data = {
             name: document.getElementById('name').value,
             bmi: document.getElementById('bmi').value,
             fat: document.getElementById('fat').value,
@@ -43,19 +50,20 @@
             dietType: document.getElementById('dietType').value
         };
 
+        // 1. إرسال البيانات للشيت
         const url = 'https://script.google.com/macros/s/AKfycbz1hYe0fh5CbYKqdZb4DdG14RR04-eeuCjJVdkVPtNHgi0Qhw350k7kRJ0WeGy1CHAf/exec';
+        fetch(url, { method: 'POST', mode: 'no-cors', headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                mode: 'no-cors', // دي عشان تتجاوز مشاكل الـ CORS
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            alert("تم إرسال البيانات بنجاح!");
-        } catch (error) {
-            alert("خطأ في الاتصال، تأكد من إعدادات النشر");
-        }
+        // 2. عرض النتائج فوراً (اللوجيك)
+        let dietPlan = (data.dietType === 'keto') ? "خطة الكيتو: دهون عالية وبروتين معتدل." : "خطة المتوازن: كارب معقد وبروتين عالي.";
+        
+        document.getElementById('dietResult').innerHTML = `
+            <p><strong>الاسم:</strong> ${data.name}</p>
+            <p><strong>الخطة:</strong> ${dietPlan}</p>
+            <p>سعر حراري لكل وجبة سيتم حسابه لاحقاً...</p>
+        `;
+        document.getElementById('inputForm').style.display = 'none';
+        document.getElementById('output').style.display = 'block';
     }
 </script>
 
