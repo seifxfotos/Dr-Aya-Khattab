@@ -2,72 +2,59 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام د. آية خطاب للتغذية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Map | د. آية خطاب</title>
     <style>
-        :root { --primary-blue: #2c3e50; --primary-green: #27ae60; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 600px; margin: 30px auto; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h1 { color: var(--primary-blue); text-align: center; border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; }
-        
-        /* التبويبات */
-        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; cursor: pointer; }
-        .tab { padding: 10px; border-bottom: 2px solid #ddd; width: 100%; text-align: center; }
-        .tab.active { border-bottom: 2px solid var(--primary-green); color: var(--primary-green); font-weight: bold; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: var(--primary-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; }
-        #output, .tab-content { display: none; }
-        .active-content { display: block; }
+        :root {
+            --brand-blue: #00aee5;
+            --brand-green: #7cc033;
+            --bg-body: #f0f2f5;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); padding: 20px; }
+        .container { max-width: 500px; margin: 20px auto; padding: 30px; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .logo-box { text-align: center; margin-bottom: 20px; }
+        .logo-box img { width: 150px; height: auto; border-radius: 50%; }
+        h1 { color: var(--brand-blue); text-align: center; margin-bottom: 30px; font-size: 24px; border-bottom: 3px solid var(--brand-green); padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--brand-blue); font-weight: 600; }
+        input, select { width: 100%; padding: 14px; border: 2px solid #e1e1e1; border-radius: 12px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--brand-green); outline: none; }
+        button { width: 100%; padding: 16px; background: var(--brand-green); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #68a82d; }
+        #output { margin-top: 25px; padding: 25px; background: #f9f9f9; border-radius: 15px; border: 1px solid var(--brand-green); display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>د. آية خطاب</h1>
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('calculator')">حاسبة الدايت</div>
-        <div class="tab" onclick="showTab('library')">مكتبة الأنظمة</div>
+    <div class="logo-box">
+        <!-- تم استخدام اسم الملف الجديد كما طلبت -->
+        <img src="Logo_Dr_Aya.webp" alt="Dr Aya Logo">
+    </div>
+    <h1>Food Map | د. آية خطاب</h1>
+    
+    <div id="inputForm">
+        <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
+        <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
+        <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
+        <div class="form-group"><label>الماكروز (مثال: 40/30/30):</label><input type="text" id="macros"></div>
+        <div class="form-group"><label>نوع الدايت:</label>
+            <select id="dietType">
+                <option value="balanced">متوازن</option>
+                <option value="keto">كيتو</option>
+            </select>
+        </div>
+        <button onclick="processDiet()">تسجيل وعرض الدايت</button>
     </div>
 
-    <!-- تبويب الحاسبة -->
-    <div id="calculator" class="tab-content active-content">
-        <div id="inputForm">
-            <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
-            <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
-            <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
-            <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
-            <div class="form-group"><label>نوع الدايت:</label>
-                <select id="dietType">
-                    <option value="balanced">متوازن</option>
-                    <option value="keto">كيتو</option>
-                </select>
-            </div>
-            <button onclick="processDiet()">تسجيل وعرض الدايت</button>
-        </div>
-        <div id="output">
-            <h3>نتائج دايت المريض</h3>
-            <div id="dietResult"></div>
-            <button onclick="window.print()">طباعة</button>
-        </div>
-    </div>
-
-    <!-- تبويب المكتبة -->
-    <div id="library" class="tab-content">
-        <h3>مكتبة أنظمة الدايت</h3>
-        <p>هنا ستظهر الأنظمة المسجلة في الشيت لاحقاً...</p>
+    <div id="output">
+        <h3 style="color: var(--brand-green);">نتائج الخطة</h3>
+        <div id="dietResult"></div>
+        <button onclick="window.print()" style="background: var(--brand-blue);">طباعة التقرير</button>
     </div>
 </div>
 
 <script>
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-content'));
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active-content');
-        event.currentTarget.classList.add('active');
-    }
-
     async function processDiet() {
         const payload = {
             name: document.getElementById('name').value,
@@ -82,11 +69,15 @@
         try {
             const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
             const result = await response.json();
-            document.getElementById('dietResult').innerHTML = `<p><strong>اسم المريض:</strong> ${payload.name}</p><p><strong>الخطة المقترحة:</strong> ${result.diet}</p>`;
+            
+            document.getElementById('dietResult').innerHTML = `
+                <p><strong>المريض:</strong> ${payload.name}</p>
+                <p><strong>الخطة:</strong> ${result.diet}</p>
+            `;
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('output').style.display = 'block';
         } catch (e) {
-            alert("تأكد من إعدادات الـ Apps Script");
+            alert("حدث خطأ، تأكد من الاتصال.");
         }
     }
 </script>
