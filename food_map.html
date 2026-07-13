@@ -10,28 +10,18 @@
             --brand-green: #7cc033;
             --bg-body: #f0f2f5;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); padding: 20px; }
-        .container { max-width: 500px; margin: 20px auto; padding: 30px; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); padding: 20px; overflow-x: hidden; margin: 0; min-height: 100vh; position: relative; }
         
-        /* سنتر اللوجو */
-        .logo-box { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            margin-bottom: 20px; 
-        }
-        .logo-box img { width: 150px; height: auto; display: block; }
-        
-        /* سنتر العنوان */
-        h1 { 
-            color: var(--brand-blue); 
-            text-align: center; 
-            margin: 0 auto 30px auto; 
-            font-size: 28px; 
-            border-bottom: 3px solid var(--brand-green); 
-            padding-bottom: 10px; 
-            width: fit-content; 
-        }
+        /* الخلفية المتحركة (Light Leaks) */
+        .blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.6; z-index: -1; animation: move 10s infinite alternate; }
+        .blue { background: var(--brand-blue); top: -50px; left: -50px; }
+        .green { background: var(--brand-green); bottom: -50px; right: -50px; animation-delay: 2s; }
+        @keyframes move { from { transform: translate(0, 0); } to { transform: translate(100px, 100px); } }
+
+        .container { max-width: 500px; margin: 20px auto; padding: 30px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative; }
+        .logo-box { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+        .logo-box img { width: 112.5px; height: auto; display: block; }
+        h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 30px auto; font-size: 28px; border-bottom: 3px solid var(--brand-green); padding-bottom: 10px; width: fit-content; }
         
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; color: var(--brand-blue); font-weight: 600; }
@@ -42,6 +32,10 @@
     </style>
 </head>
 <body>
+
+    <!-- كرات الخلفية -->
+    <div class="blob blue"></div>
+    <div class="blob green"></div>
 
 <div class="container">
     <div class="logo-box">
