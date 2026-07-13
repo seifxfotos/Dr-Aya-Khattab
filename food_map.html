@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>د. آية خطاب</title>
+    <style>
+        :root { --primary-blue: #2c3e50; --primary-green: #27ae60; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 600px; margin: 30px auto; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { color: var(--primary-blue); text-align: center; border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--primary-blue); font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h1>حاسبة الدايت - د. آية خطاب</h1>
+    <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
+    <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
+    <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
+    <div class="form-group"><label>الماكروز (مثل 40/30/30):</label><input type="text" id="macros"></div>
+    <div class="form-group"><label>نوع الدايت:</label>
+        <select id="dietType">
+            <option value="balanced">متوازن</option>
+            <option value="keto">كيتو</option>
+            <option value="low-carb">كارب منخفض</option>
+        </select>
+    </div>
+    <button onclick="submitData()">تسجيل البيانات</button>
+</div>
+
+<script>
+    async function submitData() {
+        const payload = {
+            name: document.getElementById('name').value,
+            bmi: document.getElementById('bmi').value,
+            fat: document.getElementById('fat').value,
+            macros: document.getElementById('macros').value,
+            dietType: document.getElementById('dietType').value
+        };
+
+        const url = 'https://script.google.com/macros/s/AKfycbz1hYe0fh5CbYKqdZb4DdG14RR04-eeuCjJVdkVPtNHgi0Qhw350k7kRJ0WeGy1CHAf/exec';
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                mode: 'no-cors', // دي عشان تتجاوز مشاكل الـ CORS
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            alert("تم إرسال البيانات بنجاح!");
+        } catch (error) {
+            alert("خطأ في الاتصال، تأكد من إعدادات النشر");
+        }
+    }
+</script>
+
+</body>
+</html>
