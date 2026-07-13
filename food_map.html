@@ -2,47 +2,74 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>حاسبة الدايت - د. آية خطاب</title>
+    <title>نظام د. آية خطاب للتغذية</title>
     <style>
         :root { --primary-blue: #2c3e50; --primary-green: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
         .container { max-width: 600px; margin: 30px auto; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h1 { color: var(--primary-blue); text-align: center; border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; }
+        
+        /* التبويبات */
+        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; cursor: pointer; }
+        .tab { padding: 10px; border-bottom: 2px solid #ddd; width: 100%; text-align: center; }
+        .tab.active { border-bottom: 2px solid var(--primary-green); color: var(--primary-green); font-weight: bold; }
+        
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: var(--primary-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; }
-        #output { margin-top: 20px; padding: 20px; background: #e8f8f0; border-radius: 10px; display: none; }
+        #output, .tab-content { display: none; }
+        .active-content { display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>حاسبة الدايت - د. آية خطاب</h1>
-    <div id="inputForm">
-        <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
-        <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
-        <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
-        <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
-        <div class="form-group"><label>نوع الدايت:</label>
-            <select id="dietType">
-                <option value="balanced">متوازن</option>
-                <option value="keto">كيتو</option>
-            </select>
-        </div>
-        <button onclick="processDiet()">تسجيل وعرض الدايت</button>
+    <h1>د. آية خطاب</h1>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('calculator')">حاسبة الدايت</div>
+        <div class="tab" onclick="showTab('library')">مكتبة الأنظمة</div>
     </div>
 
-    <div id="output">
-        <h3>نتائج دايت المريض</h3>
-        <div id="dietResult"></div>
-        <button onclick="window.print()">طباعة</button>
+    <!-- تبويب الحاسبة -->
+    <div id="calculator" class="tab-content active-content">
+        <div id="inputForm">
+            <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
+            <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
+            <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
+            <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
+            <div class="form-group"><label>نوع الدايت:</label>
+                <select id="dietType">
+                    <option value="balanced">متوازن</option>
+                    <option value="keto">كيتو</option>
+                </select>
+            </div>
+            <button onclick="processDiet()">تسجيل وعرض الدايت</button>
+        </div>
+        <div id="output">
+            <h3>نتائج دايت المريض</h3>
+            <div id="dietResult"></div>
+            <button onclick="window.print()">طباعة</button>
+        </div>
+    </div>
+
+    <!-- تبويب المكتبة -->
+    <div id="library" class="tab-content">
+        <h3>مكتبة أنظمة الدايت</h3>
+        <p>هنا ستظهر الأنظمة المسجلة في الشيت لاحقاً...</p>
     </div>
 </div>
 
 <script>
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-content'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active-content');
+        event.currentTarget.classList.add('active');
+    }
+
     async function processDiet() {
-        const data = {
+        const payload = {
             name: document.getElementById('name').value,
             bmi: document.getElementById('bmi').value,
             fat: document.getElementById('fat').value,
@@ -50,20 +77,17 @@
             dietType: document.getElementById('dietType').value
         };
 
-        // 1. إرسال البيانات للشيت
         const url = 'https://script.google.com/macros/s/AKfycbz1hYe0fh5CbYKqdZb4DdG14RR04-eeuCjJVdkVPtNHgi0Qhw350k7kRJ0WeGy1CHAf/exec';
-        fetch(url, { method: 'POST', mode: 'no-cors', headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
 
-        // 2. عرض النتائج فوراً (اللوجيك)
-        let dietPlan = (data.dietType === 'keto') ? "خطة الكيتو: دهون عالية وبروتين معتدل." : "خطة المتوازن: كارب معقد وبروتين عالي.";
-        
-        document.getElementById('dietResult').innerHTML = `
-            <p><strong>الاسم:</strong> ${data.name}</p>
-            <p><strong>الخطة:</strong> ${dietPlan}</p>
-            <p>سعر حراري لكل وجبة سيتم حسابه لاحقاً...</p>
-        `;
-        document.getElementById('inputForm').style.display = 'none';
-        document.getElementById('output').style.display = 'block';
+        try {
+            const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+            document.getElementById('dietResult').innerHTML = `<p><strong>اسم المريض:</strong> ${payload.name}</p><p><strong>الخطة المقترحة:</strong> ${result.diet}</p>`;
+            document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('output').style.display = 'block';
+        } catch (e) {
+            alert("تأكد من إعدادات الـ Apps Script");
+        }
     }
 </script>
 
