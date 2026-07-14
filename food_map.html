@@ -28,16 +28,10 @@
             position: relative;
         }
 
-        /* الكور المتحركة بشكل أوضح */
-        .blob { position: absolute; width: 400px; height: 400px; border-radius: 50%; filter: blur(100px); opacity: 0.6; z-index: -1; animation: move 8s infinite alternate ease-in-out; }
-        .blue { background: var(--brand-blue); top: -100px; left: -100px; }
-        .green { background: var(--brand-green); bottom: -100px; right: -100px; animation-delay: 1s; animation-duration: 10s; }
-        
-        /* حركة أقوى وأكثر وضوحاً */
-        @keyframes move { 
-            from { transform: translate(0, 0) scale(1); } 
-            to { transform: translate(150px, 150px) scale(1.2); } 
-        }
+        .blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; }
+        .blue { background: var(--brand-blue); top: 10%; left: 10%; }
+        .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
+        @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
 
         .container { 
             width: 90%; 
@@ -50,12 +44,13 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             box-sizing: border-box;
             overflow: hidden; 
-            position: relative; /* مهم جداً للتثبيت */
-            z-index: 10;        /* بيخليها فوق الكرات دايماً */
+            position: relative; 
+            z-index: 10;
         }
 
         .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
-        .logo-box img { width: 100px; height: auto; }
+        /* تم تعديل الحجم هنا إلى 150px */
+        .logo-box img { width: 150px; height: auto; }
         
         h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px auto; font-size: 24px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
         
