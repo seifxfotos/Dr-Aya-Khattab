@@ -10,22 +10,38 @@
         body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { width: 100%; max-width: 450px; padding: 25px; background: #fff; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .icon { cursor: pointer; color: var(--brand-blue); }
-        /* نفس ستايل السيرش للمودال */
+        .icon { cursor: pointer; color: var(--brand-blue); transition: 0.3s; }
+        .icon:hover { transform: scale(1.1); }
+        
+        /* تنسيق صندوق البحث والنتائج الموحد */
         #searchOverlay { display: none; margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 15px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 16px; }
+        
+        /* إخفاء الأزرار وأدوات البحث أثناء الطباعة */
+        @media print {
+            .logo-box, .print-hide, button { display: none !important; }
+            .container { box-shadow: none; padding: 0; }
+        }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="logo-box">
-        <div class="icon" onclick="showAllPatients()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>
+        <!-- أيقونة البحث -->
+        <div class="icon" onclick="toggleSearch()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
         <img src="Logo_Dr_Aya.webp" width="100" alt="Logo">
-        <div class="icon" onclick="toggleSearch()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+        <!-- أيقونة القائمة / التعديل -->
+        <div class="icon" onclick="showAllPatients()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </div>
     </div>
 
-    <!-- الـ div ده هو اللي هيعرض البحث والقائمة بنفس الستايل -->
+    <!-- صندوق البحث وقائمة النتائج (تحت اللوجو) -->
     <div id="searchOverlay">
         <div id="searchArea">
             <input type="text" id="searchName" placeholder="بحث باسم العميل...">
@@ -34,18 +50,31 @@
         <div id="resultsArea" style="margin-top:10px;"></div>
     </div>
 
+    <!-- فورم إدخال البيانات -->
     <div id="inputForm">
         <input type="text" id="name" placeholder="اسم العميل">
         <input type="number" id="bmi" placeholder="BMI">
         <input type="number" id="fat" placeholder="الدهون %">
         <input type="text" id="macros" placeholder="الماكروز">
-        <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
-        <button onclick="processDiet()">تسجيل بيانات العميل</button>
+        <select id="dietType">
+            <option value="متوازن">متوازن</option>
+            <option value="كيتو">كيتو</option>
+        </select>
+        <button id="saveBtn" onclick="processDiet()">تسجيل بيانات العميل</button>
+    </div>
+
+    <!-- شاشة الطباعة والنتائج -->
+    <div id="output" style="display:none;">
+        <h3 class="print-hide">بيانات العميل</h3>
+        <div id="dietResult"></div>
+        <button onclick="window.print()" style="margin-top: 15px;">طباعة</button>
+        <button onclick="location.reload()" style="background:#999; margin-top: 10px;">رجوع</button>
     </div>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbxf74u4bXgvKzA1DXG4ByQ4Hp_abHxgzTaH-mpLz9LHIlQ3MIMsTp0euVgrTPjp_f6u/exec'; 
+    const url = 'https://script.google.com/macros/s/AKfycbzp8zxrVmZXYcUvtXhJflZ3hViIszrQPP3G1ghX-CB5DeNV7s9wQ7edGojlQ_EtreV7/exec'; // حط رابط السكربت الجديد هنا
+
     function toggleSearch() { 
         const el = document.getElementById('searchOverlay'); 
         el.style.display = (el.style.display === 'block') ? 'none' : 'block';
@@ -55,41 +84,118 @@
 
     async function showAllPatients() {
         document.getElementById('searchOverlay').style.display = 'block';
-        document.getElementById('searchArea').style.display = 'none';
-        const res = await fetch(url + '?action=all');
-        const list = await res.json();
-        renderResults(list);
+        document.getElementById('searchArea').style.display = 'none'; // نخفي حقل البحث ونعرض النتائج بس
+        document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
+        try {
+            const res = await fetch(url + '?action=all');
+            const list = await res.json();
+            renderResults(list);
+        } catch (e) {
+            document.getElementById('resultsArea').innerHTML = '<p style="color:red; text-align:center;">خطأ في الاتصال</p>';
+        }
     }
 
     async function searchPatient() {
         const name = document.getElementById('searchName').value;
-        const res = await fetch(url + '?name=' + encodeURIComponent(name));
-        const data = await res.json();
-        if(data.error) alert("غير موجود");
-        else renderResults(Array.isArray(data) ? data : [data]);
+        if (!name) return;
+        document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">جاري البحث...</p>';
+        try {
+            const res = await fetch(url + '?name=' + encodeURIComponent(name));
+            const data = await res.json();
+            if(data.error) {
+                document.getElementById('resultsArea').innerHTML = '<p style="text-align:center; color:red;">الاسم غير موجود</p>';
+            } else {
+                renderResults(Array.isArray(data) ? data : [data]);
+            }
+        } catch (e) {
+            document.getElementById('resultsArea').innerHTML = '<p style="color:red; text-align:center;">خطأ في الاتصال</p>';
+        }
     }
 
     function renderResults(data) {
+        if(data.length === 0) {
+            document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">لا توجد بيانات</p>';
+            return;
+        }
         document.getElementById('resultsArea').innerHTML = data.map(p => 
             `<div style="padding:10px; border-bottom:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;">
-                <span>${p.name}</span>
-                <div>
-                    <button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px; background:#00aee5;">تعديل</button>
-                    <button onclick="deletePatient('${p.name}')" style="width:auto; padding:5px 10px; background:#ff4444; margin-right:5px;">حذف</button>
+                <span style="font-weight:bold;">${p.name}</span>
+                <div style="display:flex; gap:5px;">
+                    <button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px; background:#00aee5; font-size:12px;">تعديل</button>
+                    <button onclick="deletePatient('${p.name}')" style="width:auto; padding:5px 10px; background:#ff4444; font-size:12px;">حذف</button>
                 </div>
             </div>`).join('');
     }
 
     function fillForm(p) {
-        document.getElementById('name').value = p.name;
+        document.getElementById('name').value = p.name; 
         document.getElementById('bmi').value = p.bmi;
-        document.getElementById('fat').value = p.fat;
+        document.getElementById('fat').value = p.fat; 
         document.getElementById('macros').value = p.macros;
         document.getElementById('dietType').value = p.dietType;
         document.getElementById('searchOverlay').style.display = 'none';
     }
 
-    // (دالة الحذف والـ processDiet كما هي)
+    async function deletePatient(name) {
+        if(!confirm("هل أنت متأكد من حذف بيانات: " + name + "؟")) return;
+        try {
+            await fetch(url + '?action=delete&name=' + encodeURIComponent(name));
+            alert("تم الحذف بنجاح"); 
+            showAllPatients(); // تحديث القائمة بعد الحذف
+        } catch(e) {
+            alert("خطأ أثناء الحذف");
+        }
+    }
+
+    async function processDiet() {
+        const btn = document.getElementById('saveBtn'); 
+        const name = document.getElementById('name').value;
+        const bmi = document.getElementById('bmi').value;
+        const fat = document.getElementById('fat').value;
+        const macros = document.getElementById('macros').value;
+        const dietType = document.getElementById('dietType').value;
+
+        if(!name) { alert("يرجى كتابة اسم العميل أولاً"); return; }
+
+        btn.innerText = "جاري الحفظ..."; 
+        btn.disabled = true;
+        
+        const query = `?action=save&name=${encodeURIComponent(name)}&bmi=${bmi}&fat=${fat}&macros=${encodeURIComponent(macros)}&dietType=${encodeURIComponent(dietType)}`;
+        
+        try {
+            const res = await fetch(url + query);
+            const resultText = await res.text(); // ننتظر رد السكربت (success)
+            
+            if (resultText === "success") {
+                showResult(name, "تم الحفظ بنجاح!");
+            } else {
+                alert("حدث خطأ أثناء الحفظ");
+                btn.innerText = "تسجيل بيانات العميل"; 
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert("خطأ في الاتصال بالسيرفر");
+            btn.innerText = "تسجيل بيانات العميل"; 
+            btn.disabled = false;
+        }
+    }
+
+    function showResult(n, info) {
+        // إعداد محتوى شاشة الطباعة
+        document.getElementById('dietResult').innerHTML = `
+            <p><strong>العميل:</strong> ${n}</p>
+            <p style="color:var(--brand-green); font-weight:bold;" class="print-hide">${info}</p>
+            <label>النظام الغذائي المقترح:</label>
+            <div style="padding:15px; background:#f9f9f9; border:1px solid #eee; border-radius:10px; margin-top:10px;">
+                جاري تحميل النظام...
+            </div>`;
+            
+        // إخفاء الفورم وصندوق البحث وإظهار شاشة الطباعة
+        document.getElementById('inputForm').style.display = 'none';
+        document.getElementById('searchOverlay').style.display = 'none';
+        document.getElementById('output').style.display = 'block';
+    }
 </script>
+
 </body>
 </html>
