@@ -4,93 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Map</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://script.google.com/macros/s/AKfycbwBQ0_thmAvgskRJ_f7Xp_-LLCO55eEFR6aehnWh8Rr3aOgMuL4smMunjLF_vs94FZe/exec">
     <style>
         :root { --brand-blue: #00aee5; --brand-green: #7cc033; --bg-body: #f0f2f5; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; padding: 20px 0; }
-        
-        /* الأنيميشن مع will-change لضمان عدم التقطيع */
         .blob { position: fixed; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; will-change: transform; }
         .blue { background: var(--brand-blue); top: 10%; left: 10%; }
         .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
         @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
         
         .container { width: 90%; max-width: 450px; padding: 25px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; }
-        .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .logo-box img { width: 120px; }
         
-        /* البحث والأنيميشن الخاص به */
-        .search-icon { cursor: pointer; color: var(--brand-blue); transition: transform 0.2s; }
-        .search-icon:hover { transform: scale(1.1); }
-        #searchOverlay { 
-            display: none; opacity: 0; transform: translateY(-10px); 
-            transition: all 0.3s ease; will-change: transform, opacity;
-            margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 15px; 
-        }
+        .icon { cursor: pointer; color: var(--brand-blue); transition: 0.3s; }
+        .icon:hover { transform: scale(1.1); }
         
+        #searchOverlay, #patientsModal { display: none; margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 15px; }
         h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: var(--brand-blue); font-weight: 700; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: 'Cairo'; }
-        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Cairo'; }
-        #output { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 15px; border: 1px solid var(--brand-green); display: none; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #e1e1e1; border-radius: 12px; font-family: 'Cairo'; }
+        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Cairo'; }
+        
+        @media print { .blob, .logo-box, .icon, button { display: none !important; } body { background: white; } .container { box-shadow: none; border: 1px solid #ccc; } }
     </style>
 </head>
 <body>
-    <div class="blob blue"></div>
-    <div class="blob green"></div>
+    <div class="blob blue"></div><div class="blob green"></div>
 
 <div class="container">
     <div class="logo-box">
-        <div style="width: 40px;"></div>
+        <div class="icon" onclick="showAllPatients()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </div>
         <img src="Logo_Dr_Aya.webp" alt="Logo">
-        <div class="search-icon" onclick="toggleSearch()">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div class="icon" onclick="toggleSearch()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
     </div>
     
-    <div id="searchOverlay">
-        <input type="text" id="searchName" placeholder="اكتب اسم العميل...">
-        <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button>
-    </div>
+    <div id="searchOverlay"><input type="text" id="searchName" placeholder="اسم العميل..."><button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button></div>
+    <div id="patientsModal"><h3>قائمة العملاء</h3><div id="patientsList"></div><button onclick="this.parentElement.style.display='none'">إغلاق</button></div>
 
     <h1>Food Map</h1>
-    
     <div id="inputForm">
-        <div class="form-group"><label>اسم العميل:</label><input type="text" id="name"></div>
-        <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
-        <div class="form-group"><label>الدهون (%):</label><input type="number" id="fat"></div>
-        <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
-        <div class="form-group"><label>الدايت:</label>
-            <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
-        </div>
-        <button onclick="processDiet()">تسجيل عميل جديد</button>
+        <input type="text" id="name" placeholder="اسم العميل">
+        <input type="number" id="bmi" placeholder="BMI">
+        <input type="number" id="fat" placeholder="الدهون %">
+        <input type="text" id="macros" placeholder="الماكروز">
+        <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
+        <button onclick="processDiet()">تسجيل / تحديث بيانات العميل</button>
     </div>
-
-    <div id="output">
-        <h3 style="color: var(--brand-green);">بيانات العميل</h3>
-        <div id="dietResult"></div>
-        <button onclick="window.print()" style="background: var(--brand-blue);">طباعة التقرير</button>
-        <button onclick="location.reload()" style="background: #999;">رجوع</button>
-    </div>
+    <div id="output" style="display:none;"><h3>بيانات العميل</h3><div id="dietResult"></div><button onclick="window.print()">طباعة</button><button onclick="location.reload()" style="background:#999">رجوع</button></div>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbzbINS4WTULNh9jtbc3LSLA18iwgWPS6IbIik0TglGNpbgjD_mIp5gxAWH6fokW2v4/exec';
+    const url = 'YOUR_SCRIPT_URL_HERE'; 
+    function toggleSearch() { const el = document.getElementById('searchOverlay'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+    
+    async function showAllPatients() {
+        const res = await fetch(url + '?action=all');
+        const list = await res.json();
+        const listDiv = document.getElementById('patientsList');
+        listDiv.innerHTML = list.map(p => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><button onclick="loadPatient('${p.name}')" style="width:auto;">تعديل</button></div>`).join('');
+        document.getElementById('patientsModal').style.display = 'block';
+    }
 
-    function toggleSearch() {
-        const box = document.getElementById('searchOverlay');
-        if (box.style.display === 'block') {
-            box.style.opacity = '0';
-            box.style.transform = 'translateY(-10px)';
-            setTimeout(() => { box.style.display = 'none'; }, 300);
-        } else {
-            box.style.display = 'block';
-            requestAnimationFrame(() => {
-                box.style.opacity = '1';
-                box.style.transform = 'translateY(0)';
-            });
-        }
+    async function loadPatient(name) {
+        document.getElementById('searchName').value = name;
+        searchPatient();
+        document.getElementById('patientsModal').style.display = 'none';
     }
 
     async function searchPatient() {
@@ -104,21 +86,20 @@
             document.getElementById('fat').value = data.fat;
             document.getElementById('macros').value = data.macros;
             document.getElementById('dietType').value = data.dietType;
-            showResult(name, "BMI: " + data.bmi);
+            showResult(name, "بيانات العميل محملة");
         }
     }
 
     async function processDiet() {
         const payload = { name: document.getElementById('name').value, bmi: document.getElementById('bmi').value, fat: document.getElementById('fat').value, macros: document.getElementById('macros').value, dietType: document.getElementById('dietType').value };
         await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-        showResult(payload.name, "تم التسجيل بنجاح");
+        showResult(payload.name, "تم الحفظ بنجاح");
     }
 
     function showResult(name, info) {
-        document.getElementById('dietResult').innerHTML = `<p><strong>العميل:</strong> ${name}</p><p><strong>التفاصيل:</strong> ${info}</p>`;
+        document.getElementById('dietResult').innerHTML = `<p><strong>العميل:</strong> ${name}</p><p>${info}</p>`;
         document.getElementById('inputForm').style.display = 'none';
         document.getElementById('output').style.display = 'block';
-        document.getElementById('searchOverlay').style.display = 'none';
     }
 </script>
 </body>
