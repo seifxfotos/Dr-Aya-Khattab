@@ -2,38 +2,70 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Food Map</title>
+    
+    <!-- خط Cairo سريع -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --brand-blue: #00aee5;
             --brand-green: #7cc033;
             --bg-body: #f0f2f5;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-body); padding: 20px; overflow-x: hidden; margin: 0; min-height: 100vh; position: relative; }
-        
-        /* الخلفية المتحركة (Light Leaks) */
-        .blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.6; z-index: -1; animation: move 10s infinite alternate; }
-        .blue { background: var(--brand-blue); top: -50px; left: -50px; }
-        .green { background: var(--brand-green); bottom: -50px; right: -50px; animation-delay: 2s; }
-        @keyframes move { from { transform: translate(0, 0); } to { transform: translate(100px, 100px); } }
 
-        .container { max-width: 500px; margin: 20px auto; padding: 30px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative; }
-        .logo-box { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
-        .logo-box img { width: 150px; height: auto; display: block; }
-        h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 30px auto; font-size: 28px; border-bottom: 3px solid var(--brand-green); padding-bottom: 10px; width: fit-content; }
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg-body); 
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* الخلفية المتحركة */
+        .blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: -1; animation: move 10s infinite alternate; }
+        .blue { background: var(--brand-blue); top: 10%; left: 10%; }
+        .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
+        @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
+
+        .container { 
+            width: 90%; 
+            max-width: 450px; 
+            max-height: 90vh; 
+            padding: 25px; 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px); 
+            border-radius: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+            overflow-y: auto; 
+        }
+
+        .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
+        .logo-box img { width: 100px; height: auto; }
         
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: var(--brand-blue); font-weight: 600; }
-        input, select { width: 100%; padding: 14px; border: 2px solid #e1e1e1; border-radius: 12px; box-sizing: border-box; }
-        button { width: 100%; padding: 16px; background: var(--brand-green); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px auto; font-size: 24px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--brand-blue); font-weight: 700; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 12px; font-size: 16px; font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+        input:focus { border-color: var(--brand-green); outline: none; }
+        
+        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; font-family: 'Cairo', sans-serif; cursor: pointer; margin-top: 10px; }
         button:hover { background: #68a82d; }
-        #output { margin-top: 25px; padding: 25px; background: #f9f9f9; border-radius: 15px; border: 1px solid var(--brand-green); display: none; }
+        
+        #output { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 15px; border: 1px solid var(--brand-green); display: none; }
     </style>
 </head>
 <body>
 
-    <!-- كرات الخلفية -->
     <div class="blob blue"></div>
     <div class="blob green"></div>
 
