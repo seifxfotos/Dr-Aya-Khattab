@@ -12,10 +12,16 @@
         .blue { background: var(--brand-blue); top: 10%; left: 10%; }
         .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
         @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
+        
         .container { width: 90%; max-width: 450px; padding: 25px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; }
-        .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
-        .logo-box img { width: 150px; }
-        h1 { color: var(--brand-blue); text-align: center; margin-bottom: 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; margin-left: auto; margin-right: auto; }
+        .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .logo-box img { width: 120px; }
+        
+        /* أيقونة البحث */
+        .search-icon { cursor: pointer; font-size: 24px; color: var(--brand-blue); }
+        #searchOverlay { display: none; margin-bottom: 20px; padding: 15px; background: #eef; border-radius: 15px; }
+        
+        h1 { color: var(--brand-blue); text-align: center; margin-bottom: 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; margin: 0 auto 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: var(--brand-blue); font-weight: 700; font-size: 14px; }
         input, select { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: 'Cairo'; }
@@ -28,28 +34,32 @@
     <div class="blob green"></div>
 
 <div class="container">
-    <div class="logo-box"><img src="Logo_Dr_Aya.webp" alt="Logo"></div>
-    <h1>Food Map</h1>
+    <div class="logo-box">
+        <div style="width: 40px;"></div> <!-- توازن -->
+        <img src="Logo_Dr_Aya.webp" alt="Logo">
+        <div class="search-icon" onclick="toggleSearch()">🔍</div>
+    </div>
     
-    <div id="searchBox" style="margin-bottom:20px; border-bottom:1px solid #ccc; padding-bottom:15px;">
-        <label>بحث سريع (الاسم):</label>
-        <input type="text" id="searchName" placeholder="اكتب الاسم...">
-        <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث عن مريض</button>
+    <div id="searchOverlay">
+        <input type="text" id="searchName" placeholder="اسم العميل...">
+        <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button>
     </div>
 
+    <h1>Food Map</h1>
+    
     <div id="inputForm">
-        <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
+        <div class="form-group"><label>اسم العميل:</label><input type="text" id="name"></div>
         <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
         <div class="form-group"><label>الدهون (%):</label><input type="number" id="fat"></div>
         <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
         <div class="form-group"><label>الدايت:</label>
             <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
         </div>
-        <button onclick="processDiet()">تسجيل مريض جديد</button>
+        <button onclick="processDiet()">تسجيل عميل جديد</button>
     </div>
 
     <div id="output">
-        <h3 style="color: var(--brand-green);">بيانات المريض</h3>
+        <h3 style="color: var(--brand-green);">بيانات العميل</h3>
         <div id="dietResult"></div>
         <button onclick="window.print()" style="background: var(--brand-blue);">طباعة التقرير</button>
         <button onclick="location.reload()" style="background: #999;">رجوع</button>
@@ -57,7 +67,12 @@
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbzbINS4WTULNh9jtbc3LSLA18iwgWPS6IbIik0TglGNpbgjD_mIp5gxAWH6fokW2v4/exec'; // ضع رابط السكربت هنا
+    const url = 'https://script.google.com/macros/s/AKfycbzbINS4WTULNh9jtbc3LSLA18iwgWPS6IbIik0TglGNpbgjD_mIp5gxAWH6fokW2v4/exec';
+
+    function toggleSearch() {
+        const box = document.getElementById('searchOverlay');
+        box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+    }
 
     async function searchPatient() {
         const name = document.getElementById('searchName').value;
@@ -81,9 +96,10 @@
     }
 
     function showResult(name, info) {
-        document.getElementById('dietResult').innerHTML = `<p><strong>المريض:</strong> ${name}</p><p><strong>التفاصيل:</strong> ${info}</p>`;
+        document.getElementById('dietResult').innerHTML = `<p><strong>العميل:</strong> ${name}</p><p><strong>التفاصيل:</strong> ${info}</p>`;
         document.getElementById('inputForm').style.display = 'none';
         document.getElementById('output').style.display = 'block';
+        document.getElementById('searchOverlay').style.display = 'none';
     }
 </script>
 </body>
