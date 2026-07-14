@@ -8,7 +8,9 @@
     <style>
         :root { --brand-blue: #00aee5; --brand-green: #7cc033; --bg-body: #f0f2f5; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; padding: 20px 0; }
-        .blob { position: fixed; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; }
+        
+        /* الأنيميشن مع will-change لضمان عدم التقطيع */
+        .blob { position: fixed; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; will-change: transform; }
         .blue { background: var(--brand-blue); top: 10%; left: 10%; }
         .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
         @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
@@ -17,11 +19,16 @@
         .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .logo-box img { width: 120px; }
         
-        /* أيقونة البحث */
-        .search-icon { cursor: pointer; font-size: 24px; color: var(--brand-blue); }
-        #searchOverlay { display: none; margin-bottom: 20px; padding: 15px; background: #eef; border-radius: 15px; }
+        /* البحث والأنيميشن الخاص به */
+        .search-icon { cursor: pointer; color: var(--brand-blue); transition: transform 0.2s; }
+        .search-icon:hover { transform: scale(1.1); }
+        #searchOverlay { 
+            display: none; opacity: 0; transform: translateY(-10px); 
+            transition: all 0.3s ease; will-change: transform, opacity;
+            margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 15px; 
+        }
         
-        h1 { color: var(--brand-blue); text-align: center; margin-bottom: 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; margin: 0 auto 20px; }
+        h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: var(--brand-blue); font-weight: 700; font-size: 14px; }
         input, select { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: 'Cairo'; }
@@ -35,13 +42,15 @@
 
 <div class="container">
     <div class="logo-box">
-        <div style="width: 40px;"></div> <!-- توازن -->
+        <div style="width: 40px;"></div>
         <img src="Logo_Dr_Aya.webp" alt="Logo">
-        <div class="search-icon" onclick="toggleSearch()">🔍</div>
+        <div class="search-icon" onclick="toggleSearch()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
     </div>
     
     <div id="searchOverlay">
-        <input type="text" id="searchName" placeholder="اسم العميل...">
+        <input type="text" id="searchName" placeholder="اكتب اسم العميل...">
         <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button>
     </div>
 
@@ -71,7 +80,17 @@
 
     function toggleSearch() {
         const box = document.getElementById('searchOverlay');
-        box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+        if (box.style.display === 'block') {
+            box.style.opacity = '0';
+            box.style.transform = 'translateY(-10px)';
+            setTimeout(() => { box.style.display = 'none'; }, 300);
+        } else {
+            box.style.display = 'block';
+            requestAnimationFrame(() => {
+                box.style.opacity = '1';
+                box.style.transform = 'translateY(0)';
+            });
+        }
     }
 
     async function searchPatient() {
