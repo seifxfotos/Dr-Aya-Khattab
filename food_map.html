@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Food Map</title>
     
-    <!-- خط Cairo سريع -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
@@ -25,17 +24,21 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            overflow: hidden; /* منع السكرول نهائياً من الصفحة */
+            overflow: hidden; 
             position: relative;
         }
 
-        /* الخلفية المتحركة */
-        .blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: -1; animation: move 10s infinite alternate; }
-        .blue { background: var(--brand-blue); top: 10%; left: 10%; }
-        .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
-        @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
+        /* الكور المتحركة بشكل أوضح */
+        .blob { position: absolute; width: 400px; height: 400px; border-radius: 50%; filter: blur(100px); opacity: 0.6; z-index: -1; animation: move 8s infinite alternate ease-in-out; }
+        .blue { background: var(--brand-blue); top: -100px; left: -100px; }
+        .green { background: var(--brand-green); bottom: -100px; right: -100px; animation-delay: 1s; animation-duration: 10s; }
+        
+        /* حركة أقوى وأكثر وضوحاً */
+        @keyframes move { 
+            from { transform: translate(0, 0) scale(1); } 
+            to { transform: translate(150px, 150px) scale(1.2); } 
+        }
 
-        /* الكونتير Fixed بدون سكرول */
         .container { 
             width: 90%; 
             max-width: 450px; 
@@ -46,11 +49,11 @@
             border-radius: 25px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             box-sizing: border-box;
-            overflow: hidden; /* تم إلغاء السكرول نهائياً من هنا */
+            overflow: hidden; 
         }
 
         .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
-        .logo-box img { width: 140px; height: auto; }
+        .logo-box img { width: 100px; height: auto; }
         
         h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px auto; font-size: 24px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
         
