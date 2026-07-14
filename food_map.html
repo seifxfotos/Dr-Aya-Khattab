@@ -13,16 +13,50 @@
         .icon { cursor: pointer; color: var(--brand-blue); transition: 0.3s; }
         .icon:hover { transform: scale(1.1); }
         
-        /* تنسيق صندوق البحث والنتائج الموحد */
         #searchOverlay { display: none; margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 15px; }
         
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 16px; }
         
-        /* إخفاء الأزرار وأدوات البحث أثناء الطباعة */
+        /* ========================================= */
+        /* إعدادات الطباعة الاحترافية (التعديل الجديد) */
+        /* ========================================= */
+        @page {
+            size: A4 portrait;
+            margin: 0; /* السطر ده هو السحر اللي بيمسح التاريخ والرابط ورقم الصفحة */
+        }
+        
         @media print {
-            .logo-box, .print-hide, button { display: none !important; }
-            .container { box-shadow: none; padding: 0; }
+            body {
+                background: white;
+                padding: 2cm; /* هامش داخلي عشان الكلام ميكونش لازق في حرف الورقة */
+                display: block; /* إلغاء التوسيط عشان الورقة تتبدأ من فوق صح */
+                height: auto;
+            }
+            .container { 
+                box-shadow: none; 
+                padding: 0; 
+                width: 100%; 
+                max-width: 100%;
+                margin: 0;
+            }
+            /* إخفاء الأيقونات والأزرار وأي حاجة مش عايزينها تظهر في الورقة */
+            .logo-box .icon, .print-hide, button { 
+                display: none !important; 
+            }
+            /* توسيط اللوجو في الطباعة فقط */
+            .logo-box {
+                justify-content: center;
+                margin-bottom: 40px;
+            }
+            /* إجبار المحتوى على صفحة واحدة ومنع الصفحة الثانية الفاضية */
+            html, body {
+                page-break-after: avoid;
+                page-break-before: avoid;
+            }
+            #output {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -41,7 +75,7 @@
         </div>
     </div>
 
-    <!-- صندوق البحث وقائمة النتائج (تحت اللوجو) -->
+    <!-- صندوق البحث وقائمة النتائج -->
     <div id="searchOverlay">
         <div id="searchArea">
             <input type="text" id="searchName" placeholder="بحث باسم العميل...">
@@ -73,7 +107,7 @@
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbzp8zxrVmZXYcUvtXhJflZ3hViIszrQPP3G1ghX-CB5DeNV7s9wQ7edGojlQ_EtreV7/exec'; // حط رابط السكربت الجديد هنا
+    const url = 'https://script.google.com/macros/s/AKfycbzp8zxrVmZXYcUvtXhJflZ3hViIszrQPP3G1ghX-CB5DeNV7s9wQ7edGojlQ_EtreV7/exec'; // حط رابط السكربت بتاعك هنا يا هندسة
 
     function toggleSearch() { 
         const el = document.getElementById('searchOverlay'); 
@@ -84,7 +118,7 @@
 
     async function showAllPatients() {
         document.getElementById('searchOverlay').style.display = 'block';
-        document.getElementById('searchArea').style.display = 'none'; // نخفي حقل البحث ونعرض النتائج بس
+        document.getElementById('searchArea').style.display = 'none'; 
         document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
         try {
             const res = await fetch(url + '?action=all');
@@ -141,7 +175,7 @@
         try {
             await fetch(url + '?action=delete&name=' + encodeURIComponent(name));
             alert("تم الحذف بنجاح"); 
-            showAllPatients(); // تحديث القائمة بعد الحذف
+            showAllPatients(); 
         } catch(e) {
             alert("خطأ أثناء الحذف");
         }
@@ -164,7 +198,7 @@
         
         try {
             const res = await fetch(url + query);
-            const resultText = await res.text(); // ننتظر رد السكربت (success)
+            const resultText = await res.text(); 
             
             if (resultText === "success") {
                 showResult(name, "تم الحفظ بنجاح!");
@@ -181,16 +215,14 @@
     }
 
     function showResult(n, info) {
-        // إعداد محتوى شاشة الطباعة
         document.getElementById('dietResult').innerHTML = `
             <p><strong>العميل:</strong> ${n}</p>
             <p style="color:var(--brand-green); font-weight:bold;" class="print-hide">${info}</p>
             <label>النظام الغذائي المقترح:</label>
-            <div style="padding:15px; background:#f9f9f9; border:1px solid #eee; border-radius:10px; margin-top:10px;">
+            <div style="padding:15px; background:#fff; border:2px solid #eee; border-radius:10px; margin-top:10px;">
                 جاري تحميل النظام...
             </div>`;
             
-        // إخفاء الفورم وصندوق البحث وإظهار شاشة الطباعة
         document.getElementById('inputForm').style.display = 'none';
         document.getElementById('searchOverlay').style.display = 'none';
         document.getElementById('output').style.display = 'block';
