@@ -22,12 +22,15 @@
         .icon:hover { transform: scale(1.1); }
         
         #searchOverlay, #patientsModal { display: none; margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 15px; }
+        #patientsModal { position: fixed; top: 10%; width: 90%; max-width: 450px; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
         h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #e1e1e1; border-radius: 12px; font-family: 'Cairo'; box-sizing: border-box; }
         button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Cairo'; }
         
+        .print-hide { display: inline; }
         #dietTableArea { margin-top:15px; border-top:1px solid #ccc; padding-top:10px; }
-        @media print { .blob, .logo-box, .icon, button { display: none !important; } body { background: white; } .container { box-shadow: none; border: 1px solid #ccc; } }
+        
+        @media print { .blob, .logo-box, .icon, button, .print-hide { display: none !important; } body { background: white; } .container { box-shadow: none; border: 1px solid #ccc; } }
     </style>
 </head>
 <body>
@@ -62,19 +65,27 @@
 <script>
     const url = 'https://script.google.com/macros/s/AKfycbzbINS4WTULNh9jtbc3LSLA18iwgWPS6IbIik0TglGNpbgjD_mIp5gxAWH6fokW2v4/exec';
     
-    function toggleSearch() { const el = document.getElementById('searchOverlay'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+    function toggleSearch() { const el = document.getElementById('searchOverlay'); el.style.display = (el.style.display === 'block') ? 'none' : 'block'; }
     
     async function showAllPatients() {
-        const res = await fetch(url + '?action=all');
-        const list = await res.json();
+        const modal = document.getElementById('patientsModal');
         const listDiv = document.getElementById('patientsList');
-        listDiv.innerHTML = list.map(p => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><button onclick="loadPatient('${p.name}')" style="width:auto; padding:5px 10px;">تعديل</button></div>`).join('');
-        document.getElementById('patientsModal').style.display = 'block';
+        modal.style.display = 'block';
+        listDiv.innerHTML = "جاري تحميل القائمة...";
+        try {
+            const res = await fetch(url + '?action=all');
+            const list = await res.json();
+            listDiv.innerHTML = list.map(p => `
+                <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:14px;">${p.name}</span>
+                    <button onclick="loadPatient('${p.name}')" style="width:auto; padding:5px 15px; margin:0;">تعديل</button>
+                </div>`).join('');
+        } catch(e) { listDiv.innerHTML = "خطأ في التحميل"; }
     }
 
     async function loadPatient(name) {
         document.getElementById('searchName').value = name;
-        searchPatient();
+        await searchPatient();
         document.getElementById('patientsModal').style.display = 'none';
     }
 
@@ -89,7 +100,7 @@
             document.getElementById('fat').value = data.fat;
             document.getElementById('macros').value = data.macros;
             document.getElementById('dietType').value = data.dietType;
-            showResult(name, "BMI: " + data.bmi);
+            showResult(name, "تم تحميل بيانات العميل");
         }
     }
 
@@ -102,7 +113,7 @@
     function showResult(name, info) {
         document.getElementById('dietResult').innerHTML = `
             <p><strong>العميل:</strong> ${name}</p>
-            <p>${info}</p>
+            <p><span class="print-hide">${info}</span></p>
             <div id="dietTableArea">
                 <label style="color:var(--brand-blue); font-weight:700;">النظام الغذائي:</label>
                 <div id="dietContent">جاري تحميل النظام...</div>
