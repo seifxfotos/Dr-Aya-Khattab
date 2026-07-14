@@ -25,7 +25,7 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            overflow: hidden; 
+            overflow: hidden; /* منع السكرول نهائياً من الصفحة */
             position: relative;
         }
 
@@ -35,17 +35,18 @@
         .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
         @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
 
+        /* الكونتير Fixed بدون سكرول */
         .container { 
             width: 90%; 
             max-width: 450px; 
-            max-height: 90vh; 
+            max-height: 95vh; 
             padding: 25px; 
             background: rgba(255,255,255,0.95); 
             backdrop-filter: blur(10px); 
             border-radius: 25px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             box-sizing: border-box;
-            overflow-y: auto; 
+            overflow: hidden; /* تم إلغاء السكرول نهائياً من هنا */
         }
 
         .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
