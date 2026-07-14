@@ -4,124 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Map</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --brand-blue: #00aee5;
-            --brand-green: #7cc033;
-            --bg-body: #f0f2f5;
-        }
-
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background: var(--bg-body); 
-            margin: 0; 
-            min-height: 100vh; /* تغيير من 100vh لـ min-height للسماح بالسكرول */
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            overflow-x: hidden; /* منع الحركة يمين وشمال */
-            position: relative;
-            padding: 20px 0; /* مساحة فوق وتحت */
-        }
-
+        :root { --brand-blue: #00aee5; --brand-green: #7cc033; --bg-body: #f0f2f5; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; padding: 20px 0; }
         .blob { position: fixed; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; }
         .blue { background: var(--brand-blue); top: 10%; left: 10%; }
         .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
         @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
-
-        .container { 
-            width: 90%; 
-            max-width: 450px; 
-            padding: 25px; 
-            background: rgba(255,255,255,0.95); 
-            backdrop-filter: blur(10px); 
-            border-radius: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            box-sizing: border-box;
-            position: relative; 
-            z-index: 10;
-        }
-
+        .container { width: 90%; max-width: 450px; padding: 25px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; }
         .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
-        .logo-box img { width: 150px; height: auto; }
-        
-        h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px auto; font-size: 24px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
-        
+        .logo-box img { width: 150px; }
+        h1 { color: var(--brand-blue); text-align: center; margin-bottom: 20px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; margin-left: auto; margin-right: auto; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: var(--brand-blue); font-weight: 700; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 12px; font-size: 16px; font-family: 'Cairo', sans-serif; box-sizing: border-box; }
-        input:focus { border-color: var(--brand-green); outline: none; }
-        
-        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; font-family: 'Cairo', sans-serif; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #68a82d; }
-        
+        input, select { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: 'Cairo'; }
+        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Cairo'; }
         #output { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 15px; border: 1px solid var(--brand-green); display: none; }
     </style>
 </head>
 <body>
-
     <div class="blob blue"></div>
     <div class="blob green"></div>
 
 <div class="container">
-    <div class="logo-box">
-        <img src="Logo_Dr_Aya.webp" alt="Food Map Logo">
-    </div>
+    <div class="logo-box"><img src="Logo_Dr_Aya.webp" alt="Logo"></div>
     <h1>Food Map</h1>
     
+    <div id="searchBox" style="margin-bottom:20px; border-bottom:1px solid #ccc; padding-bottom:15px;">
+        <label>بحث سريع (الاسم):</label>
+        <input type="text" id="searchName" placeholder="اكتب الاسم...">
+        <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث عن مريض</button>
+    </div>
+
     <div id="inputForm">
         <div class="form-group"><label>اسم المريض:</label><input type="text" id="name"></div>
         <div class="form-group"><label>BMI:</label><input type="number" id="bmi"></div>
-        <div class="form-group"><label>نسبة الدهون (%):</label><input type="number" id="fat"></div>
+        <div class="form-group"><label>الدهون (%):</label><input type="number" id="fat"></div>
         <div class="form-group"><label>الماكروز:</label><input type="text" id="macros"></div>
-        <div class="form-group"><label>نوع الدايت:</label>
-            <select id="dietType">
-                <option value="balanced">متوازن</option>
-                <option value="keto">كيتو</option>
-            </select>
+        <div class="form-group"><label>الدايت:</label>
+            <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
         </div>
-        <button onclick="processDiet()">تسجيل وعرض الدايت</button>
+        <button onclick="processDiet()">تسجيل مريض جديد</button>
     </div>
 
     <div id="output">
-        <h3 style="color: var(--brand-green);">نتائج الخطة</h3>
+        <h3 style="color: var(--brand-green);">بيانات المريض</h3>
         <div id="dietResult"></div>
         <button onclick="window.print()" style="background: var(--brand-blue);">طباعة التقرير</button>
+        <button onclick="location.reload()" style="background: #999;">رجوع</button>
     </div>
 </div>
 
 <script>
-    async function processDiet() {
-        const payload = {
-            name: document.getElementById('name').value,
-            bmi: document.getElementById('bmi').value,
-            fat: document.getElementById('fat').value,
-            macros: document.getElementById('macros').value,
-            dietType: document.getElementById('dietType').value
-        };
+    const url = 'YOUR_SCRIPT_URL_HERE'; // ضع رابط السكربت هنا
 
-        const url = 'https://script.google.com/macros/s/AKfycbz1hYe0fh5CbYKqdZb4DdG14RR04-eeuCjJVdkVPtNHgi0Qhw350k7kRJ0WeGy1CHAf/exec';
-
-        try {
-            const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-            const result = await response.json();
-            
-            document.getElementById('dietResult').innerHTML = `
-                <p><strong>المريض:</strong> ${payload.name}</p>
-                <p><strong>الخطة:</strong> ${result.diet}</p>
-            `;
-            document.getElementById('inputForm').style.display = 'none';
-            document.getElementById('output').style.display = 'block';
-        } catch (e) {
-            alert("حدث خطأ في الاتصال.");
+    async function searchPatient() {
+        const name = document.getElementById('searchName').value;
+        const res = await fetch(url + '?name=' + encodeURIComponent(name));
+        const data = await res.json();
+        if(data.error) alert("غير موجود");
+        else {
+            document.getElementById('name').value = name;
+            document.getElementById('bmi').value = data.bmi;
+            document.getElementById('fat').value = data.fat;
+            document.getElementById('macros').value = data.macros;
+            document.getElementById('dietType').value = data.dietType;
+            showResult(name, "BMI: " + data.bmi);
         }
     }
-</script>
 
+    async function processDiet() {
+        const payload = { name: document.getElementById('name').value, bmi: document.getElementById('bmi').value, fat: document.getElementById('fat').value, macros: document.getElementById('macros').value, dietType: document.getElementById('dietType').value };
+        await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+        showResult(payload.name, "تم التسجيل بنجاح");
+    }
+
+    function showResult(name, info) {
+        document.getElementById('dietResult').innerHTML = `<p><strong>المريض:</strong> ${name}</p><p><strong>التفاصيل:</strong> ${info}</p>`;
+        document.getElementById('inputForm').style.display = 'none';
+        document.getElementById('output').style.display = 'block';
+    }
+</script>
 </body>
 </html>
