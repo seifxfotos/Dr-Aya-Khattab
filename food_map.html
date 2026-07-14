@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Map</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,15 +20,16 @@
             font-family: 'Cairo', sans-serif; 
             background: var(--bg-body); 
             margin: 0; 
-            height: 100vh; 
+            min-height: 100vh; /* تغيير من 100vh لـ min-height للسماح بالسكرول */
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            overflow: hidden; 
+            overflow-x: hidden; /* منع الحركة يمين وشمال */
             position: relative;
+            padding: 20px 0; /* مساحة فوق وتحت */
         }
 
-        .blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; }
+        .blob { position: fixed; width: 300px; height: 300px; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 1; animation: move 10s infinite alternate ease-in-out; }
         .blue { background: var(--brand-blue); top: 10%; left: 10%; }
         .green { background: var(--brand-green); bottom: 10%; right: 10%; animation-delay: 2s; }
         @keyframes move { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
@@ -36,20 +37,17 @@
         .container { 
             width: 90%; 
             max-width: 450px; 
-            max-height: 95vh; 
             padding: 25px; 
             background: rgba(255,255,255,0.95); 
             backdrop-filter: blur(10px); 
             border-radius: 25px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             box-sizing: border-box;
-            overflow: hidden; 
             position: relative; 
             z-index: 10;
         }
 
         .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
-        /* تم تعديل الحجم هنا إلى 150px */
         .logo-box img { width: 150px; height: auto; }
         
         h1 { color: var(--brand-blue); text-align: center; margin: 0 auto 20px auto; font-size: 24px; border-bottom: 3px solid var(--brand-green); padding-bottom: 8px; width: fit-content; }
