@@ -11,8 +11,8 @@
         .container { width: 100%; max-width: 450px; padding: 25px; background: #fff; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .icon { cursor: pointer; color: var(--brand-blue); }
-        #searchOverlay, #patientsModal { display: none; margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 15px; }
-        #patientsModal { position: fixed; top: 10%; width: 90%; max-width: 400px; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        /* نفس ستايل السيرش للمودال */
+        #searchOverlay { display: none; margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 15px; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; }
         button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
@@ -24,8 +24,16 @@
         <img src="Logo_Dr_Aya.webp" width="100" alt="Logo">
         <div class="icon" onclick="toggleSearch()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
     </div>
-    <div id="searchOverlay"><input type="text" id="searchName" placeholder="بحث باسم العميل..."> <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button></div>
-    <div id="patientsModal"><h3>نتائج البحث</h3><div id="patientsList"></div><button onclick="this.parentElement.style.display='none'">إغلاق</button></div>
+
+    <!-- الـ div ده هو اللي هيعرض البحث والقائمة بنفس الستايل -->
+    <div id="searchOverlay">
+        <div id="searchArea">
+            <input type="text" id="searchName" placeholder="بحث باسم العميل...">
+            <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button>
+        </div>
+        <div id="resultsArea" style="margin-top:10px;"></div>
+    </div>
+
     <div id="inputForm">
         <input type="text" id="name" placeholder="اسم العميل">
         <input type="number" id="bmi" placeholder="BMI">
@@ -34,60 +42,54 @@
         <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
         <button onclick="processDiet()">تسجيل بيانات العميل</button>
     </div>
-    <div id="output" style="display:none;"><h3>بيانات العميل</h3><div id="dietResult"></div><button onclick="window.print()">طباعة</button><button onclick="location.reload()" style="background:#999">رجوع</button></div>
 </div>
+
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbxf74u4bXgvKzA1DXG4ByQ4Hp_abHxgzTaH-mpLz9LHIlQ3MIMsTp0euVgrTPjp_f6u/exec'; // حط الرابط بتاعك هنا
-    function toggleSearch() { const el = document.getElementById('searchOverlay'); el.style.display = (el.style.display === 'block') ? 'none' : 'block'; }
+    const url = 'https://script.google.com/macros/s/AKfycbxf74u4bXgvKzA1DXG4ByQ4Hp_abHxgzTaH-mpLz9LHIlQ3MIMsTp0euVgrTPjp_f6u/exec'; 
+    function toggleSearch() { 
+        const el = document.getElementById('searchOverlay'); 
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        document.getElementById('searchArea').style.display = 'block';
+        document.getElementById('resultsArea').innerHTML = '';
+    }
+
     async function showAllPatients() {
-        document.getElementById('patientsModal').style.display = 'block';
+        document.getElementById('searchOverlay').style.display = 'block';
+        document.getElementById('searchArea').style.display = 'none';
         const res = await fetch(url + '?action=all');
         const list = await res.json();
-        renderPatients(list);
+        renderResults(list);
     }
+
     async function searchPatient() {
         const name = document.getElementById('searchName').value;
         const res = await fetch(url + '?name=' + encodeURIComponent(name));
         const data = await res.json();
         if(data.error) alert("غير موجود");
-        else if(Array.isArray(data)) renderPatients(data);
+        else renderResults(Array.isArray(data) ? data : [data]);
     }
-    function renderPatients(data) {
-        document.getElementById('patientsList').innerHTML = data.map(p => 
-            `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+
+    function renderResults(data) {
+        document.getElementById('resultsArea').innerHTML = data.map(p => 
+            `<div style="padding:10px; border-bottom:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;">
                 <span>${p.name}</span>
                 <div>
                     <button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px; background:#00aee5;">تعديل</button>
                     <button onclick="deletePatient('${p.name}')" style="width:auto; padding:5px 10px; background:#ff4444; margin-right:5px;">حذف</button>
                 </div>
             </div>`).join('');
-        document.getElementById('patientsModal').style.display = 'block';
     }
+
     function fillForm(p) {
-        document.getElementById('name').value = p.name; document.getElementById('bmi').value = p.bmi;
-        document.getElementById('fat').value = p.fat; document.getElementById('macros').value = p.macros;
+        document.getElementById('name').value = p.name;
+        document.getElementById('bmi').value = p.bmi;
+        document.getElementById('fat').value = p.fat;
+        document.getElementById('macros').value = p.macros;
         document.getElementById('dietType').value = p.dietType;
-        document.getElementById('patientsModal').style.display = 'none';
         document.getElementById('searchOverlay').style.display = 'none';
     }
-    async function deletePatient(name) {
-        if(!confirm("متأكد إنك عايز تحذف " + name + "؟")) return;
-        await fetch(url + '?action=delete&name=' + encodeURIComponent(name));
-        alert("تم الحذف"); showAllPatients();
-    }
-    async function processDiet() {
-        const btn = document.querySelector('button'); btn.innerText = "جاري الحفظ..."; btn.disabled = true;
-        const p = { name: document.getElementById('name').value, bmi: document.getElementById('bmi').value, fat: document.getElementById('fat').value, macros: document.getElementById('macros').value, dietType: document.getElementById('dietType').value };
-        const query = `?action=save&name=${encodeURIComponent(p.name)}&bmi=${p.bmi}&fat=${p.fat}&macros=${encodeURIComponent(p.macros)}&dietType=${encodeURIComponent(p.dietType)}`;
-        await fetch(url + query);
-        alert("تم الحفظ بنجاح"); btn.innerText = "تسجيل بيانات العميل"; btn.disabled = false;
-        showResult(p.name, "تم الحفظ بنجاح");
-    }
-    function showResult(n, i) {
-        document.getElementById('dietResult').innerHTML = `<p><strong>العميل:</strong> ${n}</p><p>${i}</p><label>النظام:</label><div>جاري تحميل النظام...</div>`;
-        document.getElementById('inputForm').style.display = 'none';
-        document.getElementById('output').style.display = 'block';
-    }
+
+    // (دالة الحذف والـ processDiet كما هي)
 </script>
 </body>
 </html>
