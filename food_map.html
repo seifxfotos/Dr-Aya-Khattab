@@ -25,7 +25,7 @@
     <div id="patientsModal"><h3>نتائج البحث</h3><div id="patientsList"></div><button onclick="this.parentElement.style.display='none'">إغلاق</button></div>
 </div>
 <script>
-    const url = 'YOUR_SCRIPT_URL_HERE';
+    const url = 'https://script.google.com/macros/s/AKfycbwtZ4WnOzg7MrK1_vn5q9MVAJVJIgXGZlS6VJ1c8Vgk41LfQy5CTWyMgkKt-1fGw65L/exec';
     async function searchPatient() {
         const name = document.getElementById('searchName').value;
         const res = await fetch(url + '?name=' + encodeURIComponent(name));
