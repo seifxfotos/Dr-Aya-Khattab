@@ -50,6 +50,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             box-sizing: border-box;
             overflow: hidden; 
+            position: relative; /* مهم جداً للتثبيت */
+            z-index: 10;        /* بيخليها فوق الكرات دايماً */
         }
 
         .logo-box { display: flex; justify-content: center; margin-bottom: 15px; }
