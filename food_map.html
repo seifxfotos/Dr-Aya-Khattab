@@ -8,13 +8,12 @@
     <style>
         :root { --brand-blue: #00aee5; --brand-green: #7cc033; --bg-body: #f0f2f5; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 450px; padding: 25px; background: rgba(255,255,255,0.95); border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .container { width: 100%; max-width: 450px; padding: 25px; background: #fff; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .icon { cursor: pointer; color: var(--brand-blue); transition: 0.3s; }
-        .icon:hover { transform: scale(1.1); }
-        #searchOverlay, #patientsModal { display: none; margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 15px; }
+        .icon { cursor: pointer; color: var(--brand-blue); }
+        #searchOverlay, #patientsModal { display: none; margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 15px; }
         #patientsModal { position: fixed; top: 10%; width: 90%; max-width: 400px; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #e1e1e1; border-radius: 12px; font-family: 'Cairo'; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; }
         button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
@@ -25,10 +24,8 @@
         <img src="Logo_Dr_Aya.webp" width="100" alt="Logo">
         <div class="icon" onclick="toggleSearch()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
     </div>
-    
     <div id="searchOverlay"><input type="text" id="searchName" placeholder="بحث باسم العميل..."> <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button></div>
     <div id="patientsModal"><h3>نتائج البحث</h3><div id="patientsList"></div><button onclick="this.parentElement.style.display='none'">إغلاق</button></div>
-
     <div id="inputForm">
         <input type="text" id="name" placeholder="اسم العميل">
         <input type="number" id="bmi" placeholder="BMI">
@@ -37,35 +34,35 @@
         <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
         <button onclick="processDiet()">تسجيل بيانات العميل</button>
     </div>
+    <div id="output" style="display:none;"><h3>بيانات العميل</h3><div id="dietResult"></div><button onclick="window.print()">طباعة</button><button onclick="location.reload()" style="background:#999">رجوع</button></div>
 </div>
-
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbwtZ4WnOzg7MrK1_vn5q9MVAJVJIgXGZlS6VJ1c8Vgk41LfQy5CTWyMgkKt-1fGw65L/exec'; // ضيف الرابط بتاعك هنا
+    const url = 'YOUR_SCRIPT_URL_HERE'; // حط الرابط بتاعك هنا
     function toggleSearch() { const el = document.getElementById('searchOverlay'); el.style.display = (el.style.display === 'block') ? 'none' : 'block'; }
-    
     async function showAllPatients() {
         document.getElementById('patientsModal').style.display = 'block';
         const res = await fetch(url + '?action=all');
         const list = await res.json();
-        document.getElementById('patientsList').innerHTML = list.map(p => 
-            `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px;">تعديل</button></div>`).join('');
+        renderPatients(list);
     }
-
     async function searchPatient() {
         const name = document.getElementById('searchName').value;
         const res = await fetch(url + '?name=' + encodeURIComponent(name));
         const data = await res.json();
         if(data.error) alert("غير موجود");
-        else if(Array.isArray(data)) {
-            if(data.length === 1) fillForm(data[0]);
-            else {
-                document.getElementById('patientsList').innerHTML = data.map(p => 
-                    `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px;">تعديل</button></div>`).join('');
-                document.getElementById('patientsModal').style.display = 'block';
-            }
-        }
+        else if(Array.isArray(data)) renderPatients(data);
     }
-
+    function renderPatients(data) {
+        document.getElementById('patientsList').innerHTML = data.map(p => 
+            `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <span>${p.name}</span>
+                <div>
+                    <button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px; background:#00aee5;">تعديل</button>
+                    <button onclick="deletePatient('${p.name}')" style="width:auto; padding:5px 10px; background:#ff4444; margin-right:5px;">حذف</button>
+                </div>
+            </div>`).join('');
+        document.getElementById('patientsModal').style.display = 'block';
+    }
     function fillForm(p) {
         document.getElementById('name').value = p.name; document.getElementById('bmi').value = p.bmi;
         document.getElementById('fat').value = p.fat; document.getElementById('macros').value = p.macros;
@@ -73,13 +70,23 @@
         document.getElementById('patientsModal').style.display = 'none';
         document.getElementById('searchOverlay').style.display = 'none';
     }
-
+    async function deletePatient(name) {
+        if(!confirm("متأكد إنك عايز تحذف " + name + "؟")) return;
+        await fetch(url + '?action=delete&name=' + encodeURIComponent(name));
+        alert("تم الحذف"); showAllPatients();
+    }
     async function processDiet() {
         const btn = document.querySelector('button'); btn.innerText = "جاري الحفظ..."; btn.disabled = true;
         const p = { name: document.getElementById('name').value, bmi: document.getElementById('bmi').value, fat: document.getElementById('fat').value, macros: document.getElementById('macros').value, dietType: document.getElementById('dietType').value };
         const query = `?action=save&name=${encodeURIComponent(p.name)}&bmi=${p.bmi}&fat=${p.fat}&macros=${encodeURIComponent(p.macros)}&dietType=${encodeURIComponent(p.dietType)}`;
         await fetch(url + query);
         alert("تم الحفظ بنجاح"); btn.innerText = "تسجيل بيانات العميل"; btn.disabled = false;
+        showResult(p.name, "تم الحفظ بنجاح");
+    }
+    function showResult(n, i) {
+        document.getElementById('dietResult').innerHTML = `<p><strong>العميل:</strong> ${n}</p><p>${i}</p><label>النظام:</label><div>جاري تحميل النظام...</div>`;
+        document.getElementById('inputForm').style.display = 'none';
+        document.getElementById('output').style.display = 'block';
     }
 </script>
 </body>
