@@ -2,18 +2,33 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 450px; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #7cc033; color: white; border: none; font-weight: bold; cursor: pointer; }
-        #patientsModal { display: none; position: fixed; top: 10%; width: 90%; max-width: 400px; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        :root { --brand-blue: #00aee5; --brand-green: #7cc033; --bg-body: #f0f2f5; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { width: 100%; max-width: 450px; padding: 25px; background: rgba(255,255,255,0.95); border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .icon { cursor: pointer; color: var(--brand-blue); transition: 0.3s; }
+        .icon:hover { transform: scale(1.1); }
+        #searchOverlay, #patientsModal { display: none; margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 15px; }
+        #patientsModal { position: fixed; top: 10%; width: 90%; max-width: 400px; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #e1e1e1; border-radius: 12px; font-family: 'Cairo'; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div id="searchOverlay"><input type="text" id="searchName" placeholder="بحث باسم العميل..."> <button onclick="searchPatient()" style="background:#00aee5">بحث</button></div>
+    <div class="logo-box">
+        <div class="icon" onclick="showAllPatients()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>
+        <img src="Logo_Dr_Aya.webp" width="100" alt="Logo">
+        <div class="icon" onclick="toggleSearch()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+    </div>
+    
+    <div id="searchOverlay"><input type="text" id="searchName" placeholder="بحث باسم العميل..."> <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button></div>
+    <div id="patientsModal"><h3>نتائج البحث</h3><div id="patientsList"></div><button onclick="this.parentElement.style.display='none'">إغلاق</button></div>
+
     <div id="inputForm">
         <input type="text" id="name" placeholder="اسم العميل">
         <input type="number" id="bmi" placeholder="BMI">
@@ -22,10 +37,20 @@
         <select id="dietType"><option value="متوازن">متوازن</option><option value="كيتو">كيتو</option></select>
         <button onclick="processDiet()">تسجيل بيانات العميل</button>
     </div>
-    <div id="patientsModal"><h3>نتائج البحث</h3><div id="patientsList"></div><button onclick="this.parentElement.style.display='none'">إغلاق</button></div>
 </div>
+
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbwtZ4WnOzg7MrK1_vn5q9MVAJVJIgXGZlS6VJ1c8Vgk41LfQy5CTWyMgkKt-1fGw65L/exec';
+    const url = 'https://script.google.com/macros/s/AKfycbwtZ4WnOzg7MrK1_vn5q9MVAJVJIgXGZlS6VJ1c8Vgk41LfQy5CTWyMgkKt-1fGw65L/exec'; // ضيف الرابط بتاعك هنا
+    function toggleSearch() { const el = document.getElementById('searchOverlay'); el.style.display = (el.style.display === 'block') ? 'none' : 'block'; }
+    
+    async function showAllPatients() {
+        document.getElementById('patientsModal').style.display = 'block';
+        const res = await fetch(url + '?action=all');
+        const list = await res.json();
+        document.getElementById('patientsList').innerHTML = list.map(p => 
+            `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px;">تعديل</button></div>`).join('');
+    }
+
     async function searchPatient() {
         const name = document.getElementById('searchName').value;
         const res = await fetch(url + '?name=' + encodeURIComponent(name));
@@ -35,19 +60,20 @@
             if(data.length === 1) fillForm(data[0]);
             else {
                 document.getElementById('patientsList').innerHTML = data.map(p => 
-                    `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                        <span>${p.name}</span><button onclick='fillForm(${JSON.stringify(p)})' style="width:auto;">تعديل</button>
-                    </div>`).join('');
+                    `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${p.name}</span><button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px;">تعديل</button></div>`).join('');
                 document.getElementById('patientsModal').style.display = 'block';
             }
         }
     }
+
     function fillForm(p) {
         document.getElementById('name').value = p.name; document.getElementById('bmi').value = p.bmi;
         document.getElementById('fat').value = p.fat; document.getElementById('macros').value = p.macros;
         document.getElementById('dietType').value = p.dietType;
         document.getElementById('patientsModal').style.display = 'none';
+        document.getElementById('searchOverlay').style.display = 'none';
     }
+
     async function processDiet() {
         const btn = document.querySelector('button'); btn.innerText = "جاري الحفظ..."; btn.disabled = true;
         const p = { name: document.getElementById('name').value, bmi: document.getElementById('bmi').value, fat: document.getElementById('fat').value, macros: document.getElementById('macros').value, dietType: document.getElementById('dietType').value };
