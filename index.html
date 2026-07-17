@@ -66,11 +66,21 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--footer-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
 
+        /* تعديل الفوتر والأيقونات لوزن المسافات */
         .footer { background-color: var(--footer-dark); color: white; padding: 60px 5% 20px; }
-        .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; }
+        
+        /* أضفنا align-items: center عشان نسنتر الكلام بالطول مع اللوجو */
+        .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: center; }
+        
+        /* توزيع العواميد بالعرض عشان نملى الفراغات */
+        .footer-logo { text-align: left; } /* اللوجو شمال */
+        .footer-col:nth-child(2) { text-align: center; } /* الأرقام في النص بالظبط */
+        .footer-col:nth-child(3) { display: flex; flex-direction: column; align-items: flex-end; text-align: right; } /* السوشيال ميديا يمين */
+        
         .footer-col h3 { margin-bottom: 15px; font-size: 20px; font-weight: 600;}
         
-        .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: flex-start; }
+        /* عكسنا الأيقونات لليمين عشان تتوزن مع العمود الأخير */
+        .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: flex-end; }
         .social-links a { display: block; width: 30px; height: 30px; color: white; transition: 0.3s; }
         .social-links a:hover { color: #29b6f6; }
         
@@ -90,6 +100,9 @@
             .services-grid, .maps-grid, .footer-grid { grid-template-columns: 1fr; }
             .hero-box { padding: 15px !important; font-size: 16px !important; }
             .category-title { margin-top: 20px; font-size: 22px; }
+            /* تظبيط الفوتر على الموبايل */
+            .footer-logo, .footer-col:nth-child(2), .footer-col:nth-child(3) { text-align: center; align-items: center; }
+            .social-links { justify-content: center; }
         }
     </style>
 </head>
