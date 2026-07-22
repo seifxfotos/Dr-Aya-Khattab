@@ -63,7 +63,45 @@
             margin-bottom: 40px; /* عشان يبقى في مستوى نظر كويس بالنسبة للصورة */
         }
         
-        .hero-box { background-color: var(--teal-box); color: white; padding: 30px; border-radius: 10px; font-size: 20px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
+        /* ستايل البوكس الخارجي - تأثير الزجاج */
+        .hero-box { 
+            background: rgba(255, 255, 255, 0.15); /* لون أبيض شفاف */
+            backdrop-filter: blur(12px); /* تأثير الزجاج والتمويه */
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3); /* إطار أبيض خفيف */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); /* ضل ناعم جداً */
+            padding: 35px 30px; 
+            border-radius: 16px; /* دوران أنعم وأكبر */
+            margin-bottom: 25px; 
+            text-align: left; /* محاذاة للشمال لشكل أرتب */
+        }
+
+        /* ستايل اسم الدكتورة */
+        .box-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* الخط الفاصل الشيك */
+        .box-divider {
+            width: 60px;
+            height: 4px;
+            background-color: var(--teal-box); /* اللون الأخضر بتاعك */
+            border-radius: 2px;
+            margin-bottom: 15px;
+        }
+
+        /* ستايل الوصف */
+        .box-desc {
+            font-size: 17px;
+            font-weight: 400;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9); /* أبيض هادي شوية لراحة العين */
+        }
+
         .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-family: var(--font-main); font-size: 16px; transition: 0.3s;}
         .btn:hover { background-color: #5c8c00; }
         .btn-blue { background-color: var(--btn-blue); border-radius: 4px; padding: 12px 30px; width: 100%; font-size: 18px; color: white;}
@@ -135,7 +173,12 @@
             .hero-image { align-self: center; width: 100%; height: 350px; }
             .hero-content { margin-bottom: 20px; }
             .services-grid, .maps-grid, .footer-grid { grid-template-columns: 1fr; }
-            .hero-box { padding: 15px !important; font-size: 16px !important; }
+            
+            /* تظبيط البوكس الجديد في الموبايل */
+            .hero-box { padding: 20px !important; text-align: center; }
+            .box-title { font-size: 26px; }
+            .box-divider { margin: 0 auto 15px auto; }
+            
             .category-title { margin-top: 20px; font-size: 22px; }
             .footer-logo, .footer-col:nth-child(2), .footer-col:nth-child(3) { justify-self: center; text-align: center; align-items: center; }
             .social-links { justify-content: center; }
@@ -160,7 +203,9 @@
         <div class="hero-group">
             <div class="hero-content">
                 <div class="hero-box">
-                    Dr. Aya Khattab | Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods.
+                    <h1 class="box-title">Dr. Aya Khattab</h1>
+                    <div class="box-divider"></div>
+                    <p class="box-desc">Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods.</p>
                 </div>
                 <button class="btn" onclick="document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Book Your Appointment Now</button>
             </div>
