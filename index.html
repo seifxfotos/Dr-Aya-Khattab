@@ -33,12 +33,12 @@
         .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); margin-left: 40px; }
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
 
-        /* البانر مع التدرج المتحرك */
+        /* البانر مع التدرج المتحرك - تم تقليل الحجم هنا */
         .hero { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
             background-size: 400% 400%;
             animation: gradientBG 6s ease infinite;
-            display: flex; align-items: center; padding: 50px 5%; color: white; min-height: 500px; position: relative; overflow: hidden; 
+            display: flex; align-items: center; padding: 20px 5%; color: white; min-height: 400px; position: relative; overflow: hidden; 
         }
         .hero-content { max-width: 550px; z-index: 2; }
         .hero-box { background-color: var(--teal-box); color: white; padding: 30px; border-radius: 10px; font-size: 20px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
@@ -51,7 +51,8 @@
         @media (min-width: 769px) {
             .hero { justify-content: center; gap: 75px; }
             .hero-content { margin: 0; }
-            .hero-image { max-width: 500px; }
+            /* تم تحجيم صورة الدكتورة هنا عشان متطولش البانر */
+            .hero-image { max-width: 400px; max-height: 450px; object-fit: contain; }
         }
 
         .services-sec { padding: 60px 5%; text-align: center; }
