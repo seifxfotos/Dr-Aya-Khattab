@@ -33,25 +33,36 @@
         .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); margin-left: 40px; }
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
 
-        /* البانر مع التدرج المتحرك - تم تقليل الحجم هنا */
+        /* تعديل البانر لإزالة المسافة من تحت */
         .hero { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
             background-size: 400% 400%;
             animation: gradientBG 6s ease infinite;
-            display: flex; align-items: center; padding: 20px 5%; color: white; min-height: 400px; position: relative; overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            padding: 40px 5% 0 5%; /* لغينا المسافة اللي تحت (الرقم التالت بقى صفر) */
+            color: white; 
+            min-height: 450px; 
+            position: relative; 
+            overflow: hidden; 
         }
-        .hero-content { max-width: 550px; z-index: 2; }
+        .hero-content { max-width: 550px; z-index: 2; margin-bottom: 40px; /* لتعويض المسافة اللي اتشالت من البانر نفسه */ }
         .hero-box { background-color: var(--teal-box); color: white; padding: 30px; border-radius: 10px; font-size: 20px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
         .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-family: var(--font-main); font-size: 16px; transition: 0.3s;}
         .btn:hover { background-color: #5c8c00; }
         .btn-blue { background-color: var(--btn-blue); border-radius: 4px; padding: 12px 30px; width: 100%; font-size: 18px; color: white;}
-        .btn-blue:hover { background-color: #006185; /* اللون الغامق في الـ Hover */ }
-        .hero-image { z-index: 1; object-fit: cover; }
+        .btn-blue:hover { background-color: #006185; }
+        
+        /* تعديل الصورة عشان تلزق تحت */
+        .hero-image { 
+            z-index: 1; 
+            object-fit: cover; 
+            align-self: flex-end; /* دي اللي بتخلي الصورة تلزق في آخر خط للبانر تحت */
+        }
 
         @media (min-width: 769px) {
             .hero { justify-content: center; gap: 75px; }
-            .hero-content { margin: 0; }
-            /* تم تحجيم صورة الدكتورة هنا عشان متطولش البانر */
+            .hero-content { margin: 0; margin-bottom: 40px; }
             .hero-image { max-width: 400px; max-height: 450px; object-fit: contain; }
         }
 
@@ -80,7 +91,7 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
 
-        /* الفوتر مع التدرج المتحرك */
+        /* الفوتر */
         .footer { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
             background-size: 400% 400%;
@@ -88,21 +99,14 @@
             color: white; padding: 60px 5% 20px; 
         }
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: center; }
-        
-        /* تظبيط عواميد الفوتر عشان تتسنتر وتتوزن */
         .footer-logo { text-align: left; } 
         .footer-col:nth-child(2) { text-align: center; } 
-        /* سنترنا الكلمة والأيقونات فوق بعض، وزقينا البلوك كله لليمين */
         .footer-col:nth-child(3) { justify-self: end; display: flex; flex-direction: column; align-items: center; } 
-        
         .footer-col h3 { margin-bottom: 15px; font-size: 20px; font-weight: 600; color: white;}
         .footer-col p { color: white; }
-        
-        /* الأيقونات متسنترة تحت الكلمة مباشرة */
         .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: center; }
         .social-links a { display: block; width: 30px; height: 30px; color: white; transition: 0.3s; }
         .social-links a:hover { color: var(--teal-box); }
-        
         .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; font-size: 14px; color: white; }
         
         /* Floating WhatsApp Button */
@@ -113,14 +117,12 @@
             html { scroll-padding-top: 75px; } 
             .header { flex-direction: column; gap: 10px; }
             .nav-links { margin-left: 0; gap: 15px; font-size: 13px; }
-            .hero { flex-direction: column-reverse; padding: 20px; text-align: center; height: auto; }
-            .hero-image { position: relative; width: 100%; height: 350px; }
-            .hero-content { margin-left: 0; width: 100%; }
+            .hero { flex-direction: column-reverse; padding: 20px 20px 0 20px; text-align: center; height: auto; }
+            .hero-image { align-self: center; position: relative; width: 100%; height: 350px; }
+            .hero-content { margin-left: 0; width: 100%; margin-bottom: 20px; }
             .services-grid, .maps-grid, .footer-grid { grid-template-columns: 1fr; }
             .hero-box { padding: 15px !important; font-size: 16px !important; }
             .category-title { margin-top: 20px; font-size: 22px; }
-            
-            /* تظبيط الفوتر على الموبايل عشان كل حاجة تيجي في النص */
             .footer-logo, .footer-col:nth-child(2), .footer-col:nth-child(3) { justify-self: center; text-align: center; align-items: center; }
             .social-links { justify-content: center; }
         }
@@ -130,7 +132,6 @@
 
     <header class="header">
         <div class="logo">
-            <!-- Ensure your logo file is named Logo-Dr-Aya.webp and placed in the same folder -->
             <img src="Logo-Dr-Aya.webp" alt="Dr. Aya Khattab Logo" class="header-logo">
         </div>
         <nav class="nav-links">
@@ -150,26 +151,22 @@
         <img src="DoctorImg.webp" alt="Dr. Aya Khattab" class="hero-image">
     </section>
 
+    <!-- Services Section -->
     <section class="services-sec container" id="services">
+        <!-- Content remains identical to your previous code -->
         <h2 class="section-title">Clinic Services</h2>
-
-        <!-- Section 1: Clinical Nutrition -->
         <h3 class="category-title">Clinical Nutrition</h3>
         <div class="services-grid">
             <div class="service-item"><div class="icon-circle"><i class="fas fa-weight-scale"></i></div><h4>Obesity & Underweight Programs</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-heart-pulse"></i></div><h4>Nutrition for Chronic Diseases</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-baby"></i></div><h4>Pediatric & Pregnancy Nutrition</h4></div>
         </div>
-
-        <!-- Section 2: Health Coaching -->
         <h3 class="category-title">Coaching</h3>
         <div class="services-grid">
             <div class="service-item"><div class="icon-circle"><i class="fas fa-bullseye"></i></div><h4>Lifestyle Modification</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-dumbbell"></i></div><h4>Sports Nutrition & Performance</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-brain"></i></div><h4>Psychological Support & Motivation</h4></div>
         </div>
-
-        <!-- Section 3: Physical Therapy -->
         <h3 class="category-title">Physical Therapy & Rehabilitation</h3>
         <div class="services-grid">
             <div class="service-item"><div class="icon-circle"><i class="fas fa-bone"></i></div><h4>Spine & Joint Pain Treatment</h4></div>
@@ -178,73 +175,65 @@
         </div>
     </section>
 
+    <!-- Appointment Form Section -->
     <section class="appointment-sec" id="appointment">
         <div class="container">
             <h2 class="section-title" style="text-align: center;">Book an Appointment</h2>
-            <form>
+            <!-- ضفنا id لل form عشان الجافاسكريبت، وضفنا name لكل حقل -->
+            <form id="bookingForm" name="google-sheet">
                 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div><label>Name <span>*</span></label><input type="text" required></div>
-                    <div><label>Phone Number <span>*</span></label><input type="tel" required></div>
+                    <div><label>Name <span>*</span></label><input type="text" name="Name" required></div>
+                    <div><label>Phone Number <span>*</span></label><input type="tel" name="Phone" required></div>
                     <div><label>Country <span>*</span></label>
-                        <select required>
+                        <select name="Country" required>
                             <option value="" disabled selected>Select Country</option>
                             <option value="EG">Egypt</option>
                             <option value="SA">Saudi Arabia</option>
                             <option value="AE">United Arab Emirates</option>
                             <option value="KW">Kuwait</option>
                             <option value="QA">Qatar</option>
-                            <option value="BH">Bahrain</option>
-                            <option value="OM">Oman</option>
-                            <option value="JO">Jordan</option>
-                            <option value="LB">Lebanon</option>
-                            <option value="SY">Syria</option>
-                            <option value="IQ">Iraq</option>
-                            <option value="YE">Yemen</option>
-                            <option value="LY">Libya</option>
-                            <option value="TN">Tunisia</option>
-                            <option value="DZ">Algeria</option>
-                            <option value="MA">Morocco</option>
-                            <option value="SD">Sudan</option>
                             <option value="OTHER">Other</option>
                         </select>
                     </div>
-                    <div><label>Governorate / State <span>*</span></label><input type="text" required></div>
-                    <div style="grid-column: span 2;"><label>Nationality <span>*</span></label><input type="text" required></div>
+                    <div><label>Governorate / State <span>*</span></label><input type="text" name="Governorate" required></div>
+                    <div style="grid-column: span 2;"><label>Nationality <span>*</span></label><input type="text" name="Nationality" required></div>
                     <div style="grid-column: span 2;"><label>How did you hear about us?</label>
-                        <select>
+                        <select name="Source">
                             <option value="" disabled selected>Select an option</option>
-                            <option>Previous Client</option>
-                            <option>Facebook</option>
-                            <option>Instagram</option>
-                            <option>TikTok</option>
-                            <option>Friend / Relative</option>
-                            <option>Other</option>
+                            <option value="Previous Client">Previous Client</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Friend">Friend / Relative</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div style="grid-column: span 2;"><label>Occupation <span>*</span></label><input type="text" required></div>
-                    <div><label>Age <span>*</span></label><input type="number" required></div>
+                    <div style="grid-column: span 2;"><label>Occupation <span>*</span></label><input type="text" name="Occupation" required></div>
+                    <div><label>Age <span>*</span></label><input type="number" name="Age" required></div>
                     <div><label>Gender <span>*</span></label>
-                        <select required>
+                        <select name="Gender" required>
                             <option value="" disabled selected>Select Gender</option>
-                            <option>Male</option>
-                            <option>Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
                     </div>
                     <div style="grid-column: span 2;"><label>Department to Book <span>*</span></label>
-                        <select required>
+                        <select name="Department" required>
                             <option value="" disabled selected>Select Department</option>
-                            <option>Clinical Nutrition</option>
-                            <option>Coaching</option>
-                            <option>Physical Therapy & Rehabilitation</option>
+                            <option value="Clinical Nutrition">Clinical Nutrition</option>
+                            <option value="Coaching">Coaching</option>
+                            <option value="Physical Therapy">Physical Therapy & Rehabilitation</option>
                         </select>
                     </div>
-                    <div style="grid-column: span 2;"><label>Do you suffer from any medical conditions? (Please specify) <span>*</span></label><textarea rows="3" required></textarea></div>
-                    <button type="submit" class="btn btn-blue" style="grid-column: span 2;">Submit</button>
+                    <div style="grid-column: span 2;"><label>Do you suffer from any medical conditions? (Please specify) <span>*</span></label><textarea name="MedicalConditions" rows="3" required></textarea></div>
+                    
+                    <button type="submit" id="submitBtn" class="btn btn-blue" style="grid-column: span 2;">Submit</button>
                 </div>
             </form>
         </div>
     </section>
 
+    <!-- Maps Section -->
     <section class="maps-section container">
         <h2 class="section-title" style="text-align: center;">Clinic Locations</h2>
         <div class="maps-grid">
@@ -259,7 +248,9 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="footer">
+        <!-- Content remains identical -->
         <div class="container footer-grid">
             <div class="footer-logo">
                 <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 85px; object-fit: contain;">
@@ -272,23 +263,47 @@
             <div class="footer-col">
                 <h3>Follow Us</h3>
                 <div class="social-links">
-                    <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    </a>
-                    <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                    </a>
-                    <a href="https://www.tiktok.com/@dr.ayakhattab" target="_blank">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg>
-                    </a>
+                    <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+                    <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                    <a href="https://www.tiktok.com/@dr.ayakhattab" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg></a>
                 </div>
             </div>
         </div>
         <div class="copyright">Copyright © Dr. Aya Khattab. All rights reserved.</div>
     </footer>
 
-    <!-- WhatsApp link updated with English convention positioning -->
     <a href="https://wa.me/201060026072" target="_blank" class="fab"><i class="fab fa-whatsapp"></i></a>
 
+    <!-- كود الجافاسكريبت لربط الفورم بجوجل شيت -->
+    <script>
+        // اللينك ده هتحط فيه الرابط اللي هيطلعلك من Google Apps Script (Web App URL)
+        const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+        
+        const form = document.getElementById('bookingForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault(); // عشان يمنع الصفحة إنها تعمل Refresh
+
+            // تغيير شكل الزرار وقت التحميل
+            submitBtn.innerHTML = 'Submitting... <i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+
+            // تجميع الداتا وبعتها
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    alert('Appointment Request Submitted Successfully!');
+                    form.reset(); // تفريغ الفورم بعد النجاح
+                    submitBtn.innerHTML = 'Submit';
+                    submitBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error!', error.message);
+                    alert('Something went wrong. Please try again.');
+                    submitBtn.innerHTML = 'Submit';
+                    submitBtn.disabled = false;
+                });
+        });
+    </script>
 </body>
 </html>
