@@ -111,34 +111,32 @@
             align-self: flex-end; 
         }
 
-        /* تعديلات قسم الخدمات - تأثير الزجاج والتصغير */
+        /* تعديلات قسم الخدمات */
         .services-sec { 
             padding: 60px 5%; 
             text-align: center; 
-            background-color: #f4f7f9; /* ضفنا خلفية فاتحة جدا عشان الازاز يبان */
+            /* شلنا الخلفية الرمادي من هنا */
         }
         .section-title { font-weight: 800; font-size: 36px; margin-bottom: 20px; color: var(--text-dark); }
         
         .category-title { font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 40px auto 30px; display: inline-block; position: relative; }
         .category-title::after { content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background-color: var(--btn-blue); border-radius: 2px; }
         
-        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; } /* صغرنا الفراغ بين الكروت سيكا */
+        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
         .service-item { 
             display: flex; flex-direction: column; align-items: center; 
-            padding: 20px 15px; /* صغرنا البوكس سيكا */
-            background: rgba(255, 255, 255, 0.45); /* تأثير زجاجي أبيض خفيف */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.8); /* إطار أبيض زجاجي */
+            padding: 20px 15px; 
+            background: #ffffff; /* خلينا البوكس أبيض عشان يبرز على الخلفية */
+            border: 1px solid rgba(0, 150, 205, 0.08); /* إطار أزرق فاتح جداً يحدد البوكس */
             border-radius: 16px; 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05); /* ضل ناعم */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05); /* ضل ناعم بيفصل البوكس عن الخلفية البيضا */
             transition: transform 0.3s;
         }
-        .service-item:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); background: rgba(255, 255, 255, 0.7); }
+        .service-item:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
         
         .icon-circle { 
-            width: 60px; height: 60px; /* صغرنا الدائرة سيكا */
+            width: 60px; height: 60px; 
             background: rgba(0, 150, 205, 0.12); /* تأثير زجاجي أزرق للأيقونة */
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -146,11 +144,11 @@
             border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; 
             margin-bottom: 15px; 
-            color: var(--btn-blue); /* لون الأيقونة بقى أزرق بدل أبيض */
-            font-size: 26px; /* صغرنا الأيقونة من جوه سيكا */
+            color: var(--btn-blue); 
+            font-size: 26px; 
             transition: 0.3s;
         }
-        .service-item h4 { font-size: 16px; /* صغرنا الخط سيكا ليناسب الحجم الجديد */ font-weight: 600; color: var(--text-dark);}
+        .service-item h4 { font-size: 16px; font-weight: 600; color: var(--text-dark);}
 
         /* باقي الأقسام كما هي */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
