@@ -123,7 +123,7 @@
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
-        /* كروت الخدمات العادية (التغذية) */
+        /* كروت الخدمات العادية القديمة لو احتجناها، لكن حالياً كلها Flip Card */
         .service-item { 
             display: flex; flex-direction: column; align-items: center; 
             padding: 20px 15px; 
@@ -151,12 +151,12 @@
         .service-item h4 { font-size: 16px; font-weight: 600; color: var(--text-dark);}
 
         /* ---------------------------------------------------- */
-        /* ستايلات الـ Flip Card الخاصة بالكوتشينج والعلاج الطبيعي */
+        /* ستايلات الـ Flip Card */
         /* ---------------------------------------------------- */
         .flip-card {
             background-color: transparent;
             perspective: 1000px;
-            min-height: 330px; /* طول الكارت عشان يساع كل النقط */
+            min-height: 330px; /* طول الكارت عشان يساع كل النقط الطويلة */
             cursor: pointer;
             transition: transform 0.3s;
         }
@@ -192,7 +192,7 @@
             border: 1px solid rgba(0, 150, 205, 0.08);
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-            padding: 25px 20px;
+            padding: 20px 15px;
         }
         
         /* وش الكارت */
@@ -203,7 +203,7 @@
             justify-content: center;
         }
         .flip-card-front .icon-circle {
-            width: 70px; height: 70px; /* أيقونة أكبر شوية لوش الكارت */
+            width: 70px; height: 70px; 
             background: rgba(0, 150, 205, 0.12);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -215,7 +215,7 @@
             font-size: 30px; 
         }
         .flip-card-front h4 {
-            font-size: 18px; font-weight: 700; color: var(--text-dark); text-align: center;
+            font-size: 17px; font-weight: 700; color: var(--text-dark); text-align: center;
         }
         
         /* ضهر الكارت */
@@ -224,20 +224,21 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            justify-content: flex-start; /* عشان الكلام يبدأ من فوق */
+            justify-content: flex-start; 
             background: #fafcfd;
+            overflow-y: auto; /* لسعولة قراءة النقاط الكتيرة زي MNT */
         }
         .flip-card-back h4 {
-            font-size: 15px; font-weight: 700; color: var(--btn-blue); margin-bottom: 15px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 8px; text-align: center;
+            font-size: 14px; font-weight: 700; color: var(--btn-blue); margin-bottom: 10px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 6px; text-align: center;
         }
         .flip-card-back ul {
             list-style: none; padding: 0; margin: 0; width: 100%;
         }
         .flip-card-back li {
-            font-size: 13.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; padding-left: 18px; position: relative; line-height: 1.4; text-align: left;
+            font-size: 12.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; padding-left: 16px; position: relative; line-height: 1.3; text-align: left;
         }
         .flip-card-back li::before {
-            content: "\f0da"; /* أيقونة سهم صغيرة جمب النقط */
+            content: "\f0da"; 
             font-family: "Font Awesome 6 Free";
             font-weight: 900;
             color: var(--teal-box);
@@ -333,14 +334,123 @@
     <section class="services-sec container" id="services">
         <h2 class="section-title">Clinic Services</h2>
         
+        <!-- قسم Clinical Nutrition المحدث بالخدمات الـ 5 الجديدة -->
         <h3 class="category-title">Clinical Nutrition</h3>
         <div class="services-grid">
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-weight-scale"></i></div><h4>Obesity & Underweight Programs</h4></div>
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-heart-pulse"></i></div><h4>Nutrition for Chronic Diseases</h4></div>
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-baby"></i></div><h4>Pediatric & Pregnancy Nutrition</h4></div>
+            
+            <!-- Card 1 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-clipboard-user"></i></div>
+                        <h4>Nutrition Consultation & Follow-up</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Nutrition Consultation & Follow-up</h4>
+                        <ul>
+                            <li>Medical & nutrition assessment</li>
+                            <li>Body composition analysis</li>
+                            <li>Personalized meal plan</li>
+                            <li>Lifestyle recommendations</li>
+                            <li>Supplement guidance (when appropriate)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-notes-medical"></i></div>
+                        <h4>Medical Nutrition Therapy (MNT)</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Medical Nutrition Therapy (MNT)</h4>
+                        <ul>
+                            <li>Obesity & overweight</li>
+                            <li>Diabetes & prediabetes</li>
+                            <li>PCOS</li>
+                            <li>Insulin resistance</li>
+                            <li>Hypertension</li>
+                            <li>High cholesterol</li>
+                            <li>Fatty liver</li>
+                            <li>Digestive disorders (IBS, GERD)</li>
+                            <li>Kidney nutrition</li>
+                            <li>Pregnancy & breastfeeding nutrition</li>
+                            <li>Sports nutrition</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-heart-pulse"></i></div>
+                        <h4>Health Coaching & Lifestyle Transformation</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Health Coaching & Lifestyle Transformation</h4>
+                        <ul>
+                            <li>Healthy eating habits</li>
+                            <li>Emotional eating</li>
+                            <li>Stress management</li>
+                            <li>Sleep optimization</li>
+                            <li>Physical activity</li>
+                            <li>Habit change</li>
+                            <li>Motivation & accountability</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-spa"></i></div>
+                        <h4>Non-Surgical Body Sculpting</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Non-Surgical Body Sculpting</h4>
+                        <ul>
+                            <li>Body contouring</li>
+                            <li>Reduction of localized fat</li>
+                            <li>Skin firming</li>
+                            <li>Muscle toning</li>
+                            <li>Cellulite Treatment</li>
+                            <li>Lipedema Treatment</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-building-user"></i></div>
+                        <h4>Corporate Wellness Programs</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Corporate Wellness Programs</h4>
+                        <ul>
+                            <li>Nutrition consultations</li>
+                            <li>Health coaching</li>
+                            <li>Wellness workshops</li>
+                            <li>Lifestyle education</li>
+                            <li>Employee health challenges</li>
+                            <li>Corporate health screenings</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
         </div>
         
-        <!-- قسم Health Coaching المحدث -->
+        <!-- قسم Health Coaching -->
         <h3 class="category-title">Health Coaching</h3>
         <div class="services-grid">
             
@@ -424,6 +534,22 @@
                 </div>
             </div>
 
+            <!-- Card 6 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-seedling"></i></div>
+                        <h4>Healthy Habits Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Healthy Habits Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             <!-- Card 7 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
@@ -442,8 +568,8 @@
 
         </div>
         
+        <!-- قسم Physical Therapy & Rehabilitation -->
         <h3 class="category-title">Physical Therapy & Rehabilitation</h3>
-        <!-- كروت العلاج الطبيعي زي ما هي -->
         <div class="services-grid">
             
             <!-- Card 1 -->
@@ -670,24 +796,21 @@
 
     <!-- كود الجافاسكريبت لربط الفورم بجوجل شيت -->
     <script>
-        // اللينك ده هتحط فيه الرابط اللي هيطلعلك من Google Apps Script (Web App URL)
         const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
         
         const form = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
 
         form.addEventListener('submit', e => {
-            e.preventDefault(); // عشان يمنع الصفحة إنها تعمل Refresh
+            e.preventDefault(); 
 
-            // تغيير شكل الزرار وقت التحميل
             submitBtn.innerHTML = 'Submitting... <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
 
-            // تجميع الداتا وبعتها
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(response => {
                     alert('Appointment Request Submitted Successfully!');
-                    form.reset(); // تفريغ الفورم بعد النجاح
+                    form.reset(); 
                     submitBtn.innerHTML = 'Submit';
                     submitBtn.disabled = false;
                 })
