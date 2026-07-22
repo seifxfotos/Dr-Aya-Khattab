@@ -123,6 +123,7 @@
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
+        /* كروت الخدمات العادية القديمة لو احتجناها، لكن حالياً كلها Flip Card */
         .service-item { 
             display: flex; flex-direction: column; align-items: center; 
             padding: 20px 15px; 
@@ -155,7 +156,7 @@
         .flip-card {
             background-color: transparent;
             perspective: 1000px;
-            min-height: 330px; 
+            min-height: 330px; /* طول الكارت عشان يساع كل النقط الطويلة */
             cursor: pointer;
             transition: transform 0.3s;
         }
@@ -225,7 +226,7 @@
             align-items: flex-start;
             justify-content: flex-start; 
             background: #fafcfd;
-            overflow-y: auto; 
+            overflow-y: auto; /* لسعولة قراءة النقاط الكتيرة زي MNT */
         }
         .flip-card-back h4 {
             font-size: 14px; font-weight: 700; color: var(--btn-blue); margin-bottom: 10px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 6px; text-align: center;
@@ -236,14 +237,6 @@
         .flip-card-back li {
             font-size: 12.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; padding-left: 16px; position: relative; line-height: 1.3; text-align: left;
         }
-        
-        /* تكبير حجم الخط حصرياً على الكمبيوتر للشاشات الأكبر من 769px */
-        @media (min-width: 769px) {
-            .flip-card-back li {
-                font-size: 14.5px; 
-            }
-        }
-
         .flip-card-back li::before {
             content: "\f0da"; 
             font-family: "Font Awesome 6 Free";
