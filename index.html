@@ -115,7 +115,6 @@
         .services-sec { 
             padding: 60px 5%; 
             text-align: center; 
-            /* شلنا الخلفية الرمادي من هنا */
         }
         .section-title { font-weight: 800; font-size: 36px; margin-bottom: 20px; color: var(--text-dark); }
         
@@ -124,20 +123,21 @@
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
+        /* كروت الخدمات العادية (التغذية والتدريب) */
         .service-item { 
             display: flex; flex-direction: column; align-items: center; 
             padding: 20px 15px; 
-            background: #ffffff; /* خلينا البوكس أبيض عشان يبرز على الخلفية */
-            border: 1px solid rgba(0, 150, 205, 0.08); /* إطار أزرق فاتح جداً يحدد البوكس */
+            background: #ffffff; 
+            border: 1px solid rgba(0, 150, 205, 0.08); 
             border-radius: 16px; 
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05); /* ضل ناعم بيفصل البوكس عن الخلفية البيضا */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05); 
             transition: transform 0.3s;
         }
         .service-item:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
         
         .icon-circle { 
             width: 60px; height: 60px; 
-            background: rgba(0, 150, 205, 0.12); /* تأثير زجاجي أزرق للأيقونة */
+            background: rgba(0, 150, 205, 0.12); 
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(0, 150, 205, 0.2);
@@ -149,6 +149,103 @@
             transition: 0.3s;
         }
         .service-item h4 { font-size: 16px; font-weight: 600; color: var(--text-dark);}
+
+        /* ---------------------------------------------------- */
+        /* ستايلات الـ Flip Card الخاصة بخدمات العلاج الطبيعي */
+        /* ---------------------------------------------------- */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            min-height: 330px; /* طول الكارت عشان يساع كل النقط */
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .flip-card:hover { 
+            transform: translateY(-5px); 
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        /* تقليب الكارت بالماوس للكمبيوتر فقط */
+        @media (hover: hover) {
+            .flip-card:hover .flip-card-inner {
+                transform: rotateY(180deg);
+            }
+        }
+        /* كلاس الـ Flipped لتقليب الكارت باللمس للموبايل */
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            background: #ffffff;
+            border: 1px solid rgba(0, 150, 205, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            padding: 25px 20px;
+        }
+        
+        /* وش الكارت */
+        .flip-card-front {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .flip-card-front .icon-circle {
+            width: 70px; height: 70px; /* أيقونة أكبر شوية لوش الكارت */
+            background: rgba(0, 150, 205, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 150, 205, 0.2);
+            border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; 
+            margin-bottom: 20px; 
+            color: var(--btn-blue); 
+            font-size: 30px; 
+        }
+        .flip-card-front h4 {
+            font-size: 18px; font-weight: 700; color: var(--text-dark); text-align: center;
+        }
+        
+        /* ضهر الكارت */
+        .flip-card-back {
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start; /* عشان الكلام يبدأ من فوق */
+            background: #fafcfd;
+        }
+        .flip-card-back h4 {
+            font-size: 15px; font-weight: 700; color: var(--btn-blue); margin-bottom: 15px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 8px; text-align: center;
+        }
+        .flip-card-back ul {
+            list-style: none; padding: 0; margin: 0; width: 100%;
+        }
+        .flip-card-back li {
+            font-size: 13.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; padding-left: 18px; position: relative; line-height: 1.4; text-align: left;
+        }
+        .flip-card-back li::before {
+            content: "\f0da"; /* أيقونة سهم صغيرة جمب النقط */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: var(--teal-box);
+            position: absolute;
+            left: 0;
+            top: 1px;
+        }
+        /* ---------------------------------------------------- */
 
         /* باقي الأقسام كما هي */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
@@ -228,30 +325,154 @@
                 </div>
                 <button class="btn" onclick="document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Book Your Appointment Now</button>
             </div>
-            <img src="DoctorImg1.webp" alt="Dr. Aya Khattab" class="hero-image">
+            <img src="DoctorImg.webp" alt="Dr. Aya Khattab" class="hero-image">
         </div>
     </section>
 
     <!-- Services Section -->
     <section class="services-sec container" id="services">
         <h2 class="section-title">Clinic Services</h2>
+        
         <h3 class="category-title">Clinical Nutrition</h3>
         <div class="services-grid">
             <div class="service-item"><div class="icon-circle"><i class="fas fa-weight-scale"></i></div><h4>Obesity & Underweight Programs</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-heart-pulse"></i></div><h4>Nutrition for Chronic Diseases</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-baby"></i></div><h4>Pediatric & Pregnancy Nutrition</h4></div>
         </div>
+        
         <h3 class="category-title">Coaching</h3>
         <div class="services-grid">
             <div class="service-item"><div class="icon-circle"><i class="fas fa-bullseye"></i></div><h4>Lifestyle Modification</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-dumbbell"></i></div><h4>Sports Nutrition & Performance</h4></div>
             <div class="service-item"><div class="icon-circle"><i class="fas fa-brain"></i></div><h4>Psychological Support & Motivation</h4></div>
         </div>
+        
         <h3 class="category-title">Physical Therapy & Rehabilitation</h3>
+        <!-- ضفنا الكروت الجديدة بستخدام تأثير Flip -->
         <div class="services-grid">
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-bone"></i></div><h4>Spine & Joint Pain Treatment</h4></div>
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-crutch"></i></div><h4>Post-Surgical Rehabilitation</h4></div>
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-person-running"></i></div><h4>Sports Injuries Rehabilitation</h4></div>
+            
+            <!-- Card 1 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-bone"></i></div>
+                        <h4>Spine Disorders</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Spine Disorders</h4>
+                        <ul>
+                            <li>Cervical Disc Herniation</li>
+                            <li>Lumbar Disc Herniation</li>
+                            <li>Sciatica</li>
+                            <li>Spondylolisthesis</li>
+                            <li>Sacroiliac Joint Dysfunction</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-x-ray"></i></div>
+                        <h4>Arthritis & Joint Disorders</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Arthritis & Joint Disorders</h4>
+                        <ul>
+                            <li>Osteoarthritis</li>
+                            <li>Rheumatoid Arthritis</li>
+                            <li>Joint Stiffness</li>
+                            <li>Joint Pain</li>
+                            <li>Joint Hypermobility</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-crutch"></i></div>
+                        <h4>Fracture Rehabilitation</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Fracture Rehabilitation</h4>
+                        <ul>
+                            <li>Upper Limb Fracture Rehab</li>
+                            <li>Lower Limb Fracture Rehab</li>
+                            <li>Post Cast Stiffness</li>
+                            <li>Delayed Functional Recovery</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-person-running"></i></div>
+                        <h4>Sport Injury & Rehabilitation</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Sport Injury & Rehabilitation</h4>
+                        <ul>
+                            <li>ACL Reconstruction Rehab</li>
+                            <li>Meniscus Surgery Rehab</li>
+                            <li>Shoulder Surgery Rehab</li>
+                            <li>Rotator Cuff Repair Rehab</li>
+                            <li>Joint Replacement Rehab</li>
+                            <li>Spine Surgery Rehabilitation</li>
+                            <li>Fracture Fixation Rehabilitation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-scale-balanced"></i></div>
+                        <h4>Balance & Functional Disorders</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Balance & Functional Disorders</h4>
+                        <ul>
+                            <li>Balance Training</li>
+                            <li>Fall Prevention</li>
+                            <li>Gait Training</li>
+                            <li>Walking Difficulties</li>
+                            <li>Functional Movement Training</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-heart-pulse"></i></div>
+                        <h4>Pain Management</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Pain Management</h4>
+                        <ul>
+                            <li>Chronic Pain</li>
+                            <li>Myofascial Pain Syndrome</li>
+                            <li>Trigger Points</li>
+                            <li>Muscle Spasm</li>
+                            <li>Nerve Entrapment</li>
+                            <li>Overuse Injuries</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 
