@@ -10,8 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        :root { --footer-dark: #0096cd; --btn-blue: #0096cd; --teal-box: #77b500; --text-dark: #111111; --gray-bg: #e9ecef; --font-main: 'Poppins', sans-serif; }
+        :root { --btn-blue: #0096cd; --teal-box: #77b500; --text-dark: #111111; --gray-bg: #e9ecef; --font-main: 'Poppins', sans-serif; }
         
+        /* حركة التدرج اللوني (Animated Gradient) */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         html { scroll-behavior: smooth; scroll-padding-top: 75px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: var(--font-main); color: var(--text-dark); line-height: 1.6; background-color: #fff; overflow-x: hidden; }
@@ -26,13 +33,19 @@
         .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); margin-left: 40px; }
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
 
-        .hero { background-color: var(--btn-blue); display: flex; align-items: center; padding: 50px 5%; color: white; min-height: 500px; position: relative; overflow: hidden; }
+        /* البانر مع التدرج المتحرك */
+        .hero { 
+            background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
+            background-size: 400% 400%;
+            animation: gradientBG 6s ease infinite;
+            display: flex; align-items: center; padding: 50px 5%; color: white; min-height: 500px; position: relative; overflow: hidden; 
+        }
         .hero-content { max-width: 550px; z-index: 2; }
         .hero-box { background-color: var(--teal-box); color: white; padding: 30px; border-radius: 10px; font-size: 20px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
         .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-family: var(--font-main); font-size: 16px; transition: 0.3s;}
         .btn:hover { background-color: #5c8c00; }
         .btn-blue { background-color: var(--btn-blue); border-radius: 4px; padding: 12px 30px; width: 100%; font-size: 18px; color: white;}
-        .btn-blue:hover { background-color: #0077a3; }
+        .btn-blue:hover { background-color: #006185; /* اللون الغامق في الـ Hover */ }
         .hero-image { z-index: 1; object-fit: cover; }
 
         @media (min-width: 769px) {
@@ -66,8 +79,13 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
 
-        /* Footer Styling */
-        .footer { background-color: var(--footer-dark); color: white; padding: 60px 5% 20px; }
+        /* الفوتر مع التدرج المتحرك */
+        .footer { 
+            background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
+            background-size: 400% 400%;
+            animation: gradientBG 6s ease infinite;
+            color: white; padding: 60px 5% 20px; 
+        }
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: center; }
         
         /* تظبيط عواميد الفوتر عشان تتسنتر وتتوزن */
