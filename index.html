@@ -123,7 +123,7 @@
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
-        /* كروت الخدمات العادية (التغذية والتدريب) */
+        /* كروت الخدمات العادية (التغذية) */
         .service-item { 
             display: flex; flex-direction: column; align-items: center; 
             padding: 20px 15px; 
@@ -151,7 +151,7 @@
         .service-item h4 { font-size: 16px; font-weight: 600; color: var(--text-dark);}
 
         /* ---------------------------------------------------- */
-        /* ستايلات الـ Flip Card الخاصة بخدمات العلاج الطبيعي */
+        /* ستايلات الـ Flip Card الخاصة بالكوتشينج والعلاج الطبيعي */
         /* ---------------------------------------------------- */
         .flip-card {
             background-color: transparent;
@@ -340,15 +340,126 @@
             <div class="service-item"><div class="icon-circle"><i class="fas fa-baby"></i></div><h4>Pediatric & Pregnancy Nutrition</h4></div>
         </div>
         
-        <h3 class="category-title">Coaching</h3>
+        <!-- قسم Health Coaching المحدث -->
+        <h3 class="category-title">Health Coaching</h3>
         <div class="services-grid">
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-bullseye"></i></div><h4>Lifestyle Modification</h4></div>
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-dumbbell"></i></div><h4>Sports Nutrition & Performance</h4></div>
-            <div class="service-item"><div class="icon-circle"><i class="fas fa-brain"></i></div><h4>Psychological Support & Motivation</h4></div>
+            
+            <!-- Card 1 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-apple-whole"></i></div>
+                        <h4>Nutrition Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Nutrition Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-spa"></i></div>
+                        <h4>Stress Management</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Stress Management</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-moon"></i></div>
+                        <h4>Sleep Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Sleep Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-dumbbell"></i></div>
+                        <h4>Physical Activity Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Physical Activity Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-ban-smoking"></i></div>
+                        <h4>Smoking Cessation Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Smoking Cessation Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-seedling"></i></div>
+                        <h4>Healthy Habits Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Healthy Habits Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 7 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon-circle"><i class="fas fa-notes-medical"></i></div>
+                        <h4>Chronic Disease Lifestyle Coaching</h4>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Chronic Disease Lifestyle Coaching</h4>
+                        <ul>
+                            <li>Corporate / Individual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
         </div>
         
         <h3 class="category-title">Physical Therapy & Rehabilitation</h3>
-        <!-- ضفنا الكروت الجديدة بستخدام تأثير Flip -->
+        <!-- كروت العلاج الطبيعي زي ما هي -->
         <div class="services-grid">
             
             <!-- Card 1 -->
@@ -521,7 +632,7 @@
                         <select name="Department" required>
                             <option value="" disabled selected>Select Department</option>
                             <option value="Clinical Nutrition">Clinical Nutrition</option>
-                            <option value="Coaching">Coaching</option>
+                            <option value="Health Coaching">Health Coaching</option>
                             <option value="Physical Therapy">Physical Therapy & Rehabilitation</option>
                         </select>
                     </div>
