@@ -33,37 +33,49 @@
         .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); margin-left: 40px; }
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
 
-        /* تعديل البانر لإزالة المسافة من تحت */
+        /* تعديل البانر للتوسيط والجروب */
         .hero { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
             background-size: 400% 400%;
             animation: gradientBG 6s ease infinite;
-            display: flex; 
-            align-items: center; 
-            padding: 40px 5% 0 5%; /* لغينا المسافة اللي تحت (الرقم التالت بقى صفر) */
+            padding: 40px 5% 0 5%; 
             color: white; 
             min-height: 450px; 
             position: relative; 
             overflow: hidden; 
+            display: flex; /* لضمان إن المحتوى الداخلي يكون مسنتر */
+            justify-content: center;
         }
-        .hero-content { max-width: 550px; z-index: 2; margin-bottom: 40px; /* لتعويض المسافة اللي اتشالت من البانر نفسه */ }
+
+        /* الحاوية الجديدة اللي بتجمع البوكس والصورة كجروب متسنتر */
+        .hero-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px; /* المسافة الثابتة بين البوكس والصورة */
+            max-width: 1100px; /* تحديد أقصى عرض للجروب عشان ميبعدوش عن بعض أوي في الشاشات العريضة */
+            width: 100%;
+        }
+
+        .hero-content { 
+            max-width: 550px; 
+            z-index: 2; 
+            margin-bottom: 40px; /* عشان يبقى في مستوى نظر كويس بالنسبة للصورة */
+        }
+        
         .hero-box { background-color: var(--teal-box); color: white; padding: 30px; border-radius: 10px; font-size: 20px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
         .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-family: var(--font-main); font-size: 16px; transition: 0.3s;}
         .btn:hover { background-color: #5c8c00; }
         .btn-blue { background-color: var(--btn-blue); border-radius: 4px; padding: 12px 30px; width: 100%; font-size: 18px; color: white;}
         .btn-blue:hover { background-color: #006185; }
         
-        /* تعديل الصورة عشان تلزق تحت */
+        /* تعديل الصورة عشان تلزق تحت وتبقى جزء من الجروب */
         .hero-image { 
             z-index: 1; 
-            object-fit: cover; 
+            object-fit: contain; 
+            max-width: 450px; 
+            max-height: 480px;
             align-self: flex-end; /* دي اللي بتخلي الصورة تلزق في آخر خط للبانر تحت */
-        }
-
-        @media (min-width: 769px) {
-            .hero { justify-content: center; gap: 75px; }
-            .hero-content { margin: 0; margin-bottom: 40px; }
-            .hero-image { max-width: 400px; max-height: 450px; object-fit: contain; }
         }
 
         .services-sec { padding: 60px 5%; text-align: center; }
@@ -117,9 +129,11 @@
             html { scroll-padding-top: 75px; } 
             .header { flex-direction: column; gap: 10px; }
             .nav-links { margin-left: 0; gap: 15px; font-size: 13px; }
-            .hero { flex-direction: column-reverse; padding: 20px 20px 0 20px; text-align: center; height: auto; }
-            .hero-image { align-self: center; position: relative; width: 100%; height: 350px; }
-            .hero-content { margin-left: 0; width: 100%; margin-bottom: 20px; }
+            .hero { padding: 20px 20px 0 20px; height: auto; }
+            /* على الموبايل نخليهم تحت بعض متسنترين */
+            .hero-group { flex-direction: column-reverse; text-align: center; gap: 20px; }
+            .hero-image { align-self: center; width: 100%; height: 350px; }
+            .hero-content { margin-bottom: 20px; }
             .services-grid, .maps-grid, .footer-grid { grid-template-columns: 1fr; }
             .hero-box { padding: 15px !important; font-size: 16px !important; }
             .category-title { margin-top: 20px; font-size: 22px; }
@@ -142,18 +156,20 @@
     </header>
 
     <section class="hero">
-        <div class="hero-content">
-            <div class="hero-box">
-                Dr. Aya Khattab | Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods.
+        <!-- أضفنا الكلاس الجديد ده عشان يجمعهم كجروب ويتسنتروا بالمللي -->
+        <div class="hero-group">
+            <div class="hero-content">
+                <div class="hero-box">
+                    Dr. Aya Khattab | Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods.
+                </div>
+                <button class="btn" onclick="document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Book Your Appointment Now</button>
             </div>
-            <button class="btn" onclick="document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Book Your Appointment Now</button>
+            <img src="DoctorImg.webp" alt="Dr. Aya Khattab" class="hero-image">
         </div>
-        <img src="DoctorImg.webp" alt="Dr. Aya Khattab" class="hero-image">
     </section>
 
     <!-- Services Section -->
     <section class="services-sec container" id="services">
-        <!-- Content remains identical to your previous code -->
         <h2 class="section-title">Clinic Services</h2>
         <h3 class="category-title">Clinical Nutrition</h3>
         <div class="services-grid">
@@ -179,7 +195,6 @@
     <section class="appointment-sec" id="appointment">
         <div class="container">
             <h2 class="section-title" style="text-align: center;">Book an Appointment</h2>
-            <!-- ضفنا id لل form عشان الجافاسكريبت، وضفنا name لكل حقل -->
             <form id="bookingForm" name="google-sheet">
                 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div><label>Name <span>*</span></label><input type="text" name="Name" required></div>
@@ -250,7 +265,6 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <!-- Content remains identical -->
         <div class="container footer-grid">
             <div class="footer-logo">
                 <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 85px; object-fit: contain;">
