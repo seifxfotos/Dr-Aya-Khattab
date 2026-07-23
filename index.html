@@ -123,7 +123,6 @@
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
-        /* كروت الخدمات العادية القديمة لو احتجناها، لكن حالياً كلها Flip Card */
         .service-item { 
             display: flex; flex-direction: column; align-items: center; 
             padding: 20px 15px; 
@@ -156,7 +155,7 @@
         .flip-card {
             background-color: transparent;
             perspective: 1000px;
-            min-height: 330px; /* طول الكارت عشان يساع كل النقط الطويلة */
+            min-height: 330px; 
             cursor: pointer;
             transition: transform 0.3s;
         }
@@ -171,13 +170,11 @@
             transform-style: preserve-3d;
         }
         
-        /* تقليب الكارت بالماوس للكمبيوتر فقط */
         @media (hover: hover) {
             .flip-card:hover .flip-card-inner {
                 transform: rotateY(180deg);
             }
         }
-        /* كلاس الـ Flipped لتقليب الكارت باللمس للموبايل */
         .flip-card.flipped .flip-card-inner {
             transform: rotateY(180deg);
         }
@@ -195,7 +192,6 @@
             padding: 20px 15px;
         }
         
-        /* وش الكارت */
         .flip-card-front {
             display: flex;
             flex-direction: column;
@@ -218,7 +214,6 @@
             font-size: 17px; font-weight: 700; color: var(--text-dark); text-align: center;
         }
         
-        /* ضهر الكارت */
         .flip-card-back {
             transform: rotateY(180deg);
             display: flex;
@@ -226,7 +221,7 @@
             align-items: flex-start;
             justify-content: flex-start; 
             background: #fafcfd;
-            overflow-y: auto; /* لسعولة قراءة النقاط الكتيرة زي MNT */
+            overflow-y: auto; 
         }
         .flip-card-back h4 {
             font-size: 14px; font-weight: 700; color: var(--btn-blue); margin-bottom: 10px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 6px; text-align: center;
@@ -237,6 +232,13 @@
         .flip-card-back li {
             font-size: 12.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; padding-left: 16px; position: relative; line-height: 1.3; text-align: left;
         }
+        
+        @media (min-width: 769px) {
+            .flip-card-back li {
+                font-size: 14.5px; 
+            }
+        }
+
         .flip-card-back li::before {
             content: "\f0da"; 
             font-family: "Font Awesome 6 Free";
@@ -247,6 +249,63 @@
             top: 1px;
         }
         /* ---------------------------------------------------- */
+
+        /* ستايلات أجزاء التواصل التفاعلية الجديدة (Glassmorphic Contact Cards) */
+        .contact-grid {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        .contact-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 16px;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, background 0.3s ease;
+            min-width: 280px;
+        }
+        .contact-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.22);
+        }
+        .contact-icon {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .contact-info {
+            text-align: left;
+        }
+        .contact-info span {
+            display: block;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .contact-info h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 3px;
+        }
 
         /* باقي الأقسام كما هي */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
@@ -334,7 +393,7 @@
     <section class="services-sec container" id="services">
         <h2 class="section-title">Clinic Services</h2>
         
-        <!-- قسم Clinical Nutrition المحدث بالخدمات الـ 5 الجديدة -->
+        <!-- قسم Clinical Nutrition -->
         <h3 class="category-title">Clinical Nutrition</h3>
         <div class="services-grid">
             
@@ -705,7 +764,7 @@
                 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div><label>Name <span>*</span></label><input type="text" name="Name" required></div>
                     <div><label>Phone Number <span>*</span></label><input type="tel" name="Phone" required></div>
-                    <div><label>Whatsapp Number <span>*</span></label><input type="tel" name="Phone" required></div>
+                    <div><label>Whatsapp Number <span>*</span></label><input type="tel" name="Whatsapp" required></div>
                     <div><label>Country <span>*</span></label>
                         <select name="Country" required>
                             <option value="" disabled selected>Select Country</option>
@@ -747,6 +806,10 @@
                             <option value="Physical Therapy">Physical Therapy & Rehabilitation</option>
                         </select>
                     </div>
+                    <div style="grid-column: span 2;"><label>Do you suffer from any medical conditions? (Please specify) <span>*</span></label><textarea name="MedicalConditions" rows="3" required></textarea></div>
+                    
+                    <button type="submit" id="submitBtn" class="btn btn-blue" style="grid-column: span 2;">Submit</button>
+                </div>
             </form>
         </div>
     </section>
@@ -768,17 +831,36 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container footer-grid">
-            <div class="footer-logo">
-                <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 85px; object-fit: contain;">
+        <div class="container footer-grid" style="grid-template-columns: 1fr; text-align: center;">
+            <div class="footer-col" style="display: flex; flex-direction: column; align-items: center;">
+                <h3 style="margin-bottom: 25px; font-size: 24px; font-weight: 700;">Contact Numbers</h3>
+                
+                <!-- أزرار التواصل التفاعلية بالدوائر الزجاجية -->
+                <div class="contact-grid">
+                    <a href="tel:01206999908" class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="contact-info">
+                            <span>Booking Hotline</span>
+                            <h4>01206999908</h4>
+                        </div>
+                    </a>
+
+                    <a href="https://wa.me/201060026072" target="_blank" class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="contact-info">
+                            <span>WhatsApp Support</span>
+                            <h4>01060026072</h4>
+                        </div>
+                    </a>
+                </div>
             </div>
-            <div class="footer-col">
-                <h3>Contact Numbers</h3>
-                <p>Booking: 01206999908</p>
-                <p>WhatsApp: 01060026072</p>
-            </div>
-            <div class="footer-col">
-                <h3>Follow Us</h3>
+
+            <div class="footer-col" style="margin-top: 40px;">
+                <h3 style="margin-bottom: 15px; font-size: 20px; font-weight: 600;">Follow Us</h3>
                 <div class="social-links">
                     <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
                     <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
@@ -786,7 +868,7 @@
                 </div>
             </div>
         </div>
-        <div class="copyright">Copyright © Dr. Aya Khattab. All rights reserved.</div>
+        <div class="copyright" style="margin-top: 30px;">Copyright © Dr. Aya Khattab. All rights reserved.</div>
     </footer>
 
     <a href="https://wa.me/201060026072" target="_blank" class="fab"><i class="fab fa-whatsapp"></i></a>
