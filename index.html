@@ -987,7 +987,6 @@
         <div class="container">
             <h2 class="section-title" style="text-align: center;">Book an Appointment</h2>
             <form id="bookingForm" name="google-sheet">
-                <input type="hidden" name="التأكيد عبر واتساب" value="تم ارسال الحجز وهيتم التاكيد عبر واتساب">
                 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div><label>Name <span>*</span></label><input type="text" name="الاسم" required></div>
                     <div><label>Phone Number <span>*</span></label><input type="tel" name="رقم الهاتف" required></div>
@@ -1060,8 +1059,9 @@
             <div class="modal-icon">
                 <i class="fas fa-check"></i>
             </div>
-            <h3>تم إرسال الحجز بنجاح</h3>
-            <button type="button" class="modal-btn" onclick="closeModal()">حسناً</button>
+            <h3>Appointment Sent Successfully</h3>
+            <p>Your booking has been successfully sent, and it will be confirmed via WhatsApp soon.</p>
+            <button type="button" class="modal-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
 
