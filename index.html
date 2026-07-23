@@ -250,7 +250,7 @@
         }
         /* ---------------------------------------------------- */
 
-        /* ستايل الفوتر المتزن وتصغير كروت التواصل لتكون أصغر حجماً وأنيقة */
+        /* ستايل الفوتر المتزن وتوسيط محتواه عمودياً بالشعرة */
         .footer { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
             background-size: 400% 400%;
@@ -261,7 +261,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr 1fr; 
             gap: 20px;
-            align-items: center;
+            align-items: center; /* توسيط عمودي تام بين العناصر الثلاثة */
             margin-bottom: 35px;
         }
         .footer-left {
@@ -269,6 +269,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            justify-content: center;
         }
         .footer-center {
             text-align: center;
@@ -281,6 +282,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
         
         /* كروت التواصل الطولية والأصغر حجماً */
@@ -296,7 +298,7 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 14px;
-            padding: 12px 8px; /* تصغير البادينج لتوفير مساحة وحجم أصغر */
+            padding: 12px 8px; 
             display: flex;
             flex-direction: column; 
             align-items: center;
@@ -305,21 +307,21 @@
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
-            width: 110px; /* تصغير العرض */
+            width: 110px; 
         }
         .contact-card:hover {
             transform: translateY(-3px);
             background: rgba(255, 255, 255, 0.22);
         }
         .contact-icon {
-            width: 36px; /* تصغير دائرة الأيقونة */
+            width: 36px; 
             height: 36px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 15px; /* تصغير حجم الأيقونة جوا */
+            font-size: 15px; 
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.4);
             flex-shrink: 0;
@@ -330,14 +332,14 @@
         }
         .contact-info span {
             display: block;
-            font-size: 8.5px; /* تصغير خط العنوان الفرعي */
+            font-size: 8.5px; 
             color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .contact-info h4 {
-            font-size: 10.5px; /* تصغير خط الرقم ليتناسب مع الحجم الجديد */
+            font-size: 10.5px; 
             font-weight: 700;
             color: #ffffff;
             margin-top: 2px;
@@ -357,7 +359,7 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
 
-        .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: center; }
+        .social-links { display: flex; gap: 15px; margin-top: 12px; justify-content: center; align-items: center; }
         .social-links a { display: block; width: 30px; height: 30px; color: white; transition: 0.3s; }
         .social-links a:hover { color: var(--teal-box); }
         .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; font-size: 14px; color: white; grid-column: span 3; }
