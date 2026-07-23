@@ -6,11 +6,11 @@
     <title>Dr. Aya Khattab - Nutrition & Physical Therapy</title>
     <!-- FontAwesome Library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- Premium English Font (Poppins) -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Premium English Font (Poppins) & Arabic Font (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        :root { --btn-blue: #0096cd; --teal-box: #77b500; --text-dark: #111111; --gray-bg: #e9ecef; --font-main: 'Poppins', sans-serif; }
+        :root { --btn-blue: #0096cd; --teal-box: #77b500; --text-dark: #111111; --gray-bg: #e9ecef; }
         
         /* حركة التدرج اللوني (Animated Gradient) */
         @keyframes gradientBG {
@@ -21,452 +21,164 @@
 
         /* أنيميشن الموجات لزر الواتساب العائم */
         @keyframes whatsapp-pulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(1.6);
-                opacity: 0;
-            }
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
         }
 
         html { scroll-behavior: smooth; scroll-padding-top: 130px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: var(--font-main); color: var(--text-dark); line-height: 1.6; background-color: #fff; overflow-x: hidden; }
+        
+        /* Font switching based on Language */
+        body { font-family: 'Poppins', sans-serif; color: var(--text-dark); line-height: 1.6; background-color: #fff; overflow-x: hidden; }
+        html[lang="ar"] body, html[lang="ar"] .btn, html[lang="ar"] input, html[lang="ar"] select, html[lang="ar"] textarea, html[lang="ar"] .lang-btn {
+            font-family: 'Cairo', sans-serif;
+        }
+
         a { text-decoration: none; color: inherit; }
         .container { width: 90%; max-width: 1200px; margin: auto; }
 
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
         /* Logo styling */
+        .logo { width: 140px; height: 85px; display: flex; align-items: center;}
         .header-logo { height: 85px; object-fit: contain; }
         
-        .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); margin-left: 40px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); }
+        
+        /* RTL Fixes for margins */
+        html[dir="ltr"] .nav-links { margin-left: 40px; }
+        html[dir="rtl"] .nav-links { margin-right: 40px; }
+        
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
+
+        /* Language Toggle Button */
+        .lang-btn {
+            background: rgba(0, 150, 205, 0.1); color: var(--btn-blue); border: 2px solid var(--btn-blue);
+            padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer;
+            transition: 0.3s; font-family: 'Cairo', sans-serif;
+        }
+        .lang-btn:hover { background: var(--btn-blue); color: #fff; }
 
         /* البانر */
         .hero { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
-            background-size: 400% 400%;
-            animation: gradientBG 6s ease infinite;
-            padding: 40px 5% 0 5%; 
-            color: white; 
-            min-height: 450px; 
-            position: relative; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center;
+            background-size: 400% 400%; animation: gradientBG 6s ease infinite;
+            padding: 40px 5% 0 5%; color: white; min-height: 450px; position: relative; overflow: hidden; display: flex; justify-content: center;
         }
-
-        .hero-group {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 40px; 
-            max-width: 1100px; 
-            width: 100%;
-        }
-
-        .hero-content { 
-            max-width: 550px; 
-            z-index: 2; 
-            margin-bottom: 40px; 
-        }
+        .hero-group { display: flex; align-items: center; justify-content: center; gap: 40px; max-width: 1100px; width: 100%; }
+        .hero-content { max-width: 550px; z-index: 2; margin-bottom: 40px; }
         
         /* ستايل البوكس الخارجي - تأثير الزجاج */
         .hero-box { 
-            background: rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); 
-            padding: 35px 30px; 
-            border-radius: 16px; 
-            margin-bottom: 25px; 
-            text-align: left; 
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            padding: 35px 30px; border-radius: 16px; margin-bottom: 25px; text-align: left; 
         }
+        html[dir="rtl"] .hero-box { text-align: right; }
 
-        .box-title {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
+        .box-title { font-size: 32px; font-weight: 800; color: #ffffff; margin-bottom: 10px; letter-spacing: 1px; }
+        .box-divider { width: 60px; height: 4px; background-color: var(--teal-box); border-radius: 2px; margin-bottom: 15px; }
+        .box-desc { font-size: 17px; font-weight: 400; line-height: 1.8; color: rgba(255, 255, 255, 0.9); }
 
-        .box-divider {
-            width: 60px;
-            height: 4px;
-            background-color: var(--teal-box); 
-            border-radius: 2px;
-            margin-bottom: 15px;
-        }
-
-        .box-desc {
-            font-size: 17px;
-            font-weight: 400;
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.9); 
-        }
-
-        .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-family: var(--font-main); font-size: 16px; transition: 0.3s;}
+        .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-size: 16px; transition: 0.3s;}
         .btn:hover { background-color: #5c8c00; }
         .btn-blue { background-color: var(--btn-blue); border-radius: 8px; padding: 14px 30px; width: 100%; font-size: 18px; color: white; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 150, 205, 0.3); transition: all 0.3s ease;}
         .btn-blue:hover { background-color: #006185; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 150, 205, 0.4); }
         
-        .hero-image { 
-            z-index: 1; 
-            object-fit: contain; 
-            max-width: 450px; 
-            max-height: 490px;
-            align-self: flex-end; 
-        }
+        .hero-image { z-index: 1; object-fit: contain; max-width: 450px; max-height: 490px; align-self: flex-end; }
 
         /* تعديلات قسم الخدمات */
-        .services-sec { 
-            padding: 60px 5%; 
-            text-align: center; 
-        }
+        .services-sec { padding: 60px 5%; text-align: center; }
         .section-title { font-weight: 800; font-size: 36px; margin-bottom: 20px; color: var(--text-dark); }
-        
         .category-title { font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 40px auto 30px; display: inline-block; position: relative; }
         .category-title::after { content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background-color: var(--btn-blue); border-radius: 2px; }
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
-        .service-item { 
-            display: flex; flex-direction: column; align-items: center; 
-            padding: 20px 15px; 
-            background: #ffffff; 
-            border: 1px solid rgba(0, 150, 205, 0.08); 
-            border-radius: 16px; 
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05); 
-            transition: transform 0.3s;
-        }
-        .service-item:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
-        
-        .icon-circle { 
-            width: 60px; height: 60px; 
-            background: rgba(0, 150, 205, 0.12); 
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 150, 205, 0.2);
-            border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center; 
-            margin-bottom: 15px; 
-            color: var(--btn-blue); 
-            font-size: 26px; 
-            transition: 0.3s;
-        }
-        .service-item h4 { font-size: 16px; font-weight: 600; color: var(--text-dark);}
-
         /* ---------------------------------------------------- */
         /* ستايلات الـ Flip Card */
         /* ---------------------------------------------------- */
-        .flip-card {
-            background-color: transparent;
-            perspective: 1000px;
-            min-height: 330px; 
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-        .flip-card:hover { 
-            transform: translateY(-5px); 
-        }
-        .flip-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-        }
+        .flip-card { background-color: transparent; perspective: 1000px; min-height: 330px; cursor: pointer; transition: transform 0.3s; }
+        .flip-card:hover { transform: translateY(-5px); }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         
-        @media (hover: hover) {
-            .flip-card:hover .flip-card-inner {
-                transform: rotateY(180deg);
-            }
-        }
-        .flip-card.flipped .flip-card-inner {
-            transform: rotateY(180deg);
-        }
+        @media (hover: hover) { .flip-card:hover .flip-card-inner { transform: rotateY(180deg); } }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
 
         .flip-card-front, .flip-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            background: #ffffff;
-            border: 1px solid rgba(0, 150, 205, 0.08);
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-            padding: 20px 15px;
+            position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            background: #ffffff; border: 1px solid rgba(0, 150, 205, 0.08); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05); padding: 20px 15px;
         }
         
-        .flip-card-front {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+        .flip-card-front { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .flip-card-front .icon-circle {
-            width: 70px; height: 70px; 
-            background: rgba(0, 150, 205, 0.12);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 150, 205, 0.2);
-            border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center; 
-            margin-bottom: 20px; 
-            color: var(--btn-blue); 
-            font-size: 30px; 
+            width: 70px; height: 70px; background: rgba(0, 150, 205, 0.12); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 150, 205, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; color: var(--btn-blue); font-size: 30px; 
         }
-        .flip-card-front h4 {
-            font-size: 17px; font-weight: 700; color: var(--text-dark); text-align: center;
-        }
+        .flip-card-front h4 { font-size: 17px; font-weight: 700; color: var(--text-dark); text-align: center; }
         
-        .flip-card-back {
-            transform: rotateY(180deg);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start; 
-            background: #fafcfd;
-            overflow-y: auto; 
-        }
-        .flip-card-back h4 {
-            font-size: 14px; font-weight: 700; color: var(--btn-blue); margin-bottom: 10px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 6px; text-align: center;
-        }
-        .flip-card-back ul {
-            list-style: none; padding: 0; margin: 0; width: 100%;
-        }
-        .flip-card-back li {
-            font-size: 12.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; padding-left: 16px; position: relative; line-height: 1.3; text-align: left;
-        }
+        .flip-card-back { transform: rotateY(180deg); display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; background: #fafcfd; overflow-y: auto; }
+        .flip-card-back h4 { font-size: 14px; font-weight: 700; color: var(--btn-blue); margin-bottom: 10px; width: 100%; border-bottom: 1px solid rgba(0, 150, 205, 0.1); padding-bottom: 6px; text-align: center; }
+        .flip-card-back ul { list-style: none; padding: 0; margin: 0; width: 100%; }
         
-        @media (min-width: 769px) {
-            .flip-card-back li {
-                font-size: 14.5px; 
-            }
-        }
+        .flip-card-back li { font-size: 12.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; position: relative; line-height: 1.3; }
+        
+        /* RTL and LTR fixes for lists inside cards */
+        html[dir="ltr"] .flip-card-back li { text-align: left; padding-left: 16px; padding-right: 0; }
+        html[dir="rtl"] .flip-card-back li { text-align: right; padding-right: 16px; padding-left: 0; }
+        
+        html[dir="ltr"] .flip-card-back li::before { content: "\f0da"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: var(--teal-box); position: absolute; left: 0; top: 1px; }
+        html[dir="rtl"] .flip-card-back li::before { content: "\f0d9"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: var(--teal-box); position: absolute; right: 0; top: 1px; }
 
-        .flip-card-back li::before {
-            content: "\f0da"; 
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            color: var(--teal-box);
-            position: absolute;
-            left: 0;
-            top: 1px;
-        }
+        @media (min-width: 769px) { .flip-card-back li { font-size: 14.5px; } }
         /* ---------------------------------------------------- */
 
         /* ستايل الفوتر المتزن وتثبيت أبعاد الأعمدة للسنتر بدقة */
-        .footer { 
-            background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
-            background-size: 400% 400%;
-            animation: gradientBG 6s ease infinite;
-            color: white; padding: 50px 0 20px 0; 
-        }
-        .footer .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: auto;
-        }
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr; 
-            gap: 20px;
-            align-items: center; 
-            justify-items: center; 
-            margin-bottom: 35px;
-            width: 100%;
-        }
-        .footer-left {
-            width: 300px; 
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .footer-center {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-        .footer-right {
-            width: 300px; 
-            text-align: center; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .footer { background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185); background-size: 400% 400%; animation: gradientBG 6s ease infinite; color: white; padding: 50px 0 20px 0; }
+        .footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center; justify-items: center; margin-bottom: 35px; width: 100%; }
+        .footer-left { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .footer-center { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .footer-right { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         
         /* كروت التواصل الطولية */
-        .contact-grid {
-            display: flex;
-            flex-direction: row; 
-            gap: 12px;
-            margin-top: 12px;
-            justify-content: center;
-        }
+        .contact-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
         .contact-card {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 14px;
-            padding: 12px 8px; 
-            display: flex;
-            flex-direction: column; 
-            align-items: center;
-            text-align: center;
-            gap: 8px;
-            color: white;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, background 0.3s ease;
-            width: 110px; 
+            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 110px; 
         }
-        .contact-card:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.22);
-        }
-        .contact-icon {
-            width: 36px; 
-            height: 36px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 15px; 
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            flex-shrink: 0;
-        }
-        .contact-info {
-            text-align: center;
-            width: 100%;
-        }
-        .contact-info span {
-            display: block;
-            font-size: 8.5px; 
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .contact-info h4 {
-            font-size: 10.5px; 
-            font-weight: 700;
-            color: #ffffff;
-            margin-top: 2px;
-            white-space: nowrap;
-        }
+        .contact-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
+        .contact-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+        .contact-info { text-align: center; width: 100%; }
+        .contact-info span { display: block; font-size: 8.5px; color: rgba(255, 255, 255, 0.8); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .contact-info h4 { font-size: 10.5px; font-weight: 700; color: #ffffff; margin-top: 2px; white-space: nowrap; }
 
-        /* كروت السوشيال ميديا بنفس ستايل كروت الحجز والواتس (3 كروت بعرض إجمالي مطابق لكرتين التواصل) */
-        .social-grid {
-            display: flex;
-            flex-direction: row;
-            gap: 12px;
-            margin-top: 12px;
-            justify-content: center;
-        }
+        /* كروت السوشيال ميديا */
+        .social-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
         .social-card {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 14px;
-            padding: 12px 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 8px;
-            color: white;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, background 0.3s ease;
-            width: 70px; /* تم تعديل العرض ليصبح إجمالي الـ 3 كروت مطابقاً تماماً لكرتين التواصل */
+            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 70px;
         }
-        .social-card:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.22);
-        }
-        .social-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 15px;
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            flex-shrink: 0;
-        }
-        .social-card svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
+        .social-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
+        .social-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+        .social-card svg { width: 16px; height: 16px; fill: currentColor; }
 
         /* تعديلات وتجميل حقول الفورم والقوائم المنسدلة */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full-width {
-            grid-column: span 2;
-        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
         
         input, select, textarea { 
-            padding: 14px 16px; 
-            border: 1.5px solid #dcdfe6; 
-            border-radius: 10px; 
-            font-family: var(--font-main); 
-            font-size: 14.5px; 
-            width: 100%; 
-            outline: none; 
-            background-color: #f4f6f8;
-            color: var(--text-dark);
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            padding: 14px 16px; border: 1.5px solid #dcdfe6; border-radius: 10px; font-size: 14.5px; width: 100%; outline: none; background-color: #f4f6f8; color: var(--text-dark); transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
-        
-        input:focus, select:focus, textarea:focus { 
-            border-color: var(--btn-blue); 
-            box-shadow: 0 0 0 4px rgba(0, 150, 205, 0.12);
-            background-color: #ffffff;
-        }
+        input:focus, select:focus, textarea:focus { border-color: var(--btn-blue); box-shadow: 0 0 0 4px rgba(0, 150, 205, 0.12); background-color: #ffffff; }
 
-        select {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230096cd' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            background-size: 16px;
-            padding-right: 45px;
-            cursor: pointer;
-        }
+        select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230096cd' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; cursor: pointer; }
+        html[dir="ltr"] select { background-position: right 16px center; background-size: 16px; padding-right: 45px; }
+        html[dir="rtl"] select { background-position: left 16px center; background-size: 16px; padding-left: 45px; }
 
-        label { font-weight: 600; margin-bottom: 8px; display: block; text-align: left; color: var(--text-dark); font-size: 14px; }
+        label { font-weight: 600; margin-bottom: 8px; display: block; color: var(--text-dark); font-size: 14px; }
+        html[dir="ltr"] label { text-align: left; }
+        html[dir="rtl"] label { text-align: right; }
         label span { color: #ff4d4d; }
 
         .maps-section { padding: 50px 5%; }
@@ -475,151 +187,72 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
         
-        /* تظبيط خط الحقوق ليكون فاصل متزن بالكامل ومنتصف تماماً */
-        .copyright { 
-            text-align: center; 
-            border-top: 1px solid rgba(255,255,255,0.2); 
-            padding-top: 20px; 
-            margin-top: 10px; 
-            font-size: 14px; 
-            color: white; 
-            width: 90%;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 10px; font-size: 14px; color: white; width: 90%; max-width: 1200px; margin-left: auto; margin-right: auto; }
         
-        /* زر الواتساب العائم مع تأثير الموجات (Pulse / Wave Animation) */
-        .whatsapp-float-btn { 
-            position: fixed; 
-            bottom: 30px; 
-            left: 30px; 
-            background-color: #25D366; 
-            color: white; 
-            width: 55px; 
-            height: 55px; 
-            border-radius: 50%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-size: 30px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-            z-index: 9999; 
-            transition: transform 0.3s;
-        }
-        .whatsapp-float-btn::before,
-        .whatsapp-float-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 50%;
-            background-color: #25D366;
-            z-index: -1;
-            animation: whatsapp-pulse 2s infinite ease-out;
-        }
-        .whatsapp-float-btn::after {
-            animation-delay: 1s;
-        }
-        .whatsapp-float-btn:hover { 
-            transform: scale(1.1); 
-        }
+        /* زر الواتساب العائم */
+        .whatsapp-float-btn { position: fixed; bottom: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s; }
+        html[dir="ltr"] .whatsapp-float-btn { left: 30px; }
+        html[dir="rtl"] .whatsapp-float-btn { right: 30px; left: auto; }
+        .whatsapp-float-btn::before, .whatsapp-float-btn::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background-color: #25D366; z-index: -1; animation: whatsapp-pulse 2s infinite ease-out; }
+        .whatsapp-float-btn::after { animation-delay: 1s; }
+        .whatsapp-float-btn:hover { transform: scale(1.1); }
 
         /* نافذة البوب أب (Popup Modal) */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            backdrop-filter: blur(5px);
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; backdrop-filter: blur(5px); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: #ffffff; padding: 35px 30px; border-radius: 16px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+        .modal-icon { width: 70px; height: 70px; background: rgba(119, 181, 0, 0.15); color: var(--teal-box); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; margin: 0 auto 20px auto; }
+        .modal-box h3 { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 12px; }
+        .modal-box p { font-size: 15px; color: #555; line-height: 1.6; margin-bottom: 25px; }
+        .modal-btn { background-color: var(--btn-blue); color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; width: 100%; }
+        .modal-btn:hover { background-color: #006185; }
+
+        /* -------------------------------------------------------------------------- */
+        /* ستايلات الـ Transition والـ Loader الروشة (السر كله هنا) */
+        /* -------------------------------------------------------------------------- */
+        .page-transition-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 100000; opacity: 0; visibility: hidden; transition: all 0.5s ease;
         }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
+        .page-transition-overlay.active { opacity: 1; visibility: visible; }
+
+        .cool-loader {
+            display: flex; gap: 8px; position: fixed; top: calc(50% + 70px); left: 50%;
+            transform: translateX(-50%); z-index: 100001; opacity: 0; visibility: hidden; transition: opacity 0.3s;
         }
-        .modal-box {
-            background: #ffffff;
-            padding: 35px 30px;
-            border-radius: 16px;
-            text-align: center;
-            max-width: 420px;
-            width: 90%;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-        .modal-overlay.active .modal-box {
-            transform: translateY(0);
-        }
-        .modal-icon {
-            width: 70px;
-            height: 70px;
-            background: rgba(119, 181, 0, 0.15);
-            color: var(--teal-box);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 32px;
-            margin: 0 auto 20px auto;
-        }
-        .modal-box h3 {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--text-dark);
-            margin-bottom: 12px;
-        }
-        .modal-box p {
-            font-size: 15px;
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-        .modal-btn {
-            background-color: var(--btn-blue);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: var(--font-main);
-            transition: background-color 0.3s;
-            width: 100%;
-        }
-        .modal-btn:hover {
-            background-color: #006185;
+        .cool-loader.active { opacity: 1; visibility: visible; }
+        .cool-loader span { width: 14px; height: 14px; border-radius: 50%; background-color: var(--btn-blue); animation: loaderBounce 0.5s alternate infinite cubic-bezier(0.2, 0.65, 0.6, 1); }
+        .cool-loader span:nth-child(1) { animation-delay: 0s; }
+        .cool-loader span:nth-child(2) { background-color: var(--teal-box); animation-delay: 0.15s; }
+        .cool-loader span:nth-child(3) { animation-delay: 0.3s; }
+        
+        @keyframes loaderBounce {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-15px) scale(1.2); }
         }
 
+        /* -------------------------------------------------------------------------- */
+        /* استجابة الموبايل */
+        /* -------------------------------------------------------------------------- */
         @media (max-width: 768px) {
             html { scroll-padding-top: 130px; } 
             .header { flex-direction: column; gap: 10px; }
-            .nav-links { margin-left: 0; gap: 15px; font-size: 13px; }
+            .nav-links { gap: 15px; font-size: 13px; }
+            html[dir="ltr"] .nav-links { margin-left: 0; }
+            html[dir="rtl"] .nav-links { margin-right: 0; }
             .hero { padding: 20px 20px 0 20px; height: auto; }
             .hero-group { flex-direction: column-reverse; text-align: center; gap: 20px; }
             .hero-image { align-self: center; width: 100%; height: 350px; }
             .hero-content { margin-bottom: 20px; }
             .services-grid, .maps-grid { grid-template-columns: 1fr; }
             
-            .hero-box { padding: 20px !important; text-align: center; }
+            .hero-box { padding: 20px !important; text-align: center !important; }
             .box-title { font-size: 26px; }
             .box-divider { margin: 0 auto 15px auto; }
-            
             .category-title { margin-top: 20px; font-size: 22px; }
             
-            /* تظبيط الفوتر على الموبايل: التواصل أولاً، تابعنا ثانياً، واللوجو في النهاية تحت خالص */
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 25px; justify-items: center; }
             .footer-left { order: 1; width: 100%; align-items: center; }
             .footer-right { order: 2; width: 100%; align-items: center; }
@@ -630,20 +263,29 @@
             .social-grid { justify-content: center; }
             .social-card { width: 85px; }
             
-            .whatsapp-float-btn { left: auto; right: 20px; bottom: 20px; }
+            .whatsapp-float-btn { bottom: 20px; }
+            html[dir="ltr"] .whatsapp-float-btn { right: 20px; left: auto; }
+            html[dir="rtl"] .whatsapp-float-btn { left: 20px; right: auto; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Transition Elements -->
+    <div class="page-transition-overlay" id="transitionOverlay"></div>
+    <div class="cool-loader" id="transitionLoader">
+        <span></span><span></span><span></span>
+    </div>
+
     <header class="header">
         <div class="logo">
-            <img src="Logo-Dr-Aya.webp" alt="Dr. Aya Khattab Logo" class="header-logo">
+            <img src="Logo-Dr-Aya.webp" alt="Dr. Aya Khattab Logo" class="header-logo" id="mainLogo">
         </div>
         <nav class="nav-links">
-            <a href="#">Home</a>
-            <a href="#services">Services</a>
-            <a href="#appointment">Book an Appointment</a>
+            <a href="#" data-en="Home" data-ar="الرئيسية">Home</a>
+            <a href="#services" data-en="Services" data-ar="الخدمات">Services</a>
+            <a href="#appointment" data-en="Book an Appointment" data-ar="احجز موعدك">Book an Appointment</a>
+            <button id="langToggle" class="lang-btn" onclick="toggleLanguage()">العربية</button>
         </nav>
     </header>
 
@@ -651,11 +293,11 @@
         <div class="hero-group">
             <div class="hero-content">
                 <div class="hero-box">
-                    <h1 class="box-title">Dr. Aya Khattab</h1>
+                    <h1 class="box-title" data-en="Dr. Aya Khattab" data-ar="دكتورة آية خطاب">Dr. Aya Khattab</h1>
                     <div class="box-divider"></div>
-                    <p class="box-desc">Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods.</p>
+                    <p class="box-desc" data-en="Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods." data-ar="خيارك الأول للتغذية العلاجية وإدارة الوزن والتأهيل البدني باستخدام أحدث الأساليب العلمية.">Your premier choice for clinical nutrition, weight management, and physical rehabilitation using the latest scientific methods.</p>
                 </div>
-                <button class="btn" onclick="document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Book Your Appointment Now</button>
+                <button class="btn" onclick="document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})" data-en="Book Your Appointment Now" data-ar="احجز موعدك الآن">Book Your Appointment Now</button>
             </div>
             <img src="DoctorImg1.webp" alt="Dr. Aya Khattab" class="hero-image">
         </div>
@@ -663,463 +305,416 @@
 
     <!-- Services Section -->
     <section class="services-sec container" id="services">
-        <h2 class="section-title">Clinic Services</h2>
+        <h2 class="section-title" data-en="Clinic Services" data-ar="خدمات العيادة">Clinic Services</h2>
         
-        <!-- قسم Clinical Nutrition -->
-        <h3 class="category-title">Clinical Nutrition</h3>
+        <!-- Clinical Nutrition -->
+        <h3 class="category-title" data-en="Clinical Nutrition" data-ar="التغذية العلاجية">Clinical Nutrition</h3>
         <div class="services-grid">
-            
-            <!-- Card 1 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-clipboard-user"></i></div>
-                        <h4>Nutrition Consultation & Follow-up</h4>
+                        <h4 data-en="Nutrition Consultation & Follow-up" data-ar="استشارة ومتابعة التغذية">Nutrition Consultation & Follow-up</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Nutrition Consultation & Follow-up</h4>
+                        <h4 data-en="Nutrition Consultation & Follow-up" data-ar="استشارة ومتابعة التغذية">Nutrition Consultation & Follow-up</h4>
                         <ul>
-                            <li>Medical & nutrition assessment</li>
-                            <li>Body composition analysis</li>
-                            <li>Personalized meal plan</li>
-                            <li>Lifestyle recommendations</li>
-                            <li>Supplement guidance (when appropriate)</li>
+                            <li data-en="Medical & nutrition assessment" data-ar="التقييم الطبي والغذائي">Medical & nutrition assessment</li>
+                            <li data-en="Body composition analysis" data-ar="تحليل مكونات الجسم">Body composition analysis</li>
+                            <li data-en="Personalized meal plan" data-ar="خطة غذائية مخصصة">Personalized meal plan</li>
+                            <li data-en="Lifestyle recommendations" data-ar="توصيات لنمط حياة صحي">Lifestyle recommendations</li>
+                            <li data-en="Supplement guidance" data-ar="إرشادات المكملات">Supplement guidance</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 2 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-notes-medical"></i></div>
-                        <h4>Medical Nutrition Therapy (MNT)</h4>
+                        <h4 data-en="Medical Nutrition Therapy (MNT)" data-ar="العلاج بالتغذية الطبية">Medical Nutrition Therapy (MNT)</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Medical Nutrition Therapy (MNT)</h4>
+                        <h4 data-en="Medical Nutrition Therapy (MNT)" data-ar="العلاج بالتغذية الطبية">Medical Nutrition Therapy (MNT)</h4>
                         <ul>
-                            <li>Obesity & overweight</li>
-                            <li>Diabetes & prediabetes</li>
-                            <li>PCOS</li>
-                            <li>Insulin resistance</li>
-                            <li>Hypertension</li>
-                            <li>High cholesterol</li>
-                            <li>Fatty liver</li>
-                            <li>Digestive disorders (IBS, GERD)</li>
-                            <li>Kidney nutrition</li>
-                            <li>Pregnancy & breastfeeding nutrition</li>
-                            <li>Sports nutrition</li>
+                            <li data-en="Obesity & overweight" data-ar="السمنة وزيادة الوزن">Obesity & overweight</li>
+                            <li data-en="Diabetes & prediabetes" data-ar="السكري وما قبل السكري">Diabetes & prediabetes</li>
+                            <li data-en="PCOS" data-ar="تكيس المبايض">PCOS</li>
+                            <li data-en="Insulin resistance" data-ar="مقاومة الأنسولين">Insulin resistance</li>
+                            <li data-en="Hypertension" data-ar="ارتفاع ضغط الدم">Hypertension</li>
+                            <li data-en="High cholesterol" data-ar="ارتفاع الكوليسترول">High cholesterol</li>
+                            <li data-en="Fatty liver" data-ar="دهون الكبد">Fatty liver</li>
+                            <li data-en="Digestive disorders" data-ar="اضطرابات الجهاز الهضمي">Digestive disorders</li>
+                            <li data-en="Pregnancy nutrition" data-ar="تغذية الحوامل والمرضعات">Pregnancy nutrition</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 3 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-heart-pulse"></i></div>
-                        <h4>Health Coaching & Lifestyle Transformation</h4>
+                        <h4 data-en="Health Coaching" data-ar="التدريب الصحي">Health Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Health Coaching & Lifestyle Transformation</h4>
+                        <h4 data-en="Health Coaching" data-ar="التدريب الصحي">Health Coaching</h4>
                         <ul>
-                            <li>Healthy eating habits</li>
-                            <li>Emotional eating</li>
-                            <li>Stress management</li>
-                            <li>Sleep optimization</li>
-                            <li>Physical activity</li>
-                            <li>Habit change</li>
-                            <li>Motivation & accountability</li>
+                            <li data-en="Healthy eating habits" data-ar="عادات الأكل الصحية">Healthy eating habits</li>
+                            <li data-en="Emotional eating" data-ar="الأكل العاطفي">Emotional eating</li>
+                            <li data-en="Stress management" data-ar="إدارة التوتر">Stress management</li>
+                            <li data-en="Sleep optimization" data-ar="تحسين جودة النوم">Sleep optimization</li>
+                            <li data-en="Physical activity" data-ar="النشاط البدني">Physical activity</li>
+                            <li data-en="Habit change" data-ar="تغيير العادات">Habit change</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 4 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-spa"></i></div>
-                        <h4>Non-Surgical Body Sculpting</h4>
+                        <h4 data-en="Non-Surgical Body Sculpting" data-ar="نحت الجسم بدون جراحة">Non-Surgical Body Sculpting</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Non-Surgical Body Sculpting</h4>
+                        <h4 data-en="Non-Surgical Body Sculpting" data-ar="نحت الجسم بدون جراحة">Non-Surgical Body Sculpting</h4>
                         <ul>
-                            <li>Body contouring</li>
-                            <li>Reduction of localized fat</li>
-                            <li>Skin firming</li>
-                            <li>Muscle toning</li>
-                            <li>Cellulite Treatment</li>
-                            <li>Lipedema Treatment</li>
+                            <li data-en="Body contouring" data-ar="تنسيق القوام">Body contouring</li>
+                            <li data-en="Reduction of localized fat" data-ar="تقليل الدهون الموضعية">Reduction of localized fat</li>
+                            <li data-en="Skin firming" data-ar="شد الجلد">Skin firming</li>
+                            <li data-en="Muscle toning" data-ar="تقوية العضلات">Muscle toning</li>
+                            <li data-en="Cellulite Treatment" data-ar="علاج السيلوليت">Cellulite Treatment</li>
+                            <li data-en="Lipedema Treatment" data-ar="علاج الوذمة الشحمية">Lipedema Treatment</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 5 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-building-user"></i></div>
-                        <h4>Corporate Wellness Programs</h4>
+                        <h4 data-en="Corporate Wellness Programs" data-ar="برامج صحة الشركات">Corporate Wellness Programs</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Corporate Wellness Programs</h4>
+                        <h4 data-en="Corporate Wellness Programs" data-ar="برامج صحة الشركات">Corporate Wellness Programs</h4>
                         <ul>
-                            <li>Nutrition consultations</li>
-                            <li>Health coaching</li>
-                            <li>Wellness workshops</li>
-                            <li>Lifestyle education</li>
-                            <li>Employee health challenges</li>
-                            <li>Corporate health screenings</li>
+                            <li data-en="Nutrition consultations" data-ar="استشارات غذائية">Nutrition consultations</li>
+                            <li data-en="Health coaching" data-ar="تدريب صحي">Health coaching</li>
+                            <li data-en="Wellness workshops" data-ar="ورش عمل صحية">Wellness workshops</li>
+                            <li data-en="Lifestyle education" data-ar="التثقيف بنمط الحياة">Lifestyle education</li>
+                            <li data-en="Employee health challenges" data-ar="تحديات صحة الموظفين">Employee health challenges</li>
+                            <li data-en="Corporate health screenings" data-ar="فحوصات للشركات">Corporate health screenings</li>
                         </ul>
                     </div>
                 </div>
             </div>
-
         </div>
         
-        <!-- قسم Health Coaching -->
-        <h3 class="category-title">Health Coaching</h3>
+        <!-- Health Coaching -->
+        <h3 class="category-title" data-en="Health Coaching Services" data-ar="خدمات التدريب الصحي">Health Coaching Services</h3>
         <div class="services-grid">
-            
-            <!-- Card 1 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-apple-whole"></i></div>
-                        <h4>Nutrition Coaching</h4>
+                        <h4 data-en="Nutrition Coaching" data-ar="التدريب الغذائي">Nutrition Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Nutrition Coaching</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Nutrition Coaching" data-ar="التدريب الغذائي">Nutrition Coaching</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 2 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-spa"></i></div>
-                        <h4>Stress Management</h4>
+                        <h4 data-en="Stress Management" data-ar="إدارة التوتر">Stress Management</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Stress Management</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Stress Management" data-ar="إدارة التوتر">Stress Management</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 3 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-moon"></i></div>
-                        <h4>Sleep Coaching</h4>
+                        <h4 data-en="Sleep Coaching" data-ar="التدريب على النوم">Sleep Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Sleep Coaching</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Sleep Coaching" data-ar="التدريب على النوم">Sleep Coaching</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 4 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-dumbbell"></i></div>
-                        <h4>Physical Activity Coaching</h4>
+                        <h4 data-en="Physical Activity Coaching" data-ar="التدريب على النشاط البدني">Physical Activity Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Physical Activity Coaching</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Physical Activity Coaching" data-ar="التدريب على النشاط البدني">Physical Activity Coaching</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 5 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-ban-smoking"></i></div>
-                        <h4>Smoking Cessation Coaching</h4>
+                        <h4 data-en="Smoking Cessation Coaching" data-ar="الإقلاع عن التدخين">Smoking Cessation Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Smoking Cessation Coaching</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Smoking Cessation Coaching" data-ar="الإقلاع عن التدخين">Smoking Cessation Coaching</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 6 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-seedling"></i></div>
-                        <h4>Healthy Habits Coaching</h4>
+                        <h4 data-en="Healthy Habits Coaching" data-ar="التدريب على العادات الصحية">Healthy Habits Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Healthy Habits Coaching</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Healthy Habits Coaching" data-ar="التدريب على العادات الصحية">Healthy Habits Coaching</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 7 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-notes-medical"></i></div>
-                        <h4>Chronic Disease Lifestyle Coaching</h4>
+                        <h4 data-en="Chronic Disease Coaching" data-ar="تدريب نمط حياة الأمراض المزمنة">Chronic Disease Coaching</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Chronic Disease Lifestyle Coaching</h4>
-                        <ul>
-                            <li>Corporate / Individual</li>
-                        </ul>
+                        <h4 data-en="Chronic Disease Coaching" data-ar="تدريب نمط حياة الأمراض المزمنة">Chronic Disease Coaching</h4>
+                        <ul><li data-en="Corporate / Individual" data-ar="شركات / أفراد">Corporate / Individual</li></ul>
                     </div>
                 </div>
             </div>
-
         </div>
         
-        <!-- قسم Physical Therapy & Rehabilitation -->
-        <h3 class="category-title">Physical Therapy & Rehabilitation</h3>
+        <!-- Physical Therapy & Rehabilitation -->
+        <h3 class="category-title" data-en="Physical Therapy & Rehabilitation" data-ar="العلاج الطبيعي والتأهيل">Physical Therapy & Rehabilitation</h3>
         <div class="services-grid">
-            
-            <!-- Card 1 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-bone"></i></div>
-                        <h4>Spine Disorders</h4>
+                        <h4 data-en="Spine Disorders" data-ar="أمراض العمود الفقري">Spine Disorders</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Spine Disorders</h4>
+                        <h4 data-en="Spine Disorders" data-ar="أمراض العمود الفقري">Spine Disorders</h4>
                         <ul>
-                            <li>Cervical Disc Herniation</li>
-                            <li>Lumbar Disc Herniation</li>
-                            <li>Sciatica</li>
-                            <li>Spondylolisthesis</li>
-                            <li>Sacroiliac Joint Dysfunction</li>
+                            <li data-en="Cervical Disc Herniation" data-ar="الانزلاق الغضروفي العنقي">Cervical Disc Herniation</li>
+                            <li data-en="Lumbar Disc Herniation" data-ar="الانزلاق الغضروفي القطني">Lumbar Disc Herniation</li>
+                            <li data-en="Sciatica" data-ar="عرق النسا">Sciatica</li>
+                            <li data-en="Spondylolisthesis" data-ar="الانزلاق الفقاري">Spondylolisthesis</li>
+                            <li data-en="Sacroiliac Joint Dysfunction" data-ar="خلل المفصل العجزي">Sacroiliac Joint Dysfunction</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 2 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-x-ray"></i></div>
-                        <h4>Arthritis & Joint Disorders</h4>
+                        <h4 data-en="Arthritis & Joint Disorders" data-ar="التهاب المفاصل وأمراضها">Arthritis & Joint Disorders</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Arthritis & Joint Disorders</h4>
+                        <h4 data-en="Arthritis & Joint Disorders" data-ar="التهاب المفاصل وأمراضها">Arthritis & Joint Disorders</h4>
                         <ul>
-                            <li>Osteoarthritis</li>
-                            <li>Rheumatoid Arthritis</li>
-                            <li>Joint Stiffness</li>
-                            <li>Joint Pain</li>
-                            <li>Joint Hypermobility</li>
+                            <li data-en="Osteoarthritis" data-ar="خشونة المفاصل">Osteoarthritis</li>
+                            <li data-en="Rheumatoid Arthritis" data-ar="الروماتويد">Rheumatoid Arthritis</li>
+                            <li data-en="Joint Stiffness" data-ar="تيبس المفاصل">Joint Stiffness</li>
+                            <li data-en="Joint Pain" data-ar="آلام المفاصل">Joint Pain</li>
+                            <li data-en="Joint Hypermobility" data-ar="فرط حركة المفاصل">Joint Hypermobility</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 3 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-crutch"></i></div>
-                        <h4>Fracture Rehabilitation</h4>
+                        <h4 data-en="Fracture Rehabilitation" data-ar="تأهيل الكسور">Fracture Rehabilitation</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Fracture Rehabilitation</h4>
+                        <h4 data-en="Fracture Rehabilitation" data-ar="تأهيل الكسور">Fracture Rehabilitation</h4>
                         <ul>
-                            <li>Upper Limb Fracture Rehab</li>
-                            <li>Lower Limb Fracture Rehab</li>
-                            <li>Post Cast Stiffness</li>
-                            <li>Delayed Functional Recovery</li>
+                            <li data-en="Upper Limb Fracture Rehab" data-ar="تأهيل كسور الطرف العلوي">Upper Limb Fracture Rehab</li>
+                            <li data-en="Lower Limb Fracture Rehab" data-ar="تأهيل كسور الطرف السفلي">Lower Limb Fracture Rehab</li>
+                            <li data-en="Post Cast Stiffness" data-ar="تيبس ما بعد الجبس">Post Cast Stiffness</li>
+                            <li data-en="Delayed Functional Recovery" data-ar="تأخر التعافي الوظيفي">Delayed Functional Recovery</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 4 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-person-running"></i></div>
-                        <h4>Sport Injury & Rehabilitation</h4>
+                        <h4 data-en="Sport Injury & Rehabilitation" data-ar="الإصابات الرياضية والتأهيل">Sport Injury & Rehabilitation</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Sport Injury & Rehabilitation</h4>
+                        <h4 data-en="Sport Injury & Rehabilitation" data-ar="الإصابات الرياضية والتأهيل">Sport Injury & Rehabilitation</h4>
                         <ul>
-                            <li>ACL Reconstruction Rehab</li>
-                            <li>Meniscus Surgery Rehab</li>
-                            <li>Shoulder Surgery Rehab</li>
-                            <li>Rotator Cuff Repair Rehab</li>
-                            <li>Joint Replacement Rehab</li>
-                            <li>Spine Surgery Rehabilitation</li>
-                            <li>Fracture Fixation Rehabilitation</li>
+                            <li data-en="ACL Reconstruction Rehab" data-ar="تأهيل الرباط الصليبي">ACL Reconstruction Rehab</li>
+                            <li data-en="Meniscus Surgery Rehab" data-ar="تأهيل الغضروف الهلالي">Meniscus Surgery Rehab</li>
+                            <li data-en="Shoulder Surgery Rehab" data-ar="تأهيل جراحة الكتف">Shoulder Surgery Rehab</li>
+                            <li data-en="Rotator Cuff Repair Rehab" data-ar="تأهيل الكفة المدورة">Rotator Cuff Repair Rehab</li>
+                            <li data-en="Joint Replacement Rehab" data-ar="تأهيل تغيير المفاصل">Joint Replacement Rehab</li>
+                            <li data-en="Spine Surgery Rehabilitation" data-ar="تأهيل جراحة العمود الفقري">Spine Surgery Rehabilitation</li>
+                            <li data-en="Fracture Fixation Rehabilitation" data-ar="تأهيل تثبيت الكسور">Fracture Fixation Rehabilitation</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 5 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-scale-balanced"></i></div>
-                        <h4>Balance & Functional Disorders</h4>
+                        <h4 data-en="Balance & Functional Disorders" data-ar="اضطرابات التوازن والوظائف">Balance & Functional Disorders</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Balance & Functional Disorders</h4>
+                        <h4 data-en="Balance & Functional Disorders" data-ar="اضطرابات التوازن والوظائف">Balance & Functional Disorders</h4>
                         <ul>
-                            <li>Balance Training</li>
-                            <li>Fall Prevention</li>
-                            <li>Gait Training</li>
-                            <li>Walking Difficulties</li>
-                            <li>Functional Movement Training</li>
+                            <li data-en="Balance Training" data-ar="تدريب التوازن">Balance Training</li>
+                            <li data-en="Fall Prevention" data-ar="الوقاية من السقوط">Fall Prevention</li>
+                            <li data-en="Gait Training" data-ar="تدريب المشي">Gait Training</li>
+                            <li data-en="Walking Difficulties" data-ar="صعوبات المشي">Walking Difficulties</li>
+                            <li data-en="Functional Movement Training" data-ar="تدريب الحركة الوظيفية">Functional Movement Training</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 6 -->
             <div class="flip-card" onclick="this.classList.toggle('flipped')">
                 <div class="flip-card-inner">
                     <div class="flip-card-front">
                         <div class="icon-circle"><i class="fas fa-heart-pulse"></i></div>
-                        <h4>Pain Management</h4>
+                        <h4 data-en="Pain Management" data-ar="إدارة الألم">Pain Management</h4>
                     </div>
                     <div class="flip-card-back">
-                        <h4>Pain Management</h4>
+                        <h4 data-en="Pain Management" data-ar="إدارة الألم">Pain Management</h4>
                         <ul>
-                            <li>Chronic Pain</li>
-                            <li>Myofascial Pain Syndrome</li>
-                            <li>Trigger Points</li>
-                            <li>Muscle Spasm</li>
-                            <li>Nerve Entrapment</li>
-                            <li>Overuse Injuries</li>
+                            <li data-en="Chronic Pain" data-ar="الألم المزمن">Chronic Pain</li>
+                            <li data-en="Myofascial Pain Syndrome" data-ar="ألم اللفافة العضلية">Myofascial Pain Syndrome</li>
+                            <li data-en="Trigger Points" data-ar="العقد العضلية">Trigger Points</li>
+                            <li data-en="Muscle Spasm" data-ar="الشد العضلي">Muscle Spasm</li>
+                            <li data-en="Nerve Entrapment" data-ar="انضغاط العصب">Nerve Entrapment</li>
+                            <li data-en="Overuse Injuries" data-ar="إصابات الإجهاد المتكرر">Overuse Injuries</li>
                         </ul>
                     </div>
                 </div>
             </div>
-
         </div>
     </section>
 
     <!-- Appointment Form Section -->
     <section class="appointment-sec" id="appointment">
         <div class="container">
-            <h2 class="section-title" style="text-align: center;">Book an Appointment</h2>
+            <h2 class="section-title" style="text-align: center;" data-en="Book an Appointment" data-ar="احجز موعدك">Book an Appointment</h2>
             <form id="bookingForm" name="google-sheet">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Name <span>*</span></label>
+                        <label><span data-en="Name" data-ar="الاسم">Name</span> <span>*</span></label>
                         <input type="text" name="الاسم" required>
                     </div>
                     <div class="form-group">
-                        <label>Phone Number <span>*</span></label>
+                        <label><span data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</span> <span>*</span></label>
                         <input type="tel" name="رقم الهاتف" required>
                     </div>
                     <div class="form-group">
-                        <label>Whatsapp Number <span>*</span></label>
+                        <label><span data-en="Whatsapp Number" data-ar="رقم الواتساب">Whatsapp Number</span> <span>*</span></label>
                         <input type="tel" name="رقم الواتساب" required>
                     </div>
                     <div class="form-group">
-                        <label>Country <span>*</span></label>
+                        <label><span data-en="Country" data-ar="الدولة">Country</span> <span>*</span></label>
                         <select name="الدولة" required>
-                            <option value="" disabled selected>Select Country</option>
-                            <option value="EG">Egypt</option>
-                            <option value="SA">Saudi Arabia</option>
-                            <option value="AE">United Arab Emirates</option>
-                            <option value="KW">Kuwait</option>
-                            <option value="QA">Qatar</option>
-                            <option value="BH">Bahrain</option>
-                            <option value="OM">Oman</option>
-                            <option value="JO">Jordan</option>
-                            <option value="LB">Lebanon</option>
-                            <option value="IQ">Iraq</option>
-                            <option value="SY">Syria</option>
-                            <option value="YE">Yemen</option>
-                            <option value="PS">Palestine</option>
-                            <option value="SD">Sudan</option>
-                            <option value="LY">Libya</option>
-                            <option value="TN">Tunisia</option>
-                            <option value="DZ">Algeria</option>
-                            <option value="MA">Morocco</option>
-                            <option value="OTHER">Other</option>
+                            <option value="" disabled selected data-en="Select Country" data-ar="اختر الدولة">Select Country</option>
+                            <option value="EG" data-en="Egypt" data-ar="مصر">Egypt</option>
+                            <option value="SA" data-en="Saudi Arabia" data-ar="السعودية">Saudi Arabia</option>
+                            <option value="AE" data-en="United Arab Emirates" data-ar="الإمارات">United Arab Emirates</option>
+                            <option value="KW" data-en="Kuwait" data-ar="الكويت">Kuwait</option>
+                            <option value="QA" data-en="Qatar" data-ar="قطر">Qatar</option>
+                            <option value="BH" data-en="Bahrain" data-ar="البحرين">Bahrain</option>
+                            <option value="OM" data-en="Oman" data-ar="عمان">Oman</option>
+                            <option value="JO" data-en="Jordan" data-ar="الأردن">Jordan</option>
+                            <option value="LB" data-en="Lebanon" data-ar="لبنان">Lebanon</option>
+                            <option value="IQ" data-en="Iraq" data-ar="العراق">Iraq</option>
+                            <option value="SY" data-en="Syria" data-ar="سوريا">Syria</option>
+                            <option value="YE" data-en="Yemen" data-ar="اليمن">Yemen</option>
+                            <option value="PS" data-en="Palestine" data-ar="فلسطين">Palestine</option>
+                            <option value="SD" data-en="Sudan" data-ar="السودان">Sudan</option>
+                            <option value="LY" data-en="Libya" data-ar="ليبيا">Libya</option>
+                            <option value="TN" data-en="Tunisia" data-ar="تونس">Tunisia</option>
+                            <option value="DZ" data-en="Algeria" data-ar="الجزائر">Algeria</option>
+                            <option value="MA" data-en="Morocco" data-ar="المغرب">Morocco</option>
+                            <option value="OTHER" data-en="Other" data-ar="أخرى">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Governorate / State <span>*</span></label>
+                        <label><span data-en="Governorate / State" data-ar="المحافظة / المنطقة">Governorate / State</span> <span>*</span></label>
                         <input type="text" name="المحافظة" required>
                     </div>
                     <div class="form-group">
-                        <label>Nationality <span>*</span></label>
+                        <label><span data-en="Nationality" data-ar="الجنسية">Nationality</span> <span>*</span></label>
                         <input type="text" name="الجنسية" required>
                     </div>
                     <div class="form-group full-width">
-                        <label>How did you hear about us?</label>
+                        <label data-en="How did you hear about us?" data-ar="كيف تعرفت علينا؟">How did you hear about us?</label>
                         <select name="كيف تعرفت علينا؟">
-                            <option value="" disabled selected>Select an option</option>
-                            <option value="Previous Client">Previous Client</option>
-                            <option value="Facebook">Facebook</option>
-                            <option value="Instagram">Instagram</option>
-                            <option value="TikTok">TikTok</option>
-                            <option value="Youtube">Youtube</option>
-                            <option value="Friend">Friend / Relative</option>
-                            <option value="Other">Other</option>
+                            <option value="" disabled selected data-en="Select an option" data-ar="اختر إجابة">Select an option</option>
+                            <option value="Previous Client" data-en="Previous Client" data-ar="عميل سابق">Previous Client</option>
+                            <option value="Facebook" data-en="Facebook" data-ar="فيسبوك">Facebook</option>
+                            <option value="Instagram" data-en="Instagram" data-ar="انستجرام">Instagram</option>
+                            <option value="TikTok" data-en="TikTok" data-ar="تيك توك">TikTok</option>
+                            <option value="Youtube" data-en="Youtube" data-ar="يوتيوب">Youtube</option>
+                            <option value="Friend" data-en="Friend / Relative" data-ar="صديق / قريب">Friend / Relative</option>
+                            <option value="Other" data-en="Other" data-ar="أخرى">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Job <span>*</span></label>
+                        <label><span data-en="Job" data-ar="الوظيفة">Job</span> <span>*</span></label>
                         <input type="text" name="الوظيفة" required>
                     </div>
                     <div class="form-group">
-                        <label>Age <span>*</span></label>
+                        <label><span data-en="Age" data-ar="العمر">Age</span> <span>*</span></label>
                         <input type="number" name="العمر" required>
                     </div>
                     <div class="form-group">
-                        <label>Gender <span>*</span></label>
+                        <label><span data-en="Gender" data-ar="الجنس">Gender</span> <span>*</span></label>
                         <select name="الجنس" required>
-                            <option value="" disabled selected>Select Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                            <option value="" disabled selected data-en="Select Gender" data-ar="اختر الجنس">Select Gender</option>
+                            <option value="Male" data-en="Male" data-ar="ذكر">Male</option>
+                            <option value="Female" data-en="Female" data-ar="أنثى">Female</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Department to Book <span>*</span></label>
+                        <label><span data-en="Department to Book" data-ar="القسم المطلوب حجزه">Department to Book</span> <span>*</span></label>
                         <select name="نوع الحجز" required>
-                            <option value="" disabled selected>Select Department</option>
-                            <option value="Clinical Nutrition">Clinical Nutrition</option>
-                            <option value="Health Coaching">Health Coaching</option>
-                            <option value="Physical Therapy">Physical Therapy & Rehabilitation</option>
+                            <option value="" disabled selected data-en="Select Department" data-ar="اختر القسم">Select Department</option>
+                            <option value="Clinical Nutrition" data-en="Clinical Nutrition" data-ar="التغذية العلاجية">Clinical Nutrition</option>
+                            <option value="Health Coaching" data-en="Health Coaching" data-ar="التدريب الصحي">Health Coaching</option>
+                            <option value="Physical Therapy" data-en="Physical Therapy & Rehabilitation" data-ar="العلاج الطبيعي والتأهيل">Physical Therapy & Rehabilitation</option>
                         </select>
                     </div>
                     
                     <div class="form-group full-width">
-                        <button type="submit" id="submitBtn" class="btn btn-blue">Submit</button>
+                        <button type="submit" id="submitBtn" class="btn btn-blue" data-en="Submit" data-ar="تأكيد الحجز">Submit</button>
                     </div>
                 </div>
             </form>
@@ -1129,128 +724,195 @@
     <!-- Popup Modal -->
     <div id="successModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-icon">
-                <i class="fas fa-check"></i>
-            </div>
-            <h3>Appointment Sent Successfully</h3>
-            <p>Your booking has been successfully sent, and it will be confirmed via WhatsApp soon.</p>
-            <button type="button" class="modal-btn" onclick="closeModal()">OK</button>
+            <div class="modal-icon"><i class="fas fa-check"></i></div>
+            <h3 data-en="Appointment Sent Successfully" data-ar="تم إرسال الحجز بنجاح">Appointment Sent Successfully</h3>
+            <p data-en="Your booking has been successfully sent, and it will be confirmed via WhatsApp soon." data-ar="لقد تم إرسال طلب حجزك بنجاح، وسيتم تأكيده عبر الواتساب قريباً.">Your booking has been successfully sent, and it will be confirmed via WhatsApp soon.</p>
+            <button type="button" class="modal-btn" onclick="closeModal()" data-en="OK" data-ar="حسناً">OK</button>
         </div>
     </div>
 
     <!-- Maps Section -->
     <section class="maps-section container">
-        <h2 class="section-title" style="text-align: center;">Clinic Locations</h2>
+        <h2 class="section-title" style="text-align: center;" data-en="Clinic Locations" data-ar="فروع العيادة">Clinic Locations</h2>
         <div class="maps-grid">
             <div class="map-item">
-                <h4>Ismailia Clinic</h4>
-<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d16439.120195492105!2d32.271394!3d30.591485999999996!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f859956dfd4c23%3A0xc13b6ead85a52411!2zRHIuIEF5YSBLaGF0dGFiIHwg2K8uINin2YrZhyDYrti32KfYqA!5e1!3m2!1sar!2seg!4v1784772010250!5m2!1sar!2seg" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>            </div>
+                <h4 data-en="Ismailia Clinic" data-ar="عيادة الإسماعيلية">Ismailia Clinic</h4>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d16439.120195492105!2d32.271394!3d30.591485999999996!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f859956dfd4c23%3A0xc13b6ead85a52411!2zRHIuIEF5YSBLaGF0dGFiIHwg2K8uINin2YrZhyDYrti32KfYqA!5e1!3m2!1sar!2seg!4v1784772010250!5m2!1sar!2seg" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
             <div class="map-item">
-                <h4>Al Rehab Clinic</h4>
-<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d33059.23688254019!2d31.492102!3d30.053688000000005!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1458192dfc7a17ed!2sMedical%20Park%20Elite!5e1!3m2!1sar!2seg!4v1784772066071!5m2!1sar!2seg" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>            </div>
-              <div class="map-item">
-                <h4>Madinaty Clinic</h4>
-<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d33051.27207637055!2d31.664959!3d30.077537!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1457f50051742097%3A0x65bfb58ea191f8d6!2sYAS%20CLINICS!5e1!3m2!1sar!2seg!4v1784772086675!5m2!1sar!2seg" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>    </section>
+                <h4 data-en="Al Rehab Clinic" data-ar="عيادة الرحاب">Al Rehab Clinic</h4>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d33059.23688254019!2d31.492102!3d30.053688000000005!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1458192dfc7a17ed!2sMedical%20Park%20Elite!5e1!3m2!1sar!2seg!4v1784772066071!5m2!1sar!2seg" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+            <div class="map-item">
+                <h4 data-en="Madinaty Clinic" data-ar="عيادة مدينتي">Madinaty Clinic</h4>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d33051.27207637055!2d31.664959!3d30.077537!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1457f50051742097%3A0x65bfb58ea191f8d6!2sYAS%20CLINICS!5e1!3m2!1sar!2seg!4v1784772086675!5m2!1sar!2seg" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
-                <!-- شمال: أرقام التواصل -->
                 <div class="footer-left">
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;">Contact numbers</div>
+                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;" data-en="Contact numbers" data-ar="أرقام التواصل">Contact numbers</div>
                     <div class="contact-grid">
                         <a href="tel:01206999908" class="contact-card">
-                            <div class="contact-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
+                            <div class="contact-icon"><i class="fas fa-calendar-check"></i></div>
                             <div class="contact-info">
-                                <span>Booking</span>
+                                <span data-en="Booking" data-ar="الحجز">Booking</span>
                                 <h4>01206999908</h4>
                             </div>
                         </a>
-
                         <a href="https://wa.me/201060026072" target="_blank" class="contact-card">
-                            <div class="contact-icon">
-                                <i class="fa-brands fa-whatsapp"></i>
-                            </div>
+                            <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
                             <div class="contact-info">
-                                <span>WhatsApp</span>
+                                <span data-en="WhatsApp" data-ar="واتساب">WhatsApp</span>
                                 <h4>01060026072</h4>
                             </div>
                         </a>
                     </div>
                 </div>
 
-                <!-- منتصف: اللوجو الأبيض -->
                 <div class="footer-center">
                     <div style="height: 28px; margin-bottom: 12px;"></div>
                     <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 82px; object-fit: contain;">
                 </div>
 
-                <!-- يمين: Follow Us -->
                 <div class="footer-right">
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;">Follow us</div>
+                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;" data-en="Follow us" data-ar="تابعنا">Follow us</div>
                     <div class="social-grid">
                         <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank" class="social-card">
-                            <div class="social-icon">
-                                <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                            </div>
-                            <div class="contact-info">
-                                <h4>Facebook</h4>
-                            </div>
+                            <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
+                            <div class="contact-info"><h4 data-en="Facebook" data-ar="فيسبوك">Facebook</h4></div>
                         </a>
                         <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank" class="social-card">
-                            <div class="social-icon">
-                                <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                            </div>
-                            <div class="contact-info">
-                                <h4>Instagram</h4>
-                            </div>
+                            <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+                            <div class="contact-info"><h4 data-en="Instagram" data-ar="انستجرام">Instagram</h4></div>
                         </a>
                         <a href="https://www.tiktok.com/@dr.ayakhattab" target="_blank" class="social-card">
-                            <div class="social-icon">
-                                <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg>
-                            </div>
-                            <div class="contact-info">
-                                <h4>TikTok</h4>
-                            </div>
+                            <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg></div>
+                            <div class="contact-info"><h4 data-en="TikTok" data-ar="تيك توك">TikTok</h4></div>
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="copyright">Copyright © Dr. Aya Khattab. All rights reserved.</div>
+            <div class="copyright" data-en="Copyright © Dr. Aya Khattab. All rights reserved." data-ar="حقوق النشر © د. آية خطاب. جميع الحقوق محفوظة.">Copyright © Dr. Aya Khattab. All rights reserved.</div>
         </div>
     </footer>
 
-    <!-- زر الواتساب العائم -->
     <a href="https://wa.me/201060026072" target="_blank" class="whatsapp-float-btn"><i class="fab fa-whatsapp"></i></a>
+
+    <!-- كود تغيير اللغة السحري (FLIP Animation) -->
+    <script>
+        function toggleLanguage() {
+            const toggleBtn = document.getElementById('langToggle');
+            // منع الضغط مرتين ورا بعض
+            if (toggleBtn.disabled) return;
+            toggleBtn.disabled = true;
+
+            const logo = document.getElementById('mainLogo');
+            const overlay = document.getElementById('transitionOverlay');
+            const loader = document.getElementById('transitionLoader');
+            
+            // 1. حساب مكان اللوجو الأصلي وعمل نسخة منه تطير لنص الشاشة
+            const firstRect = logo.getBoundingClientRect();
+            const clone = logo.cloneNode(true);
+            clone.style.position = 'fixed';
+            clone.style.top = firstRect.top + 'px';
+            clone.style.left = firstRect.left + 'px';
+            clone.style.width = firstRect.width + 'px';
+            clone.style.height = firstRect.height + 'px';
+            clone.style.margin = '0';
+            clone.style.zIndex = '100001';
+            clone.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)'; // حركة سموث
+            document.body.appendChild(clone);
+            
+            // 2. إخفاء اللوجو الأصلي وتشغيل الشاشة البيضاء
+            logo.style.opacity = '0';
+            overlay.classList.add('active');
+            
+            // 3. تحريك النسخة لمنتصف الشاشة (Animation Trigger)
+            requestAnimationFrame(() => {
+                clone.style.top = '50%';
+                clone.style.left = '50%';
+                clone.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                
+                // إظهار اللودر الروش تحت اللوجو لما يوصل النص
+                setTimeout(() => {
+                    loader.classList.add('active');
+                }, 800);
+            });
+            
+            // 4. بعد ثانية ونص من التمركز في النص: تغيير اللغة والمكان!
+            setTimeout(() => {
+                let currentLang = document.documentElement.lang;
+                let newLang = currentLang === 'en' ? 'ar' : 'en';
+                
+                // شقلبة الموقع و تغيير اللغة
+                document.documentElement.lang = newLang;
+                document.documentElement.dir = newLang === 'en' ? 'ltr' : 'rtl';
+                
+                // تحديث كل النصوص
+                document.querySelectorAll('[data-en]').forEach(el => {
+                    el.innerHTML = el.getAttribute(`data-${newLang}`);
+                });
+                
+                // تحديث زر تبديل اللغة نفسه
+                toggleBtn.innerText = newLang === 'en' ? 'العربية' : 'English';
+                
+                // إخفاء اللودر
+                loader.classList.remove('active');
+                
+                // سحب مكان اللوجو الجديد (التقليب خلاه يروح الناحية التانية)
+                const newRect = logo.getBoundingClientRect();
+                
+                // تحريك النسخة لمكانها الجديد الناحية التانية!
+                clone.style.transform = 'translate(0, 0) scale(1)';
+                clone.style.top = newRect.top + 'px';
+                clone.style.left = newRect.left + 'px';
+                clone.style.width = newRect.width + 'px';
+                clone.style.height = newRect.height + 'px';
+                
+                // إخفاء الشاشة البيضاء
+                overlay.classList.remove('active');
+                
+                // التنظيف بعد ما الحركة تخلص
+                setTimeout(() => {
+                    logo.style.opacity = '1';
+                    clone.remove();
+                    toggleBtn.disabled = false;
+                }, 800);
+                
+            }, 2300); // مدة البقاء في المنتصف
+        }
+    </script>
 
     <!-- كود الجافاسكريبت لربط الفورم بجوجل شيت -->
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxWmta8IDW9WKAdIL7EoC8SEJx3-waFrb5nA9hRzxlg4E_X_OIt7MjUEHc8pR7AH07vdg/exec';
-        
         const form = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
         const successModal = document.getElementById('successModal');
 
         form.addEventListener('submit', e => {
             e.preventDefault(); 
-
-            submitBtn.innerHTML = 'Submitting... <i class="fas fa-spinner fa-spin"></i>';
+            const isEnglish = document.documentElement.lang === 'en';
+            
+            submitBtn.innerHTML = isEnglish ? 'Submitting... <i class="fas fa-spinner fa-spin"></i>' : 'جاري الإرسال... <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(response => {
                     successModal.classList.add('active');
                     form.reset(); 
-                    submitBtn.innerHTML = 'Submit';
+                    submitBtn.innerHTML = isEnglish ? 'Submit' : 'تأكيد الحجز';
                     submitBtn.disabled = false;
                 })
                 .catch(error => {
                     console.error('Error!', error.message);
-                    alert('Something went wrong. Please try again.');
-                    submitBtn.innerHTML = 'Submit';
+                    alert(isEnglish ? 'Something went wrong. Please try again.' : 'حدث خطأ. يرجى المحاولة مرة أخرى.');
+                    submitBtn.innerHTML = isEnglish ? 'Submit' : 'تأكيد الحجز';
                     submitBtn.disabled = false;
                 });
         });
