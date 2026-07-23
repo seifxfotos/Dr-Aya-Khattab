@@ -251,12 +251,32 @@
         /* ---------------------------------------------------- */
 
         /* ستايلات أجزاء التواصل التفاعلية الجديدة (Glassmorphic Contact Cards) */
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .contact-col {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .social-col {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
         .contact-grid {
             display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-top: 25px;
-            flex-wrap: wrap;
+            flex-direction: column; /* جعل الأرقام تحت بعضها */
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 340px;
         }
         .contact-card {
             background: rgba(255, 255, 255, 0.12);
@@ -264,47 +284,48 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 16px;
-            padding: 20px 30px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
-            min-width: 280px;
+            width: 100%;
         }
         .contact-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             background: rgba(255, 255, 255, 0.22);
         }
         .contact-icon {
-            width: 55px;
-            height: 55px;
+            width: 48px;
+            height: 48px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            font-size: 20px;
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.4);
+            flex-shrink: 0;
         }
         .contact-info {
             text-align: left;
         }
         .contact-info span {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .contact-info h4 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #ffffff;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         /* باقي الأقسام كما هي */
@@ -327,19 +348,13 @@
             animation: gradientBG 6s ease infinite;
             color: white; padding: 60px 5% 20px; 
         }
-        .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px; align-items: center; }
-        .footer-logo { text-align: left; } 
-        .footer-col:nth-child(2) { text-align: center; } 
-        .footer-col:nth-child(3) { justify-self: end; display: flex; flex-direction: column; align-items: center; } 
-        .footer-col h3 { margin-bottom: 15px; font-size: 20px; font-weight: 600; color: white;}
-        .footer-col p { color: white; }
-        .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: center; }
+        .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: flex-end; }
         .social-links a { display: block; width: 30px; height: 30px; color: white; transition: 0.3s; }
         .social-links a:hover { color: var(--teal-box); }
-        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; font-size: 14px; color: white; }
+        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; font-size: 14px; color: white; grid-column: span 2; }
         
-        /* Floating WhatsApp Button */
-        .fab { position: fixed; bottom: 30px; right: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.3s;}
+        /* Floating WhatsApp Button - تم تعديل مكانه وزيادة الـ z-index وضبط المسافة لعدم التداخل */
+        .fab { position: fixed; bottom: 30px; left: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s;}
         .fab:hover { transform: scale(1.1); }
 
         @media (max-width: 768px) {
@@ -350,15 +365,23 @@
             .hero-group { flex-direction: column-reverse; text-align: center; gap: 20px; }
             .hero-image { align-self: center; width: 100%; height: 350px; }
             .hero-content { margin-bottom: 20px; }
-            .services-grid, .maps-grid, .footer-grid { grid-template-columns: 1fr; }
+            .services-grid, .maps-grid { grid-template-columns: 1fr; }
             
             .hero-box { padding: 20px !important; text-align: center; }
             .box-title { font-size: 26px; }
             .box-divider { margin: 0 auto 15px auto; }
             
             .category-title { margin-top: 20px; font-size: 22px; }
-            .footer-logo, .footer-col:nth-child(2), .footer-col:nth-child(3) { justify-self: center; text-align: center; align-items: center; }
+            
+            /* تظبيط الفوتر على الموبايل ليصبح عمودياً ومرتباً في المنتصف */
+            .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+            .contact-col, .social-col { align-items: center; text-align: center; }
+            .contact-grid { max-width: 100%; align-items: center; }
             .social-links { justify-content: center; }
+            .copyright { grid-column: span 1; }
+            
+            /* إعادة زر الواتساب الـ floating للجانب الأيمن أو الأيسر بأمان على الموبايل */
+            .fab { left: auto; right: 20px; bottom: 20px; }
         }
     </style>
 </head>
@@ -831,11 +854,10 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container footer-grid" style="grid-template-columns: 1fr; text-align: center;">
-            <div class="footer-col" style="display: flex; flex-direction: column; align-items: center;">
-                <h3 style="margin-bottom: 25px; font-size: 24px; font-weight: 700;">Contact Numbers</h3>
-                
-                <!-- أزرار التواصل التفاعلية بالدوائر الزجاجية -->
+        <div class="container footer-grid">
+            <!-- شمال: أرقام التواصل (مترتبة تحت بعضها) -->
+            <div class="footer-col contact-col">
+                <h3 style="margin-bottom: 15px; font-size: 20px; font-weight: 600;">Contact Numbers</h3>
                 <div class="contact-grid">
                     <a href="tel:01206999908" class="contact-card">
                         <div class="contact-icon">
@@ -859,7 +881,8 @@
                 </div>
             </div>
 
-            <div class="footer-col" style="margin-top: 40px;">
+            <!-- يمين: تابعنا (Follow Us) -->
+            <div class="footer-col social-col">
                 <h3 style="margin-bottom: 15px; font-size: 20px; font-weight: 600;">Follow Us</h3>
                 <div class="social-links">
                     <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
@@ -867,8 +890,9 @@
                     <a href="https://www.tiktok.com/@dr.ayakhattab" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg></a>
                 </div>
             </div>
+
+            <div class="copyright">Copyright © Dr. Aya Khattab. All rights reserved.</div>
         </div>
-        <div class="copyright" style="margin-top: 30px;">Copyright © Dr. Aya Khattab. All rights reserved.</div>
     </footer>
 
     <a href="https://wa.me/201060026072" target="_blank" class="fab"><i class="fab fa-whatsapp"></i></a>
