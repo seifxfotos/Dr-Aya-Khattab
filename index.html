@@ -179,7 +179,9 @@
         label { font-weight: 600; margin-bottom: 8px; display: block; color: var(--text-dark); font-size: 14px; }
         html[dir="ltr"] label { text-align: left; }
         html[dir="rtl"] label { text-align: right; }
-        label span { color: #ff4d4d; }
+        
+        /* التعديل المخصص لتلوين النجمة فقط باللون الأحمر للحقول المطلوبة */
+        label span:last-child { color: #ff4d4d; }
 
         .maps-section { padding: 50px 5%; }
         .maps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
@@ -234,11 +236,20 @@
         }
 
         /* -------------------------------------------------------------------------- */
-        /* استجابة الموبايل */
+        /* استجابة الموبايل وتثبيت سنتر اللوجو الإجباري للأنيميشن */
         /* -------------------------------------------------------------------------- */
+        @media (max-width: 992px) {
+            .maps-grid { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 768px) {
             html { scroll-padding-top: 130px; } 
             .header { flex-direction: column; gap: 10px; }
+            
+            /* إجبار اللوجو يكون متسنتر تماماً في الموبايل ومفيش هوامش ترحلّه */
+            .logo { justify-content: center; width: 100%; display: flex; margin: 0 auto; }
+            .header-logo { margin: 0 auto; display: block; }
+            
             .nav-links { gap: 15px; font-size: 13px; }
             html[dir="ltr"] .nav-links { margin-left: 0; }
             html[dir="rtl"] .nav-links { margin-right: 0; }
@@ -246,7 +257,7 @@
             .hero-group { flex-direction: column-reverse; text-align: center; gap: 20px; }
             .hero-image { align-self: center; width: 100%; height: 350px; }
             .hero-content { margin-bottom: 20px; }
-            .services-grid, .maps-grid { grid-template-columns: 1fr; }
+            .services-grid { grid-template-columns: 1fr; }
             
             .hero-box { padding: 20px !important; text-align: center !important; }
             .box-title { font-size: 26px; }
@@ -825,6 +836,7 @@
             clone.style.height = firstRect.height + 'px';
             clone.style.margin = '0';
             clone.style.zIndex = '100001';
+            clone.style.transform = 'translate(0, 0) scale(1)';
             clone.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)'; // حركة سموث
             document.body.appendChild(clone);
             
@@ -864,10 +876,13 @@
                 // إخفاء اللودر
                 loader.classList.remove('active');
                 
-                // سحب مكان اللوجو الجديد (التقليب خلاه يروح الناحية التانية)
+                // إجبار المتصفح على قراءة الأبعاد الجديدة (مهم جداً للموبايل)
+                void document.body.offsetHeight;
+                
+                // سحب مكان اللوجو الجديد (التقليب خلاه يروح الناحية التانية، ولو موبايل هيفضل ثابت مكانه فوق)
                 const newRect = logo.getBoundingClientRect();
                 
-                // تحريك النسخة لمكانها الجديد الناحية التانية!
+                // تحريك النسخة لمكانها الجديد
                 clone.style.transform = 'translate(0, 0) scale(1)';
                 clone.style.top = newRect.top + 'px';
                 clone.style.left = newRect.left + 'px';
