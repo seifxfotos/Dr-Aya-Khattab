@@ -419,6 +419,21 @@
         /* تعديلات وتجميل حقول الفورم والقوائم المنسدلة */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
         
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        
         input, select, textarea { 
             padding: 14px 16px; 
             border: 1.5px solid #dcdfe6; 
@@ -427,7 +442,7 @@
             font-size: 14.5px; 
             width: 100%; 
             outline: none; 
-            background-color: #ffffff;
+            background-color: #f4f6f8;
             color: var(--text-dark);
             transition: all 0.3s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
@@ -1018,11 +1033,21 @@
         <div class="container">
             <h2 class="section-title" style="text-align: center;">Book an Appointment</h2>
             <form id="bookingForm" name="google-sheet">
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div><label>Name <span>*</span></label><input type="text" name="الاسم" required></div>
-                    <div><label>Phone Number <span>*</span></label><input type="tel" name="رقم الهاتف" required></div>
-                    <div><label>Whatsapp Number <span>*</span></label><input type="tel" name="رقم الواتساب" required></div>
-                    <div><label>Country <span>*</span></label>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Name <span>*</span></label>
+                        <input type="text" name="الاسم" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number <span>*</span></label>
+                        <input type="tel" name="رقم الهاتف" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Whatsapp Number <span>*</span></label>
+                        <input type="tel" name="رقم الواتساب" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Country <span>*</span></label>
                         <select name="الدولة" required>
                             <option value="" disabled selected>Select Country</option>
                             <option value="EG">Egypt</option>
@@ -1046,9 +1071,16 @@
                             <option value="OTHER">Other</option>
                         </select>
                     </div>
-                    <div><label>Governorate / State <span>*</span></label><input type="text" name="المحافظة" required></div>
-                    <div style="grid-column: span 2;"><label>Nationality <span>*</span></label><input type="text" name="الجنسية" required></div>
-                    <div style="grid-column: span 2;"><label>How did you hear about us?</label>
+                    <div class="form-group">
+                        <label>Governorate / State <span>*</span></label>
+                        <input type="text" name="المحافظة" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nationality <span>*</span></label>
+                        <input type="text" name="الجنسية" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>How did you hear about us?</label>
                         <select name="كيف تعرفت علينا؟">
                             <option value="" disabled selected>Select an option</option>
                             <option value="Previous Client">Previous Client</option>
@@ -1060,16 +1092,24 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div><label>Job <span>*</span></label><input type="text" name="الوظيفة" required></div>
-                    <div><label>Age <span>*</span></label><input type="number" name="العمر" required></div>
-                    <div><label>Gender <span>*</span></label>
+                    <div class="form-group">
+                        <label>Job <span>*</span></label>
+                        <input type="text" name="الوظيفة" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age <span>*</span></label>
+                        <input type="number" name="العمر" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender <span>*</span></label>
                         <select name="الجنس" required>
                             <option value="" disabled selected>Select Gender</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
-                    <div style="grid-column: span 2;"><label>Department to Book <span>*</span></label>
+                    <div class="form-group">
+                        <label>Department to Book <span>*</span></label>
                         <select name="نوع الحجز" required>
                             <option value="" disabled selected>Select Department</option>
                             <option value="Clinical Nutrition">Clinical Nutrition</option>
@@ -1078,7 +1118,9 @@
                         </select>
                     </div>
                     
-                    <button type="submit" id="submitBtn" class="btn btn-blue" style="grid-column: span 2;">Submit</button>
+                    <div class="form-group full-width">
+                        <button type="submit" id="submitBtn" class="btn btn-blue">Submit</button>
+                    </div>
                 </div>
             </form>
         </div>
