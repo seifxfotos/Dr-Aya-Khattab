@@ -250,13 +250,19 @@
         }
         /* ---------------------------------------------------- */
 
-        /* ستايل الفوتر الجديد (3 أعمدة: التواصل شمال، اللجو في النص، Follow Us يمين) */
+        /* ستايل الفوتر المتزن تماماً بالمقاسات والمسافات المتساوية */
+        .footer { 
+            background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
+            background-size: 400% 400%;
+            animation: gradientBG 6s ease infinite;
+            color: white; padding: 50px 5% 20px; 
+        }
         .footer-grid {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
-            gap: 30px;
+            gap: 40px;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
         .footer-left {
             text-align: left;
@@ -276,6 +282,8 @@
             flex-direction: column;
             align-items: flex-end;
         }
+        
+        /* كروت التواصل الطولية والمتساوية */
         .contact-grid {
             display: flex;
             flex-direction: row; /* جنب بعض على الكمبيوتر */
@@ -288,47 +296,51 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 16px;
-            padding: 14px 18px;
+            padding: 16px 18px; /* مظبوطة بالطول والشياكة زي الصورة */
             display: flex;
             align-items: center;
             gap: 12px;
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
+            width: 210px; /* عرض ثابت ومتناسق للكارتين */
         }
         .contact-card:hover {
             transform: translateY(-3px);
             background: rgba(255, 255, 255, 0.22);
         }
         .contact-icon {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
+            font-size: 17px;
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.4);
             flex-shrink: 0;
         }
         .contact-info {
             text-align: left;
+            overflow: hidden;
         }
         .contact-info span {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
         .contact-info h4 {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 700;
             color: #ffffff;
-            margin-top: 1px;
+            margin-top: 2px;
+            white-space: nowrap;
         }
 
         /* باقي الأقسام كما هي */
@@ -344,19 +356,12 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
 
-        /* الفوتر العامة */
-        .footer { 
-            background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
-            background-size: 400% 400%;
-            animation: gradientBG 6s ease infinite;
-            color: white; padding: 60px 5% 20px; 
-        }
         .social-links { display: flex; gap: 15px; margin-top: 15px; justify-content: flex-end; }
         .social-links a { display: block; width: 30px; height: 30px; color: white; transition: 0.3s; }
         .social-links a:hover { color: var(--teal-box); }
         .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; font-size: 14px; color: white; grid-column: span 3; }
         
-        /* زر الواتساب العائم - تم تعديل الكلاس لتجنب التعارض مع FontAwesome */
+        /* زر الواتساب العائم */
         .whatsapp-float-btn { position: fixed; bottom: 30px; left: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s;}
         .whatsapp-float-btn:hover { transform: scale(1.1); }
 
@@ -377,9 +382,10 @@
             .category-title { margin-top: 20px; font-size: 22px; }
             
             /* تظبيط الفوتر على الموبايل ليصبح عمودياً ومتسنترًا */
-            .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 25px; }
             .footer-left, .footer-center, .footer-right { align-items: center; text-align: center; width: 100%; }
-            .contact-grid { flex-direction: column; width: 100%; max-width: 320px; }
+            .contact-grid { flex-direction: column; width: 100%; max-width: 280px; align-items: center; margin: 15px auto 0 auto; }
+            .contact-card { width: 100%; }
             .social-links { justify-content: center; }
             .copyright { grid-column: span 1; }
             
@@ -857,9 +863,9 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container footer-grid">
-            <!-- شمال: أرقام التواصل (جنب بعض على الكمبيوتر) -->
+            <!-- شمال: أرقام التواصل جنب بعض -->
             <div class="footer-left">
-                <h3 style="margin-bottom: 15px; font-size: 20px; font-weight: 600;">Contact Numbers</h3>
+                <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: 600;">Contact Numbers</h3>
                 <div class="contact-grid">
                     <a href="tel:01206999908" class="contact-card">
                         <div class="contact-icon">
@@ -885,12 +891,12 @@
 
             <!-- منتصف: اللوجو الأبيض -->
             <div class="footer-center">
-                <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 85px; object-fit: contain;">
+                <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 75px; object-fit: contain;">
             </div>
 
-            <!-- يمين: تابعنا (Follow Us) -->
+            <!-- يمين: Follow Us -->
             <div class="footer-right">
-                <h3 style="margin-bottom: 15px; font-size: 20px; font-weight: 600;">Follow Us</h3>
+                <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: 600;">Follow Us</h3>
                 <div class="social-links">
                     <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
                     <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
@@ -902,7 +908,7 @@
         </div>
     </footer>
 
-    <!-- زر الواتساب العائم بكلاس جديد مخصص لتجنب التعارض -->
+    <!-- زر الواتساب العائم -->
     <a href="https://wa.me/201060026072" target="_blank" class="whatsapp-float-btn"><i class="fab fa-whatsapp"></i></a>
 
     <!-- كود الجافاسكريبت لربط الفورم بجوجل شيت -->
