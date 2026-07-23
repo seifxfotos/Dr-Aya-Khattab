@@ -356,7 +356,7 @@
             white-space: nowrap;
         }
 
-        /* كروت السوشيال ميديا بنفس ستايل كروت الحجز والواتس */
+        /* كروت السوشيال ميديا بنفس ستايل كروت الحجز والواتس (3 كروت بعرض إجمالي مطابق لكرتين التواصل) */
         .social-grid {
             display: flex;
             flex-direction: row;
@@ -370,7 +370,7 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 14px;
-            padding: 12px 8px;
+            padding: 12px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -379,7 +379,7 @@
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
-            width: 90px;
+            width: 70px; /* تم تعديل العرض ليصبح إجمالي الـ 3 كروت مطابقاً تماماً لكرتين التواصل */
         }
         .social-card:hover {
             transform: translateY(-3px);
@@ -460,7 +460,7 @@
             .contact-grid { flex-direction: row; justify-content: center; width: 100%; }
             .contact-card { width: 120px; }
             .social-grid { justify-content: center; }
-            .social-card { width: 95px; }
+            .social-card { width: 85px; }
             
             .whatsapp-float-btn { left: auto; right: 20px; bottom: 20px; }
         }
@@ -969,7 +969,7 @@
                     <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 82px; object-fit: contain;">
                 </div>
 
-                <!-- يمين: Follow Us (كروت سوشيال ميديا بنفس ستايل كروت الحجز والواتس) -->
+                <!-- يمين: Follow Us -->
                 <div class="footer-right">
                     <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;">Follow us</div>
                     <div class="social-grid">
