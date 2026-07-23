@@ -250,7 +250,7 @@
         }
         /* ---------------------------------------------------- */
 
-        /* ستايل الفوتر المتزن تماماً وتوزيع مساحات متساوية 1fr 1fr 1fr */
+        /* ستايل الفوتر المتزن وتصغير كروت التواصل لتكون أصغر حجماً وأنيقة */
         .footer { 
             background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185);
             background-size: 400% 400%;
@@ -259,7 +259,7 @@
         }
         .footer-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* ثلاث أعمدة متساوية تماماً لضبط المسافات بالشعرة */
+            grid-template-columns: 1fr 1fr 1fr; 
             gap: 20px;
             align-items: center;
             margin-bottom: 35px;
@@ -277,49 +277,49 @@
             align-items: center;
         }
         .footer-right {
-            text-align: center; /* سنترنا المحتوى جوه العمود عشان يبقى متوزع صح */
+            text-align: center; 
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         
-        /* كروت التواصل الطولية */
+        /* كروت التواصل الطولية والأصغر حجماً */
         .contact-grid {
             display: flex;
             flex-direction: row; 
-            gap: 15px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 12px;
         }
         .contact-card {
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 16px;
-            padding: 18px 12px;
+            border-radius: 14px;
+            padding: 12px 8px; /* تصغير البادينج لتوفير مساحة وحجم أصغر */
             display: flex;
             flex-direction: column; 
             align-items: center;
             text-align: center;
-            gap: 10px;
+            gap: 8px;
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
-            width: 125px; 
+            width: 110px; /* تصغير العرض */
         }
         .contact-card:hover {
             transform: translateY(-3px);
             background: rgba(255, 255, 255, 0.22);
         }
         .contact-icon {
-            width: 44px;
-            height: 44px;
+            width: 36px; /* تصغير دائرة الأيقونة */
+            height: 36px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
+            font-size: 15px; /* تصغير حجم الأيقونة جوا */
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.4);
             flex-shrink: 0;
@@ -330,17 +330,17 @@
         }
         .contact-info span {
             display: block;
-            font-size: 9.5px;
+            font-size: 8.5px; /* تصغير خط العنوان الفرعي */
             color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .contact-info h4 {
-            font-size: 11.5px;
+            font-size: 10.5px; /* تصغير خط الرقم ليتناسب مع الحجم الجديد */
             font-weight: 700;
             color: #ffffff;
-            margin-top: 3px;
+            margin-top: 2px;
             white-space: nowrap;
         }
 
@@ -386,7 +386,7 @@
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 25px; }
             .footer-left, .footer-center, .footer-right { align-items: center; text-align: center; width: 100%; }
             .contact-grid { flex-direction: row; justify-content: center; width: 100%; }
-            .contact-card { width: 135px; }
+            .contact-card { width: 120px; }
             .social-links { justify-content: center; }
             .copyright { grid-column: span 1; }
             
@@ -895,7 +895,7 @@
                 <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 95px; object-fit: contain;">
             </div>
 
-            <!-- يمين: Follow Us (متسنترة تماماً بالمعيار المساوي) -->
+            <!-- يمين: Follow Us -->
             <div class="footer-right">
                 <h3 style="margin-bottom: 12px; font-size: 18px; font-weight: 600;">Follow Us</h3>
                 <div class="social-links">
