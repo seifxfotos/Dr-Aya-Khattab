@@ -19,6 +19,18 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* أنيميشن الموجات لزر الواتساب العائم */
+        @keyframes whatsapp-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+        }
+
         html { scroll-behavior: smooth; scroll-padding-top: 75px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: var(--font-main); color: var(--text-dark); line-height: 1.6; background-color: #fff; overflow-x: hidden; }
@@ -431,9 +443,43 @@
             margin-right: auto;
         }
         
-        /* زر الواتساب العائم */
-        .whatsapp-float-btn { position: fixed; bottom: 30px; left: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s;}
-        .whatsapp-float-btn:hover { transform: scale(1.1); }
+        /* زر الواتساب العائم مع تأثير الموجات (Pulse / Wave Animation) */
+        .whatsapp-float-btn { 
+            position: fixed; 
+            bottom: 30px; 
+            left: 30px; 
+            background-color: #25D366; 
+            color: white; 
+            width: 55px; 
+            height: 55px; 
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 30px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            z-index: 9999; 
+            transition: transform 0.3s;
+        }
+        .whatsapp-float-btn::before,
+        .whatsapp-float-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background-color: #25D366;
+            z-index: -1;
+            animation: whatsapp-pulse 2s infinite ease-out;
+        }
+        .whatsapp-float-btn::after {
+            animation-delay: 1s;
+        }
+        .whatsapp-float-btn:hover { 
+            transform: scale(1.1); 
+        }
 
         @media (max-width: 768px) {
             html { scroll-padding-top: 75px; } 
@@ -963,7 +1009,7 @@
                     </div>
                 </div>
 
-                <!-- منتصف: اللوجو الأبيض (أصغر حاجة بسيطة) -->
+                <!-- منتصف: اللوجو الأبيض -->
                 <div class="footer-center">
                     <div style="height: 28px; margin-bottom: 12px;"></div>
                     <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 82px; object-fit: contain;">
