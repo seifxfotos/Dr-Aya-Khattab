@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حجز استشارة أونلاين - السعودية | Dr. Aya Khattab</title>
-    <!-- رابط مكتبة الأيقونات -->
+    <!-- FontAwesome Library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- الخطوط -->
+    <!-- Premium English Font (Poppins) & Arabic Font (Cairo) -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        /* =======================================================================
+           نفس أكواد الـ CSS الأساسية الخاصة بك (نسخ لصق) لضمان عدم حدوث أي أخطاء
+           ======================================================================= */
         :root { --btn-blue: #0096cd; --teal-box: #77b500; --text-dark: #111111; --gray-bg: #e9ecef; }
         
-        /* حركة التدرج اللوني للفوتر */
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -24,42 +26,44 @@
             100% { transform: scale(1.6); opacity: 0; }
         }
 
+        html { scroll-behavior: smooth; scroll-padding-top: 130px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Poppins', sans-serif; color: var(--text-dark); line-height: 1.6; background-color: #f4f6f8; overflow-x: hidden; transition: background-color 0.3s; }
-        html[lang="ar"] body, html[lang="ar"] .btn, html[lang="ar"] input, html[lang="ar"] select, html[lang="ar"] textarea, html[lang="ar"] .lang-btn { font-family: 'Cairo', sans-serif; }
+        
+        body { font-family: 'Poppins', sans-serif; color: var(--text-dark); line-height: 1.6; background-color: #fff; overflow-x: hidden; }
+        html[lang="ar"] body, html[lang="ar"] .btn, html[lang="ar"] input, html[lang="ar"] select, html[lang="ar"] textarea, html[lang="ar"] .lang-btn {
+            font-family: 'Cairo', sans-serif;
+        }
+
         a { text-decoration: none; color: inherit; }
         .container { width: 90%; max-width: 1200px; margin: auto; }
 
-        /* --- Language Toggle Styles --- */
-        html[lang="ar"] .en { display: none !important; }
-        html[lang="en"] .ar { display: none !important; }
-        html[lang="en"] { text-align: left; }
-        html[lang="en"] .nav-links { margin-right: 0; margin-left: 40px; }
-        html[lang="en"] .fab { left: auto; right: 30px; }
-        
-        /* --- Header --- */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1000; }
+        /* --- الهيدر (بنفس مقاساتك بالملي) --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .logo { width: 140px; height: 85px; display: flex; align-items: center;}
         .header-logo { height: 85px; object-fit: contain; }
-        .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); transition: margin 0.3s; }
+        
+        .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); }
         html[dir="ltr"] .nav-links { margin-left: 40px; }
         html[dir="rtl"] .nav-links { margin-right: 40px; }
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
-        .lang-btn { background: rgba(0, 150, 205, 0.1); color: var(--btn-blue); border: 2px solid var(--btn-blue); padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; }
+
+        .lang-btn {
+            background: rgba(0, 150, 205, 0.1); color: var(--btn-blue); border: 2px solid var(--btn-blue);
+            padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer;
+            transition: 0.3s; font-family: 'Cairo', sans-serif;
+        }
         .lang-btn:hover { background: var(--btn-blue); color: #fff; }
 
-        /* --- Appointment Form Section --- */
-        .appointment-page-wrapper { padding: 60px 5% 100px; min-height: 80vh; display: flex; align-items: center; justify-content: center; }
-        .form-card { background: #fff; padding: 50px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); width: 100%; max-width: 1000px; }
-        .section-title { font-weight: 800; font-size: 32px; margin-bottom: 10px; color: var(--text-dark); text-align: center; }
-        .section-subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 16px; font-weight: 600; }
-        
+        /* --- ستايل الفورم --- */
+        .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; min-height: 70vh; } /* تعديل بسيط لضبط الارتفاع */
+        .section-title { font-weight: 800; font-size: 36px; margin-bottom: 20px; color: var(--text-dark); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group.full-width { grid-column: span 2; }
         
-        input, select, textarea { padding: 14px 16px; border: 1.5px solid #dcdfe6; border-radius: 10px; font-size: 14.5px; width: 100%; outline: none; background-color: #f8f9fa; color: var(--text-dark); transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.01); }
+        input, select, textarea { 
+            padding: 14px 16px; border: 1.5px solid #dcdfe6; border-radius: 10px; font-size: 14.5px; width: 100%; outline: none; background-color: #f4f6f8; color: var(--text-dark); transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
         input:focus, select:focus, textarea:focus { border-color: var(--btn-blue); box-shadow: 0 0 0 4px rgba(0, 150, 205, 0.12); background-color: #ffffff; }
 
         select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230096cd' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; cursor: pointer; }
@@ -69,63 +73,73 @@
         label { font-weight: 600; margin-bottom: 8px; display: block; color: var(--text-dark); font-size: 14px; }
         html[dir="ltr"] label { text-align: left; }
         html[dir="rtl"] label { text-align: right; }
-        label span:last-child { color: #ff4d4d; } /* النجمة الحمراء فقط */
+        label span:last-child { color: #ff4d4d; }
 
-        .btn-blue { background-color: var(--btn-blue); border: none; border-radius: 10px; padding: 16px 30px; width: 100%; font-size: 18px; color: white; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 150, 205, 0.3); transition: all 0.3s ease; margin-top: 10px;}
+        .btn-blue { background-color: var(--btn-blue); border-radius: 8px; border: none; cursor: pointer; padding: 14px 30px; width: 100%; font-size: 18px; color: white; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 150, 205, 0.3); transition: all 0.3s ease;}
         .btn-blue:hover { background-color: #006185; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 150, 205, 0.4); }
-        .btn-blue:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
 
-        /* --- Footer --- */
+        /* --- الفوتر (بنفس مقاساتك بالملي) --- */
         .footer { background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185); background-size: 400% 400%; animation: gradientBG 6s ease infinite; color: white; padding: 50px 0 20px 0; }
         .footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center; justify-items: center; margin-bottom: 35px; width: 100%; }
-        .footer-left, .footer-right { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .footer-left { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .footer-center { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .footer-right { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         
-        .contact-grid, .social-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
-        .contact-card, .social-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: 0.3s ease; width: 110px; }
-        .social-card { width: 70px; padding: 12px 4px;}
-        .contact-card:hover, .social-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
-        .contact-icon, .social-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); }
-        .social-card svg { width: 16px; height: 16px; fill: currentColor; }
-        .contact-info span { display: block; font-size: 8.5px; color: rgba(255, 255, 255, 0.8); font-weight: 600; text-transform: uppercase; }
-        .contact-info h4 { font-size: 10.5px; font-weight: 700; color: #ffffff; margin-top: 2px; }
-        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 10px; font-size: 14px; color: white; }
+        .contact-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
+        .contact-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 110px;  }
+        .contact-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
+        .contact-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+        .contact-info { text-align: center; width: 100%; }
+        .contact-info span { display: block; font-size: 8.5px; color: rgba(255, 255, 255, 0.8); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .contact-info h4 { font-size: 10.5px; font-weight: 700; color: #ffffff; margin-top: 2px; white-space: nowrap; }
 
-        /* --- Floating WhatsApp --- */
-        .whatsapp-float-btn { position: fixed; bottom: 30px; background-color: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 9999; transition: transform 0.3s; }
+        .social-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
+        .social-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 70px; }
+        .social-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
+        .social-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+        .social-card svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 10px; font-size: 14px; color: white; width: 90%; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        
+        /* زر الواتساب */
+        .whatsapp-float-btn { position: fixed; bottom: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s; }
         html[dir="ltr"] .whatsapp-float-btn { left: 30px; }
         html[dir="rtl"] .whatsapp-float-btn { right: 30px; left: auto; }
         .whatsapp-float-btn::before, .whatsapp-float-btn::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background-color: #25D366; z-index: -1; animation: whatsapp-pulse 2s infinite ease-out; }
         .whatsapp-float-btn::after { animation-delay: 1s; }
         .whatsapp-float-btn:hover { transform: scale(1.1); }
 
-        /* --- Animations & Loaders --- */
-        .page-transition-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 100000; opacity: 0; visibility: hidden; transition: all 0.5s ease; }
+        /* الأنيميشن السحري */
+        .page-transition-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 100000; opacity: 0; visibility: hidden; transition: all 0.5s ease; }
         .page-transition-overlay.active { opacity: 1; visibility: visible; }
         .cool-loader { display: flex; gap: 8px; position: fixed; top: calc(50% + 70px); left: 50%; transform: translateX(-50%); z-index: 100001; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
         .cool-loader.active { opacity: 1; visibility: visible; }
-        .cool-loader span { width: 14px; height: 14px; border-radius: 50%; background-color: var(--text-dark); animation: loaderBounce 0.5s alternate infinite cubic-bezier(0.2, 0.65, 0.6, 1); }
+        .cool-loader span { width: 14px; height: 14px; border-radius: 50%; background-color: var(--btn-blue); animation: loaderBounce 0.5s alternate infinite cubic-bezier(0.2, 0.65, 0.6, 1); }
         .cool-loader span:nth-child(1) { animation-delay: 0s; }
-        .cool-loader span:nth-child(2) { background-color: var(--btn-blue); animation-delay: 0.15s; }
-        .cool-loader span:nth-child(3) { background-color: var(--teal-box); animation-delay: 0.3s; }
+        .cool-loader span:nth-child(2) { background-color: var(--teal-box); animation-delay: 0.15s; }
+        .cool-loader span:nth-child(3) { animation-delay: 0.3s; }
         @keyframes loaderBounce { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-15px) scale(1.2); } }
 
-        /* --- Mobile Responsiveness --- */
+        /* --- الموبايل (بنفس مقاساتك الأصلية بالملي) --- */
         @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 10px; padding: 15px; }
+            html { scroll-padding-top: 130px; } 
+            .header { flex-direction: column; gap: 10px; }
             .logo { justify-content: center; width: 100%; display: flex; margin: 0 auto; }
-            .header-logo-img { max-height: 50px; margin: 0 auto; display: block; } 
-            .nav-links { margin-right: 0; gap: 15px; font-size: 13px; margin-left: 0 !important; flex-wrap: wrap; justify-content: center;}
-            .appointment-page-wrapper { padding: 30px 5% 80px; }
-            .form-card { padding: 30px 20px; }
-            .section-title { font-size: 26px; }
+            .header-logo { margin: 0 auto; display: block; }
+            .nav-links { gap: 15px; font-size: 13px; }
+            html[dir="ltr"] .nav-links { margin-left: 0; }
+            html[dir="rtl"] .nav-links { margin-right: 0; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full-width { grid-column: span 1; }
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 25px; justify-items: center; }
             .footer-left { order: 1; width: 100%; align-items: center; }
             .footer-right { order: 2; width: 100%; align-items: center; }
             .footer-center { order: 3; width: 100%; align-items: center; }
-            .whatsapp-float-btn { bottom: 20px; width: 50px; height: 50px; font-size: 30px;}
+            .contact-grid { flex-direction: row; justify-content: center; width: 100%; }
+            .contact-card { width: 120px; }
+            .social-grid { justify-content: center; }
+            .social-card { width: 85px; }
+            .whatsapp-float-btn { bottom: 20px; }
             html[dir="ltr"] .whatsapp-float-btn { right: 20px; left: auto; }
             html[dir="rtl"] .whatsapp-float-btn { left: 20px; right: auto; }
         }
@@ -142,106 +156,94 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <a href="index.html"><img src="Logo-Dr-Aya.webp" alt="Dr. Aya Khattab Logo" class="header-logo-img" id="mainLogo"></a>
+            <a href="index.html">
+                <img src="Logo-Dr-Aya.webp" alt="Dr. Aya Khattab Logo" class="header-logo" id="mainLogo">
+            </a>
         </div>
         <nav class="nav-links">
-            <!-- تم توجيه الروابط للصفحة الرئيسية -->
-            <a href="index.html"><span class="ar">الرئيسية</span><span class="en">Home</span></a>
-            <a href="index.html#services"><span class="ar">الخدمات</span><span class="en">Services</span></a>
-            <button id="langToggle" class="lang-btn" onclick="toggleLanguage()">English</button>
+            <!-- التوجيه هنا بيرجع للرئيسية -->
+            <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
+            <a href="index.html#services" data-en="Services" data-ar="الخدمات">Services</a>
+            <button id="langToggle" class="lang-btn" onclick="toggleLanguage()">العربية</button>
         </nav>
     </header>
 
-    <!-- Appointment Form (KSA Landing Page) -->
-    <section class="appointment-page-wrapper">
-        <div class="form-card">
-            <h1 class="section-title">
-                <span class="ar">حجز استشارة أونلاين</span>
-                <span class="en">Book Online Consultation</span>
-            </h1>
-            <p class="section-subtitle">
-                <span class="ar">للمرضى من المملكة العربية السعودية 🇸🇦</span>
-                <span class="en">For Patients from Saudi Arabia 🇸🇦</span>
-            </p>
-
-            <form id="bookingForm">
+    <!-- Appointment Form Section -->
+    <section class="appointment-sec" id="appointment">
+        <div class="container">
+            <h2 class="section-title" style="text-align: center;" data-en="Book Online Consultation - KSA" data-ar="حجز استشارة أونلاين - السعودية">حجز استشارة أونلاين - السعودية</h2>
+            <p style="text-align: center; margin-bottom: 30px; font-weight: 600; color: #666;" data-en="Exclusive Booking for Saudi Arabia Patients 🇸🇦" data-ar="حجز مخصص لمرضى المملكة العربية السعودية 🇸🇦">حجز مخصص لمرضى المملكة العربية السعودية 🇸🇦</p>
+            
+            <form id="bookingForm" name="google-sheet">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label><span class="ar">الاسم</span><span class="en">Name</span> <span>*</span></label>
+                        <label><span data-en="Name" data-ar="الاسم">Name</span> <span>*</span></label>
                         <input type="text" name="الاسم" required>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">رقم الهاتف</span><span class="en">Phone Number</span> <span>*</span></label>
+                        <label><span data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</span> <span>*</span></label>
                         <input type="tel" name="رقم الهاتف" placeholder="+966 xxxxxxxx" required>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">رقم الواتساب</span><span class="en">Whatsapp Number</span> <span>*</span></label>
+                        <label><span data-en="Whatsapp Number" data-ar="رقم الواتساب">Whatsapp Number</span> <span>*</span></label>
                         <input type="tel" name="رقم الواتساب" placeholder="+966 xxxxxxxx" required>
                     </div>
-                    
-                    <!-- الدولة محددة مسبقاً وغير قابلة للتعديل -->
                     <div class="form-group">
-                        <label><span class="ar">الدولة</span><span class="en">Country</span> <span>*</span></label>
+                        <!-- الدولة غير قابلة للتعديل ومختارة مسبقاً للسعودية -->
+                        <label><span data-en="Country" data-ar="الدولة">Country</span> <span>*</span></label>
                         <select name="الدولة" required readonly style="pointer-events: none; background-color: #e9ecef;">
-                            <option value="SA" selected><span class="ar">السعودية</span><span class="en">Saudi Arabia</span></option>
+                            <option value="SA" selected data-en="Saudi Arabia" data-ar="السعودية">Saudi Arabia</option>
                         </select>
                     </div>
-
                     <div class="form-group">
-                        <label><span class="ar">المدينة / المنطقة</span><span class="en">City / Region</span> <span>*</span></label>
+                        <label><span data-en="City / Region" data-ar="المدينة / المنطقة">City / Region</span> <span>*</span></label>
                         <input type="text" name="المحافظة" required>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">الجنسية</span><span class="en">Nationality</span> <span>*</span></label>
+                        <label><span data-en="Nationality" data-ar="الجنسية">Nationality</span> <span>*</span></label>
                         <input type="text" name="الجنسية" required>
                     </div>
                     <div class="form-group full-width">
-                        <label><span class="ar">كيف تعرفت علينا؟</span><span class="en">How did you hear about us?</span></label>
+                        <label data-en="How did you hear about us?" data-ar="كيف تعرفت علينا؟">How did you hear about us?</label>
                         <select name="كيف تعرفت علينا؟">
-                            <option value="" disabled selected class="ar">اختر إجابة</option>
-                            <option value="" disabled selected class="en">Select an option</option>
-                            <option value="عميل سابق">عميل سابق / Previous Client</option>
-                            <option value="فيسبوك">فيسبوك / Facebook</option>
-                            <option value="انستجرام">انستجرام / Instagram</option>
-                            <option value="تيك توك">تيك توك / TikTok</option>
-                            <option value="يوتيوب">يوتيوب / Youtube</option>
-                            <option value="صديق / قريب">صديق / قريب / Friend or Relative</option>
-                            <option value="أخرى">أخرى / Other</option>
+                            <option value="" disabled selected data-en="Select an option" data-ar="اختر إجابة">Select an option</option>
+                            <option value="Previous Client" data-en="Previous Client" data-ar="عميل سابق">Previous Client</option>
+                            <option value="Facebook" data-en="Facebook" data-ar="فيسبوك">Facebook</option>
+                            <option value="Instagram" data-en="Instagram" data-ar="انستجرام">Instagram</option>
+                            <option value="TikTok" data-en="TikTok" data-ar="تيك توك">TikTok</option>
+                            <option value="Youtube" data-en="Youtube" data-ar="يوتيوب">Youtube</option>
+                            <option value="Friend" data-en="Friend / Relative" data-ar="صديق / قريب">Friend / Relative</option>
+                            <option value="Other" data-en="Other" data-ar="أخرى">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">الوظيفة</span><span class="en">Job</span> <span>*</span></label>
+                        <label><span data-en="Job" data-ar="الوظيفة">Job</span> <span>*</span></label>
                         <input type="text" name="الوظيفة" required>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">العمر</span><span class="en">Age</span> <span>*</span></label>
+                        <label><span data-en="Age" data-ar="العمر">Age</span> <span>*</span></label>
                         <input type="number" name="العمر" required>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">الجنس</span><span class="en">Gender</span> <span>*</span></label>
+                        <label><span data-en="Gender" data-ar="الجنس">Gender</span> <span>*</span></label>
                         <select name="الجنس" required>
-                            <option value="" disabled selected class="ar">اختر الجنس</option>
-                            <option value="" disabled selected class="en">Select Gender</option>
-                            <option value="ذكر">ذكر / Male</option>
-                            <option value="أنثى">أنثى / Female</option>
+                            <option value="" disabled selected data-en="Select Gender" data-ar="اختر الجنس">Select Gender</option>
+                            <option value="Male" data-en="Male" data-ar="ذكر">Male</option>
+                            <option value="Female" data-en="Female" data-ar="أنثى">Female</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><span class="ar">نوع الحجز</span><span class="en">Department to Book</span> <span>*</span></label>
+                        <label><span data-en="Department to Book" data-ar="نوع الحجز">Department to Book</span> <span>*</span></label>
                         <select name="نوع الحجز" required>
-                            <option value="" disabled selected class="ar">اختر القسم</option>
-                            <option value="" disabled selected class="en">Select Department</option>
-                            <option value="Clinical Nutrition">التغذية العلاجية / Clinical Nutrition</option>
-                            <option value="Health Coaching">التدريب الصحي / Health Coaching</option>
+                            <option value="" disabled selected data-en="Select Department" data-ar="اختر القسم">Select Department</option>
+                            <option value="Clinical Nutrition" data-en="Clinical Nutrition" data-ar="التغذية العلاجية">Clinical Nutrition</option>
+                            <option value="Health Coaching" data-en="Health Coaching" data-ar="التدريب الصحي">Health Coaching</option>
                         </select>
                     </div>
                     
                     <div class="form-group full-width">
-                        <!-- تم تغيير زر الإرسال ليدل على الدفع -->
-                        <button type="submit" id="submitBtn" class="btn-blue">
-                            <span class="ar">تأكيد والانتقال للدفع</span>
-                            <span class="en">Submit & Proceed to Payment</span>
-                        </button>
+                        <!-- تم تعديل نص الزر ليدل على الدفع -->
+                        <button type="submit" id="submitBtn" class="btn-blue" data-en="Submit & Proceed to Payment" data-ar="تأكيد والانتقال للدفع">Submit & Proceed to Payment</button>
                     </div>
                 </div>
             </form>
@@ -253,59 +255,56 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-left">
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;">
-                        <span class="ar">أرقام التواصل</span><span class="en">Contact numbers</span>
-                    </div>
+                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;" data-en="Contact numbers" data-ar="أرقام التواصل">Contact numbers</div>
                     <div class="contact-grid">
                         <a href="tel:01206999908" class="contact-card">
                             <div class="contact-icon"><i class="fas fa-calendar-check"></i></div>
                             <div class="contact-info">
-                                <span class="ar">الحجز</span><span class="en">Booking</span>
+                                <span data-en="Booking" data-ar="الحجز">Booking</span>
                                 <h4>01206999908</h4>
                             </div>
                         </a>
                         <a href="https://wa.me/201060026072" target="_blank" class="contact-card">
                             <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
                             <div class="contact-info">
-                                <span class="ar">واتساب</span><span class="en">WhatsApp</span>
+                                <span data-en="WhatsApp" data-ar="واتساب">WhatsApp</span>
                                 <h4>01060026072</h4>
                             </div>
                         </a>
                     </div>
                 </div>
+
                 <div class="footer-center">
                     <div style="height: 28px; margin-bottom: 12px;"></div>
                     <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 82px; object-fit: contain;">
                 </div>
+
                 <div class="footer-right">
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;">
-                        <span class="ar">تابعنا</span><span class="en">Follow us</span>
-                    </div>
+                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;" data-en="Follow us" data-ar="تابعنا">Follow us</div>
                     <div class="social-grid">
                         <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank" class="social-card">
                             <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
+                            <div class="contact-info"><h4 data-en="Facebook" data-ar="فيسبوك">Facebook</h4></div>
                         </a>
                         <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank" class="social-card">
                             <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+                            <div class="contact-info"><h4 data-en="Instagram" data-ar="انستجرام">Instagram</h4></div>
                         </a>
                         <a href="https://www.tiktok.com/@dr.ayakhattab" target="_blank" class="social-card">
                             <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg></div>
+                            <div class="contact-info"><h4 data-en="TikTok" data-ar="تيك توك">TikTok</h4></div>
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="copyright">
-                <span class="ar">حقوق النشر © د. آية خطاب. جميع الحقوق محفوظة.</span>
-                <span class="en">Copyright © Dr. Aya Khattab. All rights reserved.</span>
-            </div>
+            <div class="copyright" data-en="Copyright © Dr. Aya Khattab. All rights reserved." data-ar="حقوق النشر © د. آية خطاب. جميع الحقوق محفوظة.">Copyright © Dr. Aya Khattab. All rights reserved.</div>
         </div>
     </footer>
 
     <a href="https://wa.me/201060026072" target="_blank" class="whatsapp-float-btn"><i class="fab fa-whatsapp"></i></a>
 
-    <!-- Scripts -->
+    <!-- كود تغيير اللغة السحري (FLIP Animation) -->
     <script>
-        // سكريبت تغيير اللغة (نفس حركة الأنميشن القديمة للتبديل بسلاسة)
         function toggleLanguage() {
             const toggleBtn = document.getElementById('langToggle');
             if (toggleBtn.disabled) return;
@@ -336,7 +335,9 @@
                 clone.style.left = '50%';
                 clone.style.transform = 'translate(-50%, -50%) scale(1.6)';
                 
-                setTimeout(() => { loader.classList.add('active'); }, 800);
+                setTimeout(() => {
+                    loader.classList.add('active');
+                }, 800);
             });
             
             setTimeout(() => {
@@ -350,6 +351,14 @@
                     html.dir = 'rtl';
                     toggleBtn.innerText = 'English';
                 }
+                
+                document.querySelectorAll('[data-en]').forEach(el => {
+                    if (el.tagName.toLowerCase() === 'option' && el.parentElement.name === 'الدولة') {
+                        // لا تقم بتحديث نص الدولة لأنها ثابتة للسعودية
+                    } else {
+                        el.innerHTML = el.getAttribute(`data-${html.lang}`);
+                    }
+                });
 
                 loader.classList.remove('active');
                 void document.body.offsetHeight; 
@@ -368,11 +377,12 @@
                     clone.remove();
                     toggleBtn.disabled = false;
                 }, 800);
-            }, 2300);
+                
+            }, 2300); 
         }
 
-        // سكريبت الإرسال لشيت الإكسيل والانتقال لبوابة الدفع
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxWmta8IDW9WKAdIL7EoC8SEJx3-waFrb5nA9hRzxlg4E_X_OIt7MjUEHc8pR7AH07vdg/exec'; // رابط الشيت القديم (تأكد من تعديله لو هتعمل شيت جديد للسعودية)
+        // كود ربط الفورم (حفظ البيانات ثم التحويل للدفع)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxWmta8IDW9WKAdIL7EoC8SEJx3-waFrb5nA9hRzxlg4E_X_OIt7MjUEHc8pR7AH07vdg/exec'; // رابط الشيت
         const form = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
 
@@ -383,10 +393,10 @@
             submitBtn.innerHTML = isEnglish ? 'Processing... <i class="fas fa-spinner fa-spin"></i>' : 'جاري التحويل... <i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
 
-            // 1. إرسال البيانات لجوجل شيت أولاً
+            // 1. الإرسال لشيت الإكسيل الأول
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(response => {
-                    // 2. بعد نجاح تسجيل البيانات، يتم تحويل العميل لبوابة الدفع
+                    // 2. التحويل لصفحة الدفع بعد ما البيانات تتسجل
                     proceedToPaymentGateway();
                 })
                 .catch(error => {
@@ -397,19 +407,22 @@
                 });
         });
 
-        // دالة مخصصة لربط بوابة الدفع
+        // دالة التحويل لبوابة الدفع
         function proceedToPaymentGateway() {
-            // هنا هتحط كود التحويل (Redirect) لصفحة الدفع الخاصة بـ Paymob, Moyasar, أو Stripe
-            // مثال:
-            // window.location.href = "https://your-payment-gateway-link.com/checkout/12345";
-            
             const isEnglish = document.documentElement.lang === 'en';
-            alert(isEnglish ? 'Data saved! Redirecting to secure payment gateway...' : 'تم الحفظ! جاري تحويلك لصفحة الدفع الآمنة...');
             
-            // إعادة ضبط الفورم (اختياري)
-            form.reset();
-            submitBtn.innerHTML = isEnglish ? 'Submit & Proceed to Payment' : 'تأكيد والانتقال للدفع';
-            submitBtn.disabled = false;
+            // تنبيه للمستخدم إن البيانات اتسجلت (ممكن تشيله لو مش حابب التنبيه يظهر)
+            alert(isEnglish ? 'Data saved successfully! Redirecting to secure payment gateway...' : 'تم حفظ بياناتك بنجاح! جاري تحويلك لصفحة الدفع الآمنة...');
+            
+            // هنا هتحط لينك صفحة الدفع الخاصة بيك (Paymob أو Tap أو Stripe الخ)
+            // window.location.href = "https://your-payment-link.com";
+
+            // ده كود مؤقت لإعادة الزرار لحالته لو مفيش لينك دلوقتي
+            setTimeout(() => {
+                form.reset();
+                submitBtn.innerHTML = isEnglish ? 'Submit & Proceed to Payment' : 'تأكيد والانتقال للدفع';
+                submitBtn.disabled = false;
+            }, 1000);
         }
     </script>
 </body>
