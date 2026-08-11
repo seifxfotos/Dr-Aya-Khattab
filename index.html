@@ -12,14 +12,12 @@
     <style>
         :root { --btn-blue: #0096cd; --teal-box: #77b500; --text-dark: #111111; --gray-bg: #e9ecef; }
         
-        /* حركة التدرج اللوني (Animated Gradient) */
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
-        /* أنيميشن الموجات لزر الواتساب العائم */
         @keyframes whatsapp-pulse {
             0% { transform: scale(1); opacity: 0.8; }
             100% { transform: scale(1.6); opacity: 0; }
@@ -28,8 +26,27 @@
         html { scroll-behavior: smooth; scroll-padding-top: 130px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* Font switching based on Language */
-        body { font-family: 'Poppins', sans-serif; color: var(--text-dark); line-height: 1.6; background-color: #fff; overflow-x: hidden; }
+        /* منع تحديد النصوص في الموقع لمنع ظهور خط الكتابة */
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            color: var(--text-dark); 
+            line-height: 1.6; 
+            background-color: #fff; 
+            overflow-x: hidden; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* السماح بالكتابة والتحديد داخل حقول الفورم فقط */
+        input, select, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
         html[lang="ar"] body, html[lang="ar"] .btn, html[lang="ar"] input, html[lang="ar"] select, html[lang="ar"] textarea, html[lang="ar"] .lang-btn {
             font-family: 'Cairo', sans-serif;
         }
@@ -37,9 +54,7 @@
         a { text-decoration: none; color: inherit; }
         .container { width: 90%; max-width: 1200px; margin: auto; }
 
-        /* ---------------------------------------------------- */
-        /* ستايلات الهيدر والأنيميشن (ضرورية حتى لو في ملف خارجي) */
-        /* ---------------------------------------------------- */
+        /* ستايلات الهيدر (عشان مايضربش أثناء التحميل) */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .logo { width: 140px; height: 85px; display: flex; align-items: center;}
         .header-logo { height: 85px; object-fit: contain; }
@@ -95,9 +110,7 @@
         
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 30px; }
         
-        /* ---------------------------------------------------- */
-        /* ستايلات الـ Flip Card */
-        /* ---------------------------------------------------- */
+        /* Flip Card */
         .flip-card { background-color: transparent; perspective: 1000px; min-height: 330px; cursor: pointer; transition: transform 0.3s; }
         .flip-card:hover { transform: translateY(-5px); }
         .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
@@ -131,9 +144,7 @@
 
         @media (min-width: 769px) { .flip-card-back li { font-size: 14.5px; } }
 
-        /* ---------------------------------------------------- */
-        /* ستايلات الفوتر والواتس آب (ضرورية حتى لو في ملف خارجي) */
-        /* ---------------------------------------------------- */
+        /* ستايلات الفوتر والواتس آب */
         .footer { background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185); background-size: 400% 400%; animation: gradientBG 6s ease infinite; color: white; padding: 50px 0 20px 0; }
         .footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center; justify-items: center; margin-bottom: 35px; width: 100%; }
         .footer-left { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -163,7 +174,7 @@
         .whatsapp-float-btn::after { animation-delay: 1s; }
         .whatsapp-float-btn:hover { transform: scale(1.1); }
 
-        /* تعديلات وتجميل حقول الفورم والقوائم المنسدلة */
+        /* حقول الفورم والقوائم المنسدلة */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { display: flex; flex-direction: column; }
@@ -182,7 +193,6 @@
         html[dir="ltr"] label { text-align: left; }
         html[dir="rtl"] label { text-align: right; }
         
-        /* التعديل المخصص لتلوين النجمة فقط باللون الأحمر للحقول المطلوبة */
         label span:last-child { color: #ff4d4d; }
 
         .maps-section { padding: 50px 5%; }
@@ -191,7 +201,7 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
         
-        /* نافذة البوب أب (Popup Modal) */
+        /* البوب أب (Popup Modal) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; backdrop-filter: blur(5px); }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-box { background: #ffffff; padding: 35px 30px; border-radius: 16px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); transform: translateY(20px); transition: transform 0.3s ease; }
@@ -202,9 +212,7 @@
         .modal-btn { background-color: var(--btn-blue); color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; width: 100%; }
         .modal-btn:hover { background-color: #006185; }
 
-        /* -------------------------------------------------------------------------- */
         /* استجابة الموبايل */
-        /* -------------------------------------------------------------------------- */
         @media (max-width: 992px) {
             .maps-grid { grid-template-columns: 1fr; }
         }
@@ -212,11 +220,8 @@
         @media (max-width: 768px) {
             html { scroll-padding-top: 130px; } 
             .header { flex-direction: column; gap: 10px; }
-            
-            /* إجبار اللوجو يكون متسنتر تماماً في الموبايل ومفيش هوامش ترحلّه */
             .logo { justify-content: center; width: 100%; display: flex; margin: 0 auto; }
             .header-logo { margin: 0 auto; display: block; }
-            
             .nav-links { gap: 15px; font-size: 13px; }
             html[dir="ltr"] .nav-links { margin-left: 0; }
             html[dir="rtl"] .nav-links { margin-right: 0; }
@@ -225,35 +230,28 @@
             .hero-image { align-self: center; width: 100%; height: 350px; }
             .hero-content { margin-bottom: 20px; }
             .services-grid { grid-template-columns: 1fr; }
-            
             .hero-box { padding: 20px !important; text-align: center !important; }
             .box-title { font-size: 26px; }
             .box-divider { margin: 0 auto 15px auto; }
             .category-title { margin-top: 20px; font-size: 22px; }
-            
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 25px; justify-items: center; }
             .footer-left { order: 1; width: 100%; align-items: center; }
             .footer-right { order: 2; width: 100%; align-items: center; }
             .footer-center { order: 3; width: 100%; align-items: center; }
-            
             .contact-grid { flex-direction: row; justify-content: center; width: 100%; }
             .contact-card { width: 120px; }
             .social-grid { justify-content: center; }
             .social-card { width: 85px; }
-            
             .whatsapp-float-btn { bottom: 20px; }
             html[dir="ltr"] .whatsapp-float-btn { right: 20px; left: auto; }
             html[dir="rtl"] .whatsapp-float-btn { left: 20px; right: auto; }
         }
     </style>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1735521560872196"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1735521560872196" crossorigin="anonymous"></script>
 </head>
 <body>
 
-    <!-- ============================================== -->
     <!-- 1. استدعاء الهيدر وعناصر الأنيميشن من الملف الخارجي -->
-    <!-- ============================================== -->
     <div id="header-placeholder"></div>
 
     <section class="hero">
@@ -717,16 +715,12 @@
         </div>
     </section>
 
-    <!-- ============================================== -->
     <!-- 2. استدعاء الفوتر وزر الواتساب من الملف الخارجي -->
-    <!-- ============================================== -->
     <div id="footer-placeholder"></div>
 
-    <!-- ============================================== -->
     <!-- 3. كود الجافاسكريبت الموحد للاستدعاء والأنيميشن -->
-    <!-- ============================================== -->
     <script>
-        // دالة سحب الملفات الخارجية (الهيدر والفوتر) وتطبيق الترجمة فوراً
+        // دالة سحب الملفات الخارجية
         function loadComponent(url, placeholderId) {
             fetch(url)
                 .then(response => response.text())
@@ -736,14 +730,11 @@
                     const currentLang = document.documentElement.lang;
                     const container = document.getElementById(placeholderId);
                     
-                    // تطبيق الترجمة على العناصر اللي اتسحبت
+                    // ترجمة كل حاجة اتسحبت (بدون استثناء للدول)
                     container.querySelectorAll('[data-en]').forEach(el => {
-                        if (!(el.tagName.toLowerCase() === 'option' && el.parentElement.name === 'الدولة')) {
-                            el.innerHTML = el.getAttribute(`data-${currentLang}`);
-                        }
+                        el.innerHTML = el.getAttribute(`data-${currentLang}`);
                     });
 
-                    // تظبيط زرار اللغة المخصوص جوه الهيدر
                     if(placeholderId === 'header-placeholder') {
                         const toggleBtn = document.getElementById('langToggle');
                         if(toggleBtn) {
@@ -803,10 +794,9 @@
                     toggleBtn.innerText = 'English';
                 }
                 
+                // ترجمة كل حاجة (بدون استثناء للدول)
                 document.querySelectorAll('[data-en]').forEach(el => {
-                    if (!(el.tagName.toLowerCase() === 'option' && el.parentElement.name === 'الدولة')) {
-                        el.innerHTML = el.getAttribute(`data-${html.lang}`);
-                    }
+                    el.innerHTML = el.getAttribute(`data-${html.lang}`);
                 });
 
                 loader.classList.remove('active');
@@ -829,7 +819,7 @@
             }, 2300); 
         }
 
-        // كود إرسال الفورم العادي
+        // كود إرسال الفورم
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxWmta8IDW9WKAdIL7EoC8SEJx3-waFrb5nA9hRzxlg4E_X_OIt7MjUEHc8pR7AH07vdg/exec';
         const form = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
