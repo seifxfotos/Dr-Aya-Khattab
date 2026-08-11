@@ -37,27 +37,28 @@
         a { text-decoration: none; color: inherit; }
         .container { width: 90%; max-width: 1200px; margin: auto; }
 
+        /* ---------------------------------------------------- */
+        /* ستايلات الهيدر والأنيميشن (ضرورية حتى لو في ملف خارجي) */
+        /* ---------------------------------------------------- */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        /* Logo styling */
         .logo { width: 140px; height: 85px; display: flex; align-items: center;}
         .header-logo { height: 85px; object-fit: contain; }
-        
         .nav-links { display: flex; gap: 30px; align-items: center; font-weight: 600; font-size: 15px; color: var(--text-dark); }
-        
-        /* RTL Fixes for margins */
         html[dir="ltr"] .nav-links { margin-left: 40px; }
         html[dir="rtl"] .nav-links { margin-right: 40px; }
-        
         .nav-links a:hover { color: var(--btn-blue); transition: 0.3s; }
-
-        /* Language Toggle Button */
-        .lang-btn {
-            background: rgba(0, 150, 205, 0.1); color: var(--btn-blue); border: 2px solid var(--btn-blue);
-            padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer;
-            transition: 0.3s; font-family: 'Cairo', sans-serif;
-        }
+        .lang-btn { background: rgba(0, 150, 205, 0.1); color: var(--btn-blue); border: 2px solid var(--btn-blue); padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; font-family: 'Cairo', sans-serif; }
         .lang-btn:hover { background: var(--btn-blue); color: #fff; }
+
+        .page-transition-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 100000; opacity: 0; visibility: hidden; transition: all 0.5s ease; }
+        .page-transition-overlay.active { opacity: 1; visibility: visible; }
+        .cool-loader { display: flex; gap: 8px; position: fixed; top: calc(50% + 70px); left: 50%; transform: translateX(-50%); z-index: 100001; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
+        .cool-loader.active { opacity: 1; visibility: visible; }
+        .cool-loader span { width: 14px; height: 14px; border-radius: 50%; background-color: var(--btn-blue); animation: loaderBounce 0.5s alternate infinite cubic-bezier(0.2, 0.65, 0.6, 1); }
+        .cool-loader span:nth-child(1) { animation-delay: 0s; }
+        .cool-loader span:nth-child(2) { background-color: var(--teal-box); animation-delay: 0.15s; }
+        .cool-loader span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes loaderBounce { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-15px) scale(1.2); } }
 
         /* البانر */
         .hero { 
@@ -68,7 +69,6 @@
         .hero-group { display: flex; align-items: center; justify-content: center; gap: 40px; max-width: 1100px; width: 100%; }
         .hero-content { max-width: 550px; z-index: 2; margin-bottom: 40px; }
         
-        /* ستايل البوكس الخارجي - تأثير الزجاج */
         .hero-box { 
             background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
@@ -82,7 +82,7 @@
 
         .btn { display: inline-block; padding: 12px 25px; background-color: var(--teal-box); color: white; border-radius: 25px; font-weight: 600; border: none; cursor: pointer; font-size: 16px; transition: 0.3s;}
         .btn:hover { background-color: #5c8c00; }
-        .btn-blue { background-color: var(--btn-blue); border-radius: 8px; padding: 14px 30px; width: 100%; font-size: 18px; color: white; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 150, 205, 0.3); transition: all 0.3s ease;}
+        .btn-blue { background-color: var(--btn-blue); border-radius: 8px; padding: 14px 30px; width: 100%; font-size: 18px; color: white; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 150, 205, 0.3); transition: all 0.3s ease; border: none; cursor: pointer;}
         .btn-blue:hover { background-color: #006185; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 150, 205, 0.4); }
         
         .hero-image { z-index: 1; object-fit: contain; max-width: 450px; max-height: 490px; align-self: flex-end; }
@@ -123,7 +123,6 @@
         
         .flip-card-back li { font-size: 12.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; position: relative; line-height: 1.3; }
         
-        /* RTL and LTR fixes for lists inside cards */
         html[dir="ltr"] .flip-card-back li { text-align: left; padding-left: 16px; padding-right: 0; }
         html[dir="rtl"] .flip-card-back li { text-align: right; padding-right: 16px; padding-left: 0; }
         
@@ -131,35 +130,38 @@
         html[dir="rtl"] .flip-card-back li::before { content: "\f0d9"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: var(--teal-box); position: absolute; right: 0; top: 1px; }
 
         @media (min-width: 769px) { .flip-card-back li { font-size: 14.5px; } }
-        /* ---------------------------------------------------- */
 
-        /* ستايل الفوتر المتزن وتثبيت أبعاد الأعمدة للسنتر بدقة */
+        /* ---------------------------------------------------- */
+        /* ستايلات الفوتر والواتس آب (ضرورية حتى لو في ملف خارجي) */
+        /* ---------------------------------------------------- */
         .footer { background: linear-gradient(-45deg, #0096cd, #006185, #0096cd, #006185); background-size: 400% 400%; animation: gradientBG 6s ease infinite; color: white; padding: 50px 0 20px 0; }
         .footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center; justify-items: center; margin-bottom: 35px; width: 100%; }
         .footer-left { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .footer-center { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .footer-right { width: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         
-        /* كروت التواصل الطولية */
         .contact-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
-        .contact-card {
-            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 110px; 
-        }
+        .contact-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 110px;  }
         .contact-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
         .contact-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); flex-shrink: 0; }
         .contact-info { text-align: center; width: 100%; }
         .contact-info span { display: block; font-size: 8.5px; color: rgba(255, 255, 255, 0.8); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .contact-info h4 { font-size: 10.5px; font-weight: 700; color: #ffffff; margin-top: 2px; white-space: nowrap; }
 
-        /* كروت السوشيال ميديا */
         .social-grid { display: flex; flex-direction: row; gap: 12px; margin-top: 12px; justify-content: center; }
-        .social-card {
-            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 70px;
-        }
+        .social-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; color: white; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background 0.3s ease; width: 70px; }
         .social-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.22); }
         .social-icon { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 15px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); flex-shrink: 0; }
         .social-card svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 10px; font-size: 14px; color: white; width: 90%; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        
+        .whatsapp-float-btn { position: fixed; bottom: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s; }
+        html[dir="ltr"] .whatsapp-float-btn { left: 30px; }
+        html[dir="rtl"] .whatsapp-float-btn { right: 30px; left: auto; }
+        .whatsapp-float-btn::before, .whatsapp-float-btn::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background-color: #25D366; z-index: -1; animation: whatsapp-pulse 2s infinite ease-out; }
+        .whatsapp-float-btn::after { animation-delay: 1s; }
+        .whatsapp-float-btn:hover { transform: scale(1.1); }
 
         /* تعديلات وتجميل حقول الفورم والقوائم المنسدلة */
         .appointment-sec { padding: 80px 5%; background-color: #f8f9fa; }
@@ -189,16 +191,6 @@
         .map-item h4 { margin-bottom: 15px; text-align: center; color: var(--text-dark); font-size: 18px; font-weight: 600;}
         .map-item iframe { width: 100%; height: 250px; border: 0; border-radius: 4px; }
         
-        .copyright { text-align: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 10px; font-size: 14px; color: white; width: 90%; max-width: 1200px; margin-left: auto; margin-right: auto; }
-        
-        /* زر الواتساب العائم */
-        .whatsapp-float-btn { position: fixed; bottom: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.3s; }
-        html[dir="ltr"] .whatsapp-float-btn { left: 30px; }
-        html[dir="rtl"] .whatsapp-float-btn { right: 30px; left: auto; }
-        .whatsapp-float-btn::before, .whatsapp-float-btn::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background-color: #25D366; z-index: -1; animation: whatsapp-pulse 2s infinite ease-out; }
-        .whatsapp-float-btn::after { animation-delay: 1s; }
-        .whatsapp-float-btn:hover { transform: scale(1.1); }
-
         /* نافذة البوب أب (Popup Modal) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; backdrop-filter: blur(5px); }
         .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -211,32 +203,7 @@
         .modal-btn:hover { background-color: #006185; }
 
         /* -------------------------------------------------------------------------- */
-        /* ستايلات الـ Transition والـ Loader الروشة (السر كله هنا) */
-        /* -------------------------------------------------------------------------- */
-        .page-transition-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            z-index: 100000; opacity: 0; visibility: hidden; transition: all 0.5s ease;
-        }
-        .page-transition-overlay.active { opacity: 1; visibility: visible; }
-
-        .cool-loader {
-            display: flex; gap: 8px; position: fixed; top: calc(50% + 70px); left: 50%;
-            transform: translateX(-50%); z-index: 100001; opacity: 0; visibility: hidden; transition: opacity 0.3s;
-        }
-        .cool-loader.active { opacity: 1; visibility: visible; }
-        .cool-loader span { width: 14px; height: 14px; border-radius: 50%; background-color: var(--btn-blue); animation: loaderBounce 0.5s alternate infinite cubic-bezier(0.2, 0.65, 0.6, 1); }
-        .cool-loader span:nth-child(1) { animation-delay: 0s; }
-        .cool-loader span:nth-child(2) { background-color: var(--teal-box); animation-delay: 0.15s; }
-        .cool-loader span:nth-child(3) { animation-delay: 0.3s; }
-        
-        @keyframes loaderBounce {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-15px) scale(1.2); }
-        }
-
-        /* -------------------------------------------------------------------------- */
-        /* استجابة الموبايل وتثبيت سنتر اللوجو الإجباري للأنيميشن */
+        /* استجابة الموبايل */
         /* -------------------------------------------------------------------------- */
         @media (max-width: 992px) {
             .maps-grid { grid-template-columns: 1fr; }
@@ -284,23 +251,10 @@
 </head>
 <body>
 
-    <!-- Transition Elements -->
-    <div class="page-transition-overlay" id="transitionOverlay"></div>
-    <div class="cool-loader" id="transitionLoader">
-        <span></span><span></span><span></span>
-    </div>
-
-    <header class="header">
-        <div class="logo">
-            <img src="Logo-Dr-Aya.webp" alt="Dr. Aya Khattab Logo" class="header-logo" id="mainLogo">
-        </div>
-        <nav class="nav-links">
-            <a href="#" data-en="Home" data-ar="الرئيسية">Home</a>
-            <a href="#services" data-en="Services" data-ar="الخدمات">Services</a>
-            <a href="#appointment" data-en="Book an Appointment" data-ar="احجز موعدك">Book an Appointment</a>
-            <button id="langToggle" class="lang-btn" onclick="toggleLanguage()">العربية</button>
-        </nav>
-    </header>
+    <!-- ============================================== -->
+    <!-- 1. استدعاء الهيدر وعناصر الأنيميشن من الملف الخارجي -->
+    <!-- ============================================== -->
+    <div id="header-placeholder"></div>
 
     <section class="hero">
         <div class="hero-group">
@@ -727,7 +681,7 @@
                     </div>
                     
                     <div class="form-group full-width">
-                        <button type="submit" id="submitBtn" class="btn btn-blue" data-en="Submit" data-ar="تأكيد الحجز">Submit</button>
+                        <button type="submit" id="submitBtn" class="btn-blue" data-en="Submit" data-ar="تأكيد الحجز">Submit</button>
                     </div>
                 </div>
             </form>
@@ -763,64 +717,50 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-left">
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;" data-en="Contact numbers" data-ar="أرقام التواصل">Contact numbers</div>
-                    <div class="contact-grid">
-                        <a href="tel:01206999908" class="contact-card">
-                            <div class="contact-icon"><i class="fas fa-calendar-check"></i></div>
-                            <div class="contact-info">
-                                <span data-en="Booking" data-ar="الحجز">Booking</span>
-                                <h4>01206999908</h4>
-                            </div>
-                        </a>
-                        <a href="https://wa.me/201060026072" target="_blank" class="contact-card">
-                            <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
-                            <div class="contact-info">
-                                <span data-en="WhatsApp" data-ar="واتساب">WhatsApp</span>
-                                <h4>01060026072</h4>
-                            </div>
-                        </a>
-                    </div>
-                </div>
+    <!-- ============================================== -->
+    <!-- 2. استدعاء الفوتر وزر الواتساب من الملف الخارجي -->
+    <!-- ============================================== -->
+    <div id="footer-placeholder"></div>
 
-                <div class="footer-center">
-                    <div style="height: 28px; margin-bottom: 12px;"></div>
-                    <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" style="height: 82px; object-fit: contain;">
-                </div>
-
-                <div class="footer-right">
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600; height: 28px; display: flex; align-items: center;" data-en="Follow us" data-ar="تابعنا">Follow us</div>
-                    <div class="social-grid">
-                        <a href="https://www.facebook.com/DrAyaKhattab6" target="_blank" class="social-card">
-                            <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
-                            <div class="contact-info"><h4 data-en="Facebook" data-ar="فيسبوك">Facebook</h4></div>
-                        </a>
-                        <a href="https://www.instagram.com/dr.ayakhattabclinic/" target="_blank" class="social-card">
-                            <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.073 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.073-4.947-.197-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
-                            <div class="contact-info"><h4 data-en="Instagram" data-ar="انستجرام">Instagram</h4></div>
-                        </a>
-                        <a href="https://www.tiktok.com/@dr.ayakhattab" target="_blank" class="social-card">
-                            <div class="social-icon"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.57-2.87 2.93 2.93 0 0 1 1.34.05V9.43a6.37 6.37 0 0 0-1.34-.14 6.34 6.34 0 1 0 6.34 6.34V9.69a6.83 6.83 0 0 0 3.82 2.76V8.65a4.83 4.83 0 0 1-0.2-1.96z"/></svg></div>
-                            <div class="contact-info"><h4 data-en="TikTok" data-ar="تيك توك">TikTok</h4></div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="copyright" data-en="Copyright © Dr. Aya Khattab. All rights reserved." data-ar="حقوق النشر © د. آية خطاب. جميع الحقوق محفوظة.">Copyright © Dr. Aya Khattab. All rights reserved.</div>
-        </div>
-    </footer>
-
-    <a href="https://wa.me/201060026072" target="_blank" class="whatsapp-float-btn"><i class="fab fa-whatsapp"></i></a>
-
-    <!-- كود تغيير اللغة السحري (FLIP Animation) -->
+    <!-- ============================================== -->
+    <!-- 3. كود الجافاسكريبت الموحد للاستدعاء والأنيميشن -->
+    <!-- ============================================== -->
     <script>
+        // دالة سحب الملفات الخارجية (الهيدر والفوتر) وتطبيق الترجمة فوراً
+        function loadComponent(url, placeholderId) {
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById(placeholderId).innerHTML = data;
+                    
+                    const currentLang = document.documentElement.lang;
+                    const container = document.getElementById(placeholderId);
+                    
+                    // تطبيق الترجمة على العناصر اللي اتسحبت
+                    container.querySelectorAll('[data-en]').forEach(el => {
+                        if (!(el.tagName.toLowerCase() === 'option' && el.parentElement.name === 'الدولة')) {
+                            el.innerHTML = el.getAttribute(`data-${currentLang}`);
+                        }
+                    });
+
+                    // تظبيط زرار اللغة المخصوص جوه الهيدر
+                    if(placeholderId === 'header-placeholder') {
+                        const toggleBtn = document.getElementById('langToggle');
+                        if(toggleBtn) {
+                            toggleBtn.innerText = currentLang === 'en' ? 'العربية' : 'English';
+                        }
+                    }
+                })
+                .catch(error => console.error(`Error loading ${url}:`, error));
+        }
+
+        // تشغيل الاستدعاء
+        loadComponent('header.html', 'header-placeholder');
+        loadComponent('footer.html', 'footer-placeholder');
+
+        // أنيميشن تغيير اللغة السحري
         function toggleLanguage() {
             const toggleBtn = document.getElementById('langToggle');
-            // منع الضغط مرتين ورا بعض
             if (toggleBtn.disabled) return;
             toggleBtn.disabled = true;
 
@@ -828,7 +768,6 @@
             const overlay = document.getElementById('transitionOverlay');
             const loader = document.getElementById('transitionLoader');
             
-            // 1. حساب مكان اللوجو الأصلي وعمل نسخة منه تطير لنص الشاشة
             const firstRect = logo.getBoundingClientRect();
             const clone = logo.cloneNode(true);
             clone.style.position = 'fixed';
@@ -839,74 +778,58 @@
             clone.style.margin = '0';
             clone.style.zIndex = '100001';
             clone.style.transform = 'translate(0, 0) scale(1)';
-            clone.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)'; // حركة سموث
+            clone.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)'; 
             document.body.appendChild(clone);
             
-            // 2. إخفاء اللوجو الأصلي وتشغيل الشاشة البيضاء
             logo.style.opacity = '0';
             overlay.classList.add('active');
             
-            // 3. تحريك النسخة لمنتصف الشاشة (Animation Trigger)
             requestAnimationFrame(() => {
                 clone.style.top = '50%';
                 clone.style.left = '50%';
                 clone.style.transform = 'translate(-50%, -50%) scale(1.6)';
-                
-                // إظهار اللودر الروش تحت اللوجو لما يوصل النص
-                setTimeout(() => {
-                    loader.classList.add('active');
-                }, 800);
+                setTimeout(() => { loader.classList.add('active'); }, 800);
             });
             
-            // 4. بعد ثانية ونص من التمركز في النص: تغيير اللغة والمكان!
             setTimeout(() => {
-                let currentLang = document.documentElement.lang;
-                let newLang = currentLang === 'en' ? 'ar' : 'en';
+                const html = document.documentElement;
+                if(html.lang === 'ar') {
+                    html.lang = 'en';
+                    html.dir = 'ltr';
+                    toggleBtn.innerText = 'العربية';
+                } else {
+                    html.lang = 'ar';
+                    html.dir = 'rtl';
+                    toggleBtn.innerText = 'English';
+                }
                 
-                // شقلبة الموقع و تغيير اللغة
-                document.documentElement.lang = newLang;
-                document.documentElement.dir = newLang === 'en' ? 'ltr' : 'rtl';
-                
-                // تحديث كل النصوص
                 document.querySelectorAll('[data-en]').forEach(el => {
-                    el.innerHTML = el.getAttribute(`data-${newLang}`);
+                    if (!(el.tagName.toLowerCase() === 'option' && el.parentElement.name === 'الدولة')) {
+                        el.innerHTML = el.getAttribute(`data-${html.lang}`);
+                    }
                 });
-                
-                // تحديث زر تبديل اللغة نفسه
-                toggleBtn.innerText = newLang === 'en' ? 'العربية' : 'English';
-                
-                // إخفاء اللودر
+
                 loader.classList.remove('active');
+                void document.body.offsetHeight; 
                 
-                // إجبار المتصفح على قراءة الأبعاد الجديدة (مهم جداً للموبايل)
-                void document.body.offsetHeight;
-                
-                // سحب مكان اللوجو الجديد (التقليب خلاه يروح الناحية التانية، ولو موبايل هيفضل ثابت مكانه فوق)
                 const newRect = logo.getBoundingClientRect();
-                
-                // تحريك النسخة لمكانها الجديد
                 clone.style.transform = 'translate(0, 0) scale(1)';
                 clone.style.top = newRect.top + 'px';
                 clone.style.left = newRect.left + 'px';
                 clone.style.width = newRect.width + 'px';
                 clone.style.height = newRect.height + 'px';
                 
-                // إخفاء الشاشة البيضاء
                 overlay.classList.remove('active');
                 
-                // التنظيف بعد ما الحركة تخلص
                 setTimeout(() => {
                     logo.style.opacity = '1';
                     clone.remove();
                     toggleBtn.disabled = false;
                 }, 800);
-                
-            }, 2300); // مدة البقاء في المنتصف
+            }, 2300); 
         }
-    </script>
 
-    <!-- كود الجافاسكريبت لربط الفورم بجوجل شيت -->
-    <script>
+        // كود إرسال الفورم العادي
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxWmta8IDW9WKAdIL7EoC8SEJx3-waFrb5nA9hRzxlg4E_X_OIt7MjUEHc8pR7AH07vdg/exec';
         const form = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
