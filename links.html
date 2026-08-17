@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-495M9DXM4W"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-495M9DXM4W"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-495M9DXM4W');
-</script>
+      gtag('config', 'G-495M9DXM4W');
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dr. Aya Khattab - Links</title>
     
     <!-- Google Fonts: Cairo (Arabic) & Poppins (English) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -24,10 +25,8 @@
         :root {
             --primary-blue: #0096cd;
             --primary-teal: #77b500;
-            --text-dark: #2c3e50;
-            --text-gray: #6c757d;
-            --bg-color: #f4f7f6;
-            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
         }
 
         * {
@@ -38,157 +37,226 @@
 
         body {
             font-family: 'Cairo', sans-serif;
-            /* Animated Gradient Background */
-            background: linear-gradient(-45deg, #e9ecef, #fdfbfb, #e0f2fe, #e6f4ea);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: #f8fafc;
             color: var(--text-dark);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* Animated Background Orbs */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: floatOrb 10s infinite ease-in-out alternate;
         }
 
-        /* Glassmorphism Container */
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(0, 150, 205, 0.4); /* Blue */
+            top: 5%;
+            left: 10%;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: rgba(119, 181, 0, 0.3); /* Teal */
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-50px) scale(1.1); }
+        }
+
+        /* Glassmorphism Container (App Style) */
         .bio-container {
-            background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 800px;
+            max-width: 480px; /* جعلناه أكنز عشان يدي شكل بريميوم للموبايل */
             padding: 3rem 2rem;
             text-align: center;
-            animation: fadeInUP 1s ease-out;
+            animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: scale(0.9);
         }
 
-        /* Header & Profile */
+        @keyframes containerPop {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Profile Image Glow & Pulse */
         .profile-img {
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
-            border: 4px solid white;
-            box-shadow: 0 10px 20px rgba(0,150,205,0.2);
-            margin-bottom: 1rem;
+            border: 4px solid #fff;
+            box-shadow: 0 0 25px rgba(0, 150, 205, 0.3);
+            margin-bottom: 1.2rem;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            animation: pulseGlow 3s infinite alternate;
+            transition: transform 0.4s ease;
         }
         
         .profile-img:hover {
-            transform: scale(1.05) rotate(3deg);
+            transform: scale(1.08) rotate(-5deg);
         }
 
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(0, 150, 205, 0.2); }
+            100% { box-shadow: 0 0 35px rgba(119, 181, 0, 0.5); }
+        }
+
+        /* Text Gradient Styling */
         .name {
             font-family: 'Poppins', 'Cairo', sans-serif;
             font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--text-dark);
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+            background: linear-gradient(45deg, var(--primary-blue), var(--primary-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .location {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-gray);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 6px;
         }
 
         .bio-text {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.8;
             color: var(--text-dark);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.8rem;
             font-weight: 600;
+            padding: 0 10px;
         }
 
-        /* Contact Buttons */
+        /* Contact Badges */
         .contact-actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 2.5rem;
         }
 
         .btn-action {
             text-decoration: none;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.95rem;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Poppins', sans-serif;
         }
 
         .btn-email {
-            background-color: #f1f5f9;
+            background-color: #eff6ff;
             color: var(--primary-blue);
+            border: 1px solid #dbeafe;
         }
 
         .btn-call {
             background-color: #f0fdf4;
             color: var(--primary-teal);
+            border: 1px solid #dcfce3;
         }
 
         .btn-action:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            filter: brightness(0.95);
         }
 
-        /* Links Grid */
+        /* Links Grid (Single Column Pill Design) */
         .links-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .link-card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50px; /* Pill Shape */
+            padding: 12px 20px 12px 12px;
             display: flex;
             align-items: center;
             text-decoration: none;
             color: var(--text-dark);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-            border: 1px solid #f1f1f1;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* Initial state for stagger animation */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            
+            /* Animation Setup */
             opacity: 0;
-            transform: translateY(20px);
-            animation: slideIn 0.6s forwards;
+            transform: translateY(30px);
+            animation: bouncySlideIn 0.6s forwards;
+        }
+
+        /* Shine Effect on Hover */
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            transition: all 0.7s ease;
+        }
+
+        .link-card:hover::before {
+            left: 200%;
         }
 
         .link-card:hover {
-            transform: translateY(-5px) scale(1.02) !important;
-            box-shadow: 0 15px 25px rgba(0,0,0,0.08);
-            border-color: var(--primary-blue);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 150, 205, 0.15);
+            border-color: rgba(0, 150, 205, 0.3);
+            background: #ffffff;
         }
 
         /* Icon styling */
         .icon-box {
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1.2rem;
-            margin-left: 15px; /* RTL spacing */
+            margin-left: 15px;
             color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .link-card:hover .icon-box {
+            transform: rotate(360deg);
         }
 
         /* Brand Colors for Icons */
@@ -207,61 +275,67 @@
             display: block;
             font-weight: 700;
             font-size: 1rem;
-            margin-bottom: 2px;
+            margin-bottom: 0px;
             font-family: 'Poppins', 'Cairo', sans-serif;
         }
 
         .link-subtitle {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-gray);
             font-family: 'Poppins', sans-serif;
             direction: ltr;
             text-align: right;
+            opacity: 0.8;
         }
 
         .arrow-icon {
-            color: #ccc;
-            font-size: 0.9rem;
-            transition: color 0.3s;
+            color: #cbd5e1;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-right: 10px;
         }
 
         .link-card:hover .arrow-icon {
             color: var(--primary-blue);
+            transform: translateX(-5px);
         }
 
-        /* Staggered Animations Delays */
-        .link-card:nth-child(1) { animation-delay: 0.2s; }
-        .link-card:nth-child(2) { animation-delay: 0.3s; }
-        .link-card:nth-child(3) { animation-delay: 0.4s; }
-        .link-card:nth-child(4) { animation-delay: 0.5s; }
-        .link-card:nth-child(5) { animation-delay: 0.6s; }
-        .link-card:nth-child(6) { animation-delay: 0.7s; }
+        /* Staggered Delays for Bouncy Entrance */
+        .link-card:nth-child(1) { animation-delay: 0.3s; }
+        .link-card:nth-child(2) { animation-delay: 0.4s; }
+        .link-card:nth-child(3) { animation-delay: 0.5s; }
+        .link-card:nth-child(4) { animation-delay: 0.6s; }
+        .link-card:nth-child(5) { animation-delay: 0.7s; }
+        .link-card:nth-child(6) { animation-delay: 0.8s; }
 
-        @keyframes fadeInUP {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideIn {
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes bouncySlideIn {
+            0% { opacity: 0; transform: translateY(40px); }
+            70% { transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         /* Mobile Adjustments */
         @media (max-width: 600px) {
-            .bio-container { padding: 2rem 1.2rem; }
-            .links-grid { grid-template-columns: 1fr; }
-            .profile-img { width: 100px; height: 100px; }
+            .bio-container { 
+                padding: 2.5rem 1.5rem; 
+                border-radius: 30px;
+            }
+            .profile-img { width: 110px; height: 110px; }
+            .name { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Animated Background Elements -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
     <div class="bio-container">
         <!-- Header Section -->
         <header>
-            <!-- ملحوظة: غير مسار الصورة لمسار لوجو العيادة عندك -->
-            <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/120'">
+            <img src="Logo_Dr_Aya.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/130'">
             
             <h1 class="name">Dr Aya Khattab</h1>
             
@@ -290,7 +364,6 @@
         <!-- Links Grid Section -->
         <main class="links-grid">
             
-            <!-- Link 1: Website -->
             <a href="https://drayakhattab.com/" target="_blank" class="link-card">
                 <div class="icon-box bg-web"><i class="fas fa-globe"></i></div>
                 <div class="link-content">
@@ -300,7 +373,6 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
-            <!-- Link 2: Ismailia Clinic -->
             <a href="https://maps.app.goo.gl/5Jjcm7PYvM6SVRaE6" target="_blank" class="link-card">
                 <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
                 <div class="link-content">
@@ -310,7 +382,6 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
-            <!-- Link 3: Cairo Clinic -->
             <a href="https://maps.app.goo.gl/sXSQAoaoPnv8VJYBA" target="_blank" class="link-card">
                 <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
                 <div class="link-content">
@@ -320,7 +391,6 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
-            <!-- Link 4: Facebook -->
             <a href="https://facebook.com/DrAyaKhattab6" target="_blank" class="link-card">
                 <div class="icon-box bg-facebook"><i class="fab fa-facebook-f"></i></div>
                 <div class="link-content">
@@ -330,7 +400,6 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
-            <!-- Link 5: Instagram -->
             <a href="https://instagram.com/dr_aya_khattab" target="_blank" class="link-card">
                 <div class="icon-box bg-instagram"><i class="fab fa-instagram"></i></div>
                 <div class="link-content">
@@ -340,7 +409,6 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
-            <!-- Link 6: TikTok -->
             <a href="https://tiktok.com/@dr.ayakhattab" target="_blank" class="link-card">
                 <div class="icon-box bg-tiktok"><i class="fab fa-tiktok"></i></div>
                 <div class="link-content">
