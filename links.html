@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-495M9DXM4W"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-495M9DXM4W');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Aya Khattab - Links</title>
+    
+    <!-- Google Fonts: Cairo (Arabic) & Poppins (English) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-blue: #0096cd;
+            --primary-teal: #77b500;
+            --text-dark: #2c3e50;
+            --text-gray: #6c757d;
+            --bg-color: #f4f7f6;
+            --card-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            /* Animated Gradient Background */
+            background: linear-gradient(-45deg, #e9ecef, #fdfbfb, #e0f2fe, #e6f4ea);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Container */
+        .bio-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 800px;
+            padding: 3rem 2rem;
+            text-align: center;
+            animation: fadeInUP 1s ease-out;
+        }
+
+        /* Header & Profile */
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 10px 20px rgba(0,150,205,0.2);
+            margin-bottom: 1rem;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .profile-img:hover {
+            transform: scale(1.05) rotate(3deg);
+        }
+
+        .name {
+            font-family: 'Poppins', 'Cairo', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .location {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .bio-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Contact Buttons */
+        .contact-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-action {
+            text-decoration: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-email {
+            background-color: #f1f5f9;
+            color: var(--primary-blue);
+        }
+
+        .btn-call {
+            background-color: #f0fdf4;
+            color: var(--primary-teal);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Links Grid */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .link-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+            border: 1px solid #f1f1f1;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Initial state for stagger animation */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.6s forwards;
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px) scale(1.02) !important;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.08);
+            border-color: var(--primary-blue);
+        }
+
+        /* Icon styling */
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            margin-left: 15px; /* RTL spacing */
+            color: white;
+        }
+
+        /* Brand Colors for Icons */
+        .bg-web { background: linear-gradient(135deg, #0096cd, #005b82); }
+        .bg-map { background: linear-gradient(135deg, #ea4335, #b31404); }
+        .bg-facebook { background: linear-gradient(135deg, #1877F2, #0b50a8); }
+        .bg-instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .bg-tiktok { background: linear-gradient(135deg, #000000, #333333); }
+
+        .link-content {
+            flex-grow: 1;
+            text-align: right;
+        }
+
+        .link-title {
+            display: block;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 2px;
+            font-family: 'Poppins', 'Cairo', sans-serif;
+        }
+
+        .link-subtitle {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            font-family: 'Poppins', sans-serif;
+            direction: ltr;
+            text-align: right;
+        }
+
+        .arrow-icon {
+            color: #ccc;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .link-card:hover .arrow-icon {
+            color: var(--primary-blue);
+        }
+
+        /* Staggered Animations Delays */
+        .link-card:nth-child(1) { animation-delay: 0.2s; }
+        .link-card:nth-child(2) { animation-delay: 0.3s; }
+        .link-card:nth-child(3) { animation-delay: 0.4s; }
+        .link-card:nth-child(4) { animation-delay: 0.5s; }
+        .link-card:nth-child(5) { animation-delay: 0.6s; }
+        .link-card:nth-child(6) { animation-delay: 0.7s; }
+
+        @keyframes fadeInUP {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .bio-container { padding: 2rem 1.2rem; }
+            .links-grid { grid-template-columns: 1fr; }
+            .profile-img { width: 100px; height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bio-container">
+        <!-- Header Section -->
+        <header>
+            <!-- ملحوظة: غير مسار الصورة لمسار لوجو العيادة عندك -->
+            <img src="Logo-Dr-Aya-W.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/120'">
+            
+            <h1 class="name">Dr Aya Khattab</h1>
+            
+            <p class="location">
+                <i class="fas fa-map-marker-alt" style="color:#ea4335;"></i>
+                الدور الخامس برج العز ميدان عرابي - الإسماعيلية، مصر
+            </p>
+            
+            <div class="bio-text">
+                دكتوراه العلاج الطبيعي و التغذية العلاجية<br>
+                ماجستير العلاج الطبيعي و التغذية العلاجية<br>
+                عضو الجمعية المصرية العربية للتغذية الصحية و العلاجية<br>
+                دبلومة علاج إصابات الملاعب و التأهيل الرياضي - ألمانيا
+            </div>
+
+            <div class="contact-actions">
+                <a href="mailto:info@drayakhattab.com" class="btn-action btn-email">
+                    <i class="fas fa-envelope"></i> Email
+                </a>
+                <a href="tel:01060026072" class="btn-action btn-call">
+                    <i class="fas fa-phone-alt"></i> Call
+                </a>
+            </div>
+        </header>
+
+        <!-- Links Grid Section -->
+        <main class="links-grid">
+            
+            <!-- Link 1: Website -->
+            <a href="https://drayakhattab.com/" target="_blank" class="link-card">
+                <div class="icon-box bg-web"><i class="fas fa-globe"></i></div>
+                <div class="link-content">
+                    <span class="link-title">Our Website</span>
+                    <span class="link-subtitle">drayakhattab.com</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- Link 2: Ismailia Clinic -->
+            <a href="https://maps.app.goo.gl/5Jjcm7PYvM6SVRaE6" target="_blank" class="link-card">
+                <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
+                <div class="link-content">
+                    <span class="link-title">عنوان عيادة الإسماعيلية</span>
+                    <span class="link-subtitle">Google Maps</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- Link 3: Cairo Clinic -->
+            <a href="https://maps.app.goo.gl/sXSQAoaoPnv8VJYBA" target="_blank" class="link-card">
+                <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
+                <div class="link-content">
+                    <span class="link-title">عنوان عيادة القاهرة</span>
+                    <span class="link-subtitle">Google Maps</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- Link 4: Facebook -->
+            <a href="https://facebook.com/DrAyaKhattab6" target="_blank" class="link-card">
+                <div class="icon-box bg-facebook"><i class="fab fa-facebook-f"></i></div>
+                <div class="link-content">
+                    <span class="link-title">Facebook</span>
+                    <span class="link-subtitle">facebook.com/DrAyaKhattab6</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- Link 5: Instagram -->
+            <a href="https://instagram.com/dr_aya_khattab" target="_blank" class="link-card">
+                <div class="icon-box bg-instagram"><i class="fab fa-instagram"></i></div>
+                <div class="link-content">
+                    <span class="link-title">Instagram</span>
+                    <span class="link-subtitle">instagram.com/dr_aya_khattab</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- Link 6: TikTok -->
+            <a href="https://tiktok.com/@dr.ayakhattab" target="_blank" class="link-card">
+                <div class="icon-box bg-tiktok"><i class="fab fa-tiktok"></i></div>
+                <div class="link-content">
+                    <span class="link-title">TikTok</span>
+                    <span class="link-subtitle">tiktok.com/@dr.ayakhattab</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+        </main>
+    </div>
+
+</body>
+</html>
