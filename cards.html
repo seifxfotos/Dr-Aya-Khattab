@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>استمارة مريض - عيادة د. آية خطاب</title>
+    
+    <!-- استدعاء فونت كايرو من جوجل -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            /* ألوان اللوجو الأصلية */
-            --primary-blue: #0093D0; /* الأزرق الخاص بالدكتورة */
-            --primary-green: #8CC63F; /* الأخضر الخاص بالدكتورة */
+            --primary-blue: #0093D0;
+            --primary-green: #8CC63F;
             --light-bg: #ffffff;
             --border-color: #333;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Cairo', sans-serif;
             background-color: #f0f4f8;
             margin: 0;
             padding: 20px;
@@ -40,6 +43,7 @@
             border-radius: 6px;
             flex-grow: 1;
             font-size: 16px;
+            font-family: 'Cairo', sans-serif;
         }
 
         .btn {
@@ -47,18 +51,17 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 16px;
+            font-family: 'Cairo', sans-serif;
             color: white;
             transition: 0.3s;
         }
 
         .btn-search { background-color: var(--primary-blue); }
         .btn-search:hover { background-color: #007bb5; }
-
         .btn-new { background-color: var(--primary-green); }
         .btn-new:hover { background-color: #7ab334; }
-
         .btn-save { background-color: #2c3e50; }
         .btn-print { background-color: #e67e22; }
 
@@ -73,12 +76,12 @@
             display: flex;
             gap: 30px;
             border: 2px solid var(--primary-blue);
-            border-top: 10px solid var(--primary-green); /* لمسة جمالية من اللوجو */
+            border-top: 10px solid var(--primary-green);
         }
 
         /* القسم الأيمن (البيانات) */
         .info-section {
-            flex: 1;
+            flex: 1.2; /* كبرنا مساحتها سيكا عشان تاخد راحتها */
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -91,9 +94,9 @@
         }
 
         .input-group label {
-            font-weight: bold;
+            font-weight: 700;
             white-space: nowrap;
-            color: var(--primary-blue); /* لون العناوين أزرق */
+            color: var(--primary-blue);
             font-size: 18px;
         }
 
@@ -104,11 +107,11 @@
             background: transparent;
             font-size: 18px;
             padding: 5px;
-            font-family: inherit;
+            font-family: 'Cairo', sans-serif;
             color: #111;
+            font-weight: 600;
         }
 
-        /* تأثير الألوان عند الكتابة */
         .input-group input:focus, .input-group textarea:focus {
             outline: none;
             border-bottom-color: var(--primary-green);
@@ -138,7 +141,7 @@
         }
 
         th {
-            background-color: #eaf5fa; /* أزرق فاتح جداً مريح للعين */
+            background-color: #eaf5fa;
             color: var(--primary-blue);
             font-size: 18px;
             padding: 10px;
@@ -150,17 +153,17 @@
             border: none;
             text-align: center;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
             background: transparent;
         }
 
-        /* لون خفيف في الجدول عند الكتابة */
         td input:focus {
             outline: none;
             background-color: #f4fbf0; 
         }
 
-        /* إعدادات الطباعة (عشان تطبع كأنها ورقة حقيقية) */
+        /* إعدادات الطباعة */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background: white; padding: 0; }
@@ -183,8 +186,8 @@
 
     <!-- شريط التحكم -->
     <div class="controls no-print">
-        <input type="text" id="searchPhone" placeholder="🔍 ابحث برقم موبايل المريض هنا...">
-        <button class="btn btn-search" onclick="searchPatient()">بحث</button>
+        <input type="text" id="searchName" placeholder="🔍 ابحث باسم المريض هنا (الهمزات والتاء المربوطة لا تهم)...">
+        <button class="btn btn-search" onclick="searchPatient()">بحث ذكي</button>
         <button class="btn btn-new" onclick="clearForm()">+ ملف جديد</button>
         <button class="btn btn-save" onclick="saveData()">💾 حفظ البيانات</button>
         <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الورقة</button>
@@ -193,23 +196,8 @@
     <!-- الاستمارة (الورقة) -->
     <div class="paper-sheet" id="patientForm">
         
-        <!-- الجانب الأيسر (الجدول) -->
-        <div class="table-section">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 45%;">N</th>
-                        <th style="width: 25%;">W/S</th>
-                        <th style="width: 20%;">D</th>
-                        <th style="width: 10%;">#</th>
-                    </tr>
-                </thead>
-                <tbody id="sessionsTable">
-                    <!-- هيتم إنشاء 12 صف أوتوماتيك -->
-                </tbody>
-            </table>
-        </div>
-
+        <!-- التعديل هنا: حطينا قسم البيانات الأول عشان يظهر على اليمين بسبب الـ RTL -->
+        
         <!-- الجانب الأيمن (بيانات المريض) -->
         <div class="info-section">
             <div class="row">
@@ -236,7 +224,7 @@
 
             <div class="input-group" style="width: 50%;">
                 <label>السن:</label>
-                <input type="number" id="p_age">
+                <input type="text" id="p_age">
             </div>
 
             <br>
@@ -257,36 +245,67 @@
             </div>
         </div>
 
+        <!-- الجانب الأيسر (الجدول) -->
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">#</th>
+                        <th style="width: 20%;">D</th>
+                        <th style="width: 25%;">W/S</th>
+                        <th style="width: 45%;">N</th>
+                    </tr>
+                </thead>
+                <tbody id="sessionsTable">
+                    <!-- سيتم إنشاء 12 صف بواسطة الجافاسكريبت -->
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
     <script>
-        // إنشاء 12 صف في الجدول زي الورقة
+        // 1. إنشاء 12 صف في الجدول
         const tableBody = document.getElementById('sessionsTable');
         for (let i = 1; i <= 12; i++) {
             tableBody.innerHTML += `
                 <tr>
-                    <td><input type="text" id="n_${i}"></td>
-                    <td><input type="text" id="ws_${i}"></td>
+                    <td style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">${i}</td>
                     <td><input type="text" id="d_${i}"></td>
-                    <td style="font-weight: bold; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">${i}</td>
+                    <td><input type="text" id="ws_${i}"></td>
+                    <td><input type="text" id="n_${i}"></td>
                 </tr>
             `;
         }
 
-        // تفريغ البيانات
+        // 2. دالة تنظيف وتوحيد الحروف العربية (للبحث الذكي)
+        function normalizeArabicText(text) {
+            if (!text) return "";
+            return text.replace(/[أإآ]/g, 'ا')   
+                       .replace(/ة/g, 'ه')       
+                       .replace(/[يى]/g, 'ي')    
+                       .replace(/[\u064B-\u065F]/g, '') 
+                       .trim().toLowerCase();
+        }
+
+        // 3. دالة البحث
+        function searchPatient() {
+            let searchInput = document.getElementById('searchName').value;
+            
+            if(!searchInput) {
+                alert("برجاء إدخال اسم المريض للبحث!");
+                return;
+            }
+
+            let cleanSearchName = normalizeArabicText(searchInput);
+            
+            alert("جاري البحث عن: " + searchInput + "\n\n(في الخلفية السيستم هيبحث بالصيغة الذكية: " + cleanSearchName + ")");
+        }
+
+        // 4. تفريغ البيانات
         function clearForm() {
             document.querySelectorAll('input, textarea').forEach(el => el.value = '');
             alert("تم تجهيز ورقة جديدة، يمكنك البدء في إدخال بيانات المريض.");
-        }
-
-        // دوال وهمية مؤقتاً لحد ما نربط بقاعدة البيانات
-        function searchPatient() {
-            let phone = document.getElementById('searchPhone').value;
-            if(!phone) {
-                alert("برجاء إدخال رقم الموبايل للبحث!");
-                return;
-            }
-            alert("جاري البحث عن رقم: " + phone);
         }
 
         function saveData() {
