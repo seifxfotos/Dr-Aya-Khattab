@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>استمارة مريض - عيادة د. آية خطاب</title>
     
-    <!-- استدعاء فونت كايرو من جوجل -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -23,7 +22,6 @@
             padding: 20px;
         }
 
-        /* شريط التحكم (مخفي في الطباعة) */
         .controls {
             background: white;
             padding: 20px;
@@ -66,7 +64,6 @@
         .btn-save { background-color: #2c3e50; }
         .btn-print { background-color: #e67e22; }
 
-        /* حاوية الورقة (شكل الاستمارة) */
         .paper-sheet {
             background-color: var(--light-bg);
             max-width: 1100px;
@@ -80,7 +77,6 @@
             border-top: 10px solid var(--primary-green);
         }
 
-        /* القسم الأيمن (البيانات) */
         .info-section {
             flex: 1.2;
             display: flex;
@@ -94,7 +90,6 @@
             width: 100%;
         }
 
-        /* ضبط الخطوط لتكون بجانب الكلمات تماما على كل الشاشات */
         .input-group {
             display: flex;
             flex-direction: row !important;
@@ -130,7 +125,6 @@
             border-bottom-color: var(--primary-green);
         }
 
-        /* القسم الأيسر (الجدول) */
         .table-section {
             flex: 1;
         }
@@ -171,34 +165,70 @@
             background-color: #f4fbf0; 
         }
 
-        /* تظبيط مقاسات الموبايل والتابلت */
+        /* ------------------ تصميم نافذة اختيار المريض ------------------ */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            border-top: 5px solid var(--primary-green);
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        }
+        .patient-option {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+        }
+        .patient-option:hover {
+            border-color: var(--primary-green);
+            background-color: #f4fbf0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .patient-name { font-weight: bold; color: var(--primary-blue); font-size: 18px; margin-bottom: 5px;}
+        .patient-details { color: #555; font-size: 14px; font-weight: 600;}
+        .select-badge {
+            background: var(--primary-blue);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        /* ---------------------------------------------------------------- */
+
         @media (max-width: 800px) {
-            .paper-sheet {
-                flex-direction: column;
-                padding: 20px;
-            }
-            .row {
-                flex-direction: column;
-                gap: 20px;
-            }
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
+            .paper-sheet { flex-direction: column; padding: 20px; }
+            .row { flex-direction: column; gap: 20px; }
+            .controls { flex-direction: column; align-items: stretch; }
         }
 
-        /* إعدادات الطباعة */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background: white; padding: 0; }
-            .controls { display: none !important; } 
-            .paper-sheet { 
-                box-shadow: none; 
-                border: none; 
-                padding: 0; 
-                width: 100%; 
-                max-width: 100%;
-            }
+            .controls, .modal { display: none !important; } 
+            .paper-sheet { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
             .input-group label { color: #000; }
             .input-group input, .input-group textarea { border-bottom: 2px dotted #000; }
             table, th, td { border: 2px solid #000; }
@@ -208,19 +238,29 @@
 </head>
 <body>
 
+    <!-- نافذة اختيار المريض (مخفية افتراضياً) -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من مريض بهذا الاسم</h2>
+            <p style="color: #666; margin-bottom: 20px;">الرجاء اختيار المريض المطلوب من القائمة التالية:</p>
+            <div id="patientList">
+                <!-- سيتم تعبئة الكروت هنا -->
+            </div>
+            <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px;" onclick="closeModal()">إلغاء وإغلاق</button>
+        </div>
+    </div>
+
     <!-- شريط التحكم -->
     <div class="controls no-print">
-        <input type="text" id="searchName" placeholder="🔍 ابحث باسم المريض هنا...">
-        <button class="btn btn-search" onclick="searchPatient()">بحث عن مريض</button>
+        <input type="text" id="searchName" placeholder="🔍 ابحث باسم المريض أو رقم الموبايل هنا...">
+        <button class="btn btn-search" onclick="searchPatient()">بحث ذكي</button>
         <button class="btn btn-new" onclick="clearForm()">+ ملف جديد</button>
         <button class="btn btn-save" onclick="saveData()">💾 حفظ البيانات</button>
         <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الورقة</button>
     </div>
 
-    <!-- الاستمارة (الورقة) -->
+    <!-- الاستمارة -->
     <div class="paper-sheet" id="patientForm">
-        
-        <!-- الجانب الأيمن (بيانات المريض) -->
         <div class="info-section">
             <div class="row">
                 <div class="input-group">
@@ -232,7 +272,6 @@
                     <input type="text" id="p_address">
                 </div>
             </div>
-
             <div class="row">
                 <div class="input-group">
                     <label>رقم الموبايل:</label>
@@ -243,31 +282,24 @@
                     <input type="text" id="p_job">
                 </div>
             </div>
-
             <div class="input-group" style="width: 50%;">
                 <label>السن:</label>
                 <input type="text" id="p_age">
             </div>
-
             <br>
-            
             <div class="input-group">
                 <label>Referred Doctor:</label>
                 <input type="text" id="p_referred">
             </div>
-
             <div class="input-group">
                 <label>Diagnosis:</label>
                 <input type="text" id="p_diagnosis">
             </div>
-
             <div class="input-group" style="align-items: flex-start; margin-top: 10px;">
                 <label style="padding-bottom: 0;">Treatment Protocol:</label>
                 <textarea id="p_protocol" rows="4"></textarea>
             </div>
         </div>
-
-        <!-- الجانب الأيسر (الجدول) -->
         <div class="table-section">
             <table>
                 <thead>
@@ -279,18 +311,17 @@
                     </tr>
                 </thead>
                 <tbody id="sessionsTable">
-                    <!-- سيتم إنشاء الصفوف بواسطة الجافاسكريبت -->
                 </tbody>
             </table>
         </div>
-
     </div>
 
     <script>
-        // رابط API الخاص بجوجل شيت الذي تم إنشاؤه
+        // ⚠️ ضع رابط API الخاص بجوجل شيت هنا ⚠️
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiitBrTQOcEVBgbbNm6dEF-WmNyQcdzWDA8kY6K0viqzRoHpw5sryxQpd4pgDzED1C/exec";
 
-        // 1. إنشاء 12 صف في الجدول
+        let globalSearchResults = []; // متغير لتخزين نتائج البحث
+
         const tableBody = document.getElementById('sessionsTable');
         for (let i = 1; i <= 12; i++) {
             tableBody.innerHTML += `
@@ -303,71 +334,94 @@
             `;
         }
 
-        // 2. دالة البحث الذكي
         async function searchPatient() {
             let searchInput = document.getElementById('searchName').value;
-            if(!searchInput) {
-                alert("برجاء إدخال اسم المريض للبحث!");
-                return;
-            }
+            if(!searchInput) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
 
             let btn = document.querySelector('.btn-search');
             btn.innerText = "جاري البحث...";
 
             try {
-                // استدعاء البيانات من جوجل شيت
-                let response = await fetch(SCRIPT_URL + "?name=" + encodeURIComponent(searchInput));
-                let data = await response.json();
+                let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput));
+                let res = await response.json();
 
-                if(data.status === "not_found") {
-                    alert("المريض غير موجود في القاعدة، يمكنك كتابة بياناته والضغط على حفظ لإضافته كملف جديد.");
-                } else {
-                    // تعبئة البيانات الأساسية
-                    document.getElementById('p_name').value = data.name || "";
-                    document.getElementById('p_address').value = data.address || "";
-                    document.getElementById('p_phone').value = data.phone || "";
-                    document.getElementById('p_job').value = data.job || "";
-                    document.getElementById('p_age').value = data.age || "";
-                    document.getElementById('p_referred').value = data.referred || "";
-                    document.getElementById('p_diagnosis').value = data.diagnosis || "";
-                    document.getElementById('p_protocol').value = data.protocol || "";
-
-                    // تعبئة بيانات الجلسات في الجدول
-                    if(data.sessions && data.sessions.length > 0) {
-                        for(let i = 1; i <= 12; i++) {
-                            let session = data.sessions[i-1] || {d: "", ws: "", n: ""};
-                            document.getElementById('d_'+i).value = session.d;
-                            document.getElementById('ws_'+i).value = session.ws;
-                            document.getElementById('n_'+i).value = session.n;
-                        }
-                    } else {
-                        // تفريغ الجدول لو المريض ملوش جلسات قديمة
-                        for(let i = 1; i <= 12; i++) {
-                            document.getElementById('d_'+i).value = "";
-                            document.getElementById('ws_'+i).value = "";
-                            document.getElementById('n_'+i).value = "";
-                        }
+                if(res.status === "not_found") {
+                    alert("المريض غير موجود، يمكنك كتابة بياناته والضغط على حفظ لإنشاء ملف جديد.");
+                } else if(res.status === "found") {
+                    
+                    // إذا وجد مريض واحد فقط
+                    if(res.data.length === 1) {
+                        loadPatientData(res.data[0]);
+                    } 
+                    // إذا وجد أكثر من مريض
+                    else {
+                        globalSearchResults = res.data;
+                        let listHtml = "";
+                        
+                        res.data.forEach((patient, index) => {
+                            listHtml += `
+                                <div class="patient-option" onclick="selectPatient(${index})">
+                                    <div>
+                                        <div class="patient-name">${patient.name}</div>
+                                        <div class="patient-details">📱 ${patient.phone || "بدون رقم"} &nbsp; | &nbsp; 📍 ${patient.address || "بدون عنوان"}</div>
+                                    </div>
+                                    <div class="select-badge">اختيار</div>
+                                </div>
+                            `;
+                        });
+                        
+                        document.getElementById('patientList').innerHTML = listHtml;
+                        document.getElementById('patientModal').style.display = "flex";
                     }
-                    alert("تم تحميل بيانات المريض بنجاح!");
                 }
             } catch(e) {
-                alert("حدث خطأ في الاتصال بقاعدة البيانات. تأكد من الإنترنت وحاول مرة أخرى.");
+                alert("حدث خطأ في الاتصال، تأكد من الإنترنت.");
             }
             btn.innerText = "بحث ذكي";
         }
 
-        // 3. دالة الحفظ 
+        // دالة لاختيار المريض من النافذة المنبثقة
+        function selectPatient(index) {
+            loadPatientData(globalSearchResults[index]);
+            closeModal();
+        }
+
+        // دالة لإغلاق النافذة المنبثقة
+        function closeModal() {
+            document.getElementById('patientModal').style.display = "none";
+        }
+
+        function loadPatientData(data) {
+            document.getElementById('p_name').value = data.name || "";
+            document.getElementById('p_address').value = data.address || "";
+            document.getElementById('p_phone').value = data.phone || "";
+            document.getElementById('p_job').value = data.job || "";
+            document.getElementById('p_age').value = data.age || "";
+            document.getElementById('p_referred').value = data.referred || "";
+            document.getElementById('p_diagnosis').value = data.diagnosis || "";
+            document.getElementById('p_protocol').value = data.protocol || "";
+
+            for(let i = 1; i <= 12; i++) {
+                let session = data.sessions[i-1] || {d: "", ws: "", n: ""};
+                document.getElementById('d_'+i).value = session.d;
+                document.getElementById('ws_'+i).value = session.ws;
+                document.getElementById('n_'+i).value = session.n;
+            }
+            alert("تم تحميل بيانات المريض: " + data.name);
+        }
+
         function saveData() {
             let name = document.getElementById('p_name').value;
-            if(!name) {
-                alert("اسم المريض إجباري للحفظ!");
+            let phone = document.getElementById('p_phone').value;
+            
+            if(!name || !phone) {
+                alert("الاسم ورقم الموبايل إجباريين لتجنب تداخل البيانات!");
                 return;
             }
 
             let btn = document.querySelector('.btn-save');
             btn.innerText = "جاري الحفظ...";
 
-            // تجميع الجلسات من الجدول
             let sessions = [];
             for(let i = 1; i <= 12; i++) {
                 sessions.push({
@@ -377,12 +431,9 @@
                 });
             }
 
-            // تجميع كل البيانات
             let payload = {
-                name: name,
-                address: document.getElementById('p_address').value,
-                phone: document.getElementById('p_phone').value,
-                job: document.getElementById('p_job').value,
+                name: name, address: document.getElementById('p_address').value,
+                phone: phone, job: document.getElementById('p_job').value,
                 age: document.getElementById('p_age').value,
                 referred: document.getElementById('p_referred').value,
                 diagnosis: document.getElementById('p_diagnosis').value,
@@ -390,24 +441,22 @@
                 sessions: sessions
             };
 
-            // إرسال البيانات لجوجل شيت
             fetch(SCRIPT_URL, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 mode: "no-cors"
             }).then(() => {
-                alert("تم حفظ بيانات المريض وتحديث الجلسات بنجاح في الشيت!");
+                alert("تم حفظ البيانات بنجاح!");
                 btn.innerText = "💾 حفظ البيانات";
             }).catch(() => {
-                alert("حدث خطأ أثناء الحفظ، يرجى المحاولة مرة أخرى.");
+                alert("حدث خطأ، حاول مرة أخرى.");
                 btn.innerText = "💾 حفظ البيانات";
             });
         }
 
-        // 4. دالة تفريغ الحقول لملف جديد
         function clearForm() {
             document.querySelectorAll('input:not(#searchName), textarea').forEach(el => el.value = '');
-            alert("تم تجهيز ورقة جديدة. يمكنك الآن إدخال بيانات المريض الجديد.");
+            alert("تم تجهيز ورقة جديدة.");
         }
     </script>
 </body>
