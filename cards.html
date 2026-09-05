@@ -22,7 +22,6 @@
             padding: 20px;
         }
 
-        /* ----- شريط التحكم ----- */
         .controls {
             background: white;
             padding: 20px;
@@ -65,7 +64,6 @@
         .btn-save { background-color: #2c3e50; }
         .btn-print { background-color: #e67e22; }
 
-        /* ----- حاوية الورقة بالكامل ----- */
         .paper-sheet {
             background-color: var(--light-bg);
             max-width: 1100px;
@@ -74,19 +72,18 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
-            flex-direction: column; /* التعديل عشان الترويسة تبقى فوق */
+            flex-direction: column; 
             border: 2px solid var(--primary-blue);
             border-top: 10px solid var(--primary-green);
         }
 
-        /* ----- ترويسة الورقة (Header) ----- */
         .sheet-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 4px double var(--primary-blue); /* خط شيك فاصل */
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            border-bottom: 4px double var(--primary-blue); 
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .clinic-info h1 {
@@ -94,23 +91,22 @@
             font-size: 28px;
             font-weight: 800;
             margin: 0;
-            letter-spacing: -0.5px;
+            line-height: 1;
         }
 
         .clinic-info p {
             color: var(--primary-green);
             font-size: 18px;
             font-weight: 700;
-            margin: 5px 0 0 0;
+            margin: 0; 
         }
 
         .clinic-logo img {
-            width: 220px; /* مقاس اللوجو */
+            width: 220px; 
             height: auto;
             object-fit: contain;
         }
 
-        /* ----- جسم الورقة (البيانات والجدول) ----- */
         .sheet-body {
             display: flex;
             gap: 40px;
@@ -130,7 +126,6 @@
             width: 100%;
         }
 
-        /* محاذاة النصوص والخطوط */
         .input-group {
             display: flex;
             flex-direction: row;
@@ -165,7 +160,6 @@
             border-bottom-color: var(--primary-green);
         }
 
-        /* Treatment Protocol */
         .input-group-textarea {
             display: flex;
             flex-direction: column; 
@@ -202,6 +196,8 @@
 
         .table-section {
             flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         table {
@@ -240,7 +236,15 @@
             background-color: #f4fbf0; 
         }
 
-        /* ----- النافذة المنبثقة ----- */
+        .add-row-btn {
+            background-color: var(--primary-blue);
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+        .add-row-btn:hover { background-color: #007bb5; }
+
         .modal {
             display: none;
             position: fixed;
@@ -279,7 +283,6 @@
         .patient-option:hover {
             border-color: var(--primary-green);
             background-color: #f4fbf0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .patient-name { font-weight: bold; color: var(--primary-blue); font-size: 18px; margin-bottom: 5px;}
         .patient-details { color: #555; font-size: 14px; font-weight: 600;}
@@ -292,7 +295,6 @@
             font-size: 14px;
         }
 
-        /* ----- استجابة الشاشات الصغيرة ----- */
         @media (max-width: 800px) {
             .paper-sheet { padding: 20px; }
             .sheet-header { flex-direction: column; text-align: center; gap: 15px; }
@@ -301,19 +303,25 @@
             .controls { flex-direction: column; align-items: stretch; }
         }
 
-        /* ----- إعدادات الطباعة ----- */
+        /* ----- إعدادات الطباعة الدقيقة لصفحة واحدة ----- */
         @media print {
-            @page { size: A4 landscape; margin: 10mm; }
+            @page { size: A4 landscape; margin: 5mm; }
             body { background: white; padding: 0; }
-            .controls, .modal { display: none !important; } 
-            .paper-sheet { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            .sheet-header { border-bottom: 4px double #000; margin-bottom: 20px; }
+            .controls, .modal, .no-print { display: none !important; } 
+            .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; }
+            .sheet-header { border-bottom: 4px double #000; margin-bottom: 15px !important; padding-bottom: 5px !important; }
+            .info-section { gap: 15px !important; }
             .clinic-info h1, .clinic-info p { color: #000 !important; }
             .input-group label { color: #000; }
             .input-group input { border-bottom: 2px dotted #000; }
-            .input-group-textarea textarea { border: 2px dotted #000; background: transparent; }
+            .input-group-textarea textarea { border: 2px dotted #000; background: transparent; min-height: 70px !important; }
             table, th, td { border: 2px solid #000; }
-            th { background-color: #eee !important; color: #000; }
+            th { background-color: #eee !important; color: #000; padding: 5px !important; }
+            td { height: 32px !important; } /* تصغير ارتفاع الخانات لضمان الاحتواء في صفحة واحدة */
+            tr { page-break-inside: avoid; }
+            
+            /* الصف رقم 13 وأي صف بعده يطبع في صفحة جديدة */
+            .page-break { page-break-before: always; }
         }
     </style>
 </head>
@@ -338,14 +346,12 @@
 
     <div class="paper-sheet" id="patientForm">
         
-        <!-- الترويسة الجديدة (اللوجو واسم العيادة) -->
         <div class="sheet-header">
             <div class="clinic-info">
                 <h1>د. آيـــة خطـــاب</h1>
-                <p>Physiotherapy and Nutrition Clinic</p>
+                <p>عيادة العلاج الطبيعي والتغذية العلاجية</p>
             </div>
             <div class="clinic-logo">
-                <!-- استدعاء صورة اللوجو -->
                 <img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab">
             </div>
         </div>
@@ -405,6 +411,7 @@
                     <tbody id="sessionsTable">
                     </tbody>
                 </table>
+                <button type="button" class="btn add-row-btn no-print" onclick="addNewRow()">+ إضافة جلسة</button>
             </div>
         </div>
     </div>
@@ -413,18 +420,39 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3t9CZL9PuRcdRsBRaiF48C3ZsJQ3Os0XQ_kaQCdcF31ec9QnKQ-9XgTRDFMZBHhAq/exec";
 
         let globalSearchResults = []; 
+        let currentRowCount = 12;
 
-        const tableBody = document.getElementById('sessionsTable');
-        for (let i = 1; i <= 12; i++) {
-            tableBody.innerHTML += `
-                <tr>
-                    <td style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">${i}</td>
-                    <td><input type="text" id="d_${i}"></td>
-                    <td><input type="text" id="ws_${i}"></td>
-                    <td><input type="text" id="n_${i}"></td>
-                </tr>
+        function buildRowHtml(index) {
+            let tr = document.createElement('tr');
+            if(index === 13) {
+                tr.classList.add('page-break'); // إجبار الطباعة في صفحة جديدة بداية من رقم 13
+            }
+            tr.innerHTML = `
+                <td style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">${index}</td>
+                <td><input type="text" id="d_${index}"></td>
+                <td><input type="text" id="ws_${index}"></td>
+                <td><input type="text" id="n_${index}"></td>
             `;
+            return tr;
         }
+
+        function initTable(count) {
+            const tableBody = document.getElementById('sessionsTable');
+            tableBody.innerHTML = '';
+            currentRowCount = Math.max(12, count);
+            for (let i = 1; i <= currentRowCount; i++) {
+                tableBody.appendChild(buildRowHtml(i));
+            }
+        }
+
+        function addNewRow() {
+            currentRowCount++;
+            const tableBody = document.getElementById('sessionsTable');
+            tableBody.appendChild(buildRowHtml(currentRowCount));
+        }
+
+        // تهيئة الجدول الافتراضي عند فتح الصفحة
+        initTable(12);
 
         async function searchPatient() {
             let searchInput = document.getElementById('searchName').value;
@@ -499,8 +527,11 @@
             document.getElementById('p_diagnosis').value = data.diagnosis || "";
             document.getElementById('p_protocol').value = data.protocol || "";
 
-            for(let i = 1; i <= 12; i++) {
-                let session = data.sessions[i-1] || {d: "", ws: "", n: ""};
+            let sessions = data.sessions || [];
+            initTable(Math.max(12, sessions.length)); // إعادة بناء الجدول ليتناسب مع عدد الجلسات
+
+            for(let i = 1; i <= currentRowCount; i++) {
+                let session = sessions[i-1] || {d: "", ws: "", n: ""};
                 document.getElementById('d_'+i).value = session.d;
                 document.getElementById('ws_'+i).value = session.ws;
                 document.getElementById('n_'+i).value = session.n;
@@ -520,7 +551,7 @@
             btn.innerText = "جاري الحفظ...";
 
             let sessions = [];
-            for(let i = 1; i <= 12; i++) {
+            for(let i = 1; i <= currentRowCount; i++) {
                 sessions.push({
                     d: document.getElementById('d_'+i).value,
                     ws: document.getElementById('ws_'+i).value,
@@ -553,6 +584,7 @@
 
         function clearForm() {
             document.querySelectorAll('input:not(#searchName), textarea').forEach(el => el.value = '');
+            initTable(12); // إعادة الجدول لـ 12 خانة
             alert("تم تجهيز ورقة جديدة.");
         }
     </script>
