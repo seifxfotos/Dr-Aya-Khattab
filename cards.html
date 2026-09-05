@@ -77,14 +77,22 @@
             border-top: 10px solid var(--primary-green);
         }
 
-        /* الترويسة الجديدة (اللوجو فقط على اليسار) */
+        /* الترويسة المتناسقة (QR يمين واللوجو يسار) */
         .sheet-header {
-            text-align: left;
-            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .clinic-qr img {
+            width: 100px; /* مقاس متناسق ومناسب للـ QR */
+            height: auto;
+            object-fit: contain;
         }
 
         .clinic-logo img {
-            width: 220px; 
+            width: 200px; 
             height: auto;
             object-fit: contain;
         }
@@ -299,7 +307,7 @@
 
         @media (max-width: 800px) {
             .paper-sheet { padding: 20px; }
-            .sheet-header { text-align: center; }
+            .sheet-header { flex-direction: column; gap: 15px; text-align: center; }
             .sheet-body { flex-direction: column; gap: 30px; }
             .row { flex-direction: column; gap: 20px; }
             .controls { flex-direction: column; align-items: stretch; }
@@ -310,6 +318,7 @@
             body { background: white; padding: 0; }
             .controls, .modal, .no-print { display: none !important; } 
             .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; }
+            .sheet-header { margin-bottom: 15px !important; }
             .info-section { gap: 15px !important; }
             .input-group label { color: #000; }
             .input-group input { border-bottom: 2px dotted #000; }
@@ -343,7 +352,11 @@
 
     <div class="paper-sheet" id="patientForm">
         
+        <!-- الترويسة (QR يمين واللوجو يسار) -->
         <div class="sheet-header">
+            <div class="clinic-qr">
+                <img src="links-qr-code.svg" alt="QR Code">
+            </div>
             <div class="clinic-logo">
                 <img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab">
             </div>
