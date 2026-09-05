@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استمارة مريض - عيادة د. آية خطاب</title>
+    <style>
+        :root {
+            /* ألوان اللوجو الأصلية */
+            --primary-blue: #0093D0; /* الأزرق الخاص بالدكتورة */
+            --primary-green: #8CC63F; /* الأخضر الخاص بالدكتورة */
+            --light-bg: #ffffff;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* شريط التحكم (مخفي في الطباعة) */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 4px solid var(--primary-green);
+        }
+
+        .controls input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            flex-grow: 1;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .btn-search { background-color: var(--primary-blue); }
+        .btn-search:hover { background-color: #007bb5; }
+
+        .btn-new { background-color: var(--primary-green); }
+        .btn-new:hover { background-color: #7ab334; }
+
+        .btn-save { background-color: #2c3e50; }
+        .btn-print { background-color: #e67e22; }
+
+        /* حاوية الورقة (شكل الاستمارة) */
+        .paper-sheet {
+            background-color: var(--light-bg);
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 30px;
+            border: 2px solid var(--primary-blue);
+            border-top: 10px solid var(--primary-green); /* لمسة جمالية من اللوجو */
+        }
+
+        /* القسم الأيمن (البيانات) */
+        .info-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            white-space: nowrap;
+            color: var(--primary-blue); /* لون العناوين أزرق */
+            font-size: 18px;
+        }
+
+        .input-group input, .input-group textarea {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 2px dashed #999;
+            background: transparent;
+            font-size: 18px;
+            padding: 5px;
+            font-family: inherit;
+            color: #111;
+        }
+
+        /* تأثير الألوان عند الكتابة */
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-bottom-color: var(--primary-green);
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* القسم الأيسر (الجدول) */
+        .table-section {
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid var(--primary-blue);
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid var(--primary-blue);
+            text-align: center;
+            height: 40px;
+        }
+
+        th {
+            background-color: #eaf5fa; /* أزرق فاتح جداً مريح للعين */
+            color: var(--primary-blue);
+            font-size: 18px;
+            padding: 10px;
+        }
+
+        td input {
+            width: 90%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            background: transparent;
+        }
+
+        /* لون خفيف في الجدول عند الكتابة */
+        td input:focus {
+            outline: none;
+            background-color: #f4fbf0; 
+        }
+
+        /* إعدادات الطباعة (عشان تطبع كأنها ورقة حقيقية) */
+        @media print {
+            @page { size: A4 landscape; margin: 10mm; }
+            body { background: white; padding: 0; }
+            .controls { display: none !important; } 
+            .paper-sheet { 
+                box-shadow: none; 
+                border: none; 
+                padding: 0; 
+                width: 100%; 
+                max-width: 100%;
+            }
+            .input-group label { color: #000; }
+            .input-group input, .input-group textarea { border-bottom: 2px dotted #000; }
+            table, th, td { border: 2px solid #000; }
+            th { background-color: #eee !important; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شريط التحكم -->
+    <div class="controls no-print">
+        <input type="text" id="searchPhone" placeholder="🔍 ابحث برقم موبايل المريض هنا...">
+        <button class="btn btn-search" onclick="searchPatient()">بحث</button>
+        <button class="btn btn-new" onclick="clearForm()">+ ملف جديد</button>
+        <button class="btn btn-save" onclick="saveData()">💾 حفظ البيانات</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الورقة</button>
+    </div>
+
+    <!-- الاستمارة (الورقة) -->
+    <div class="paper-sheet" id="patientForm">
+        
+        <!-- الجانب الأيسر (الجدول) -->
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">N</th>
+                        <th style="width: 25%;">W/S</th>
+                        <th style="width: 20%;">D</th>
+                        <th style="width: 10%;">#</th>
+                    </tr>
+                </thead>
+                <tbody id="sessionsTable">
+                    <!-- هيتم إنشاء 12 صف أوتوماتيك -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- الجانب الأيمن (بيانات المريض) -->
+        <div class="info-section">
+            <div class="row">
+                <div class="input-group" style="flex: 2;">
+                    <label>الاسم:</label>
+                    <input type="text" id="p_name">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>العنوان:</label>
+                    <input type="text" id="p_address">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group" style="flex: 2;">
+                    <label>رقم الموبايل:</label>
+                    <input type="text" id="p_phone">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>الوظيفة:</label>
+                    <input type="text" id="p_job">
+                </div>
+            </div>
+
+            <div class="input-group" style="width: 50%;">
+                <label>السن:</label>
+                <input type="number" id="p_age">
+            </div>
+
+            <br>
+            
+            <div class="input-group">
+                <label>Referred Doctor:</label>
+                <input type="text" id="p_referred">
+            </div>
+
+            <div class="input-group">
+                <label>Diagnosis:</label>
+                <input type="text" id="p_diagnosis">
+            </div>
+
+            <div class="input-group" style="align-items: flex-start; margin-top: 10px;">
+                <label>Treatment Protocol:</label>
+                <textarea id="p_protocol" rows="4"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // إنشاء 12 صف في الجدول زي الورقة
+        const tableBody = document.getElementById('sessionsTable');
+        for (let i = 1; i <= 12; i++) {
+            tableBody.innerHTML += `
+                <tr>
+                    <td><input type="text" id="n_${i}"></td>
+                    <td><input type="text" id="ws_${i}"></td>
+                    <td><input type="text" id="d_${i}"></td>
+                    <td style="font-weight: bold; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">${i}</td>
+                </tr>
+            `;
+        }
+
+        // تفريغ البيانات
+        function clearForm() {
+            document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            alert("تم تجهيز ورقة جديدة، يمكنك البدء في إدخال بيانات المريض.");
+        }
+
+        // دوال وهمية مؤقتاً لحد ما نربط بقاعدة البيانات
+        function searchPatient() {
+            let phone = document.getElementById('searchPhone').value;
+            if(!phone) {
+                alert("برجاء إدخال رقم الموبايل للبحث!");
+                return;
+            }
+            alert("جاري البحث عن رقم: " + phone);
+        }
+
+        function saveData() {
+            alert("تم حفظ بيانات المريض بنجاح!");
+        }
+    </script>
+</body>
+</html>
