@@ -77,7 +77,6 @@
             border-top: 10px solid var(--primary-green);
         }
 
-        /* الترويسة المتناسقة (QR يمين واللوجو يسار) */
         .sheet-header {
             display: flex;
             justify-content: space-between;
@@ -85,8 +84,9 @@
             margin-bottom: 20px;
         }
 
+        /* تصغير حجم الـ QR Code قليلاً ليكون متناسقاً تماماً */
         .clinic-qr img {
-            width: 100px; /* مقاس متناسق ومناسب للـ QR */
+            width: 75px; 
             height: auto;
             object-fit: contain;
         }
@@ -201,7 +201,6 @@
             border: 1px solid var(--primary-blue);
             text-align: center;
             height: 40px;
-            position: relative;
         }
 
         th {
@@ -236,23 +235,33 @@
         }
         .add-row-btn:hover { background-color: #007bb5; }
 
+        .row-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
         .delete-row-btn {
             color: white;
             background-color: #e74c3c;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: inline-flex;
+            width: 20px;
+            height: 20px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             position: absolute;
-            right: 5px;
+            right: -28px;
             top: 50%;
             transform: translateY(-50%);
             line-height: 1;
             font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .modal {
@@ -316,7 +325,7 @@
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
             body { background: white; padding: 0; }
-            .controls, .modal, .no-print { display: none !important; } 
+            .controls, .modal, .no-print, .delete-row-btn { display: none !important; } 
             .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; }
             .sheet-header { margin-bottom: 15px !important; }
             .info-section { gap: 15px !important; }
@@ -352,7 +361,6 @@
 
     <div class="paper-sheet" id="patientForm">
         
-        <!-- الترويسة (QR يمين واللوجو يسار) -->
         <div class="sheet-header">
             <div class="clinic-qr">
                 <img src="links-qr-code.svg" alt="QR Code">
@@ -434,11 +442,14 @@
                 tr.classList.add('page-break'); 
             }
             
-            let deleteBtn = index > 12 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">&times;</span>` : '';
+            let deleteBtn = index > 12 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">×</span>` : '';
             
             tr.innerHTML = `
-                <td class="row-num" style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">
-                    ${index} ${deleteBtn}
+                <td style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none; overflow: visible;">
+                    <div class="row-container">
+                        <span class="row-index-text">${index}</span>
+                        ${deleteBtn}
+                    </div>
                 </td>
                 <td><input type="text" id="d_${index}"></td>
                 <td><input type="text" id="ws_${index}"></td>
@@ -474,10 +485,26 @@
                 row.classList.remove('page-break');
                 if(newIndex === 16) row.classList.add('page-break');
                 
-                const numTd = row.querySelector('.row-num');
-                if (numTd) {
-                    let deleteBtnHTML = newIndex > 12 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">&times;</span>` : '';
-                    numTd.innerHTML = `${newIndex} ${deleteBtnHTML}`;
+                const indexTextSpan = row.querySelector('.row-index-text');
+                if (indexTextSpan) {
+                    indexTextSpan.innerText = newIndex;
+                }
+
+                const tdElement = row.querySelector('td');
+                let deleteBtn = tdElement.querySelector('.delete-row-btn');
+                
+                if (newIndex > 12) {
+                    if (!deleteBtn) {
+                        let newBtn = document.createElement('span');
+                        newBtn.className = 'delete-row-btn no-print';
+                        newBtn.innerHTML = '×';
+                        newBtn.onclick = function() { deleteRow(this); };
+                        tdElement.querySelector('.row-container').appendChild(newBtn);
+                    }
+                } else {
+                    if (deleteBtn) {
+                        deleteBtn.remove();
+                    }
                 }
                 
                 const inputs = row.querySelectorAll('input');
