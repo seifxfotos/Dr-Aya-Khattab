@@ -81,7 +81,7 @@
             flex: 1.2;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px; /* مسافة أوسع بين السطور لراحة العين */
         }
 
         .row {
@@ -90,10 +90,11 @@
             width: 100%;
         }
 
+        /* ----- الحل الجذري لمشكلة محاذاة النصوص والخطوط ----- */
         .input-group {
             display: flex;
-            flex-direction: row !important;
-            align-items: flex-end; 
+            flex-direction: row;
+            align-items: baseline; /* يجبر النص المكتوب والعنوان أن يكونا على نفس السطر تماماً */
             gap: 10px;
             width: 100%;
         }
@@ -103,27 +104,63 @@
             white-space: nowrap; 
             color: var(--primary-blue);
             font-size: 18px;
-            line-height: 1;
-            padding-bottom: 5px;
+            margin: 0;
         }
 
-        .input-group input, .input-group textarea {
+        .input-group input {
             flex: 1; 
-            min-width: 50px;
             border: none;
             border-bottom: 2px dashed #999;
             background: transparent;
             font-size: 18px;
-            padding: 0 5px 5px 5px;
+            padding: 0 5px 4px 5px; /* تظبيط المسافة بين الكلام والخط المنقط */
             font-family: 'Cairo', sans-serif;
             color: #111;
             font-weight: 600;
             outline: none;
+            margin: 0;
         }
 
-        .input-group input:focus, .input-group textarea:focus {
+        .input-group input:focus {
             border-bottom-color: var(--primary-green);
         }
+
+        /* ----- تصميم خاص بـ Treatment Protocol عشان ميبوظش الشكل ----- */
+        .input-group-textarea {
+            display: flex;
+            flex-direction: column; /* يخلي العنوان فوق والمربع تحت */
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .input-group-textarea label {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 18px;
+        }
+
+        .input-group-textarea textarea {
+            width: 100%;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #fdfdfd;
+            font-size: 18px;
+            padding: 10px;
+            font-family: 'Cairo', sans-serif;
+            color: #111;
+            font-weight: 600;
+            outline: none;
+            min-height: 100px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .input-group-textarea textarea:focus {
+            border-color: var(--primary-green);
+            background: #f4fbf0;
+        }
+
+        /* ---------------------------------------------------- */
 
         .table-section {
             flex: 1;
@@ -165,7 +202,7 @@
             background-color: #f4fbf0; 
         }
 
-        /* ------------------ تصميم نافذة اختيار المريض ------------------ */
+        /* نافذة اختيار المريض (الـ Popup) */
         .modal {
             display: none;
             position: fixed;
@@ -216,7 +253,6 @@
             font-weight: bold;
             font-size: 14px;
         }
-        /* ---------------------------------------------------------------- */
 
         @media (max-width: 800px) {
             .paper-sheet { flex-direction: column; padding: 20px; }
@@ -230,7 +266,8 @@
             .controls, .modal { display: none !important; } 
             .paper-sheet { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
             .input-group label { color: #000; }
-            .input-group input, .input-group textarea { border-bottom: 2px dotted #000; }
+            .input-group input { border-bottom: 2px dotted #000; }
+            .input-group-textarea textarea { border: 2px dotted #000; background: transparent; }
             table, th, td { border: 2px solid #000; }
             th { background-color: #eee !important; color: #000; }
         }
@@ -238,19 +275,15 @@
 </head>
 <body>
 
-    <!-- نافذة اختيار المريض (مخفية افتراضياً) -->
     <div id="patientModal" class="modal">
         <div class="modal-content">
             <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من مريض بهذا الاسم</h2>
             <p style="color: #666; margin-bottom: 20px;">الرجاء اختيار المريض المطلوب من القائمة التالية:</p>
-            <div id="patientList">
-                <!-- سيتم تعبئة الكروت هنا -->
-            </div>
+            <div id="patientList"></div>
             <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px;" onclick="closeModal()">إلغاء وإغلاق</button>
         </div>
     </div>
 
-    <!-- شريط التحكم -->
     <div class="controls no-print">
         <input type="text" id="searchName" placeholder="🔍 ابحث باسم المريض أو رقم الموبايل هنا...">
         <button class="btn btn-search" onclick="searchPatient()">بحث ذكي</button>
@@ -259,8 +292,8 @@
         <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الورقة</button>
     </div>
 
-    <!-- الاستمارة -->
     <div class="paper-sheet" id="patientForm">
+        
         <div class="info-section">
             <div class="row">
                 <div class="input-group">
@@ -286,7 +319,7 @@
                 <label>السن:</label>
                 <input type="text" id="p_age">
             </div>
-            <br>
+            
             <div class="input-group">
                 <label>Referred Doctor:</label>
                 <input type="text" id="p_referred">
@@ -295,11 +328,14 @@
                 <label>Diagnosis:</label>
                 <input type="text" id="p_diagnosis">
             </div>
-            <div class="input-group" style="align-items: flex-start; margin-top: 10px;">
-                <label style="padding-bottom: 0;">Treatment Protocol:</label>
+            
+            <!-- تم تعديل كود بروتوكول العلاج لحل مشكلة المحاذاة -->
+            <div class="input-group-textarea">
+                <label>Treatment Protocol:</label>
                 <textarea id="p_protocol" rows="4"></textarea>
             </div>
         </div>
+
         <div class="table-section">
             <table>
                 <thead>
@@ -317,10 +353,10 @@
     </div>
 
     <script>
-        // ⚠️ ضع رابط API الخاص بجوجل شيت هنا ⚠️
+        // اللينك الجديد اللي بعته تم إضافته هنا
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3t9CZL9PuRcdRsBRaiF48C3ZsJQ3Os0XQ_kaQCdcF31ec9QnKQ-9XgTRDFMZBHhAq/exec";
 
-        let globalSearchResults = []; // متغير لتخزين نتائج البحث
+        let globalSearchResults = []; 
 
         const tableBody = document.getElementById('sessionsTable');
         for (let i = 1; i <= 12; i++) {
@@ -342,22 +378,29 @@
             btn.innerText = "جاري البحث...";
 
             try {
-                let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput));
-                let res = await response.json();
+                let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput), {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                let text = await response.text();
+                
+                if(text.includes("<html")) {
+                    alert("خطأ في صلاحيات اللينك! تأكد من إعدادات جوجل شيت.");
+                    btn.innerText = "بحث ذكي";
+                    return;
+                }
+
+                let res = JSON.parse(text);
 
                 if(res.status === "not_found") {
                     alert("المريض غير موجود، يمكنك كتابة بياناته والضغط على حفظ لإنشاء ملف جديد.");
                 } else if(res.status === "found") {
-                    
-                    // إذا وجد مريض واحد فقط
                     if(res.data.length === 1) {
                         loadPatientData(res.data[0]);
-                    } 
-                    // إذا وجد أكثر من مريض
-                    else {
+                    } else {
                         globalSearchResults = res.data;
                         let listHtml = "";
-                        
                         res.data.forEach((patient, index) => {
                             listHtml += `
                                 <div class="patient-option" onclick="selectPatient(${index})">
@@ -369,24 +412,23 @@
                                 </div>
                             `;
                         });
-                        
                         document.getElementById('patientList').innerHTML = listHtml;
                         document.getElementById('patientModal').style.display = "flex";
                     }
+                } else if(res.status === "error") {
+                    alert("حدث خطأ داخل جوجل شيت.");
                 }
             } catch(e) {
-                alert("حدث خطأ في الاتصال، تأكد من الإنترنت.");
+                alert("تعذر الوصول لقاعدة البيانات. تأكد من صحة اللينك.");
             }
             btn.innerText = "بحث ذكي";
         }
 
-        // دالة لاختيار المريض من النافذة المنبثقة
         function selectPatient(index) {
             loadPatientData(globalSearchResults[index]);
             closeModal();
         }
 
-        // دالة لإغلاق النافذة المنبثقة
         function closeModal() {
             document.getElementById('patientModal').style.display = "none";
         }
@@ -407,7 +449,6 @@
                 document.getElementById('ws_'+i).value = session.ws;
                 document.getElementById('n_'+i).value = session.n;
             }
-            alert("تم تحميل بيانات المريض: " + data.name);
         }
 
         function saveData() {
@@ -449,7 +490,7 @@
                 alert("تم حفظ البيانات بنجاح!");
                 btn.innerText = "💾 حفظ البيانات";
             }).catch(() => {
-                alert("حدث خطأ، حاول مرة أخرى.");
+                alert("حدث خطأ، تأكد من اتصال الإنترنت وصحة اللينك.");
                 btn.innerText = "💾 حفظ البيانات";
             });
         }
