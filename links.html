@@ -60,7 +60,7 @@
         .orb-1 {
             width: 300px;
             height: 300px;
-            background: rgba(0, 150, 205, 0.4); /* Blue */
+            background: rgba(0, 150, 205, 0.4);
             top: 5%;
             left: 10%;
         }
@@ -68,7 +68,7 @@
         .orb-2 {
             width: 250px;
             height: 250px;
-            background: rgba(119, 181, 0, 0.3); /* Teal */
+            background: rgba(119, 181, 0, 0.3);
             bottom: 10%;
             right: 10%;
             animation-delay: -5s;
@@ -88,7 +88,7 @@
             border-radius: 40px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 480px; /* جعلناه أكنز عشان يدي شكل بريميوم للموبايل */
+            max-width: 480px;
             padding: 3rem 2rem;
             text-align: center;
             animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -100,26 +100,24 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Profile Image Glow & Pulse */
-        .profile-img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            border: 4px solid #fff;
-            box-shadow: 0 0 25px rgba(0, 150, 205, 0.3);
+        /* Profile Logo Clean Style (No borders, no background circle) */
+        .logo-link {
+            display: inline-block;
             margin-bottom: 1.2rem;
-            object-fit: cover;
-            animation: pulseGlow 3s infinite alternate;
             transition: transform 0.4s ease;
         }
-        
-        .profile-img:hover {
-            transform: scale(1.08) rotate(-5deg);
+
+        .logo-link:hover {
+            transform: scale(1.05);
         }
 
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 15px rgba(0, 150, 205, 0.2); }
-            100% { box-shadow: 0 0 35px rgba(119, 181, 0, 0.5); }
+        .profile-img {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+            background: transparent;
+            border: none;
+            box-shadow: none;
         }
 
         /* Text Gradient Styling */
@@ -200,7 +198,7 @@
 
         .link-card {
             background: rgba(255, 255, 255, 0.85);
-            border-radius: 50px; /* Pill Shape */
+            border-radius: 50px;
             padding: 12px 20px 12px 12px;
             display: flex;
             align-items: center;
@@ -212,13 +210,11 @@
             position: relative;
             overflow: hidden;
             
-            /* Animation Setup */
             opacity: 0;
             transform: translateY(30px);
             animation: bouncySlideIn 0.6s forwards;
         }
 
-        /* Shine Effect on Hover */
         .link-card::before {
             content: '';
             position: absolute;
@@ -240,7 +236,6 @@
             background: #ffffff;
         }
 
-        /* Icon styling */
         .icon-box {
             width: 48px;
             height: 48px;
@@ -259,7 +254,6 @@
             transform: rotate(360deg);
         }
 
-        /* Brand Colors for Icons */
         .bg-web { background: linear-gradient(135deg, #0096cd, #005b82); }
         .bg-map { background: linear-gradient(135deg, #ea4335, #b31404); }
         .bg-facebook { background: linear-gradient(135deg, #1877F2, #0b50a8); }
@@ -301,7 +295,6 @@
             transform: translateX(-5px);
         }
 
-        /* Staggered Delays for Bouncy Entrance */
         .link-card:nth-child(1) { animation-delay: 0.3s; }
         .link-card:nth-child(2) { animation-delay: 0.4s; }
         .link-card:nth-child(3) { animation-delay: 0.5s; }
@@ -315,13 +308,12 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile Adjustments */
         @media (max-width: 600px) {
             .bio-container { 
                 padding: 2.5rem 1.5rem; 
                 border-radius: 30px;
             }
-            .profile-img { width: 110px; height: 110px; }
+            .profile-img { width: 140px; }
             .name { font-size: 1.5rem; }
         }
     </style>
@@ -335,7 +327,10 @@
     <div class="bio-container">
         <!-- Header Section -->
         <header>
-            <img src="Logo_Dr_Aya.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/130'">
+            <!-- اللوجو بدون أي دوائر أو إطارات، وبمجرد الضغط عليه يوجه للصفحة الرئيسية -->
+            <a href="https://drayakhattab.com/" class="logo-link">
+                <img src="Logo_Dr_Aya.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/150'">
+            </a>
             
             <h1 class="name">Dr Aya Khattab</h1>
             
