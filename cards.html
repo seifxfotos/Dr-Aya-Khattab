@@ -77,28 +77,10 @@
             border-top: 10px solid var(--primary-green);
         }
 
+        /* الترويسة الجديدة (اللوجو فقط على اليسار) */
         .sheet-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 4px double var(--primary-blue); 
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .clinic-info h1 {
-            color: var(--primary-blue);
-            font-size: 28px;
-            font-weight: 800;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .clinic-info p {
-            color: var(--primary-green);
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0; 
+            text-align: left;
+            margin-bottom: 25px;
         }
 
         .clinic-logo img {
@@ -211,6 +193,7 @@
             border: 1px solid var(--primary-blue);
             text-align: center;
             height: 40px;
+            position: relative;
         }
 
         th {
@@ -244,6 +227,25 @@
             width: 100%;
         }
         .add-row-btn:hover { background-color: #007bb5; }
+
+        .delete-row-btn {
+            color: white;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            line-height: 1;
+            font-weight: bold;
+        }
 
         .modal {
             display: none;
@@ -297,30 +299,25 @@
 
         @media (max-width: 800px) {
             .paper-sheet { padding: 20px; }
-            .sheet-header { flex-direction: column; text-align: center; gap: 15px; }
+            .sheet-header { text-align: center; }
             .sheet-body { flex-direction: column; gap: 30px; }
             .row { flex-direction: column; gap: 20px; }
             .controls { flex-direction: column; align-items: stretch; }
         }
 
-        /* ----- إعدادات الطباعة الدقيقة لصفحة واحدة ----- */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
             body { background: white; padding: 0; }
             .controls, .modal, .no-print { display: none !important; } 
             .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; }
-            .sheet-header { border-bottom: 4px double #000; margin-bottom: 15px !important; padding-bottom: 5px !important; }
             .info-section { gap: 15px !important; }
-            .clinic-info h1, .clinic-info p { color: #000 !important; }
             .input-group label { color: #000; }
             .input-group input { border-bottom: 2px dotted #000; }
             .input-group-textarea textarea { border: 2px dotted #000; background: transparent; min-height: 70px !important; }
             table, th, td { border: 2px solid #000; }
             th { background-color: #eee !important; color: #000; padding: 5px !important; }
-            td { height: 32px !important; } /* تصغير ارتفاع الخانات لضمان الاحتواء في صفحة واحدة */
+            td { height: 30px !important; } 
             tr { page-break-inside: avoid; }
-            
-            /* الصف رقم 13 وأي صف بعده يطبع في صفحة جديدة */
             .page-break { page-break-before: always; }
         }
     </style>
@@ -347,10 +344,6 @@
     <div class="paper-sheet" id="patientForm">
         
         <div class="sheet-header">
-            <div class="clinic-info">
-                <h1>د. آيـــة خطـــاب</h1>
-                <p>عيادة العلاج الطبيعي والتغذية العلاجية</p>
-            </div>
             <div class="clinic-logo">
                 <img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab">
             </div>
@@ -411,7 +404,7 @@
                     <tbody id="sessionsTable">
                     </tbody>
                 </table>
-                <button type="button" class="btn add-row-btn no-print" onclick="addNewRow()">+ إضافة جلسة</button>
+                <button type="button" class="btn add-row-btn no-print" onclick="addNewRow()">+ إضافة</button>
             </div>
         </div>
     </div>
@@ -424,11 +417,16 @@
 
         function buildRowHtml(index) {
             let tr = document.createElement('tr');
-            if(index === 13) {
-                tr.classList.add('page-break'); // إجبار الطباعة في صفحة جديدة بداية من رقم 13
+            if(index === 16) {
+                tr.classList.add('page-break'); 
             }
+            
+            let deleteBtn = index > 12 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">&times;</span>` : '';
+            
             tr.innerHTML = `
-                <td style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">${index}</td>
+                <td class="row-num" style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none;">
+                    ${index} ${deleteBtn}
+                </td>
                 <td><input type="text" id="d_${index}"></td>
                 <td><input type="text" id="ws_${index}"></td>
                 <td><input type="text" id="n_${index}"></td>
@@ -451,7 +449,33 @@
             tableBody.appendChild(buildRowHtml(currentRowCount));
         }
 
-        // تهيئة الجدول الافتراضي عند فتح الصفحة
+        function deleteRow(btnElement) {
+            const tr = btnElement.closest('tr');
+            tr.remove();
+            currentRowCount--;
+            
+            const rows = document.getElementById('sessionsTable').querySelectorAll('tr');
+            rows.forEach((row, idx) => {
+                const newIndex = idx + 1;
+                
+                row.classList.remove('page-break');
+                if(newIndex === 16) row.classList.add('page-break');
+                
+                const numTd = row.querySelector('.row-num');
+                if (numTd) {
+                    let deleteBtnHTML = newIndex > 12 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">&times;</span>` : '';
+                    numTd.innerHTML = `${newIndex} ${deleteBtnHTML}`;
+                }
+                
+                const inputs = row.querySelectorAll('input');
+                if(inputs.length === 3) {
+                    inputs[0].id = `d_${newIndex}`;
+                    inputs[1].id = `ws_${newIndex}`;
+                    inputs[2].id = `n_${newIndex}`;
+                }
+            });
+        }
+
         initTable(12);
 
         async function searchPatient() {
@@ -528,7 +552,7 @@
             document.getElementById('p_protocol').value = data.protocol || "";
 
             let sessions = data.sessions || [];
-            initTable(Math.max(12, sessions.length)); // إعادة بناء الجدول ليتناسب مع عدد الجلسات
+            initTable(Math.max(12, sessions.length));
 
             for(let i = 1; i <= currentRowCount; i++) {
                 let session = sessions[i-1] || {d: "", ws: "", n: ""};
@@ -584,7 +608,7 @@
 
         function clearForm() {
             document.querySelectorAll('input:not(#searchName), textarea').forEach(el => el.value = '');
-            initTable(12); // إعادة الجدول لـ 12 خانة
+            initTable(12);
             alert("تم تجهيز ورقة جديدة.");
         }
     </script>
