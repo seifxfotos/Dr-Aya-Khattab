@@ -171,7 +171,6 @@
             .table-section { flex: 1 !important; display: block !important; }
             .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; transform: scale(0.98); transform-origin: top right; }
             
-            /* التعديل هنا: إزالة الإجبار على الظهور، عشان يطبع بس لو الورقة مفتوحة */
             #medicalSheetForm { page-break-before: always; margin-top: 10mm; }
             
             .input-group label { color: #000; font-size: 15px; }
@@ -198,9 +197,9 @@
     </div>
 
     <div class="controls no-print">
-        <input type="text" id="searchName" placeholder="🔍 ابحث باسم المريض أو رقم الموبايل هنا ثم اضغط Enter...">
+        <input type="text" id="searchName" placeholder="ابحث باسم المريض أو برقم الموبايل هنا ثم اضغط Enter...">
         <button class="btn btn-search" onclick="searchPatient()">بحث</button>
-        <button class="btn btn-new" onclick="clearForm()">+ كرت جديد</button>
+        <button class="btn btn-new" onclick="clearForm()">كرت جديد</button>
         <button class="btn btn-delete" onclick="deletePatient()">حذف الكرت</button>
         <button class="btn btn-save" onclick="saveData()">حفظ البيانات</button>
         <button class="btn btn-print" onclick="window.print()">طباعة الكرت</button>
@@ -274,7 +273,7 @@
         </div>
     </div>
 
-    <button id="medicalToggleBtn" class="btn btn-medical no-print" onclick="toggleMedicalSheet()">إضافة الملف الطبي</button>
+    <button id="medicalToggleBtn" class="btn btn-medical no-print" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
 
     <div class="paper-sheet" id="medicalSheetForm" style="display: none; margin-bottom: 50px;">
         <div class="sheet-header">
@@ -315,13 +314,13 @@
             
             if(sheet.style.display === 'none' || sheet.style.display === '') {
                 sheet.style.display = 'flex';
-                btn.innerHTML = 'حذف الملف الطبي';
+                btn.innerHTML = 'مسح الملف الطبي';
                 btn.style.backgroundColor = '#e74c3c'; 
                 setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
             } else {
                 sheet.style.display = 'none';
                 document.getElementById('p_medical_notes').value = ''; 
-                btn.innerHTML = 'إضافة الملف الطبي';
+                btn.innerHTML = 'فتح الملف الطبي';
                 btn.style.backgroundColor = 'var(--primary-blue)'; 
             }
         }
@@ -401,8 +400,11 @@
         initTable(12);
 
         async function searchPatient() {
-            let searchInput = document.getElementById('searchName').value;
-            if(!searchInput) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
+            let rawSearch = document.getElementById('searchName').value.trim();
+            if(!rawSearch) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
+
+            // تحويل الرقم لإنجليزي أثناء البحث لضمان تطابق الأرقام
+            let searchInput = convertToEnglishNumbers(rawSearch);
 
             let btn = document.querySelector('.btn-search');
             btn.innerText = "جاري البحث...";
@@ -432,7 +434,7 @@
                                 <div class="patient-option" onclick="selectPatient(${index})">
                                     <div>
                                         <div class="patient-name">${patient.name}</div>
-                                        <div class="patient-details">📱 ${patient.phone || "بدون رقم"} &nbsp; | &nbsp; 📍 ${patient.address || "بدون عنوان"}</div>
+                                        <div class="patient-details">${patient.phone || "بدون رقم"} &nbsp; | &nbsp; ${patient.address || "بدون عنوان"}</div>
                                     </div>
                                     <div class="select-badge">اختيار</div>
                                 </div>
@@ -505,11 +507,11 @@
             
             if (medicalNotes.trim() !== "") {
                 sheet.style.display = 'flex';
-                btn.innerHTML = 'حذف الملف الطبي';
+                btn.innerHTML = 'مسح الملف الطبي';
                 btn.style.backgroundColor = '#e74c3c';
             } else {
                 sheet.style.display = 'none';
-                btn.innerHTML = 'إضافة الملف الطبي';
+                btn.innerHTML = 'فتح الملف الطبي';
                 btn.style.backgroundColor = 'var(--primary-blue)';
             }
 
@@ -576,7 +578,7 @@
             let sheet = document.getElementById('medicalSheetForm');
             let btn = document.getElementById('medicalToggleBtn');
             sheet.style.display = 'none'; 
-            btn.innerHTML = 'إضافة الملف الطبي';
+            btn.innerHTML = 'فتح الملف الطبي';
             btn.style.backgroundColor = 'var(--primary-blue)';
         }
     </script>
