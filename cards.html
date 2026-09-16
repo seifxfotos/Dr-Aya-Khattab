@@ -182,6 +182,13 @@
             td input { font-size: 15px; }
             tr { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
+            
+            /* التعديل الجديد: إخفاء الجملة الإرشادية أثناء الطباعة لو الخانة فاضية */
+            textarea::placeholder { color: transparent !important; }
+            textarea::-webkit-input-placeholder { color: transparent !important; }
+            textarea:-moz-placeholder { color: transparent !important; }
+            textarea::-moz-placeholder { color: transparent !important; }
+            textarea:-ms-input-placeholder { color: transparent !important; }
         }
     </style>
 </head>
@@ -284,14 +291,17 @@
                 <img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'">
             </div>
         </div>
-        <div style="border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: baseline;">
+        
+        <!-- التعديل الجديد: إزالة سطر التاريخ وتوسيط عنوان التشخيص -->
+        <div style="border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: flex-start; align-items: baseline;">
             <h3 style="color: var(--primary-blue); margin: 0;">التشخيص والملاحظات الطبية</h3>
-            <span style="color: #666; font-size: 14px;">التاريخ: ....... / ....... / ...........</span>
         </div>
+        
         <textarea id="p_medical_notes" class="medical-notes" placeholder="اكتب التشخيص والتفاصيل هنا وسيتم حفظها مع الكرت..."></textarea>
     </div>
 
     <script>
+        // تم تحديث الرابط الجديد هنا
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYt2nRwms7vT9mfIB9Upeix_v9WiORsiuH0nJWWvdSftM8hu2sfYERKmhI055d-dZA/exec";
         let globalSearchResults = []; 
         let currentRowCount = 12;
@@ -403,7 +413,6 @@
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
 
-            // تحويل الرقم لإنجليزي أثناء البحث لضمان تطابق الأرقام
             let searchInput = convertToEnglishNumbers(rawSearch);
 
             let btn = document.querySelector('.btn-search');
