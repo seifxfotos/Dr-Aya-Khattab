@@ -184,12 +184,12 @@
     </div>
 
     <div class="controls no-print">
-        <input type="text" id="searchName" placeholder="🔍 ابحث باسم المريض أو رقم الموبايل هنا ثم اضغط Enter...">
-        <button class="btn btn-search" onclick="searchPatient()">🔍 بحث</button>
+        <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل هنا ثم اضغط Enter...">
+        <button class="btn btn-search" onclick="searchPatient()">بحث</button>
         <button class="btn btn-new" onclick="clearForm()">+ كرت جديد</button>
-        <button class="btn btn-delete" onclick="deletePatient()">🗑️ حذف الكرت</button>
-        <button class="btn btn-save" onclick="saveData()">💾 حفظ البيانات</button>
-        <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الورقة</button>
+        <button class="btn btn-delete" onclick="deletePatient()">حذف الكرت</button>
+        <button class="btn btn-save" onclick="saveData()">حفظ البيانات</button>
+        <button class="btn btn-print" onclick="window.print()">طباعة الكرت</button>
     </div>
 
     <div class="paper-sheet" id="patientForm">
@@ -433,7 +433,7 @@
                 } catch(e) {
                     alert("تعذر الاتصال بقاعدة البيانات. تأكد من الإنترنت.");
                 }
-                btn.innerText = "🗑️ حذف الكرت";
+                btn.innerText = "حذف الكرت";
             }
         }
 
@@ -504,10 +504,10 @@
                 mode: "no-cors"
             }).then(() => {
                 alert("تم حفظ البيانات بنجاح!");
-                btn.innerText = "💾 حفظ البيانات";
+                btn.innerText = "حفظ البيانات";
             }).catch(() => {
                 alert("حدث خطأ، تأكد من اتصال الإنترنت وصحة اللينك.");
-                btn.innerText = "💾 حفظ البيانات";
+                btn.innerText = "حفظ البيانات";
             });
         }
 
