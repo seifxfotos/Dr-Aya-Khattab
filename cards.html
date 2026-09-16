@@ -66,15 +66,16 @@
         .btn-save { background-color: #2c3e50; }
         .btn-print { background-color: #e67e22; }
 
-        /* التعديل الجديد لزرار الملف الطبي */
+        /* تعديل زرار الملف الطبي (حجم أصغر، في النص، ولون أزرق) */
         .btn-medical { 
             background-color: var(--primary-blue); 
             width: fit-content; 
             margin: 20px auto; 
             display: block; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            transition: all 0.3s ease;
         }
-        .btn-medical:hover { background-color: #007bb5; }
+        .btn-medical:hover { filter: brightness(0.9); }
 
         .paper-sheet {
             background-color: var(--light-bg);
@@ -271,10 +272,9 @@
         </div>
     </div>
 
-    <!-- زر إضافة الملف الطبي (بالتنسيق الجديد) -->
-    <button class="btn btn-medical no-print" onclick="toggleMedicalSheet()">📝 فتح / إغلاق الملف الطبي التفصيلي</button>
+    <!-- زر إضافة الملف الطبي (بالتعديل الجديد: التبديل بين الفتح والمسح) -->
+    <button id="medicalToggleBtn" class="btn btn-medical no-print" onclick="toggleMedicalSheet()">📝 فتح الملف الطبي</button>
 
-    <!-- ورقة التشخيص (تمت إضافة ID لمربع النص) -->
     <div class="paper-sheet" id="medicalSheetForm" style="display: none; margin-bottom: 50px;">
         <div class="sheet-header">
             <div class="clinic-qr">
@@ -309,13 +309,23 @@
             }).join('');
         }
 
+        // دالة الفتح والمسح الذكية للملف الطبي
         function toggleMedicalSheet() {
             let sheet = document.getElementById('medicalSheetForm');
+            let btn = document.getElementById('medicalToggleBtn');
+            
             if(sheet.style.display === 'none') {
+                // فتح الملف
                 sheet.style.display = 'flex';
+                btn.innerHTML = '🗑️ مسح الملف الطبي';
+                btn.style.backgroundColor = '#e74c3c'; // لون أحمر
                 setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
             } else {
+                // مسح وإغلاق الملف
                 sheet.style.display = 'none';
+                document.getElementById('p_medical_notes').value = ''; // تفريغ الخانة عشان لو داست بالغلط
+                btn.innerHTML = '📝 فتح الملف الطبي';
+                btn.style.backgroundColor = 'var(--primary-blue)'; // رجوعه للون الأزرق
             }
         }
 
@@ -490,8 +500,22 @@
             document.getElementById('p_diagnosis').value = data.diagnosis || "";
             document.getElementById('p_protocol').value = data.protocol || "";
             
-            // استرجاع الملاحظات الطبية
-            document.getElementById('p_medical_notes').value = data.medical_notes || "";
+            // استرجاع الملاحظات الطبية وفتحها لو موجودة
+            let medicalNotes = data.medical_notes || "";
+            document.getElementById('p_medical_notes').value = medicalNotes;
+            
+            let sheet = document.getElementById('medicalSheetForm');
+            let btn = document.getElementById('medicalToggleBtn');
+            
+            if (medicalNotes.trim() !== "") {
+                sheet.style.display = 'flex';
+                btn.innerHTML = '🗑️ مسح الملف الطبي';
+                btn.style.backgroundColor = '#e74c3c';
+            } else {
+                sheet.style.display = 'none';
+                btn.innerHTML = '📝 فتح الملف الطبي';
+                btn.style.backgroundColor = 'var(--primary-blue)';
+            }
 
             let sessions = data.sessions || [];
             initTable(Math.max(12, sessions.length));
@@ -505,10 +529,9 @@
         }
 
         function saveData() {
-            // تحويل رقم الموبايل لإنجليزي قبل الحفظ
             let rawPhone = document.getElementById('p_phone').value;
             let phone = convertToEnglishNumbers(rawPhone);
-            document.getElementById('p_phone').value = phone; // عشان الرقم يتعدل قدام عينك في الخانة
+            document.getElementById('p_phone').value = phone;
 
             let name = document.getElementById('p_name').value;
             
@@ -536,7 +559,7 @@
                 referred: document.getElementById('p_referred').value,
                 diagnosis: document.getElementById('p_diagnosis').value,
                 protocol: document.getElementById('p_protocol').value,
-                medical_notes: document.getElementById('p_medical_notes').value, // إضافة الملف الطبي
+                medical_notes: document.getElementById('p_medical_notes').value, 
                 sessions: sessions
             };
 
@@ -553,7 +576,12 @@
         function clearForm() {
             document.querySelectorAll('input:not(#searchName), textarea').forEach(el => el.value = '');
             initTable(12);
-            document.getElementById('medicalSheetForm').style.display = 'none'; 
+            
+            let sheet = document.getElementById('medicalSheetForm');
+            let btn = document.getElementById('medicalToggleBtn');
+            sheet.style.display = 'none'; 
+            btn.innerHTML = '📝 فتح الملف الطبي';
+            btn.style.backgroundColor = 'var(--primary-blue)';
         }
     </script>
 </body>
