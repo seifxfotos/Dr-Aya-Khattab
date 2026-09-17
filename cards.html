@@ -234,7 +234,6 @@
             .table-section { flex: 1 !important; display: block !important; }
             .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; transform: scale(0.98); transform-origin: top right; margin-bottom: 0 !important; }
             
-            /* الكروت الإضافية تنزل في صفحة جديدة في الطباعة */
             .dynamic-card { page-break-before: always; margin-top: 10mm !important; }
             #medicalSheetForm { page-break-before: always; margin-top: 10mm !important; }
             
@@ -356,17 +355,92 @@
         let totalCards = 1;
         let cardRowCounts = { 1: { start: 1, current: 12 } };
 
-        // ================== إعدادات الدارك مود ==================
+        // ================== إعدادات الدارك مود المستمرة ==================
+        
+        // عند تحميل الصفحة، بنقرأ الاختيار المحفوظ في الجهاز
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                let themeSwitch = document.getElementById('themeSwitch');
+                if (themeSwitch) themeSwitch.checked = true;
+            }
+        });
+
+        // تفعيل وحفظ اختيار الوضع
         function toggleTheme(e) {
-            if(e.checked) document.body.classList.add('dark-mode');
-            else document.body.classList.remove('dark-mode');
-        }
-        function resetToLightMode() {
-            document.body.classList.remove('dark-mode');
-            let themeSwitch = document.getElementById('themeSwitch');
-            if(themeSwitch) themeSwitch.checked = false;
+            if(e.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark'); // حفظ الاختيار
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light'); // حفظ الاختيار
+            }
         }
 
+        // ================== نظام التنقل بالأسهم (الكيبورد نافيجيشن) ==================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                let active = document.activeElement;
+                
+                // هنطبق التنقل على الخانات والنصوص بس
+                if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) return;
+                
+                // بالنسبة للمربعات الكبيرة (زي بروتوكول العلاج)، السهم بينقل لو المؤشر في آخر/أول الكلام
+                if (active.tagName === 'TEXTAREA') {
+                    if (e.key === 'ArrowDown' && active.selectionEnd === active.value.length) {
+                        // يكمل نزول
+                    } else if (e.key === 'ArrowUp' && active.selectionStart === 0) {
+                        // يكمل طلوع
+                    } else {
+                        return; // يسيب السهم يقلب بين سطور الكلام عادي
+                    }
+                }
+
+                let id = active.id;
+                let nextId = null;
+
+                if (e.key === 'ArrowDown') {
+                    if (id === 'p_name') nextId = 'p_phone';
+                    else if (id === 'p_address') nextId = 'p_job';
+                    else if (id === 'p_phone' || id === 'p_job') nextId = 'p_age';
+                    else if (id === 'p_age') nextId = 'p_referred';
+                    else if (id === 'p_referred') nextId = 'p_diagnosis';
+                    else if (id === 'p_diagnosis') nextId = 'p_protocol';
+                    else if (id === 'p_protocol') nextId = 'd_1';
+                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
+                        let parts = id.split('_');
+                        let nextIdx = parseInt(parts[1]) + 1;
+                        nextId = parts[0] + '_' + nextIdx;
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    if (id === 'p_phone') nextId = 'p_name';
+                    else if (id === 'p_job') nextId = 'p_address';
+                    else if (id === 'p_age') nextId = 'p_phone'; 
+                    else if (id === 'p_referred') nextId = 'p_age';
+                    else if (id === 'p_diagnosis') nextId = 'p_referred';
+                    else if (id === 'p_protocol') nextId = 'p_diagnosis';
+                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
+                        let parts = id.split('_');
+                        let prevIdx = parseInt(parts[1]) - 1;
+                        if (prevIdx >= 1) {
+                            nextId = parts[0] + '_' + prevIdx;
+                        } else {
+                            nextId = 'p_protocol';
+                        }
+                    }
+                }
+
+                if (nextId) {
+                    let nextEl = document.getElementById(nextId);
+                    if (nextEl) {
+                        e.preventDefault(); // منع الشاشة من الاهتزاز
+                        nextEl.focus(); // نقل المؤشر للمربع اللي بعده
+                    }
+                }
+            }
+        });
+
+        // ================== باقي كود الاستمارة ==================
         document.getElementById('searchName').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchPatient();
         });
@@ -379,9 +453,6 @@
             }).join('');
         }
 
-        // ================== نظام الكروت الديناميكية اللانهائية ==================
-        
-        // مزامنة الأسماء في كل الكروت المفتوحة
         function syncAllCardsInfo() {
             let baseName = document.getElementById('p_name').value;
             let basePhone = document.getElementById('p_phone').value;
@@ -393,14 +464,12 @@
         document.getElementById('p_name').addEventListener('input', syncAllCardsInfo);
         document.getElementById('p_phone').addEventListener('input', syncAllCardsInfo);
 
-        // إضافة كرت جديد
         function addCard() {
             let prevCard = totalCards;
             totalCards++;
             
-            // تحديد بداية أرقام الجلسات للكرت الجديد بناءً على الكرت اللي قبله
             let startIdx = cardRowCounts[prevCard].current + 1;
-            let endIdx = startIdx + 11; // الأساس 12 جلسة
+            let endIdx = startIdx + 11; 
             
             let cardHtml = `
             <div class="paper-sheet dynamic-card" id="card_${totalCards}" style="margin-top: 20px;">
@@ -435,14 +504,12 @@
             syncAllCardsInfo();
             updateCardButtons();
             
-            // النزول للشاشة عند الكرت الجديد
             setTimeout(() => { 
                 let newCard = document.getElementById(`card_${totalCards}`);
                 window.scrollTo({ top: newCard.offsetTop - 20, behavior: 'smooth' }); 
             }, 100);
         }
 
-        // مسح الكرت الأخير
         function removeLastCard() {
             if(totalCards <= 1) return;
             if(confirm(`هل أنت متأكد من إزالة الكرت رقم ${totalCards} بكل محتوياته؟ (لن يؤثر ذلك على الكروت التي قبله)`)) {
@@ -453,23 +520,20 @@
             }
         }
 
-        // تحديث شكل الأزرار (الانقسام)
         function updateCardButtons() {
             let addBtn = document.getElementById('addCardBtn');
             let removeBtn = document.getElementById('removeCardBtn');
             if(totalCards > 1) {
-                addBtn.innerHTML = `➕ إضافة كرت (${totalCards + 1})`;
+                addBtn.innerHTML = `إضافة كرت (${totalCards + 1})`;
                 removeBtn.style.display = 'block';
-                removeBtn.innerHTML = `🗑️ إزالة كرت (${totalCards})`;
+                removeBtn.innerHTML = `إزالة كرت (${totalCards})`;
             } else {
-                addBtn.innerHTML = `➕ إضافة كرت إضافي`;
+                addBtn.innerHTML = `إضافة كرت إضافي`;
                 removeBtn.style.display = 'none';
             }
         }
 
-        // بناء صفوف أي كرت
         function buildRowHtml(index, cardNum) {
-            // زر الحذف بيظهر لو الجلسة زيادة عن الـ 12 الأساسيين بتوع الكرت ده
             let isExtraRow = index >= cardRowCounts[cardNum].start + 12;
             let deleteBtn = isExtraRow ? `<span class="delete-row-btn no-print" onclick="deleteRow(this, ${cardNum})">×</span>` : '';
             
@@ -488,7 +552,6 @@
             return tr;
         }
 
-        // تهيئة الجدول لكرت معين
         function initTableForCard(cardNum, startIdx, currentCount) {
             const tbody = document.getElementById(`sessionsTable${cardNum}`);
             tbody.innerHTML = '';
@@ -498,14 +561,12 @@
             }
         }
 
-        // إضافة جلسة لكرت معين
         function addNewRowToCard(cardNum) {
             cardRowCounts[cardNum].current++;
             let index = cardRowCounts[cardNum].current;
             document.getElementById(`sessionsTable${cardNum}`).appendChild(buildRowHtml(index, cardNum));
         }
 
-        // مسح جلسة من كرت معين وإعادة الترقيم
         function deleteRow(btnElement, cardNum) {
             const tr = btnElement.closest('tr');
             tr.remove();
@@ -543,10 +604,8 @@
             });
         }
 
-        // تهيئة الاستمارة عند الفتح (كرت واحد)
         initTableForCard(1, 1, 12);
 
-        // فتح وإغلاق الملف الطبي
         function toggleMedicalSheet() {
             let sheet = document.getElementById('medicalSheetForm');
             let btn = document.getElementById('medicalToggleBtn');
@@ -563,7 +622,6 @@
             }
         }
 
-        // ================== دوال البحث والحفظ ==================
         async function searchPatient() {
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
@@ -641,7 +699,6 @@
 
         function closeModal() { document.getElementById('patientModal').style.display = "none"; }
 
-        // دالة سحب البيانات وتوزيعها بذكاء على الكروت
         function loadPatientData(data) {
             document.getElementById('p_name').value = data.name || "";
             document.getElementById('p_address').value = data.address || "";
@@ -652,7 +709,6 @@
             document.getElementById('p_diagnosis').value = data.diagnosis || "";
             document.getElementById('p_protocol').value = data.protocol || "";
             
-            // تحميل الملاحظات الطبية
             let medicalNotes = data.medical_notes || "";
             document.getElementById('p_medical_notes').value = medicalNotes;
             let sheetM = document.getElementById('medicalSheetForm');
@@ -667,22 +723,17 @@
                 btnM.style.backgroundColor = 'var(--primary-blue)';
             }
 
-            // توزيع الجلسات
             let sessions = data.sessions || [];
             
-            // تصفير الواجهة لكرت واحد
             document.getElementById('dynamicCardsContainer').innerHTML = '';
             totalCards = 1;
             cardRowCounts = {};
             
-            // حساب الكروت المطلوبة
             let maxSessions = Math.max(12, sessions.length);
             let neededCards = Math.ceil(maxSessions / 12);
             
-            // تهيئة الكرت الأول
             initTableForCard(1, 1, neededCards === 1 ? maxSessions : 12);
 
-            // إنشاء الكروت الإضافية لو الجلسات أكتر من 12
             for (let c = 2; c <= neededCards; c++) {
                 totalCards++;
                 let startIdx = (c - 1) * 12 + 1;
@@ -721,7 +772,6 @@
             syncAllCardsInfo();
             updateCardButtons();
 
-            // تعبئة البيانات في كل الخانات المفتوحة
             for(let i = 1; i <= sessions.length; i++) {
                 let session = sessions[i-1];
                 let dInput = document.getElementById('d_'+i);
@@ -733,7 +783,6 @@
             }
         }
 
-        // سحب كل الجلسات من كل الكروت وحفظها مرة واحدة
         function saveData() {
             let rawPhone = document.getElementById('p_phone').value;
             let phone = convertToEnglishNumbers(rawPhone);
@@ -798,8 +847,6 @@
             let btnM = document.getElementById('medicalToggleBtn');
             btnM.innerHTML = 'فتح الملف الطبي';
             btnM.style.backgroundColor = 'var(--primary-blue)';
-            
-            resetToLightMode(); 
         }
     </script>
 </body>
