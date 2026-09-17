@@ -8,22 +8,47 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        /* المتغيرات الأساسية للألوان (الوضع الفاتح - الافتراضي) */
         :root {
             --primary-blue: #0093D0;
             --primary-green: #8CC63F;
-            --light-bg: #ffffff;
-            --border-color: #333;
+            --body-bg: #f0f4f8;
+            --sheet-bg: #ffffff;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --border-light: #cccccc;
+            --border-dash: #999999;
+            --table-th-bg: #eaf5fa;
+            --table-idx-bg: #f9f9f9;
+            --focus-bg: #f4fbf0;
+            --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px);
+        }
+
+        /* متغيرات الألوان (الوضع الليلي) */
+        body.dark-mode {
+            --body-bg: #121212;
+            --sheet-bg: #1e1e1e;
+            --text-main: #f0f0f0;
+            --text-muted: #aaaaaa;
+            --border-light: #444444;
+            --border-dash: #666666;
+            --table-th-bg: #2a2a2a;
+            --table-idx-bg: #252525;
+            --focus-bg: #2c3e20;
+            --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #444 40px);
         }
 
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #f0f4f8;
+            background-color: var(--body-bg);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .controls {
-            background: white;
+            background: var(--sheet-bg);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
@@ -33,16 +58,22 @@
             align-items: center;
             flex-wrap: wrap;
             border-bottom: 4px solid var(--primary-green);
+            transition: background-color 0.3s ease;
         }
 
         .controls input {
+            background: var(--sheet-bg);
+            color: var(--text-main);
             padding: 12px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-light);
             border-radius: 6px;
             flex-grow: 1;
             font-size: 16px;
             font-family: 'Cairo', sans-serif;
+            transition: all 0.3s ease;
         }
+
+        ::placeholder { color: var(--text-muted); opacity: 1; }
 
         .btn {
             padding: 12px 25px;
@@ -58,26 +89,22 @@
         }
 
         .btn-search { background-color: var(--primary-blue); }
-        .btn-search:hover { background-color: #007bb5; }
+        .btn-search:hover { filter: brightness(0.9); }
         .btn-new { background-color: var(--primary-green); }
-        .btn-new:hover { background-color: #7ab334; }
+        .btn-new:hover { filter: brightness(0.9); }
         .btn-delete { background-color: #e74c3c; } 
-        .btn-delete:hover { background-color: #c0392b; }
+        .btn-delete:hover { filter: brightness(0.9); }
         .btn-save { background-color: #2c3e50; }
         .btn-print { background-color: #e67e22; }
 
-        .btn-medical { 
-            background-color: var(--primary-blue); 
-            width: fit-content; 
-            margin: 20px auto; 
-            display: block; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            transition: all 0.3s ease;
-        }
+        .btn-medical { background-color: var(--primary-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; }
         .btn-medical:hover { filter: brightness(0.9); }
+        
+        .btn-new-card { background-color: #27ae60; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+        .btn-new-card:hover { filter: brightness(0.9); }
 
         .paper-sheet {
-            background-color: var(--light-bg);
+            background-color: var(--sheet-bg);
             max-width: 1100px;
             margin: 0 auto;
             padding: 25px 35px;
@@ -87,6 +114,7 @@
             flex-direction: column; 
             border: 2px solid var(--primary-blue);
             border-top: 10px solid var(--primary-green);
+            transition: background-color 0.3s ease;
         }
 
         .sheet-header {
@@ -96,8 +124,16 @@
             margin-bottom: 15px;
         }
 
-        .clinic-qr img { width: 70px; height: auto; object-fit: contain; }
-        .clinic-logo img { width: 180px; height: auto; object-fit: contain; }
+        .clinic-qr img { width: 70px; height: auto; object-fit: contain; transition: 0.3s; }
+        .clinic-logo img { width: 180px; height: auto; object-fit: contain; transition: 0.3s; }
+
+        /* حماية اللوجو في الدارك مود */
+        body.dark-mode .clinic-logo img, 
+        body.dark-mode .clinic-qr img {
+            background-color: #fff;
+            padding: 5px;
+            border-radius: 8px;
+        }
 
         .sheet-body { display: flex; gap: 30px; width: 100%; }
         .info-section { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
@@ -107,50 +143,101 @@
         .input-group label { font-weight: 700; white-space: nowrap; color: var(--primary-blue); font-size: 16px; margin: 0; }
         
         .input-group input {
-            flex: 1; border: none; border-bottom: 2px dashed #999;
+            flex: 1; border: none; border-bottom: 2px dashed var(--border-dash);
             background: transparent; font-size: 16px; padding: 0 5px 2px 5px; 
-            font-family: 'Cairo', sans-serif; color: #111; font-weight: 600;
-            outline: none; margin: 0;
+            font-family: 'Cairo', sans-serif; color: var(--text-main); font-weight: 600;
+            outline: none; margin: 0; transition: border-color 0.3s;
         }
         .input-group input:focus { border-bottom-color: var(--primary-green); }
 
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
         .input-group-textarea textarea {
-            width: 100%; border: 2px dashed #ccc; border-radius: 8px;
-            background: #fdfdfd; font-size: 16px; padding: 8px;
-            font-family: 'Cairo', sans-serif; color: #111; font-weight: 600;
+            width: 100%; border: 2px dashed var(--border-light); border-radius: 8px;
+            background: var(--sheet-bg); font-size: 16px; padding: 8px;
+            font-family: 'Cairo', sans-serif; color: var(--text-main); font-weight: 600;
             outline: none; min-height: 75px; resize: vertical; box-sizing: border-box;
+            transition: all 0.3s;
         }
-        .input-group-textarea textarea:focus { border-color: var(--primary-green); background: #f4fbf0; }
+        .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
 
         .table-section { flex: 1; display: flex; flex-direction: column; }
-        table { width: 100%; border-collapse: collapse; border: 2px solid var(--primary-blue); background: white; }
-        th, td { border: 1px solid var(--primary-blue); text-align: center; height: 32px; }
-        th { background-color: #eaf5fa; color: var(--primary-blue); font-size: 16px; padding: 5px; }
-        td input { width: 90%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo', sans-serif; background: transparent; }
-        td input:focus { outline: none; background-color: #f4fbf0; }
+        table { width: 100%; border-collapse: collapse; border: 2px solid var(--primary-blue); background: var(--sheet-bg); transition: 0.3s; }
+        th, td { border: 1px solid var(--border-light); text-align: center; height: 32px; }
+        th { background-color: var(--table-th-bg); color: var(--primary-blue); font-size: 16px; padding: 5px; transition: 0.3s; }
+        td input { width: 90%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo', sans-serif; background: transparent; color: var(--text-main); }
+        td input:focus { outline: none; background-color: var(--focus-bg); }
 
         .add-row-btn { background-color: var(--primary-blue); margin-top: 8px; padding: 6px; font-size: 14px; width: 100%; }
-        .add-row-btn:hover { background-color: #007bb5; }
+        .add-row-btn:hover { filter: brightness(0.9); }
 
         .row-container { display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%; }
         .delete-row-btn { color: white; background-color: #e74c3c; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; position: absolute; right: -25px; top: 50%; transform: translateY(-50%); line-height: 1; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         .medical-notes {
             width: 100%; min-height: 400px; border: none; outline: none;
-            font-size: 18px; font-family: 'Cairo', sans-serif; font-weight: 600; color: #333;
+            font-size: 18px; font-family: 'Cairo', sans-serif; font-weight: 600; color: var(--text-main);
             line-height: 2.5; background: transparent; resize: none;
-            background-image: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px);
+            background-image: var(--notes-bg); transition: 0.3s;
         }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border-top: 5px solid var(--primary-green); max-height: 80vh; overflow-y: auto; box-shadow: 0 5px 30px rgba(0,0,0,0.3); }
-        .patient-option { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; background-color: #fff; }
-        .patient-option:hover { border-color: var(--primary-green); background-color: #f4fbf0; }
+        .modal-content { background-color: var(--sheet-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border-top: 5px solid var(--primary-green); max-height: 80vh; overflow-y: auto; box-shadow: 0 5px 30px rgba(0,0,0,0.3); }
+        .patient-option { padding: 15px; border: 1px solid var(--border-light); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; background-color: var(--sheet-bg); }
+        .patient-option:hover { border-color: var(--primary-green); background-color: var(--focus-bg); }
         .patient-name { font-weight: bold; color: var(--primary-blue); font-size: 18px; margin-bottom: 5px;}
-        .patient-details { color: #555; font-size: 14px; font-weight: 600;}
+        .patient-details { color: var(--text-muted); font-size: 14px; font-weight: 600;}
         .select-badge { background: var(--primary-blue); color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 14px; }
+
+        /* ================= سويتش الدارك مود (Dark Mode Toggle) ================= */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            position: relative;
+            width: 70px;
+        }
+        .theme-switch input { display:none; }
+        .slider {
+            background-color: #f1c40f; /* لون الشمس */
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .slider.round { border-radius: 34px; }
+        .slider:before {
+            background-color: #fff;
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 26px;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider {
+            background-color: #2c3e50; /* لون الليل */
+        }
+        input:checked + .slider:before {
+            transform: translateX(36px);
+        }
+        .icon { font-size: 16px; z-index: 1; }
 
         @media (max-width: 800px) {
             .paper-sheet { padding: 20px; }
@@ -160,10 +247,26 @@
             .controls { flex-direction: column; align-items: stretch; }
         }
 
+        /* ================= إعدادات الطباعة الصارمة ================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
+            
+            /* إجبار إعدادات الطباعة للون الفاتح دائماً حتى لو الدارك مود شغال */
+            :root {
+                --body-bg: #ffffff !important;
+                --sheet-bg: #ffffff !important;
+                --text-main: #000000 !important;
+                --text-muted: #333333 !important;
+                --border-light: #cccccc !important;
+                --border-dash: #000000 !important;
+                --table-th-bg: #eeeeee !important;
+                --table-idx-bg: #f9f9f9 !important;
+                --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px) !important;
+            }
+            body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: transparent; padding: 0; }
+
             body { background: white; padding: 0; }
-            .controls, .modal, .no-print, .delete-row-btn, .btn-medical { display: none !important; } 
+            .controls, .modal, .no-print, .delete-row-btn, .theme-switch-wrapper { display: none !important; } 
             .sheet-body { flex-direction: row !important; gap: 20px !important; }
             .sheet-header { flex-direction: row !important; text-align: right !important; margin-bottom: 10px !important; }
             .info-section { flex: 1.2 !important; gap: 10px !important; display: flex !important; flex-direction: column !important; }
@@ -183,7 +286,6 @@
             tr { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* التعديل الجديد: إخفاء الجملة الإرشادية أثناء الطباعة لو الخانة فاضية */
             textarea::placeholder { color: transparent !important; }
             textarea::-webkit-input-placeholder { color: transparent !important; }
             textarea:-moz-placeholder { color: transparent !important; }
@@ -194,10 +296,21 @@
 </head>
 <body>
 
+    <!-- زر التحويل بين المود الدارك واللايت (متواجد أسفل اليمين) -->
+    <div class="theme-switch-wrapper no-print" dir="ltr">
+        <label class="theme-switch" for="themeSwitch">
+            <input type="checkbox" id="themeSwitch" onchange="toggleTheme(this)">
+            <div class="slider round">
+                <span class="icon moon" style="margin-left: 8px;">🌙</span>
+                <span class="icon sun" style="margin-right: 8px;">☀️</span>
+            </div>
+        </label>
+    </div>
+
     <div id="patientModal" class="modal">
         <div class="modal-content">
-            <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من مريض بهذا الاسم</h2>
-            <p style="color: #666; margin-bottom: 20px;">الرجاء اختيار المريض المطلوب من القائمة التالية:</p>
+            <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من كرت مسجل</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">الرجاء اختيار الكرت المطلوب من القائمة التالية:</p>
             <div id="patientList"></div>
             <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px;" onclick="closeModal()">إلغاء وإغلاق</button>
         </div>
@@ -280,7 +393,11 @@
         </div>
     </div>
 
-    <button id="medicalToggleBtn" class="btn btn-medical no-print" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
+    <!-- مجموعة الأزرار للإدارة السريعة -->
+    <div class="action-buttons-container no-print" style="display: flex; gap: 15px; justify-content: center; margin: 20px auto; max-width: 1100px; flex-wrap: wrap;">
+        <button id="medicalToggleBtn" class="btn btn-medical" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
+        <button class="btn btn-new-card" onclick="newCardForSamePatient()">➕ إضافة كرت ثاني للمريض</button>
+    </div>
 
     <div class="paper-sheet" id="medicalSheetForm" style="display: none; margin-bottom: 50px;">
         <div class="sheet-header">
@@ -292,7 +409,6 @@
             </div>
         </div>
         
-        <!-- التعديل الجديد: إزالة سطر التاريخ وتوسيط عنوان التشخيص -->
         <div style="border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: flex-start; align-items: baseline;">
             <h3 style="color: var(--primary-blue); margin: 0;">التشخيص والملاحظات الطبية</h3>
         </div>
@@ -301,10 +417,25 @@
     </div>
 
     <script>
-        // تم تحديث الرابط الجديد هنا
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPXTh6_9YZ0YB07vfp-ShdTWVS5tZLlVRQutg_I0LaQHMmd9qknANcoZddHaz-FMna/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLwkaiG21mY5c3T18wJVxNCqzDTE6cJW7DQOa9U-HwlRIeZJh3TYicOV7rEgrjuv9q/exec";
         let globalSearchResults = []; 
         let currentRowCount = 12;
+
+        // دالة تفعيل/إلغاء وضع الدارك مود
+        function toggleTheme(e) {
+            if(e.checked) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // دالة لإجبار الرجوع للوضع الفاتح (اللايت) 
+        function resetToLightMode() {
+            document.body.classList.remove('dark-mode');
+            let themeSwitch = document.getElementById('themeSwitch');
+            if(themeSwitch) themeSwitch.checked = false;
+        }
 
         document.getElementById('searchName').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchPatient();
@@ -316,6 +447,44 @@
                 let idx = arabicNumbers.indexOf(c);
                 return idx !== -1 ? idx : c;
             }).join('');
+        }
+
+        function newCardForSamePatient() {
+            let nameField = document.getElementById('p_name');
+            let phone = document.getElementById('p_phone').value;
+            
+            if(!nameField.value || !phone) {
+                alert("برجاء البحث عن المريض أولاً وعرض بياناته قبل فتح كرت جديد له!");
+                return;
+            }
+
+            if(confirm("سيتم تجهيز ورقة كرت جديدة فارغة لنفس المريض (مع الاحتفاظ بالكرت القديم وتاريخه في السيستم).\nهل تريد الاستمرار؟")) {
+                
+                if (!nameField.value.includes("- كرت")) {
+                    nameField.value = nameField.value.trim() + " - كرت 2";
+                } else {
+                    let numMatch = nameField.value.match(/\d+/);
+                    if(numMatch) {
+                        let nextNum = parseInt(numMatch[0]) + 1;
+                        nameField.value = nameField.value.replace(/\d+/, nextNum);
+                    } else {
+                        nameField.value += " جديد";
+                    }
+                }
+                
+                initTable(12);
+                document.getElementById('p_medical_notes').value = '';
+                
+                let sheet = document.getElementById('medicalSheetForm');
+                let btn = document.getElementById('medicalToggleBtn');
+                sheet.style.display = 'none'; 
+                btn.innerHTML = 'فتح الملف الطبي';
+                btn.style.backgroundColor = 'var(--primary-blue)';
+                
+                resetToLightMode(); // العودة للوضع الفاتح عند إضافة كرت ثاني
+                
+                alert("تم تجهيز الكرت الجديد بنجاح!\nالاسم الآن: (" + nameField.value + ").\nيمكنك الآن إدخال الجلسات الجديدة ثم الضغط على (حفظ البيانات).");
+            }
         }
 
         function toggleMedicalSheet() {
@@ -342,7 +511,7 @@
             let deleteBtn = index > 12 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">×</span>` : '';
             
             tr.innerHTML = `
-                <td style="font-weight: 700; background-color: #f9f9f9; color: var(--primary-blue); border-left: none; overflow: visible;">
+                <td style="font-weight: 700; background-color: var(--table-idx-bg); color: var(--primary-blue); border-left: none; overflow: visible;">
                     <div class="row-container">
                         <span class="row-index-text">${index}</span>
                         ${deleteBtn}
@@ -445,7 +614,7 @@
                                         <div class="patient-name">${patient.name}</div>
                                         <div class="patient-details">${patient.phone || "بدون رقم"} &nbsp; | &nbsp; ${patient.address || "بدون عنوان"}</div>
                                     </div>
-                                    <div class="select-badge">اختيار</div>
+                                    <div class="select-badge">فتح الكرت</div>
                                 </div>
                             `;
                         });
@@ -475,7 +644,7 @@
                 btn.innerText = "جاري الحذف...";
 
                 try {
-                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone), { method: 'GET', redirect: 'follow' });
+                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' });
                     let res = await response.json();
 
                     if(res.status === "success") {
@@ -589,6 +758,8 @@
             sheet.style.display = 'none'; 
             btn.innerHTML = 'فتح الملف الطبي';
             btn.style.backgroundColor = 'var(--primary-blue)';
+            
+            resetToLightMode(); // العودة للوضع الفاتح مع كل كرت جديد
         }
     </script>
 </body>
