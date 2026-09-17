@@ -201,6 +201,15 @@
         input:checked + .slider:before { transform: translateX(36px); }
         .icon { font-size: 16px; z-index: 1; }
 
+        @media (max-width: 800px) {
+            .paper-sheet { padding: 20px; }
+            .sheet-header { flex-direction: column; gap: 15px; text-align: center; }
+            .sheet-body { flex-direction: column; gap: 30px; }
+            .row { flex-direction: column; gap: 20px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            #cardControls { flex-direction: column; }
+        }
+
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
             :root {
@@ -217,7 +226,7 @@
             body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: transparent; padding: 0; }
 
             body { background: white; padding: 0; }
-            .controls, .modal, .no-print, .delete-row-btn, .theme-switch-wrapper { display: none !important; } 
+            .controls, .modal, .no-print, .delete-row-btn, .theme-switch-wrapper, .action-buttons-container { display: none !important; } 
             .sheet-body { flex-direction: row !important; gap: 20px !important; }
             .sheet-header { flex-direction: row !important; text-align: right !important; margin-bottom: 10px !important; }
             .info-section { flex: 1.2 !important; gap: 10px !important; display: flex !important; flex-direction: column !important; }
@@ -225,8 +234,8 @@
             .table-section { flex: 1 !important; display: block !important; }
             .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; transform: scale(0.98); transform-origin: top right; margin-bottom: 0 !important; }
             
-            /* فواصل الصفحات للطباعة */
-            #patientForm2 { page-break-before: always; margin-top: 10mm !important; }
+            /* الكروت الإضافية تنزل في صفحة جديدة في الطباعة */
+            .dynamic-card { page-break-before: always; margin-top: 10mm !important; }
             #medicalSheetForm { page-break-before: always; margin-top: 10mm !important; }
             
             .input-group label { color: #000; font-size: 15px; }
@@ -276,8 +285,8 @@
         <button class="btn btn-print" onclick="window.print()">طباعة الكرت</button>
     </div>
 
-    <!-- ================== الكرت الأول (الجلسات 1 لـ 12) ================== -->
-    <div class="paper-sheet" id="patientForm">
+    <!-- الكرت الأساسي (الرقم 1) -->
+    <div class="paper-sheet" id="card_1">
         <div class="sheet-header">
             <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
             <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
@@ -308,70 +317,46 @@
                         <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
                     </thead>
                     <tbody id="sessionsTable1">
-                        <!-- يتم التوليد بالبرمجة 1 لـ 12 -->
+                        <!-- يتم التوليد بالبرمجة -->
                     </tbody>
                 </table>
+                <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(1)">+ إضافة جلسة</button>
             </div>
         </div>
     </div>
 
-    <!-- أزرار الإدارة السريعة (بين الكروت) -->
-    <div class="action-buttons-container no-print" style="display: flex; gap: 15px; justify-content: center; margin: 20px auto; max-width: 1100px; flex-wrap: wrap;">
-        <button id="card2ToggleBtn" class="btn btn-new-card" onclick="toggleCard2()">➕ إضافة كرت ثاني (13 - 24)</button>
+    <!-- حاوية الكروت الإضافية اللانهائية -->
+    <div id="dynamicCardsContainer"></div>
+
+    <!-- أزرار الإدارة السفلية (إضافة كروت / ملف طبي) -->
+    <div class="action-buttons-container no-print" style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin: 20px auto; max-width: 1100px;">
+        <div id="cardControls" style="display: flex; gap: 15px; width: 100%; max-width: 600px;">
+            <button id="addCardBtn" class="btn btn-new-card" style="flex: 1;" onclick="addCard()">➕ إضافة كرت إضافي</button>
+            <button id="removeCardBtn" class="btn btn-delete" style="flex: 1; display: none;" onclick="removeLastCard()">🗑️ إزالة الكرت الأخير</button>
+        </div>
         <button id="medicalToggleBtn" class="btn btn-medical" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
     </div>
 
-    <!-- ================== الكرت الثاني (الجلسات 13 لـ 24) ================== -->
-    <div class="paper-sheet" id="patientForm2" style="display: none; margin-bottom: 20px;">
-        <div class="sheet-header">
-            <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
-            <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
-        </div>
-
-        <div class="sheet-body">
-            <div class="info-section">
-                <h3 style="color: var(--primary-blue); text-align: center; margin-top: 0; border-bottom: 2px dashed var(--border-dash); padding-bottom: 10px;">(متابعة الجلسات - كرت 2)</h3>
-                <div class="row">
-                    <div class="input-group"><label>الاسم:</label><input type="text" id="p_name2" readonly style="color: var(--text-muted);"></div>
-                    <div class="input-group"><label>الموبايل:</label><input type="text" id="p_phone2" readonly style="color: var(--text-muted);"></div>
-                </div>
-            </div>
-
-            <div class="table-section">
-                <table>
-                    <thead>
-                        <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
-                    </thead>
-                    <tbody id="sessionsTable2">
-                        <!-- يتم التوليد بالبرمجة 13 وما فوق -->
-                    </tbody>
-                </table>
-                <button type="button" class="btn add-row-btn no-print" onclick="addNewRow2()">+ إضافة جلسة للكرت الثاني</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================== الملف الطبي ================== -->
+    <!-- الملف الطبي -->
     <div class="paper-sheet" id="medicalSheetForm" style="display: none; margin-bottom: 50px;">
         <div class="sheet-header">
             <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
             <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
         </div>
-        
         <div style="border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: flex-start; align-items: baseline;">
             <h3 style="color: var(--primary-blue); margin: 0;">التشخيص والملاحظات الطبية</h3>
         </div>
-        
         <textarea id="p_medical_notes" class="medical-notes" placeholder="اكتب التشخيص والتفاصيل هنا وسيتم حفظها مع الكرت..."></textarea>
     </div>
 
-    <!-- ================== سكربت البرمجة ================== -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYt2nRwms7vT9mfIB9Upeix_v9WiORsiuH0nJWWvdSftM8hu2sfYERKmhI055d-dZA/exec";
+        
         let globalSearchResults = []; 
-        let currentRowCount2 = 24;
+        let totalCards = 1;
+        let cardRowCounts = { 1: { start: 1, current: 12 } };
 
-        // دالة الدارك مود
+        // ================== إعدادات الدارك مود ==================
         function toggleTheme(e) {
             if(e.checked) document.body.classList.add('dark-mode');
             else document.body.classList.remove('dark-mode');
@@ -381,14 +366,6 @@
             let themeSwitch = document.getElementById('themeSwitch');
             if(themeSwitch) themeSwitch.checked = false;
         }
-
-        // مزامنة الاسم والرقم للكرت التاني أوتوماتيك
-        function syncCard2Info() {
-            document.getElementById('p_name2').value = document.getElementById('p_name').value;
-            document.getElementById('p_phone2').value = document.getElementById('p_phone').value;
-        }
-        document.getElementById('p_name').addEventListener('input', syncCard2Info);
-        document.getElementById('p_phone').addEventListener('input', syncCard2Info);
 
         document.getElementById('searchName').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchPatient();
@@ -402,53 +379,100 @@
             }).join('');
         }
 
-        // فتح وإغلاق الكرت التاني
-        function toggleCard2() {
-            let sheet = document.getElementById('patientForm2');
-            let btn = document.getElementById('card2ToggleBtn');
+        // ================== نظام الكروت الديناميكية اللانهائية ==================
+        
+        // مزامنة الأسماء في كل الكروت المفتوحة
+        function syncAllCardsInfo() {
+            let baseName = document.getElementById('p_name').value;
+            let basePhone = document.getElementById('p_phone').value;
+            for(let i = 2; i <= totalCards; i++) {
+                if(document.getElementById(`p_name${i}`)) document.getElementById(`p_name${i}`).value = baseName;
+                if(document.getElementById(`p_phone${i}`)) document.getElementById(`p_phone${i}`).value = basePhone;
+            }
+        }
+        document.getElementById('p_name').addEventListener('input', syncAllCardsInfo);
+        document.getElementById('p_phone').addEventListener('input', syncAllCardsInfo);
+
+        // إضافة كرت جديد
+        function addCard() {
+            let prevCard = totalCards;
+            totalCards++;
             
-            if(sheet.style.display === 'none' || sheet.style.display === '') {
-                sheet.style.display = 'flex';
-                btn.innerHTML = 'إزالة الكرت الثاني';
-                btn.style.backgroundColor = '#e74c3c'; 
-                syncCard2Info();
-                setTimeout(() => { window.scrollTo({ top: sheet.offsetTop - 20, behavior: 'smooth' }); }, 100);
-            } else {
-                sheet.style.display = 'none';
-                btn.innerHTML = 'إضافة كرت ثاني';
-                btn.style.backgroundColor = '#27ae60'; 
-                // تفريغ خانات الكرت التاني لو اتقفل
-                for(let i=13; i<=currentRowCount2; i++) {
-                    if(document.getElementById('d_'+i)) {
-                        document.getElementById('d_'+i).value = '';
-                        document.getElementById('ws_'+i).value = '';
-                        document.getElementById('n_'+i).value = '';
-                    }
-                }
+            // تحديد بداية أرقام الجلسات للكرت الجديد بناءً على الكرت اللي قبله
+            let startIdx = cardRowCounts[prevCard].current + 1;
+            let endIdx = startIdx + 11; // الأساس 12 جلسة
+            
+            let cardHtml = `
+            <div class="paper-sheet dynamic-card" id="card_${totalCards}" style="margin-top: 20px;">
+                <div class="sheet-header">
+                    <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
+                    <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
+                </div>
+                <div class="sheet-body">
+                    <div class="info-section">
+                        <h3 style="color: var(--primary-blue); text-align: center; margin-top: 0; border-bottom: 2px dashed var(--border-dash); padding-bottom: 10px;">(متابعة الجلسات - كرت ${totalCards})</h3>
+                        <div class="row">
+                            <div class="input-group"><label>الاسم:</label><input type="text" id="p_name${totalCards}" readonly style="color: var(--text-muted);"></div>
+                            <div class="input-group"><label>الموبايل:</label><input type="text" id="p_phone${totalCards}" readonly style="color: var(--text-muted);"></div>
+                        </div>
+                    </div>
+                    <div class="table-section">
+                        <table>
+                            <thead>
+                                <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
+                            </thead>
+                            <tbody id="sessionsTable${totalCards}">
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(${totalCards})">+ إضافة جلسة</button>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            document.getElementById('dynamicCardsContainer').insertAdjacentHTML('beforeend', cardHtml);
+            initTableForCard(totalCards, startIdx, endIdx);
+            syncAllCardsInfo();
+            updateCardButtons();
+            
+            // النزول للشاشة عند الكرت الجديد
+            setTimeout(() => { 
+                let newCard = document.getElementById(`card_${totalCards}`);
+                window.scrollTo({ top: newCard.offsetTop - 20, behavior: 'smooth' }); 
+            }, 100);
+        }
+
+        // مسح الكرت الأخير
+        function removeLastCard() {
+            if(totalCards <= 1) return;
+            if(confirm(`هل أنت متأكد من إزالة الكرت رقم ${totalCards} بكل محتوياته؟ (لن يؤثر ذلك على الكروت التي قبله)`)) {
+                document.getElementById(`card_${totalCards}`).remove();
+                delete cardRowCounts[totalCards];
+                totalCards--;
+                updateCardButtons();
             }
         }
 
-        // فتح وإغلاق الملف الطبي
-        function toggleMedicalSheet() {
-            let sheet = document.getElementById('medicalSheetForm');
-            let btn = document.getElementById('medicalToggleBtn');
-            
-            if(sheet.style.display === 'none' || sheet.style.display === '') {
-                sheet.style.display = 'flex';
-                btn.innerHTML = 'مسح الملف الطبي';
-                btn.style.backgroundColor = '#e74c3c'; 
-                setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
+        // تحديث شكل الأزرار (الانقسام)
+        function updateCardButtons() {
+            let addBtn = document.getElementById('addCardBtn');
+            let removeBtn = document.getElementById('removeCardBtn');
+            if(totalCards > 1) {
+                addBtn.innerHTML = `➕ إضافة كرت (${totalCards + 1})`;
+                removeBtn.style.display = 'block';
+                removeBtn.innerHTML = `🗑️ إزالة كرت (${totalCards})`;
             } else {
-                sheet.style.display = 'none';
-                document.getElementById('p_medical_notes').value = ''; 
-                btn.innerHTML = 'فتح الملف الطبي';
-                btn.style.backgroundColor = 'var(--primary-blue)'; 
+                addBtn.innerHTML = `➕ إضافة كرت إضافي`;
+                removeBtn.style.display = 'none';
             }
         }
 
-        // بناء صفوف الجداول
-        function buildRowHtml(index) {
-            let deleteBtn = index > 24 ? `<span class="delete-row-btn no-print" onclick="deleteRow(this)">×</span>` : '';
+        // بناء صفوف أي كرت
+        function buildRowHtml(index, cardNum) {
+            // زر الحذف بيظهر لو الجلسة زيادة عن الـ 12 الأساسيين بتوع الكرت ده
+            let isExtraRow = index >= cardRowCounts[cardNum].start + 12;
+            let deleteBtn = isExtraRow ? `<span class="delete-row-btn no-print" onclick="deleteRow(this, ${cardNum})">×</span>` : '';
+            
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-weight: 700; background-color: var(--table-idx-bg); color: var(--primary-blue); border-left: none; position: relative;">
@@ -464,50 +488,46 @@
             return tr;
         }
 
-        // تهيئة الكرت الأول (ثابت 12 جلسة)
-        function initTable1() {
-            const tableBody = document.getElementById('sessionsTable1');
-            tableBody.innerHTML = '';
-            for (let i = 1; i <= 12; i++) {
-                tableBody.appendChild(buildRowHtml(i));
+        // تهيئة الجدول لكرت معين
+        function initTableForCard(cardNum, startIdx, currentCount) {
+            const tbody = document.getElementById(`sessionsTable${cardNum}`);
+            tbody.innerHTML = '';
+            cardRowCounts[cardNum] = { start: startIdx, current: currentCount };
+            for (let i = startIdx; i <= currentCount; i++) {
+                tbody.appendChild(buildRowHtml(i, cardNum));
             }
         }
 
-        // تهيئة الكرت التاني (من 13 لـ 24)
-        function initTable2(count) {
-            const tableBody = document.getElementById('sessionsTable2');
-            tableBody.innerHTML = '';
-            currentRowCount2 = Math.max(24, count);
-            for (let i = 13; i <= currentRowCount2; i++) {
-                tableBody.appendChild(buildRowHtml(i));
-            }
+        // إضافة جلسة لكرت معين
+        function addNewRowToCard(cardNum) {
+            cardRowCounts[cardNum].current++;
+            let index = cardRowCounts[cardNum].current;
+            document.getElementById(`sessionsTable${cardNum}`).appendChild(buildRowHtml(index, cardNum));
         }
 
-        function addNewRow2() {
-            currentRowCount2++;
-            document.getElementById('sessionsTable2').appendChild(buildRowHtml(currentRowCount2));
-        }
-
-        function deleteRow(btnElement) {
+        // مسح جلسة من كرت معين وإعادة الترقيم
+        function deleteRow(btnElement, cardNum) {
             const tr = btnElement.closest('tr');
             tr.remove();
-            currentRowCount2--;
+            cardRowCounts[cardNum].current--;
             
-            const rows = document.getElementById('sessionsTable2').querySelectorAll('tr');
+            const rows = document.getElementById(`sessionsTable${cardNum}`).querySelectorAll('tr');
+            const startIdx = cardRowCounts[cardNum].start;
+            
             rows.forEach((row, idx) => {
-                const newIndex = 13 + idx; // الترتيب بيبدأ من 13 في الكرت التاني
+                const newIndex = startIdx + idx;
                 const indexTextSpan = row.querySelector('.row-index-text');
                 if (indexTextSpan) { indexTextSpan.innerText = newIndex; }
 
                 const tdElement = row.querySelector('td');
                 let deleteBtn = tdElement.querySelector('.delete-row-btn');
                 
-                if (newIndex > 24) {
+                if (newIndex >= startIdx + 12) {
                     if (!deleteBtn) {
                         let newBtn = document.createElement('span');
                         newBtn.className = 'delete-row-btn no-print';
                         newBtn.innerHTML = '×';
-                        newBtn.onclick = function() { deleteRow(this); };
+                        newBtn.onclick = function() { deleteRow(this, cardNum); };
                         tdElement.querySelector('.row-container').appendChild(newBtn);
                     }
                 } else {
@@ -523,10 +543,27 @@
             });
         }
 
-        // تشغيل الجداول في البداية
-        initTable1();
-        initTable2(24);
+        // تهيئة الاستمارة عند الفتح (كرت واحد)
+        initTableForCard(1, 1, 12);
 
+        // فتح وإغلاق الملف الطبي
+        function toggleMedicalSheet() {
+            let sheet = document.getElementById('medicalSheetForm');
+            let btn = document.getElementById('medicalToggleBtn');
+            if(sheet.style.display === 'none' || sheet.style.display === '') {
+                sheet.style.display = 'flex';
+                btn.innerHTML = 'مسح الملف الطبي';
+                btn.style.backgroundColor = '#e74c3c'; 
+                setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
+            } else {
+                sheet.style.display = 'none';
+                document.getElementById('p_medical_notes').value = ''; 
+                btn.innerHTML = 'فتح الملف الطبي';
+                btn.style.backgroundColor = 'var(--primary-blue)'; 
+            }
+        }
+
+        // ================== دوال البحث والحفظ ==================
         async function searchPatient() {
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
@@ -539,7 +576,7 @@
                 let text = await response.text();
                 
                 if(text.includes("<html")) {
-                    alert("خطأ في صلاحيات اللينك! تأكد من إعدادات جوجل شيت.");
+                    alert("خطأ في اللينك! تأكد من النشر الصحيح لجوجل شيت.");
                     btn.innerText = "بحث";
                     return;
                 }
@@ -560,7 +597,7 @@
                                         <div class="patient-name">${patient.name}</div>
                                         <div class="patient-details">${patient.phone || "بدون رقم"}</div>
                                     </div>
-                                    <div class="select-badge">فتح الكرت</div>
+                                    <div class="select-badge">فتح الملف</div>
                                 </div>
                             `;
                         });
@@ -578,23 +615,21 @@
 
         async function deletePatient() {
             let phone = document.getElementById('p_phone').value;
-            let name = document.getElementById('p_name').value;
-            if(!phone || !name) { alert("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!"); return; }
+            if(!phone) { alert("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!"); return; }
 
-            if(confirm(`هل أنت متأكد من حذف كرت المريض: ${name}؟\nسيتم مسحه من الشيت نهائياً!`)) {
+            if(confirm(`هل أنت متأكد من مسح بيانات المريض من الشيت نهائياً؟`)) {
                 let btn = document.querySelector('.btn-delete');
                 btn.innerText = "جاري الحذف...";
-
                 try {
-                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' });
+                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone), { method: 'GET', redirect: 'follow' });
                     let res = await response.json();
                     if(res.status === "success") {
-                        alert("تم حذف الكرت بنجاح من قاعدة البيانات!");
+                        alert("تم الحذف بنجاح!");
                         clearForm();
                     } else {
-                        alert("لم يتم العثور على المريض، قد يكون تم حذفه مسبقاً.");
+                        alert("لم يتم العثور على المريض.");
                     }
-                } catch(e) { alert("تعذر الاتصال بقاعدة البيانات."); }
+                } catch(e) { alert("خطأ في الاتصال."); }
                 btn.innerText = "حذف الكرت";
             }
         }
@@ -606,6 +641,7 @@
 
         function closeModal() { document.getElementById('patientModal').style.display = "none"; }
 
+        // دالة سحب البيانات وتوزيعها بذكاء على الكروت
         function loadPatientData(data) {
             document.getElementById('p_name').value = data.name || "";
             document.getElementById('p_address').value = data.address || "";
@@ -616,8 +652,6 @@
             document.getElementById('p_diagnosis').value = data.diagnosis || "";
             document.getElementById('p_protocol').value = data.protocol || "";
             
-            syncCard2Info(); // مزامنة البيانات للكرت التاني أوتوماتيك
-
             // تحميل الملاحظات الطبية
             let medicalNotes = data.medical_notes || "";
             document.getElementById('p_medical_notes').value = medicalNotes;
@@ -633,38 +667,73 @@
                 btnM.style.backgroundColor = 'var(--primary-blue)';
             }
 
-            // توزيع الجلسات بذكاء على الكرتين
+            // توزيع الجلسات
             let sessions = data.sessions || [];
-            initTable1(); // تصفير الأول
             
-            // لو عنده أكتر من 12 جلسة نفتح الكرت التاني
-            let sheet2 = document.getElementById('patientForm2');
-            let btn2 = document.getElementById('card2ToggleBtn');
+            // تصفير الواجهة لكرت واحد
+            document.getElementById('dynamicCardsContainer').innerHTML = '';
+            totalCards = 1;
+            cardRowCounts = {};
             
-            if (sessions.length > 12) {
-                sheet2.style.display = 'flex';
-                btn2.innerHTML = 'إزالة الكرت الثاني';
-                btn2.style.backgroundColor = '#e74c3c';
-                initTable2(Math.max(24, sessions.length));
-            } else {
-                sheet2.style.display = 'none';
-                btn2.innerHTML = 'إضافة كرت ثاني';
-                btn2.style.backgroundColor = '#27ae60';
-                initTable2(24);
-            }
+            // حساب الكروت المطلوبة
+            let maxSessions = Math.max(12, sessions.length);
+            let neededCards = Math.ceil(maxSessions / 12);
+            
+            // تهيئة الكرت الأول
+            initTableForCard(1, 1, neededCards === 1 ? maxSessions : 12);
 
-            // تعبئة البيانات في الخانات
-            for(let i = 1; i <= Math.max(12, sessions.length); i++) {
-                let session = sessions[i-1] || {d: "", ws: "", n: ""};
+            // إنشاء الكروت الإضافية لو الجلسات أكتر من 12
+            for (let c = 2; c <= neededCards; c++) {
+                totalCards++;
+                let startIdx = (c - 1) * 12 + 1;
+                let endIdx = (c === neededCards) ? Math.max(startIdx + 11, sessions.length) : c * 12;
+                
+                let cardHtml = `
+                <div class="paper-sheet dynamic-card" id="card_${totalCards}" style="margin-top: 20px;">
+                    <div class="sheet-header">
+                        <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
+                        <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
+                    </div>
+                    <div class="sheet-body">
+                        <div class="info-section">
+                            <h3 style="color: var(--primary-blue); text-align: center; margin-top: 0; border-bottom: 2px dashed var(--border-dash); padding-bottom: 10px;">(متابعة الجلسات - كرت ${totalCards})</h3>
+                            <div class="row">
+                                <div class="input-group"><label>الاسم:</label><input type="text" id="p_name${totalCards}" readonly style="color: var(--text-muted);"></div>
+                                <div class="input-group"><label>الموبايل:</label><input type="text" id="p_phone${totalCards}" readonly style="color: var(--text-muted);"></div>
+                            </div>
+                        </div>
+                        <div class="table-section">
+                            <table>
+                                <thead>
+                                    <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
+                                </thead>
+                                <tbody id="sessionsTable${totalCards}"></tbody>
+                            </table>
+                            <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(${totalCards})">+ إضافة جلسة</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+                document.getElementById('dynamicCardsContainer').insertAdjacentHTML('beforeend', cardHtml);
+                initTableForCard(totalCards, startIdx, endIdx);
+            }
+            
+            syncAllCardsInfo();
+            updateCardButtons();
+
+            // تعبئة البيانات في كل الخانات المفتوحة
+            for(let i = 1; i <= sessions.length; i++) {
+                let session = sessions[i-1];
                 let dInput = document.getElementById('d_'+i);
                 if(dInput) {
-                    dInput.value = session.d;
-                    document.getElementById('ws_'+i).value = session.ws;
-                    document.getElementById('n_'+i).value = session.n;
+                    dInput.value = session.d || "";
+                    document.getElementById('ws_'+i).value = session.ws || "";
+                    document.getElementById('n_'+i).value = session.n || "";
                 }
             }
         }
 
+        // سحب كل الجلسات من كل الكروت وحفظها مرة واحدة
         function saveData() {
             let rawPhone = document.getElementById('p_phone').value;
             let phone = convertToEnglishNumbers(rawPhone);
@@ -680,18 +749,10 @@
             btn.innerText = "جاري الحفظ...";
 
             let sessions = [];
-            // سحب الجلسات من الكرت الأول دايماً
-            for(let i = 1; i <= 12; i++) {
-                sessions.push({
-                    d: document.getElementById('d_'+i).value,
-                    ws: document.getElementById('ws_'+i).value,
-                    n: document.getElementById('n_'+i).value
-                });
-            }
-            
-            // سحب الجلسات من الكرت التاني (لو مفتوح فقط)
-            if(document.getElementById('patientForm2').style.display !== 'none') {
-                for(let i = 13; i <= currentRowCount2; i++) {
+            for(let c = 1; c <= totalCards; c++) {
+                let start = cardRowCounts[c].start;
+                let end = cardRowCounts[c].current;
+                for(let i = start; i <= end; i++) {
                     let dInput = document.getElementById('d_'+i);
                     if(dInput) {
                         sessions.push({
@@ -726,19 +787,18 @@
 
         function clearForm() {
             document.querySelectorAll('input:not(#searchName), textarea').forEach(el => el.value = '');
-            initTable1();
-            initTable2(24);
+            
+            document.getElementById('dynamicCardsContainer').innerHTML = '';
+            totalCards = 1;
+            cardRowCounts = {};
+            initTableForCard(1, 1, 12);
+            updateCardButtons();
             
             document.getElementById('medicalSheetForm').style.display = 'none'; 
             let btnM = document.getElementById('medicalToggleBtn');
             btnM.innerHTML = 'فتح الملف الطبي';
             btnM.style.backgroundColor = 'var(--primary-blue)';
             
-            document.getElementById('patientForm2').style.display = 'none'; 
-            let btn2 = document.getElementById('card2ToggleBtn');
-            btn2.innerHTML = '➕ إضافة كرت ثاني (13 - 24)';
-            btn2.style.backgroundColor = '#27ae60';
-
             resetToLightMode(); 
         }
     </script>
