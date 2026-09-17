@@ -409,13 +409,13 @@
             
             if(sheet.style.display === 'none' || sheet.style.display === '') {
                 sheet.style.display = 'flex';
-                btn.innerHTML = '🗑️ إزالة الكرت الثاني';
+                btn.innerHTML = 'إزالة الكرت الثاني';
                 btn.style.backgroundColor = '#e74c3c'; 
                 syncCard2Info();
                 setTimeout(() => { window.scrollTo({ top: sheet.offsetTop - 20, behavior: 'smooth' }); }, 100);
             } else {
                 sheet.style.display = 'none';
-                btn.innerHTML = '➕ إضافة كرت ثاني (13 - 24)';
+                btn.innerHTML = 'إضافة كرت ثاني';
                 btn.style.backgroundColor = '#27ae60'; 
                 // تفريغ خانات الكرت التاني لو اتقفل
                 for(let i=13; i<=currentRowCount2; i++) {
@@ -643,12 +643,12 @@
             
             if (sessions.length > 12) {
                 sheet2.style.display = 'flex';
-                btn2.innerHTML = '🗑️ إزالة الكرت الثاني';
+                btn2.innerHTML = 'إزالة الكرت الثاني';
                 btn2.style.backgroundColor = '#e74c3c';
                 initTable2(Math.max(24, sessions.length));
             } else {
                 sheet2.style.display = 'none';
-                btn2.innerHTML = '➕ إضافة كرت ثاني (13 - 24)';
+                btn2.innerHTML = 'إضافة كرت ثاني';
                 btn2.style.backgroundColor = '#27ae60';
                 initTable2(24);
             }
