@@ -25,7 +25,7 @@
             font-family: 'Cairo', sans-serif;
             background-color: var(--bg-color);
             margin: 0;
-            padding: 20px;
+            padding: 20px 20px 100px 20px;
             color: var(--text-dark);
         }
 
@@ -69,20 +69,13 @@
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
         .schedule-table tr:last-child td { border-bottom: none; }
         
-        /* التايمر والأزرار */
-        .timer-container { display: flex; align-items: center; gap: 8px; }
-        .timer-display { font-weight: 800; font-size: 16px; font-family: monospace; min-width: 50px; }
-        .btn-timer { background-color: var(--warning); color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 12px; }
-        .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-
+        /* الأزرار والشارات */
         .action-btns { display: flex; gap: 5px; align-items: center;}
         .action-btns button { background: #f1f2f6; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px; }
         .action-btns button:hover { background: var(--border); }
         .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; }
         .btn-book-next:hover { background-color: #7ab033 !important; }
 
-        /* الشارات */
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-kashf { background-color: var(--primary-blue); }
         .badge-motab3a { background-color: var(--primary-green); }
@@ -92,15 +85,28 @@
         .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
         .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
 
-        /* النوافذ المنبثقة (Modals & Loader) */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
-            display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px);
+        /* التايمر العائم المنفصل */
+        .floating-timer {
+            position: fixed; bottom: 25px; left: 25px; background: white; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 2px solid var(--primary-blue);
+            width: 240px; z-index: 100; overflow: hidden;
         }
-        .modal-box {
-            background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease;
-        }
+        .timer-header { background: var(--primary-blue); color: white; padding: 10px; text-align: center; font-weight: bold; font-size: 15px; }
+        .timer-body { padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .timer-display-global { font-size: 40px; font-weight: 800; font-family: monospace; color: var(--text-dark); line-height: 1; }
+        .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .timer-select { width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border); font-family: 'Cairo'; font-weight: 600; font-size: 14px; outline: none;}
+        .timer-controls { display: flex; gap: 10px; width: 100%; }
+        .timer-controls button { border: none; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; color: white; transition: 0.2s; padding: 8px;}
+        .btn-play { background: var(--primary-blue); flex: 1; font-size: 14px;}
+        .btn-reset { background: #95a5a6; width: 45px; font-size: 16px;}
+        .btn-reset:hover { background: #7f8c8d; }
+
+        /* النوافذ المنبثقة */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease; }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-box h3 { margin-top: 0; font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 10px;}
         .modal-box p { color: var(--text-dark); margin-bottom: 20px; line-height: 1.6; font-size: 15px; font-weight: 600;}
@@ -109,10 +115,7 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         
-        .loader-spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto;
-        }
+        .loader-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
@@ -124,7 +127,7 @@
         <div class="header-section">
             <div>
                 <h1>الجدول اليومي للحجوزات</h1>
-                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والمزامنة السحابية ☁️</span>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والمزامنة السحابية</span>
             </div>
             <input type="date" id="todayDate" class="date-picker" onchange="loadDataFromGoogle()">
         </div>
@@ -173,13 +176,32 @@
                     <th>القسم</th>
                     <th>النوع</th>
                     <th>الدفع</th>
-                    <th>مؤقت المتابعة</th>
                     <th>إجراءات / ترتيب</th>
                 </tr>
             </thead>
             <tbody id="scheduleBody">
             </tbody>
         </table>
+    </div>
+
+    <!-- التايمر العائم المنفصل -->
+    <div class="floating-timer" id="floatingTimer">
+        <div class="timer-header">
+            <i class="fa-solid fa-stopwatch"></i> مؤقت العيادة
+        </div>
+        <div class="timer-body">
+            <div class="timer-display-global" id="globalTimerDisplay">10:00</div>
+            <select id="timerDuration" class="timer-select" onchange="resetGlobalTimer()">
+                <option value="5">5 دقائق</option>
+                <option value="10" selected>10 دقائق (متابعة)</option>
+                <option value="15">15 دقيقة</option>
+                <option value="30">30 دقيقة (جلسة)</option>
+            </select>
+            <div class="timer-controls">
+                <button class="btn-play" id="btnTimerPlay" onclick="toggleGlobalTimer()"><i class="fa-solid fa-play"></i> تشغيل</button>
+                <button class="btn-reset" onclick="resetGlobalTimer()" title="إعادة ضبط"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+        </div>
     </div>
 
     <!-- النافذة المنبثقة للتنبيهات -->
@@ -206,10 +228,10 @@
     </div>
 
     <script>
-        // رابط جوجل سكريبت الأحدث
+        // رابط جوجل سكريبت 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
 
-        // ضبط التاريخ بناءً على التوقيت المحلي الفعلي لجهاز المستخدم (مصر)
+        // ضبط التاريخ بناءً على التوقيت المحلي
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -222,15 +244,104 @@
             select.addEventListener('change', function() { this.style.color = 'var(--text-dark)'; });
         });
 
+        // ================= الذكاء الاصطناعي لاختيار القسم =================
+        function smartSelectDepartment() {
+            const currentDay = now.getDay(); // 0 = الأحد, 1 = الإثنين, 2 = الثلاثاء, ... 6 = السبت
+            const deptSelect = document.getElementById('department');
+            let defaultDept = "";
+
+            if (currentDay === 1 || currentDay === 3) { // الإثنين أو الأربعاء
+                defaultDept = "علاج طبيعي";
+            } else if (currentDay === 2) { // الثلاثاء
+                defaultDept = "تغذية علاجية";
+            }
+            // يوم السبت تم حذفه لتكون الخانة فارغة ويتم الاختيار يدويا
+
+            if (defaultDept !== "") {
+                deptSelect.value = defaultDept;
+                deptSelect.style.color = "var(--text-dark)";
+            } else {
+                deptSelect.value = "";
+                deptSelect.style.color = "#7f8c8d";
+            }
+        }
+        // ==================================================================
+
+        // ================= التايمر العائم المستقل =================
+        let globalTimerInterval = null;
+        let globalTimeLeft = 600; // 10 دقائق افتراضي
+        let isGlobalTimerRunning = false;
+
+        function formatTime(seconds) {
+            let m = Math.floor(seconds / 60);
+            let s = seconds % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function updateGlobalTimerDisplay() {
+            const display = document.getElementById('globalTimerDisplay');
+            display.innerText = formatTime(globalTimeLeft);
+            if (globalTimeLeft <= 0) {
+                display.classList.add('timer-urgent');
+            } else {
+                display.classList.remove('timer-urgent');
+            }
+        }
+
+        function toggleGlobalTimer() {
+            const btn = document.getElementById('btnTimerPlay');
+            
+            if (isGlobalTimerRunning) {
+                // إيقاف مؤقت
+                clearInterval(globalTimerInterval);
+                isGlobalTimerRunning = false;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> استكمال';
+                btn.style.backgroundColor = 'var(--primary-blue)';
+            } else {
+                // تشغيل
+                if (globalTimeLeft <= 0) resetGlobalTimer(); // لو كان صفر يرست نفسه الأول
+                
+                isGlobalTimerRunning = true;
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i> إيقاف';
+                btn.style.backgroundColor = 'var(--warning)';
+
+                globalTimerInterval = setInterval(() => {
+                    globalTimeLeft--;
+                    updateGlobalTimerDisplay();
+
+                    if (globalTimeLeft <= 0) {
+                        clearInterval(globalTimerInterval);
+                        isGlobalTimerRunning = false;
+                        btn.innerHTML = '<i class="fa-solid fa-play"></i> تشغيل';
+                        btn.style.backgroundColor = 'var(--primary-blue)';
+                        
+                        showModal({ type: 'warning', title: 'انتهى الوقت!', message: `يرجى الانتباه، لقد انتهى وقت المريض الحالي بالداخل.` });
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetGlobalTimer() {
+            clearInterval(globalTimerInterval);
+            isGlobalTimerRunning = false;
+            
+            const btn = document.getElementById('btnTimerPlay');
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> تشغيل';
+            btn.style.backgroundColor = 'var(--primary-blue)';
+
+            const mins = parseInt(document.getElementById('timerDuration').value);
+            globalTimeLeft = mins * 60;
+            updateGlobalTimerDisplay();
+        }
+        // ==========================================================
+
         // دوال النوافذ المنبثقة والتحميل
         function showLoader(text) {
             document.getElementById('loaderText').innerText = text;
             document.getElementById('loaderModal').style.display = 'flex';
         }
         
-        function hideLoader() {
-            document.getElementById('loaderModal').style.display = 'none';
-        }
+        function hideLoader() { document.getElementById('loaderModal').style.display = 'none'; }
 
         function showModal(options) {
             const modal = document.getElementById('customModal');
@@ -274,8 +385,6 @@
         }
 
         // ================= الاتصال بجوجل شيت =================
-        
-        // 1. جلب البيانات من جوجل
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
             showLoader('جاري جلب البيانات...');
@@ -284,39 +393,32 @@
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow', // لتخطي مشكلة الـ CORS والـ Redirect
+                    redirect: 'follow',
                     body: JSON.stringify({ action: 'GET_DATA', date: date })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`خطأ في السيرفر: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`خطأ في السيرفر: ${response.status}`);
                 
                 let textResult = await response.text();
-                
                 try {
                     let result = JSON.parse(textResult);
                     if(result.status === 'success') {
                         patientsQueue = result.data.map(p => ({
-                            name: p.name, dept: p.dept, type: p.type, payment: p.payment,
-                            timerId: null, timeLeft: 600, hasTimer: (p.type === 'متابعة')
+                            name: p.name, dept: p.dept, type: p.type, payment: p.payment
                         }));
                         renderTable();
                     } else {
                         throw new Error(result.message || "خطأ غير معروف من جوجل");
                     }
                 } catch(parseError) {
-                    throw new Error("جوجل لم يرسل بيانات صحيحة (تأكد من الصلاحيات و تحديث رابط النشر).");
+                    throw new Error("جوجل لم يرسل بيانات صحيحة.");
                 }
-                
             } catch(e) {
                 showModal({type: 'error', title: 'تفاصيل الخطأ', message: e.message});
-                console.error(e);
             }
             hideLoader();
         }
 
-        // 2. حفظ البيانات في جوجل
         async function syncDataToGoogle() {
             const date = document.getElementById('todayDate').value;
             showLoader('جاري حفظ الجدول...');
@@ -329,7 +431,7 @@
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow', // لتخطي مشكلة الـ CORS والـ Redirect
+                    redirect: 'follow',
                     body: JSON.stringify({ action: 'SYNC_DATA', date: date, data: cleanData })
                 });
             } catch(e) {
@@ -351,18 +453,17 @@
                 return; 
             }
             
-            patientsQueue.push({ 
-                name, dept, type, payment, timerId: null, timeLeft: 600, hasTimer: (type === 'متابعة') 
-            });
+            patientsQueue.push({ name, dept, type, payment });
             
             document.getElementById('patientName').value = '';
-            document.getElementById('department').value = '';
+            smartSelectDepartment(); 
             document.getElementById('visitType').value = '';
             document.getElementById('paymentStatus').value = '';
-            document.querySelectorAll('select').forEach(select => select.style.color = '#7f8c8d');
+            document.getElementById('visitType').style.color = '#7f8c8d';
+            document.getElementById('paymentStatus').style.color = '#7f8c8d';
 
             renderTable();
-            await syncDataToGoogle(); // مزامنة فورية
+            await syncDataToGoogle();
         }
 
         function renderTable() {
@@ -374,24 +475,6 @@
                 let badgeDeptClass = patient.dept === 'تغذية علاجية' ? 'badge-dept-nutrition' : 'badge-dept-physio';
                 let payClass = (patient.payment === 'تم الدفع' || patient.payment === 'مدفوع مسبقاً') ? 'status-paid' : 'status-unpaid';
 
-                let timerHtml = '';
-                if (patient.hasTimer) {
-                    let m = Math.floor(patient.timeLeft / 60);
-                    let s = patient.timeLeft % 60;
-                    let timeString = `${m}:${s < 10 ? '0' : ''}${s}`;
-
-                    timerHtml = `
-                        <div class="timer-container">
-                            <span class="timer-display ${patient.timeLeft <= 0 ? 'timer-urgent' : ''}" id="timer-${index}">${timeString}</span>
-                            <button class="btn-timer" onclick="startTimer(${index})" ${patient.timerId || patient.timeLeft <= 0 ? 'disabled' : ''}>
-                                <i class="fa-solid fa-play"></i> بدء
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    timerHtml = '<span style="color: #95a5a6; font-size: 13px; font-weight: 600;">بدون مؤقت</span>';
-                }
-
                 let row = `
                     <tr>
                         <td style="font-weight:bold; color:var(--primary-blue)">#${index + 1}</td>
@@ -399,7 +482,6 @@
                         <td><span class="badge ${badgeDeptClass}">${patient.dept}</span></td>
                         <td><span class="badge ${badgeTypeClass}">${patient.type}</span></td>
                         <td class="${payClass}">${patient.payment}</td>
-                        <td>${timerHtml}</td>
                         <td>
                             <div class="action-btns">
                                 <button title="رفع" onclick="moveUp(${index})"><i class="fa-solid fa-arrow-up"></i></button>
@@ -437,7 +519,6 @@
         }
 
         async function removePatient(index) {
-            if(patientsQueue[index].timerId) clearInterval(patientsQueue[index].timerId);
             patientsQueue.splice(index, 1);
             renderTable();
             await syncDataToGoogle();
@@ -457,7 +538,7 @@
                             await fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                                redirect: 'follow', // لتخطي مشكلة الـ CORS والـ Redirect
+                                redirect: 'follow',
                                 body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept })
                             });
                             
@@ -475,28 +556,6 @@
             });
         }
 
-        function startTimer(index) {
-            if (patientsQueue[index].timerId) return;
-            
-            patientsQueue[index].timerId = setInterval(() => {
-                patientsQueue[index].timeLeft--;
-                
-                let m = Math.floor(patientsQueue[index].timeLeft / 60);
-                let s = patientsQueue[index].timeLeft % 60;
-                let display = document.getElementById(`timer-${index}`);
-                
-                if(display) display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-
-                if (patientsQueue[index].timeLeft <= 0) {
-                    clearInterval(patientsQueue[index].timerId);
-                    if(display) { display.innerText = "00:00"; display.classList.add('timer-urgent'); }
-                    showModal({ type: 'warning', title: 'انتهى الوقت!', message: `وقت المتابعة للمريض <strong>${patientsQueue[index].name}</strong> انتهى!` });
-                    renderTable();
-                }
-            }, 1000);
-            renderTable();
-        }
-
         function getNextWeekDate() {
             let nextWeek = new Date();
             nextWeek.setDate(nextWeek.getDate() + 7);
@@ -506,8 +565,12 @@
             return `${year}-${month}-${day}`;
         }
 
-        // جلب بيانات اليوم تلقائياً عند فتح الصفحة
-        window.onload = loadDataFromGoogle;
+        // عند فتح الصفحة لأول مرة
+        window.onload = () => {
+            smartSelectDepartment(); // اختيار القسم بذكاء
+            resetGlobalTimer(); // تهيئة التايمر المستقل
+            loadDataFromGoogle(); // جلب البيانات
+        };
 
     </script>
 </body>
