@@ -280,18 +280,32 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: 'GET_DATA', date: date })
                 });
-                let result = await response.json();
                 
-                if(result.status === 'success') {
-                    // تحضير البيانات وإضافة خصائص التايمر لكل مريض
-                    patientsQueue = result.data.map(p => ({
-                        name: p.name, dept: p.dept, type: p.type, payment: p.payment,
-                        timerId: null, timeLeft: 600, hasTimer: (p.type === 'متابعة')
-                    }));
-                    renderTable();
+                // هنشوف لو جوجل رجع صفحة خطأ بدل البيانات
+                if (!response.ok) {
+                    throw new Error(`خطأ في السيرفر: ${response.status}`);
                 }
+                
+                let textResult = await response.text();
+                
+                try {
+                    let result = JSON.parse(textResult);
+                    if(result.status === 'success') {
+                        patientsQueue = result.data.map(p => ({
+                            name: p.name, dept: p.dept, type: p.type, payment: p.payment,
+                            timerId: null, timeLeft: 600, hasTimer: (p.type === 'متابعة')
+                        }));
+                        renderTable();
+                    } else {
+                        throw new Error(result.message || "خطأ غير معروف من جوجل");
+                    }
+                } catch(parseError) {
+                    throw new Error("جوجل لم يرسل بيانات صحيحة (تأكد من تحديث رابط النشر والصلاحيات).");
+                }
+                
             } catch(e) {
-                showModal({type: 'error', title: 'خطأ اتصال', message: 'لم نتمكن من جلب البيانات، تأكد من اتصال الإنترنت.'});
+                showModal({type: 'error', title: 'تفاصيل الخطأ', message: e.message});
+                console.error(e);
             }
             hideLoader();
         }
@@ -302,7 +316,6 @@
             showLoader('جاري حفظ الجدول...');
             
             try {
-                // إرسال البيانات الأساسية فقط (بدون مؤقتات المتصفح)
                 let cleanData = patientsQueue.map(p => ({
                     name: p.name, dept: p.dept, type: p.type, payment: p.payment
                 }));
@@ -434,14 +447,12 @@
                     if(confirmDate) {
                         showLoader('جاري تسجيل الموعد الجديد...');
                         try {
-                            // إرسال الموعد الجديد لجوجل
                             await fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                                 body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept })
                             });
                             
-                            // حذف المريض من اليوم الحالي ومزامنة الجدول
                             patientsQueue.splice(index, 1);
                             renderTable();
                             await syncDataToGoogle();
