@@ -43,6 +43,17 @@
 
         .container { max-width: 1100px; margin: 0 auto; }
 
+        /* شريط المزامنة في الخلفية (الجديد) */
+        .sync-indicator {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            background-color: var(--primary-blue); color: white; padding: 6px 15px;
+            border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000;
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .sync-indicator.show { opacity: 1; visibility: visible; }
+        .sync-indicator i { animation: spin 1s linear infinite; }
+
         .header-section {
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white; padding: 20px; border-radius: 12px;
@@ -174,12 +185,16 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         
-        .loader-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
+
+    <!-- شريط حالة المزامنة غير المعطل (الجديد) -->
+    <div id="syncIndicator" class="sync-indicator">
+        <i class="fa-solid fa-spinner"></i> <span id="syncIndicatorText">جاري الحفظ...</span>
+    </div>
 
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
@@ -196,7 +211,7 @@
         <div class="header-section">
             <div>
                 <h1>الجدول اليومي للحجوزات</h1>
-                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والمزامنة السحابية</span>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والمزامنة السحابية <i class="fa-solid fa-cloud"></i></span>
             </div>
             
             <div class="header-controls">
@@ -256,7 +271,7 @@
         </table>
     </div>
 
-    <!-- التايمر العائم المنفصل -->
+    <!-- التايمر العائم -->
     <div class="floating-timer" id="floatingTimer">
         <div class="timer-header">
             <i class="fa-solid fa-stopwatch" id="timerIcon" title="مؤقت العيادة"></i>
@@ -278,6 +293,7 @@
         </div>
     </div>
 
+    <!-- النوافذ المنبثقة للتأكيد والأخطاء فقط -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -289,13 +305,6 @@
                 <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
                 <button id="modalCancelBtn" class="btn-cancel" style="display: none;">إلغاء</button>
             </div>
-        </div>
-    </div>
-
-    <div id="loaderModal" class="modal-overlay" style="z-index: 1100;">
-        <div class="modal-box" style="background: transparent; box-shadow: none; max-width: 200px;">
-            <div class="loader-spinner"></div>
-            <h3 id="loaderText" style="color: white; font-size: 16px; text-shadow: 1px 1px 2px black;">جاري المزامنة...</h3>
         </div>
     </div>
 
@@ -321,9 +330,8 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-
         // رابط جوجل سكريبت 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2n_H_incPXfiUmj00pG8J5Zd6OtwQXHPn59He6JksDkS4isdacEdSMM_ZlQFSoW7w/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
 
         const now = new Date();
         const year = now.getFullYear();
@@ -404,9 +412,7 @@
                         display.classList.add('time-ended');
                         document.getElementById('timerIcon').classList.add('time-ended');
                         
-                        // إخفاء زرار التشغيل زي ما طلبت ومفيش نافذة منبثقة هتطلع
                         document.getElementById('btnTimerPlay').style.display = 'none';
-                        
                     } else {
                         updateGlobalTimerDisplay();
                     }
@@ -432,12 +438,17 @@
             updateGlobalTimerDisplay();
         }
 
-        function showLoader(text) {
-            document.getElementById('loaderText').innerText = text;
-            document.getElementById('loaderModal').style.display = 'flex';
+        // ================= دوال التحكم في شريط المزامنة الجديد =================
+        function showSyncStatus(text) {
+            const indicator = document.getElementById('syncIndicator');
+            document.getElementById('syncIndicatorText').innerText = text;
+            indicator.classList.add('show');
         }
-        
-        function hideLoader() { document.getElementById('loaderModal').style.display = 'none'; }
+
+        function hideSyncStatus() {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.classList.remove('show');
+        }
 
         function showModal(options) {
             const modal = document.getElementById('customModal');
@@ -483,7 +494,7 @@
         // ================= الاتصال بجوجل شيت =================
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
-            showLoader('جاري جلب البيانات...');
+            showSyncStatus('جاري جلب البيانات...');
             
             try {
                 let response = await fetch(SCRIPT_URL, {
@@ -507,17 +518,17 @@
                         throw new Error(result.message || "خطأ غير معروف من جوجل");
                     }
                 } catch(parseError) {
-                    throw new Error("جوجل لم يرسل بيانات صحيحة.");
+                    throw new Error("تأكد من إعدادات النشر (New Version) في جوجل سكريبت.");
                 }
             } catch(e) {
-                showModal({type: 'error', title: 'تفاصيل الخطأ', message: e.message});
+                showModal({type: 'error', title: 'فشل جلب البيانات', message: e.message});
             }
-            hideLoader();
+            hideSyncStatus();
         }
 
         async function syncDataToGoogle() {
             const date = document.getElementById('todayDate').value;
-            showLoader('جاري حفظ الجدول...');
+            showSyncStatus('جاري الحفظ في الشيت...');
             
             try {
                 let cleanData = patientsQueue.map(p => ({
@@ -535,23 +546,23 @@
                 let result = JSON.parse(textResult);
                 
                 if(result.status !== 'success') {
-                    throw new Error(result.message || "فشل الحفظ في جوجل شيت");
+                    throw new Error(result.message || "فشل الحفظ");
                 }
             } catch(e) {
                 console.error("فشل المزامنة", e);
-                // التنبيه ده هيظهرلك لو الداتا ماتسجلتش عشان متعملش ريفرش وتضيع
                 showModal({
                     type: 'error', 
-                    title: 'مشكلة في الحفظ!', 
-                    message: 'المريض متسجلش في جوجل شيت! تأكد إنك حطيت كود السيرفر الأخير وعملت (New Version) في جوجل سكريبت.'
+                    title: 'لم يتم الحفظ!', 
+                    message: 'حدث خطأ أثناء حفظ الجدول في الشيت، يرجى التأكد من اتصال الإنترنت أو إعدادات السكريبت.'
                 });
             }
-            hideLoader();
+            hideSyncStatus();
         }
 
-        // =====================================================
+        // ================= العمليات المباشرة =================
 
-        async function addPatient() {
+        // إزالة كلمة async من هنا لضمان عمل الواجهة فورا قبل الحفظ
+        function addPatient() {
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
             const type = document.getElementById('visitType').value;
@@ -571,8 +582,11 @@
             document.getElementById('visitType').style.color = '#7f8c8d';
             document.getElementById('paymentStatus').style.color = '#7f8c8d';
 
+            // التحديث الفوري للواجهة
             renderTable();
-            await syncDataToGoogle();
+            
+            // طلب الحفظ في الخلفية دون انتظار أو تعطيل للمستخدم
+            syncDataToGoogle();
         }
 
         function renderTable() {
@@ -607,30 +621,30 @@
             });
         }
 
-        async function moveUp(index) {
+        function moveUp(index) {
             if (index > 0) {
                 let temp = patientsQueue[index];
                 patientsQueue[index] = patientsQueue[index - 1];
                 patientsQueue[index - 1] = temp;
                 renderTable();
-                await syncDataToGoogle();
+                syncDataToGoogle();
             }
         }
 
-        async function moveDown(index) {
+        function moveDown(index) {
             if (index < patientsQueue.length - 1) {
                 let temp = patientsQueue[index];
                 patientsQueue[index] = patientsQueue[index + 1];
                 patientsQueue[index + 1] = temp;
                 renderTable();
-                await syncDataToGoogle();
+                syncDataToGoogle();
             }
         }
 
-        async function removePatient(index) {
+        function removePatient(index) {
             patientsQueue.splice(index, 1);
             renderTable();
-            await syncDataToGoogle();
+            syncDataToGoogle();
         }
 
         function bookNextVisit(index) {
@@ -642,7 +656,7 @@
                 inputValue: getNextWeekDate(),
                 onConfirm: async (confirmDate) => {
                     if(confirmDate) {
-                        showLoader('جاري تسجيل الموعد الجديد...');
+                        showSyncStatus('جاري تسجيل الموعد...');
                         try {
                             let response = await fetch(SCRIPT_URL, {
                                 method: 'POST',
@@ -658,13 +672,13 @@
 
                             patientsQueue.splice(index, 1);
                             renderTable();
-                            await syncDataToGoogle();
+                            syncDataToGoogle();
                             
                             showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة يوم ${confirmDate}` });
                         } catch (e) {
-                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد. تأكد من تحديث كود السيرفر.' });
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد. تأكد من اتصالك بالإنترنت.' });
                         }
-                        hideLoader();
+                        hideSyncStatus();
                     }
                 }
             });
