@@ -140,8 +140,8 @@
         .floating-timer {
             position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.25); border: 1px solid var(--border);
-            z-index: 100; overflow: hidden; display: flex; align-items: stretch; /* stretch بدلا من center لضبط الارتفاع */
-            transition: background-color 0.3s; height: 50px; /* تحديد ارتفاع ثابت للبانل */
+            z-index: 100; overflow: hidden; display: flex; align-items: stretch; 
+            transition: background-color 0.3s; height: 50px; 
         }
         .timer-header {
             background: var(--primary-blue); color: white; padding: 0 15px; 
@@ -152,8 +152,12 @@
             background: var(--card-bg); transition: background-color 0.3s;
         }
         .timer-display-global { font-size: 24px; font-weight: 800; font-family: monospace; color: var(--text-dark); min-width: 80px; text-align: center;}
-        .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        
+        /* تأثيرات انتهاء الوقت */
+        .time-ended { color: var(--danger) !important; animation: blink 1s infinite; }
+        .timer-display-global.time-ended { font-size: 15px; font-family: 'Cairo', sans-serif; font-weight: 700; }
+        
+        @keyframes blink { 50% { opacity: 0.3; } }
         
         .timer-select { 
             padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); 
@@ -263,10 +267,10 @@
         </table>
     </div>
 
-    <!-- التايمر العائم المنفصل - أفقي ومضبوط -->
+    <!-- التايمر العائم المنفصل -->
     <div class="floating-timer" id="floatingTimer">
         <div class="timer-header">
-            <i class="fa-solid fa-stopwatch" title="مؤقت العيادة"></i>
+            <i class="fa-solid fa-stopwatch" id="timerIcon" title="مؤقت العيادة"></i>
         </div>
         <div class="timer-body">
             <div class="timer-display-global" id="globalTimerDisplay">10:00</div>
@@ -351,17 +355,16 @@
 
         // ================= الذكاء الاصطناعي لاختيار القسم =================
         function smartSelectDepartment() {
-            const currentDay = now.getDay(); // 0 = الأحد, 1 = الإثنين, 2 = الثلاثاء, ... 6 = السبت
+            const currentDay = now.getDay(); 
             const deptSelect = document.getElementById('department');
             let defaultDept = "";
 
-            if (currentDay === 1 || currentDay === 3) { // الإثنين أو الأربعاء
+            if (currentDay === 1 || currentDay === 3) { 
                 defaultDept = "علاج طبيعي";
-            } else if (currentDay === 2) { // الثلاثاء
+            } else if (currentDay === 2) { 
                 defaultDept = "تغذية علاجية";
             }
-            // يوم السبت تم حذفه لتكون الخانة فارغة ويتم الاختيار يدويا
-
+            
             if (defaultDept !== "") {
                 deptSelect.value = defaultDept;
                 deptSelect.style.color = "var(--text-dark)";
@@ -370,11 +373,10 @@
                 deptSelect.style.color = "#7f8c8d";
             }
         }
-        // ==================================================================
 
         // ================= التايمر العائم المستقل =================
         let globalTimerInterval = null;
-        let globalTimeLeft = 600; // 10 دقائق افتراضي
+        let globalTimeLeft = 600; 
         let isGlobalTimerRunning = false;
 
         function formatTime(seconds) {
@@ -385,11 +387,11 @@
 
         function updateGlobalTimerDisplay() {
             const display = document.getElementById('globalTimerDisplay');
-            display.innerText = formatTime(globalTimeLeft);
-            if (globalTimeLeft <= 0) {
-                display.classList.add('timer-urgent');
-            } else {
-                display.classList.remove('timer-urgent');
+            if(globalTimeLeft > 0) {
+                display.innerText = formatTime(globalTimeLeft);
+                display.classList.remove('time-ended');
+                document.getElementById('timerIcon').classList.remove('time-ended');
+                document.getElementById('btnTimerPlay').style.display = 'flex';
             }
         }
 
@@ -404,7 +406,7 @@
                 btn.style.backgroundColor = 'var(--primary-blue)';
             } else {
                 // تشغيل
-                if (globalTimeLeft <= 0) resetGlobalTimer(); // لو كان صفر يرست نفسه الأول
+                if (globalTimeLeft <= 0) resetGlobalTimer(); 
                 
                 isGlobalTimerRunning = true;
                 btn.innerHTML = 'إيقاف';
@@ -412,15 +414,23 @@
 
                 globalTimerInterval = setInterval(() => {
                     globalTimeLeft--;
-                    updateGlobalTimerDisplay();
-
+                    
                     if (globalTimeLeft <= 0) {
                         clearInterval(globalTimerInterval);
                         isGlobalTimerRunning = false;
-                        btn.innerHTML = 'تشغيل';
-                        btn.style.backgroundColor = 'var(--primary-blue)';
+                        
+                        // تغيير الشاشة لـ (انتهى الوقت)
+                        const display = document.getElementById('globalTimerDisplay');
+                        display.innerText = 'انتهى الوقت';
+                        display.classList.add('time-ended');
+                        document.getElementById('timerIcon').classList.add('time-ended');
+                        
+                        // إخفاء زرار التشغيل
+                        document.getElementById('btnTimerPlay').style.display = 'none';
                         
                         showModal({ type: 'warning', title: 'انتهى الوقت!', message: `يرجى الانتباه، لقد انتهى الوقت المحدد للمريض الحالي.` });
+                    } else {
+                        updateGlobalTimerDisplay();
                     }
                 }, 1000);
             }
@@ -430,15 +440,21 @@
             clearInterval(globalTimerInterval);
             isGlobalTimerRunning = false;
             
+            // إرجاع زرار التشغيل لحالته الطبيعية
             const btn = document.getElementById('btnTimerPlay');
+            btn.style.display = 'flex';
             btn.innerHTML = 'تشغيل';
             btn.style.backgroundColor = 'var(--primary-blue)';
+
+            // إزالة الألوان الحمراء والتأثيرات
+            const display = document.getElementById('globalTimerDisplay');
+            display.classList.remove('time-ended');
+            document.getElementById('timerIcon').classList.remove('time-ended');
 
             const mins = parseInt(document.getElementById('timerDuration').value);
             globalTimeLeft = mins * 60;
             updateGlobalTimerDisplay();
         }
-        // ==========================================================
 
         // دوال النوافذ المنبثقة والتحميل
         function showLoader(text) {
