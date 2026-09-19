@@ -43,7 +43,6 @@
 
         .container { max-width: 1100px; margin: 0 auto; }
 
-        /* شريط المزامنة في الخلفية (الجديد) */
         .sync-indicator {
             position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
             background-color: var(--primary-blue); color: white; padding: 6px 15px;
@@ -191,11 +190,12 @@
 </head>
 <body>
 
-    <!-- شريط حالة المزامنة غير المعطل (الجديد) -->
+    <!-- شريط حالة المزامنة -->
     <div id="syncIndicator" class="sync-indicator">
         <i class="fa-solid fa-spinner"></i> <span id="syncIndicatorText">جاري الحفظ...</span>
     </div>
 
+    <!-- سويتش الدارك مود -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
@@ -207,7 +207,6 @@
     </div>
 
     <div class="container">
-        
         <div class="header-section">
             <div>
                 <h1>الجدول اليومي للحجوزات</h1>
@@ -293,7 +292,7 @@
         </div>
     </div>
 
-    <!-- النوافذ المنبثقة للتأكيد والأخطاء فقط -->
+    <!-- النوافذ المنبثقة للتأكيد والأخطاء -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -331,7 +330,7 @@
         toggleSwitch.addEventListener('change', switchTheme, false);
 
         // رابط جوجل سكريبت 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2n_H_incPXfiUmj00pG8J5Zd6OtwQXHPn59He6JksDkS4isdacEdSMM_ZlQFSoW7w/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
 
         const now = new Date();
         const year = now.getFullYear();
@@ -438,7 +437,6 @@
             updateGlobalTimerDisplay();
         }
 
-        // ================= دوال التحكم في شريط المزامنة الجديد =================
         function showSyncStatus(text) {
             const indicator = document.getElementById('syncIndicator');
             document.getElementById('syncIndicatorText').innerText = text;
@@ -504,24 +502,25 @@
                     body: JSON.stringify({ action: 'GET_DATA', date: date })
                 });
                 
-                if (!response.ok) throw new Error(`خطأ في السيرفر: ${response.status}`);
-                
                 let textResult = await response.text();
+                
+                let result;
                 try {
-                    let result = JSON.parse(textResult);
-                    if(result.status === 'success') {
-                        patientsQueue = result.data.map(p => ({
-                            name: p.name, dept: p.dept, type: p.type, payment: p.payment
-                        }));
-                        renderTable();
-                    } else {
-                        throw new Error(result.message || "خطأ غير معروف من جوجل");
-                    }
-                } catch(parseError) {
-                    throw new Error("تأكد من إعدادات النشر (New Version) في جوجل سكريبت.");
+                    result = JSON.parse(textResult);
+                } catch (e) {
+                    throw new Error("جوجل رفض الطلب. (تأكد إنك عملت New Version في السكريبت)");
+                }
+
+                if(result.status === 'success') {
+                    patientsQueue = result.data.map(p => ({
+                        name: p.name, dept: p.dept, type: p.type, payment: p.payment
+                    }));
+                    renderTable();
+                } else {
+                    throw new Error(result.message);
                 }
             } catch(e) {
-                showModal({type: 'error', title: 'فشل جلب البيانات', message: e.message});
+                showModal({type: 'error', title: 'تفاصيل المشكلة', message: e.message});
             }
             hideSyncStatus();
         }
@@ -543,25 +542,29 @@
                 });
 
                 let textResult = await response.text();
-                let result = JSON.parse(textResult);
+                
+                let result;
+                try {
+                    result = JSON.parse(textResult);
+                } catch (e) {
+                    throw new Error("جوجل رفض استقبال البيانات. (تأكد إنك عملت New Version)");
+                }
                 
                 if(result.status !== 'success') {
-                    throw new Error(result.message || "فشل الحفظ");
+                    throw new Error(result.message);
                 }
             } catch(e) {
                 console.error("فشل المزامنة", e);
+                // الكود الجديد هيطبعلك الخطأ الحقيقي هنا
                 showModal({
                     type: 'error', 
                     title: 'لم يتم الحفظ!', 
-                    message: 'حدث خطأ أثناء حفظ الجدول في الشيت، يرجى التأكد من اتصال الإنترنت أو إعدادات السكريبت.'
+                    message: `سبب الخطأ: <strong>${e.message}</strong>`
                 });
             }
             hideSyncStatus();
         }
 
-        // ================= العمليات المباشرة =================
-
-        // إزالة كلمة async من هنا لضمان عمل الواجهة فورا قبل الحفظ
         function addPatient() {
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
@@ -582,10 +585,7 @@
             document.getElementById('visitType').style.color = '#7f8c8d';
             document.getElementById('paymentStatus').style.color = '#7f8c8d';
 
-            // التحديث الفوري للواجهة
             renderTable();
-            
-            // طلب الحفظ في الخلفية دون انتظار أو تعطيل للمستخدم
             syncDataToGoogle();
         }
 
