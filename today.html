@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* الألوان الأساسية (الوضع الفاتح) */
         :root {
             --primary-blue: #0093D0;
             --primary-green: #8CC63F;
@@ -23,7 +22,6 @@
             --input-bg: #ffffff;
         }
 
-        /* ألوان الوضع الليلي (الدارك مود) */
         :root[data-theme="dark"] {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
@@ -45,7 +43,6 @@
 
         .container { max-width: 1100px; margin: 0 auto; }
 
-        /* الهيدر */
         .header-section {
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white; padding: 20px; border-radius: 12px;
@@ -62,7 +59,6 @@
         }
         .date-picker::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 
-        /* زرار السويتش بتاع الدارك مود (عائم أسفل اليمين) */
         .theme-switch-wrapper { 
             position: fixed; bottom: 20px; right: 20px; z-index: 100;
             background: var(--card-bg); padding: 8px 12px; border-radius: 30px;
@@ -85,7 +81,6 @@
         input:checked + .slider { background-color: #34495e; }
         input:checked + .slider:before { transform: translateX(28px); }
 
-        /* لوحة الإضافة */
         .add-patient-card {
             background: var(--card-bg); padding: 20px; border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px;
@@ -107,7 +102,6 @@
         }
         .btn-add:hover { background-color: #007bb5; }
 
-        /* الجدول */
         .schedule-table {
             width: 100%; background: var(--card-bg); border-radius: 12px; overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse;
@@ -117,7 +111,6 @@
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
         .schedule-table tr:last-child td { border-bottom: none; }
         
-        /* الأزرار والشارات */
         .action-btns { display: flex; gap: 5px; align-items: center;}
         .action-btns button { 
             background: var(--input-bg); border: 1px solid var(--border); padding: 6px 10px; 
@@ -136,7 +129,6 @@
         .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
         .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
 
-        /* التايمر العائم المنفصل - أفقي ومضبوط */
         .floating-timer {
             position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.25); border: 1px solid var(--border);
@@ -153,7 +145,6 @@
         }
         .timer-display-global { font-size: 24px; font-weight: 800; font-family: monospace; color: var(--text-dark); min-width: 80px; text-align: center;}
         
-        /* تأثيرات انتهاء الوقت */
         .time-ended { color: var(--danger) !important; animation: blink 1s infinite; }
         .timer-display-global.time-ended { font-size: 15px; font-family: 'Cairo', sans-serif; font-weight: 700; }
         
@@ -173,7 +164,6 @@
         .btn-reset { background: #95a5a6; font-size: 13px; justify-content: center; padding: 0 10px;}
         .btn-reset:hover { background: #7f8c8d; }
 
-        /* النوافذ المنبثقة */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease; transition: background-color 0.3s;}
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -191,7 +181,6 @@
 </head>
 <body>
 
-    <!-- زرار الدارك مود العائم (أسفل اليمين) -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
@@ -289,7 +278,6 @@
         </div>
     </div>
 
-    <!-- النافذة المنبثقة للتنبيهات -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -304,7 +292,6 @@
         </div>
     </div>
 
-    <!-- نافذة التحميل السحابي -->
     <div id="loaderModal" class="modal-overlay" style="z-index: 1100;">
         <div class="modal-box" style="background: transparent; box-shadow: none; max-width: 200px;">
             <div class="loader-spinner"></div>
@@ -313,7 +300,6 @@
     </div>
 
     <script>
-        // ================= كود الدارك مود (الوضع الليلي) =================
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
 
@@ -334,13 +320,11 @@
             }    
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
-        // =================================================================
 
 
         // رابط جوجل سكريبت 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
 
-        // ضبط التاريخ بناءً على التوقيت المحلي
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -353,7 +337,6 @@
             select.addEventListener('change', function() { this.style.color = 'var(--text-dark)'; });
         });
 
-        // ================= الذكاء الاصطناعي لاختيار القسم =================
         function smartSelectDepartment() {
             const currentDay = now.getDay(); 
             const deptSelect = document.getElementById('department');
@@ -374,7 +357,6 @@
             }
         }
 
-        // ================= التايمر العائم المستقل =================
         let globalTimerInterval = null;
         let globalTimeLeft = 600; 
         let isGlobalTimerRunning = false;
@@ -399,13 +381,11 @@
             const btn = document.getElementById('btnTimerPlay');
             
             if (isGlobalTimerRunning) {
-                // إيقاف مؤقت
                 clearInterval(globalTimerInterval);
                 isGlobalTimerRunning = false;
                 btn.innerHTML = 'استكمال';
                 btn.style.backgroundColor = 'var(--primary-blue)';
             } else {
-                // تشغيل
                 if (globalTimeLeft <= 0) resetGlobalTimer(); 
                 
                 isGlobalTimerRunning = true;
@@ -419,16 +399,14 @@
                         clearInterval(globalTimerInterval);
                         isGlobalTimerRunning = false;
                         
-                        // تغيير الشاشة لـ (انتهى الوقت)
                         const display = document.getElementById('globalTimerDisplay');
                         display.innerText = 'انتهى الوقت';
                         display.classList.add('time-ended');
                         document.getElementById('timerIcon').classList.add('time-ended');
                         
-                        // إخفاء زرار التشغيل
+                        // إخفاء زرار التشغيل زي ما طلبت ومفيش نافذة منبثقة هتطلع
                         document.getElementById('btnTimerPlay').style.display = 'none';
                         
-                        showModal({ type: 'warning', title: 'انتهى الوقت!', message: `يرجى الانتباه، لقد انتهى الوقت المحدد للمريض الحالي.` });
                     } else {
                         updateGlobalTimerDisplay();
                     }
@@ -440,13 +418,11 @@
             clearInterval(globalTimerInterval);
             isGlobalTimerRunning = false;
             
-            // إرجاع زرار التشغيل لحالته الطبيعية
             const btn = document.getElementById('btnTimerPlay');
             btn.style.display = 'flex';
             btn.innerHTML = 'تشغيل';
             btn.style.backgroundColor = 'var(--primary-blue)';
 
-            // إزالة الألوان الحمراء والتأثيرات
             const display = document.getElementById('globalTimerDisplay');
             display.classList.remove('time-ended');
             document.getElementById('timerIcon').classList.remove('time-ended');
@@ -456,7 +432,6 @@
             updateGlobalTimerDisplay();
         }
 
-        // دوال النوافذ المنبثقة والتحميل
         function showLoader(text) {
             document.getElementById('loaderText').innerText = text;
             document.getElementById('loaderModal').style.display = 'flex';
@@ -549,14 +524,27 @@
                     name: p.name, dept: p.dept, type: p.type, payment: p.payment
                 }));
                 
-                await fetch(SCRIPT_URL, {
+                let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     redirect: 'follow',
                     body: JSON.stringify({ action: 'SYNC_DATA', date: date, data: cleanData })
                 });
+
+                let textResult = await response.text();
+                let result = JSON.parse(textResult);
+                
+                if(result.status !== 'success') {
+                    throw new Error(result.message || "فشل الحفظ في جوجل شيت");
+                }
             } catch(e) {
                 console.error("فشل المزامنة", e);
+                // التنبيه ده هيظهرلك لو الداتا ماتسجلتش عشان متعملش ريفرش وتضيع
+                showModal({
+                    type: 'error', 
+                    title: 'مشكلة في الحفظ!', 
+                    message: 'المريض متسجلش في جوجل شيت! تأكد إنك حطيت كود السيرفر الأخير وعملت (New Version) في جوجل سكريبت.'
+                });
             }
             hideLoader();
         }
@@ -656,20 +644,25 @@
                     if(confirmDate) {
                         showLoader('جاري تسجيل الموعد الجديد...');
                         try {
-                            await fetch(SCRIPT_URL, {
+                            let response = await fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                                 redirect: 'follow',
                                 body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept })
                             });
                             
+                            let textResult = await response.text();
+                            let result = JSON.parse(textResult);
+                            
+                            if(result.status !== 'success') throw new Error();
+
                             patientsQueue.splice(index, 1);
                             renderTable();
                             await syncDataToGoogle();
                             
                             showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة يوم ${confirmDate}` });
                         } catch (e) {
-                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد.' });
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد. تأكد من تحديث كود السيرفر.' });
                         }
                         hideLoader();
                     }
@@ -686,11 +679,10 @@
             return `${year}-${month}-${day}`;
         }
 
-        // عند فتح الصفحة لأول مرة
         window.onload = () => {
-            smartSelectDepartment(); // اختيار القسم بذكاء
-            resetGlobalTimer(); // تهيئة التايمر المستقل
-            loadDataFromGoogle(); // جلب البيانات
+            smartSelectDepartment(); 
+            resetGlobalTimer(); 
+            loadDataFromGoogle(); 
         };
 
     </script>
