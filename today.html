@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول الحجوزات اليومي - عيادة د. آية خطاب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0093D0;
+            --primary-green: #8CC63F;
+            --dept-nutrition: #e67e22; 
+            --dept-physio: #27ae60;    
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --border: #e1e8ed;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header-section h1 { margin: 0; font-size: 24px; }
+        .date-picker { font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; outline: none; font-family: 'Cairo';}
+
+        .add-patient-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        .input-group input, .input-group select {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Cairo';
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); }
+
+        .btn-add {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 11px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Cairo';
+        }
+        .btn-add:hover { background-color: #007bb5; }
+
+        .schedule-table {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-collapse: collapse;
+        }
+
+        .schedule-table th, .schedule-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
+        .schedule-table tr:last-child td { border-bottom: none; }
+        
+        .timer-container { display: flex; align-items: center; gap: 8px; }
+        .timer-display { font-weight: 800; font-size: 16px; font-family: monospace; min-width: 50px; }
+        .btn-timer {
+            background-color: var(--warning); color: white; border: none; padding: 5px 8px;
+            border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 12px;
+        }
+        
+        .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .action-btns { display: flex; gap: 5px; align-items: center;}
+        .action-btns button {
+            background: #f1f2f6; border: none; padding: 6px 10px; border-radius: 5px;
+            cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px;
+        }
+        .action-btns button:hover { background: var(--border); }
+        
+        .btn-book-next {
+            background-color: var(--primary-green) !important;
+            color: white !important;
+            font-family: 'Cairo';
+            font-weight: 600;
+            font-size: 12px !important;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-book-next:hover { background-color: #7ab033 !important; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
+        .badge-kashf { background-color: var(--primary-blue); }
+        .badge-motab3a { background-color: var(--primary-green); }
+        .badge-galsa { background-color: #9b59b6; }
+        
+        .badge-dept-nutrition { background-color: var(--dept-nutrition); }
+        .badge-dept-physio { background-color: var(--dept-physio); }
+        
+        .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
+        .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="header-section">
+            <div>
+                <h1>الجدول اليومي للحجوزات</h1>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والوقت</span>
+            </div>
+            <input type="date" id="todayDate" class="date-picker" onchange="loadSchedule()">
+        </div>
+
+        <div class="add-patient-card">
+            <div class="input-group">
+                <label>اسم المريض</label>
+                <input type="text" id="patientName" placeholder="أدخل اسم المريض...">
+            </div>
+            <div class="input-group">
+                <label>القسم</label>
+                <select id="department">
+                    <option value="تغذية علاجية">تغذية علاجية</option>
+                    <option value="علاج طبيعي">علاج طبيعي</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>نوع الزيارة</label>
+                <select id="visitType">
+                    <option value="كشف">كشف جديد</option>
+                    <option value="متابعة">متابعة</option>
+                    <option value="جلسة">جلسة</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>حالة الدفع</label>
+                <select id="paymentStatus">
+                    <option value="تم الدفع">تم الدفع</option>
+                    <option value="لم يدفع">لم يدفع (آجل)</option>
+                    <option value="مدفوع مسبقاً">مدفوع مسبقاً</option>
+                </select>
+            </div>
+            <button class="btn-add" onclick="addPatient()">
+                <i class="fa-solid fa-plus"></i> إضافة
+            </button>
+        </div>
+
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>الدور</th>
+                    <th>الاسم</th>
+                    <th>القسم</th>
+                    <th>النوع</th>
+                    <th>الدفع</th>
+                    <th>مؤقت المتابعة</th>
+                    <th>إجراءات / ترتيب</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+            </tbody>
+        </table>
+
+    </div>
+
+    <script>
+        document.getElementById('todayDate').valueAsDate = new Date();
+
+        let patientsQueue = [];
+
+        function addPatient() {
+            const name = document.getElementById('patientName').value.trim();
+            const dept = document.getElementById('department').value;
+            const type = document.getElementById('visitType').value;
+            const payment = document.getElementById('paymentStatus').value;
+            
+            if(!name) { alert("رجاء إدخال اسم المريض"); return; }
+
+            // التايمر يظهر فقط للمتابعة (10 دقائق = 600 ثانية)
+            const hasTimer = (type === 'متابعة');
+            
+            patientsQueue.push({ 
+                name, 
+                dept, 
+                type, 
+                payment, 
+                timerId: null, 
+                timeLeft: 600,
+                hasTimer: hasTimer 
+            });
+            
+            document.getElementById('patientName').value = '';
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('scheduleBody');
+            tbody.innerHTML = '';
+
+            patientsQueue.forEach((patient, index) => {
+                let badgeTypeClass = patient.type === 'كشف' ? 'badge-kashf' : (patient.type === 'متابعة' ? 'badge-motab3a' : 'badge-galsa');
+                let badgeDeptClass = patient.dept === 'تغذية علاجية' ? 'badge-dept-nutrition' : 'badge-dept-physio';
+                let payClass = (patient.payment === 'تم الدفع' || patient.payment === 'مدفوع مسبقاً') ? 'status-paid' : 'status-unpaid';
+
+                let timerHtml = '';
+                if (patient.hasTimer) {
+                    let m = Math.floor(patient.timeLeft / 60);
+                    let s = patient.timeLeft % 60;
+                    let timeString = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+                    timerHtml = `
+                        <div class="timer-container">
+                            <span class="timer-display ${patient.timeLeft <= 0 ? 'timer-urgent' : ''}" id="timer-${index}">${timeString}</span>
+                            <button class="btn-timer" onclick="startTimer(${index})" ${patient.timerId || patient.timeLeft <= 0 ? 'disabled' : ''}>
+                                <i class="fa-solid fa-play"></i> بدء
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    timerHtml = '<span style="color: #95a5a6; font-size: 13px; font-weight: 600;">بدون مؤقت</span>';
+                }
+
+                let row = `
+                    <tr>
+                        <td style="font-weight:bold; color:var(--primary-blue)">#${index + 1}</td>
+                        <td style="font-weight:700">${patient.name}</td>
+                        <td><span class="badge ${badgeDeptClass}">${patient.dept}</span></td>
+                        <td><span class="badge ${badgeTypeClass}">${patient.type}</span></td>
+                        <td class="${payClass}">${patient.payment}</td>
+                        <td>${timerHtml}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button title="رفع لأعلى" onclick="moveUp(${index})"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button title="تنزيل لأسفل" onclick="moveDown(${index})"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button title="إنهاء الزيارة" style="color:var(--danger)" onclick="removePatient(${index})"><i class="fa-solid fa-check"></i></button>
+                                <button class="btn-book-next" title="دفع وحجز المتابعة القادمة" onclick="bookNextVisit(${index})">
+                                    <i class="fa-regular fa-calendar-check"></i> حجز متابعة
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function bookNextVisit(index) {
+            let patient = patientsQueue[index];
+            let confirmDate = prompt(`حجز متابعة للمريض: ${patient.name}\nالقسم: ${patient.dept}\n\nأدخل تاريخ المتابعة القادمة:`, getNextWeekDate());
+            
+            if (confirmDate) {
+                alert(`تم بنجاح! \nتم جدولة متابعة مدفوعة للمريض (${patient.name}) يوم ${confirmDate}\nقسم: ${patient.dept}`);
+                removePatient(index);
+            }
+        }
+
+        function moveUp(index) {
+            if (index > 0) {
+                let temp = patientsQueue[index];
+                patientsQueue[index] = patientsQueue[index - 1];
+                patientsQueue[index - 1] = temp;
+                renderTable();
+            }
+        }
+
+        function moveDown(index) {
+            if (index < patientsQueue.length - 1) {
+                let temp = patientsQueue[index];
+                patientsQueue[index] = patientsQueue[index + 1];
+                patientsQueue[index + 1] = temp;
+                renderTable();
+            }
+        }
+
+        function removePatient(index) {
+            if(patientsQueue[index].timerId) {
+                clearInterval(patientsQueue[index].timerId);
+            }
+            patientsQueue.splice(index, 1);
+            renderTable();
+        }
+
+        function startTimer(index) {
+            if (patientsQueue[index].timerId) return;
+            
+            patientsQueue[index].timerId = setInterval(() => {
+                patientsQueue[index].timeLeft--;
+                
+                let m = Math.floor(patientsQueue[index].timeLeft / 60);
+                let s = patientsQueue[index].timeLeft % 60;
+                let display = document.getElementById(`timer-${index}`);
+                
+                if(display) {
+                    display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                }
+
+                if (patientsQueue[index].timeLeft <= 0) {
+                    clearInterval(patientsQueue[index].timerId);
+                    if(display) {
+                        display.innerText = "00:00";
+                        display.classList.add('timer-urgent');
+                    }
+                    alert(`تنبيه للممرضة: وقت المتابعة للمريض (${patientsQueue[index].name}) انتهى! يرجى الاستئذان من الدكتورة.`);
+                    renderTable();
+                }
+            }, 1000);
+            renderTable();
+        }
+
+        function getNextWeekDate() {
+            let nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            return nextWeek.toISOString().split('T')[0];
+        }
+    </script>
+</body>
+</html>
