@@ -34,6 +34,7 @@
             margin: 0 auto;
         }
 
+        /* ---------------- الهيدر ---------------- */
         .header-section {
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white;
@@ -45,10 +46,10 @@
             margin-bottom: 25px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-
         .header-section h1 { margin: 0; font-size: 24px; }
         .date-picker { font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; outline: none; font-family: 'Cairo';}
 
+        /* ---------------- إضافة مريض ---------------- */
         .add-patient-card {
             background: var(--card-bg);
             padding: 20px;
@@ -60,7 +61,6 @@
             gap: 15px;
             align-items: end;
         }
-
         .input-group { display: flex; flex-direction: column; }
         .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 14px; }
         .input-group input, .input-group select {
@@ -73,6 +73,7 @@
             transition: 0.3s;
         }
         .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); }
+        select:invalid { color: #7f8c8d; }
 
         .btn-add {
             background-color: var(--primary-blue);
@@ -88,6 +89,7 @@
         }
         .btn-add:hover { background-color: #007bb5; }
 
+        /* ---------------- الجدول ---------------- */
         .schedule-table {
             width: 100%;
             background: var(--card-bg);
@@ -96,57 +98,65 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border-collapse: collapse;
         }
-
         .schedule-table th, .schedule-table td {
             padding: 12px 15px;
             text-align: right;
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
-
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
         .schedule-table tr:last-child td { border-bottom: none; }
         
+        /* التايمر */
         .timer-container { display: flex; align-items: center; gap: 8px; }
         .timer-display { font-weight: 800; font-size: 16px; font-family: monospace; min-width: 50px; }
         .btn-timer {
             background-color: var(--warning); color: white; border: none; padding: 5px 8px;
             border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 12px;
         }
-        
         .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
+        /* الأزرار والشارات */
         .action-btns { display: flex; gap: 5px; align-items: center;}
         .action-btns button {
             background: #f1f2f6; border: none; padding: 6px 10px; border-radius: 5px;
             cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px;
         }
         .action-btns button:hover { background: var(--border); }
-        
-        .btn-book-next {
-            background-color: var(--primary-green) !important;
-            color: white !important;
-            font-family: 'Cairo';
-            font-weight: 600;
-            font-size: 12px !important;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; }
         .btn-book-next:hover { background-color: #7ab033 !important; }
 
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-kashf { background-color: var(--primary-blue); }
         .badge-motab3a { background-color: var(--primary-green); }
         .badge-galsa { background-color: #9b59b6; }
-        
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
         
         .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
         .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
 
+        /* ---------------- النوافذ المنبثقة (Custom Modals) ---------------- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(2px);
+        }
+        .modal-box {
+            background: white; padding: 25px; border-radius: 12px;
+            width: 90%; max-width: 400px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-box h3 { margin-top: 0; font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .modal-box p { color: var(--text-dark); margin-bottom: 20px; line-height: 1.6; font-size: 15px; font-weight: 600;}
+        .modal-input { width: 90%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; margin-bottom: 20px; outline: none; font-size: 16px; text-align: center;}
+        .modal-actions { display: flex; justify-content: center; gap: 10px; }
+        .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
+        .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
     </style>
 </head>
 <body>
@@ -168,14 +178,16 @@
             </div>
             <div class="input-group">
                 <label>القسم</label>
-                <select id="department">
+                <select id="department" required>
+                    <option value="" disabled selected>اختار القسم</option>
                     <option value="تغذية علاجية">تغذية علاجية</option>
                     <option value="علاج طبيعي">علاج طبيعي</option>
                 </select>
             </div>
             <div class="input-group">
                 <label>نوع الزيارة</label>
-                <select id="visitType">
+                <select id="visitType" required>
+                    <option value="" disabled selected>اختار نوع الزيارة</option>
                     <option value="كشف">كشف جديد</option>
                     <option value="متابعة">متابعة</option>
                     <option value="جلسة">جلسة</option>
@@ -183,9 +195,10 @@
             </div>
             <div class="input-group">
                 <label>حالة الدفع</label>
-                <select id="paymentStatus">
+                <select id="paymentStatus" required>
+                    <option value="" disabled selected>اختار حالة الدفع</option>
                     <option value="تم الدفع">تم الدفع</option>
-                    <option value="لم يدفع">لم يدفع (آجل)</option>
+                    <option value="لم يدفع">لم يدفع</option>
                     <option value="مدفوع مسبقاً">مدفوع مسبقاً</option>
                 </select>
             </div>
@@ -212,10 +225,85 @@
 
     </div>
 
+    <!-- نافذة منبثقة مخصصة (Custom Modal) -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modalTitle">عنوان التنبيه</h3>
+            <p id="modalMessage">رسالة التنبيه</p>
+            <div id="modalInputContainer" style="display: none;">
+                <input type="date" id="modalDateInput" class="modal-input">
+            </div>
+            <div class="modal-actions">
+                <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
+                <button id="modalCancelBtn" class="btn-cancel" style="display: none;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.getElementById('todayDate').valueAsDate = new Date();
-
         let patientsQueue = [];
+
+        // تغيير لون القوائم المنسدلة
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', function() { this.style.color = 'var(--text-dark)'; });
+        });
+
+        // ---------------- دالة التحكم في النوافذ المنبثقة ----------------
+        function showModal(options) {
+            const modal = document.getElementById('customModal');
+            const titleEl = document.getElementById('modalTitle');
+            const msgEl = document.getElementById('modalMessage');
+            const inputContainer = document.getElementById('modalInputContainer');
+            const dateInput = document.getElementById('modalDateInput');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+
+            // إعدادات افتراضية
+            inputContainer.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            msgEl.innerHTML = options.message || '';
+
+            // تصميم الأيقونات والألوان حسب نوع الرسالة
+            if (options.type === 'error') {
+                titleEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${options.title || 'تنبيه'}`;
+                titleEl.style.color = 'var(--danger)';
+            } else if (options.type === 'success') {
+                titleEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${options.title || 'نجاح'}`;
+                titleEl.style.color = 'var(--primary-green)';
+            } else if (options.type === 'warning') {
+                titleEl.innerHTML = `<i class="fa-solid fa-bell"></i> ${options.title || 'تنبيه هام'}`;
+                titleEl.style.color = 'var(--warning)';
+            } else { // prompt
+                titleEl.innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${options.title || 'تأكيد'}`;
+                titleEl.style.color = 'var(--primary-blue)';
+            }
+
+            // لو نافذة طلب تاريخ
+            if (options.type === 'prompt') {
+                inputContainer.style.display = 'block';
+                dateInput.value = options.inputValue || '';
+                cancelBtn.style.display = 'inline-block';
+            }
+
+            modal.style.display = 'flex';
+
+            // مسح أي أحداث سابقة على الأزرار
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+
+            confirmBtn.onclick = () => {
+                modal.style.display = 'none';
+                if (options.type === 'prompt' && options.onConfirm) {
+                    options.onConfirm(dateInput.value);
+                }
+            };
+
+            cancelBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        // ------------------------------------------------------------------
 
         function addPatient() {
             const name = document.getElementById('patientName').value.trim();
@@ -223,22 +311,27 @@
             const type = document.getElementById('visitType').value;
             const payment = document.getElementById('paymentStatus').value;
             
-            if(!name) { alert("رجاء إدخال اسم المريض"); return; }
+            if(!name || !dept || !type || !payment) { 
+                // استبدال alert بـ modal
+                showModal({
+                    type: 'error',
+                    title: 'بيانات ناقصة',
+                    message: 'رجاء استكمال جميع البيانات (الاسم، القسم، نوع الزيارة، وحالة الدفع) قبل الإضافة للجدول.'
+                });
+                return; 
+            }
 
-            // التايمر يظهر فقط للمتابعة (10 دقائق = 600 ثانية)
             const hasTimer = (type === 'متابعة');
             
-            patientsQueue.push({ 
-                name, 
-                dept, 
-                type, 
-                payment, 
-                timerId: null, 
-                timeLeft: 600,
-                hasTimer: hasTimer 
-            });
+            patientsQueue.push({ name, dept, type, payment, timerId: null, timeLeft: 600, hasTimer: hasTimer });
             
+            // تفريغ الحقول
             document.getElementById('patientName').value = '';
+            document.getElementById('department').value = '';
+            document.getElementById('visitType').value = '';
+            document.getElementById('paymentStatus').value = '';
+            document.querySelectorAll('select').forEach(select => select.style.color = '#7f8c8d');
+
             renderTable();
         }
 
@@ -295,12 +388,25 @@
 
         function bookNextVisit(index) {
             let patient = patientsQueue[index];
-            let confirmDate = prompt(`حجز متابعة للمريض: ${patient.name}\nالقسم: ${patient.dept}\n\nأدخل تاريخ المتابعة القادمة:`, getNextWeekDate());
             
-            if (confirmDate) {
-                alert(`تم بنجاح! \nتم جدولة متابعة مدفوعة للمريض (${patient.name}) يوم ${confirmDate}\nقسم: ${patient.dept}`);
-                removePatient(index);
-            }
+            // استبدال prompt بـ modal
+            showModal({
+                type: 'prompt',
+                title: 'حجز موعد المتابعة',
+                message: `تحديد موعد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}<br><br>يرجى اختيار تاريخ المتابعة القادمة:`,
+                inputValue: getNextWeekDate(),
+                onConfirm: (confirmDate) => {
+                    if(confirmDate) {
+                        // استبدال alert بـ modal نجاح
+                        showModal({
+                            type: 'success',
+                            title: 'تم الحجز بنجاح!',
+                            message: `تم جدولة متابعة (مدفوعة مسبقاً) للمريض <strong>${patient.name}</strong><br>التاريخ: ${confirmDate}<br>القسم: ${patient.dept}`
+                        });
+                        removePatient(index);
+                    }
+                }
+            });
         }
 
         function moveUp(index) {
@@ -349,7 +455,14 @@
                         display.innerText = "00:00";
                         display.classList.add('timer-urgent');
                     }
-                    alert(`تنبيه للممرضة: وقت المتابعة للمريض (${patientsQueue[index].name}) انتهى! يرجى الاستئذان من الدكتورة.`);
+                    
+                    // استبدال alert بـ modal تنبيه
+                    showModal({
+                        type: 'warning',
+                        title: 'انتهى الوقت!',
+                        message: `وقت المتابعة للمريض <strong>${patientsQueue[index].name}</strong> قد انتهى!<br>يرجى الاستئذان من الدكتورة بلطف.`
+                    });
+                    
                     renderTable();
                 }
             }, 1000);
