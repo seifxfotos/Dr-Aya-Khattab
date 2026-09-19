@@ -206,10 +206,16 @@
     </div>
 
     <script>
-        // رابط جوجل سكريبت الخاص بك
+        // رابط جوجل سكريبت الأحدث
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
 
-        document.getElementById('todayDate').valueAsDate = new Date();
+        // ضبط التاريخ بناءً على التوقيت المحلي الفعلي لجهاز المستخدم (مصر)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        document.getElementById('todayDate').value = `${year}-${month}-${day}`;
+        
         let patientsQueue = [];
 
         document.querySelectorAll('select').forEach(select => {
@@ -278,10 +284,10 @@
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: 'follow', // لتخطي مشكلة الـ CORS والـ Redirect
                     body: JSON.stringify({ action: 'GET_DATA', date: date })
                 });
                 
-                // هنشوف لو جوجل رجع صفحة خطأ بدل البيانات
                 if (!response.ok) {
                     throw new Error(`خطأ في السيرفر: ${response.status}`);
                 }
@@ -300,7 +306,7 @@
                         throw new Error(result.message || "خطأ غير معروف من جوجل");
                     }
                 } catch(parseError) {
-                    throw new Error("جوجل لم يرسل بيانات صحيحة (تأكد من تحديث رابط النشر والصلاحيات).");
+                    throw new Error("جوجل لم يرسل بيانات صحيحة (تأكد من الصلاحيات و تحديث رابط النشر).");
                 }
                 
             } catch(e) {
@@ -323,6 +329,7 @@
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: 'follow', // لتخطي مشكلة الـ CORS والـ Redirect
                     body: JSON.stringify({ action: 'SYNC_DATA', date: date, data: cleanData })
                 });
             } catch(e) {
@@ -450,6 +457,7 @@
                             await fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                redirect: 'follow', // لتخطي مشكلة الـ CORS والـ Redirect
                                 body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept })
                             });
                             
@@ -492,7 +500,10 @@
         function getNextWeekDate() {
             let nextWeek = new Date();
             nextWeek.setDate(nextWeek.getDate() + 7);
-            return nextWeek.toISOString().split('T')[0];
+            const year = nextWeek.getFullYear();
+            const month = String(nextWeek.getMonth() + 1).padStart(2, '0');
+            const day = String(nextWeek.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         // جلب بيانات اليوم تلقائياً عند فتح الصفحة
