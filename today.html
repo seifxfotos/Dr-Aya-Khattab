@@ -29,126 +29,77 @@
             color: var(--text-dark);
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1100px; margin: 0 auto; }
 
-        /* ---------------- الهيدر ---------------- */
+        /* الهيدر */
         .header-section {
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: white; padding: 20px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .header-section h1 { margin: 0; font-size: 24px; }
         .date-picker { font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; outline: none; font-family: 'Cairo';}
 
-        /* ---------------- إضافة مريض ---------------- */
+        /* لوحة الإضافة */
         .add-patient-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1fr;
-            gap: 15px;
-            align-items: end;
+            background: var(--card-bg); padding: 20px; border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px;
+            display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1fr; gap: 15px; align-items: end;
         }
         .input-group { display: flex; flex-direction: column; }
         .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 14px; }
         .input-group input, .input-group select {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-family: 'Cairo';
-            font-size: 15px;
-            outline: none;
-            transition: 0.3s;
+            padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 15px; outline: none; transition: 0.3s;
         }
         .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); }
         select:invalid { color: #7f8c8d; }
-
+        
         .btn-add {
-            background-color: var(--primary-blue);
-            color: white;
-            border: none;
-            padding: 11px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Cairo';
+            background-color: var(--primary-blue); color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo';
         }
         .btn-add:hover { background-color: #007bb5; }
 
-        /* ---------------- الجدول ---------------- */
+        /* الجدول */
         .schedule-table {
-            width: 100%;
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-collapse: collapse;
+            width: 100%; background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse;
         }
-        .schedule-table th, .schedule-table td {
-            padding: 12px 15px;
-            text-align: right;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
+        .schedule-table th, .schedule-table td { padding: 12px 15px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
         .schedule-table tr:last-child td { border-bottom: none; }
         
-        /* التايمر */
+        /* التايمر والأزرار */
         .timer-container { display: flex; align-items: center; gap: 8px; }
         .timer-display { font-weight: 800; font-size: 16px; font-family: monospace; min-width: 50px; }
-        .btn-timer {
-            background-color: var(--warning); color: white; border: none; padding: 5px 8px;
-            border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 12px;
-        }
+        .btn-timer { background-color: var(--warning); color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 12px; }
         .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* الأزرار والشارات */
         .action-btns { display: flex; gap: 5px; align-items: center;}
-        .action-btns button {
-            background: #f1f2f6; border: none; padding: 6px 10px; border-radius: 5px;
-            cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px;
-        }
+        .action-btns button { background: #f1f2f6; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px; }
         .action-btns button:hover { background: var(--border); }
         .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; }
         .btn-book-next:hover { background-color: #7ab033 !important; }
 
+        /* الشارات */
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-kashf { background-color: var(--primary-blue); }
         .badge-motab3a { background-color: var(--primary-green); }
         .badge-galsa { background-color: #9b59b6; }
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
-        
         .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
         .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
 
-        /* ---------------- النوافذ المنبثقة (Custom Modals) ---------------- */
+        /* النوافذ المنبثقة (Modals & Loader) */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none; justify-content: center; align-items: center;
-            z-index: 1000; backdrop-filter: blur(2px);
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px);
         }
         .modal-box {
-            background: white; padding: 25px; border-radius: 12px;
-            width: 90%; max-width: 400px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: popIn 0.3s ease;
+            background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease;
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-box h3 { margin-top: 0; font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 10px;}
@@ -157,6 +108,13 @@
         .modal-actions { display: flex; justify-content: center; gap: 10px; }
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
+        
+        .loader-spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%;
+            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
@@ -166,9 +124,9 @@
         <div class="header-section">
             <div>
                 <h1>الجدول اليومي للحجوزات</h1>
-                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والوقت</span>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم الأدوار والمزامنة السحابية ☁️</span>
             </div>
-            <input type="date" id="todayDate" class="date-picker" onchange="loadSchedule()">
+            <input type="date" id="todayDate" class="date-picker" onchange="loadDataFromGoogle()">
         </div>
 
         <div class="add-patient-card">
@@ -222,10 +180,9 @@
             <tbody id="scheduleBody">
             </tbody>
         </table>
-
     </div>
 
-    <!-- نافذة منبثقة مخصصة (Custom Modal) -->
+    <!-- النافذة المنبثقة للتنبيهات -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -240,16 +197,35 @@
         </div>
     </div>
 
+    <!-- نافذة التحميل السحابي -->
+    <div id="loaderModal" class="modal-overlay" style="z-index: 1100;">
+        <div class="modal-box" style="background: transparent; box-shadow: none; max-width: 200px;">
+            <div class="loader-spinner"></div>
+            <h3 id="loaderText" style="color: white; font-size: 16px;">جاري المزامنة...</h3>
+        </div>
+    </div>
+
     <script>
+        // رابط جوجل سكريبت الخاص بك
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyL2Fyy4LQNYlU4BFw5pz3w6o5oph5OuExAz-KXZUOp_5E2hMMMI_0o0xheW1u0bmcs/exec';
+
         document.getElementById('todayDate').valueAsDate = new Date();
         let patientsQueue = [];
 
-        // تغيير لون القوائم المنسدلة
         document.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', function() { this.style.color = 'var(--text-dark)'; });
         });
 
-        // ---------------- دالة التحكم في النوافذ المنبثقة ----------------
+        // دوال النوافذ المنبثقة والتحميل
+        function showLoader(text) {
+            document.getElementById('loaderText').innerText = text;
+            document.getElementById('loaderModal').style.display = 'flex';
+        }
+        
+        function hideLoader() {
+            document.getElementById('loaderModal').style.display = 'none';
+        }
+
         function showModal(options) {
             const modal = document.getElementById('customModal');
             const titleEl = document.getElementById('modalTitle');
@@ -259,12 +235,10 @@
             const confirmBtn = document.getElementById('modalConfirmBtn');
             const cancelBtn = document.getElementById('modalCancelBtn');
 
-            // إعدادات افتراضية
             inputContainer.style.display = 'none';
             cancelBtn.style.display = 'none';
             msgEl.innerHTML = options.message || '';
 
-            // تصميم الأيقونات والألوان حسب نوع الرسالة
             if (options.type === 'error') {
                 titleEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${options.title || 'تنبيه'}`;
                 titleEl.style.color = 'var(--danger)';
@@ -274,12 +248,11 @@
             } else if (options.type === 'warning') {
                 titleEl.innerHTML = `<i class="fa-solid fa-bell"></i> ${options.title || 'تنبيه هام'}`;
                 titleEl.style.color = 'var(--warning)';
-            } else { // prompt
+            } else { 
                 titleEl.innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${options.title || 'تأكيد'}`;
                 titleEl.style.color = 'var(--primary-blue)';
             }
 
-            // لو نافذة طلب تاريخ
             if (options.type === 'prompt') {
                 inputContainer.style.display = 'block';
                 dateInput.value = options.inputValue || '';
@@ -287,45 +260,81 @@
             }
 
             modal.style.display = 'flex';
-
-            // مسح أي أحداث سابقة على الأزرار
-            confirmBtn.onclick = null;
-            cancelBtn.onclick = null;
-
             confirmBtn.onclick = () => {
                 modal.style.display = 'none';
-                if (options.type === 'prompt' && options.onConfirm) {
-                    options.onConfirm(dateInput.value);
-                }
+                if (options.type === 'prompt' && options.onConfirm) options.onConfirm(dateInput.value);
             };
-
-            cancelBtn.onclick = () => {
-                modal.style.display = 'none';
-            };
+            cancelBtn.onclick = () => modal.style.display = 'none';
         }
-        // ------------------------------------------------------------------
 
-        function addPatient() {
+        // ================= الاتصال بجوجل شيت =================
+        
+        // 1. جلب البيانات من جوجل
+        async function loadDataFromGoogle() {
+            const date = document.getElementById('todayDate').value;
+            showLoader('جاري جلب البيانات...');
+            
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'GET_DATA', date: date })
+                });
+                let result = await response.json();
+                
+                if(result.status === 'success') {
+                    // تحضير البيانات وإضافة خصائص التايمر لكل مريض
+                    patientsQueue = result.data.map(p => ({
+                        name: p.name, dept: p.dept, type: p.type, payment: p.payment,
+                        timerId: null, timeLeft: 600, hasTimer: (p.type === 'متابعة')
+                    }));
+                    renderTable();
+                }
+            } catch(e) {
+                showModal({type: 'error', title: 'خطأ اتصال', message: 'لم نتمكن من جلب البيانات، تأكد من اتصال الإنترنت.'});
+            }
+            hideLoader();
+        }
+
+        // 2. حفظ البيانات في جوجل
+        async function syncDataToGoogle() {
+            const date = document.getElementById('todayDate').value;
+            showLoader('جاري حفظ الجدول...');
+            
+            try {
+                // إرسال البيانات الأساسية فقط (بدون مؤقتات المتصفح)
+                let cleanData = patientsQueue.map(p => ({
+                    name: p.name, dept: p.dept, type: p.type, payment: p.payment
+                }));
+                
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'SYNC_DATA', date: date, data: cleanData })
+                });
+            } catch(e) {
+                console.error("فشل المزامنة", e);
+            }
+            hideLoader();
+        }
+
+        // =====================================================
+
+        async function addPatient() {
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
             const type = document.getElementById('visitType').value;
             const payment = document.getElementById('paymentStatus').value;
             
             if(!name || !dept || !type || !payment) { 
-                // استبدال alert بـ modal
-                showModal({
-                    type: 'error',
-                    title: 'بيانات ناقصة',
-                    message: 'رجاء استكمال جميع البيانات (الاسم، القسم، نوع الزيارة، وحالة الدفع) قبل الإضافة للجدول.'
-                });
+                showModal({ type: 'error', title: 'بيانات ناقصة', message: 'رجاء استكمال جميع البيانات.'});
                 return; 
             }
-
-            const hasTimer = (type === 'متابعة');
             
-            patientsQueue.push({ name, dept, type, payment, timerId: null, timeLeft: 600, hasTimer: hasTimer });
+            patientsQueue.push({ 
+                name, dept, type, payment, timerId: null, timeLeft: 600, hasTimer: (type === 'متابعة') 
+            });
             
-            // تفريغ الحقول
             document.getElementById('patientName').value = '';
             document.getElementById('department').value = '';
             document.getElementById('visitType').value = '';
@@ -333,6 +342,7 @@
             document.querySelectorAll('select').forEach(select => select.style.color = '#7f8c8d');
 
             renderTable();
+            await syncDataToGoogle(); // مزامنة فورية
         }
 
         function renderTable() {
@@ -372,11 +382,11 @@
                         <td>${timerHtml}</td>
                         <td>
                             <div class="action-btns">
-                                <button title="رفع لأعلى" onclick="moveUp(${index})"><i class="fa-solid fa-arrow-up"></i></button>
-                                <button title="تنزيل لأسفل" onclick="moveDown(${index})"><i class="fa-solid fa-arrow-down"></i></button>
-                                <button title="إنهاء الزيارة" style="color:var(--danger)" onclick="removePatient(${index})"><i class="fa-solid fa-check"></i></button>
-                                <button class="btn-book-next" title="دفع وحجز المتابعة القادمة" onclick="bookNextVisit(${index})">
-                                    <i class="fa-regular fa-calendar-check"></i> حجز متابعة
+                                <button title="رفع" onclick="moveUp(${index})"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button title="تنزيل" onclick="moveDown(${index})"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button title="إنهاء وحذف" style="color:var(--danger)" onclick="removePatient(${index})"><i class="fa-solid fa-trash"></i></button>
+                                <button class="btn-book-next" title="دفع وحجز المتابعة" onclick="bookNextVisit(${index})">
+                                    <i class="fa-regular fa-calendar-check"></i> متابعة
                                 </button>
                             </div>
                         </td>
@@ -386,53 +396,64 @@
             });
         }
 
-        function bookNextVisit(index) {
-            let patient = patientsQueue[index];
-            
-            // استبدال prompt بـ modal
-            showModal({
-                type: 'prompt',
-                title: 'حجز موعد المتابعة',
-                message: `تحديد موعد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}<br><br>يرجى اختيار تاريخ المتابعة القادمة:`,
-                inputValue: getNextWeekDate(),
-                onConfirm: (confirmDate) => {
-                    if(confirmDate) {
-                        // استبدال alert بـ modal نجاح
-                        showModal({
-                            type: 'success',
-                            title: 'تم الحجز بنجاح!',
-                            message: `تم جدولة متابعة (مدفوعة مسبقاً) للمريض <strong>${patient.name}</strong><br>التاريخ: ${confirmDate}<br>القسم: ${patient.dept}`
-                        });
-                        removePatient(index);
-                    }
-                }
-            });
-        }
-
-        function moveUp(index) {
+        async function moveUp(index) {
             if (index > 0) {
                 let temp = patientsQueue[index];
                 patientsQueue[index] = patientsQueue[index - 1];
                 patientsQueue[index - 1] = temp;
                 renderTable();
+                await syncDataToGoogle();
             }
         }
 
-        function moveDown(index) {
+        async function moveDown(index) {
             if (index < patientsQueue.length - 1) {
                 let temp = patientsQueue[index];
                 patientsQueue[index] = patientsQueue[index + 1];
                 patientsQueue[index + 1] = temp;
                 renderTable();
+                await syncDataToGoogle();
             }
         }
 
-        function removePatient(index) {
-            if(patientsQueue[index].timerId) {
-                clearInterval(patientsQueue[index].timerId);
-            }
+        async function removePatient(index) {
+            if(patientsQueue[index].timerId) clearInterval(patientsQueue[index].timerId);
             patientsQueue.splice(index, 1);
             renderTable();
+            await syncDataToGoogle();
+        }
+
+        function bookNextVisit(index) {
+            let patient = patientsQueue[index];
+            showModal({
+                type: 'prompt',
+                title: 'حجز موعد المتابعة',
+                message: `تحديد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
+                inputValue: getNextWeekDate(),
+                onConfirm: async (confirmDate) => {
+                    if(confirmDate) {
+                        showLoader('جاري تسجيل الموعد الجديد...');
+                        try {
+                            // إرسال الموعد الجديد لجوجل
+                            await fetch(SCRIPT_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept })
+                            });
+                            
+                            // حذف المريض من اليوم الحالي ومزامنة الجدول
+                            patientsQueue.splice(index, 1);
+                            renderTable();
+                            await syncDataToGoogle();
+                            
+                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة يوم ${confirmDate}` });
+                        } catch (e) {
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد.' });
+                        }
+                        hideLoader();
+                    }
+                }
+            });
         }
 
         function startTimer(index) {
@@ -445,24 +466,12 @@
                 let s = patientsQueue[index].timeLeft % 60;
                 let display = document.getElementById(`timer-${index}`);
                 
-                if(display) {
-                    display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                }
+                if(display) display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
 
                 if (patientsQueue[index].timeLeft <= 0) {
                     clearInterval(patientsQueue[index].timerId);
-                    if(display) {
-                        display.innerText = "00:00";
-                        display.classList.add('timer-urgent');
-                    }
-                    
-                    // استبدال alert بـ modal تنبيه
-                    showModal({
-                        type: 'warning',
-                        title: 'انتهى الوقت!',
-                        message: `وقت المتابعة للمريض <strong>${patientsQueue[index].name}</strong> قد انتهى!<br>يرجى الاستئذان من الدكتورة بلطف.`
-                    });
-                    
+                    if(display) { display.innerText = "00:00"; display.classList.add('timer-urgent'); }
+                    showModal({ type: 'warning', title: 'انتهى الوقت!', message: `وقت المتابعة للمريض <strong>${patientsQueue[index].name}</strong> انتهى!` });
                     renderTable();
                 }
             }, 1000);
@@ -474,6 +483,10 @@
             nextWeek.setDate(nextWeek.getDate() + 7);
             return nextWeek.toISOString().split('T')[0];
         }
+
+        // جلب بيانات اليوم تلقائياً عند فتح الصفحة
+        window.onload = loadDataFromGoogle;
+
     </script>
 </body>
 </html>
