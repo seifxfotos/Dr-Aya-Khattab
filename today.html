@@ -30,7 +30,6 @@
             --text-dark: #e0e0e0;
             --border: #333333;
             --input-bg: #2c2c2c;
-            /* تغميق الألوان الأساسية سنة بسيطة لراحة العين في الدارك مود */
             --primary-blue: #0082b8;
             --primary-green: #7bb530;
         }
@@ -41,7 +40,7 @@
             margin: 0;
             padding: 20px 20px 100px 20px;
             color: var(--text-dark);
-            transition: background-color 0.3s, color 0.3s; /* انتقال ناعم */
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container { max-width: 1100px; margin: 0 auto; }
@@ -61,16 +60,20 @@
             padding: 8px 15px; border-radius: 8px; border: 1px solid white; 
             color: white; outline: none; font-family: 'Cairo';
         }
-        /* تعديل لون النتيجة من جوه في الدارك مود */
         .date-picker::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 
-        /* زرار السويتش بتاع الدارك مود */
-        .theme-switch-wrapper { display: flex; align-items: center; }
+        /* زرار السويتش بتاع الدارك مود (عائم أسفل اليمين) */
+        .theme-switch-wrapper { 
+            position: fixed; bottom: 20px; right: 20px; z-index: 100;
+            background: var(--card-bg); padding: 8px 12px; border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border);
+            display: flex; align-items: center; transition: background-color 0.3s;
+        }
         .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
         .theme-switch input { display: none; }
         .slider { 
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
-            background-color: rgba(255,255,255,0.3); transition: .4s; border-radius: 34px; 
+            background-color: #ccc; transition: .4s; border-radius: 34px; 
             display: flex; align-items: center; justify-content: space-between; padding: 0 6px;
         }
         .slider .fa-sun { color: #ffeb3b; font-size: 14px; z-index: 1;}
@@ -79,7 +82,7 @@
             position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; 
             background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2;
         }
-        input:checked + .slider { background-color: rgba(0,0,0,0.4); }
+        input:checked + .slider { background-color: #34495e; }
         input:checked + .slider:before { transform: translateX(28px); }
 
         /* لوحة الإضافة */
@@ -133,38 +136,37 @@
         .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
         .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
 
-        /* التايمر العائم المنفصل - أفقي */
+        /* التايمر العائم المنفصل - أفقي ومضبوط */
         .floating-timer {
             position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.25); border: 1px solid var(--border);
-            z-index: 100; overflow: hidden; display: flex; align-items: center;
-            transition: background-color 0.3s;
+            z-index: 100; overflow: hidden; display: flex; align-items: stretch; /* stretch بدلا من center لضبط الارتفاع */
+            transition: background-color 0.3s; height: 50px; /* تحديد ارتفاع ثابت للبانل */
         }
         .timer-header {
-            background: var(--primary-blue); color: white; padding: 12px 15px; 
-            font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center;
-            height: 100%;
+            background: var(--primary-blue); color: white; padding: 0 15px; 
+            font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center;
         }
         .timer-body {
-            padding: 10px 15px; display: flex; align-items: center; gap: 15px; 
+            padding: 0 15px; display: flex; align-items: center; gap: 15px; 
             background: var(--card-bg); transition: background-color 0.3s;
         }
-        .timer-display-global { font-size: 26px; font-weight: 800; font-family: monospace; color: var(--text-dark); min-width: 85px; text-align: center;}
+        .timer-display-global { font-size: 24px; font-weight: 800; font-family: monospace; color: var(--text-dark); min-width: 80px; text-align: center;}
         .timer-urgent { color: var(--danger); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
         
         .timer-select { 
-            padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); 
+            padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); 
             font-family: 'Cairo'; font-weight: 600; font-size: 13px; outline: none; 
-            background: var(--input-bg); color: var(--text-dark); transition: 0.3s;
+            background: var(--input-bg); color: var(--text-dark); transition: 0.3s; height: 32px;
         }
-        .timer-controls { display: flex; gap: 5px; }
+        .timer-controls { display: flex; gap: 5px; align-items: center; }
         .timer-controls button { 
             border: none; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; 
-            font-weight: bold; color: white; transition: 0.2s; padding: 6px 12px; display: flex; align-items: center; gap: 5px;
+            font-weight: bold; color: white; transition: 0.2s; padding: 0 12px; height: 32px; display: flex; align-items: center; gap: 5px;
         }
-        .btn-play { background: var(--primary-blue); font-size: 13px; min-width: 80px; justify-content: center;}
-        .btn-reset { background: #95a5a6; font-size: 13px; justify-content: center; padding: 6px 10px;}
+        .btn-play { background: var(--primary-blue); font-size: 13px; min-width: 75px; justify-content: center;}
+        .btn-reset { background: #95a5a6; font-size: 13px; justify-content: center; padding: 0 10px;}
         .btn-reset:hover { background: #7f8c8d; }
 
         /* النوافذ المنبثقة */
@@ -185,6 +187,17 @@
 </head>
 <body>
 
+    <!-- زرار الدارك مود العائم (أسفل اليمين) -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round">
+                <i class="fa-solid fa-moon"></i>
+                <i class="fa-solid fa-sun"></i>
+            </div>
+        </label>
+    </div>
+
     <div class="container">
         
         <div class="header-section">
@@ -194,17 +207,6 @@
             </div>
             
             <div class="header-controls">
-                <!-- زرار الدارك مود -->
-                <div class="theme-switch-wrapper">
-                    <label class="theme-switch" for="checkbox">
-                        <input type="checkbox" id="checkbox" />
-                        <div class="slider round">
-                            <i class="fa-solid fa-moon"></i>
-                            <i class="fa-solid fa-sun"></i>
-                        </div>
-                    </label>
-                </div>
-                
                 <input type="date" id="todayDate" class="date-picker" onchange="loadDataFromGoogle()">
             </div>
         </div>
@@ -261,7 +263,7 @@
         </table>
     </div>
 
-    <!-- التايمر العائم المنفصل - أفقي -->
+    <!-- التايمر العائم المنفصل - أفقي ومضبوط -->
     <div class="floating-timer" id="floatingTimer">
         <div class="timer-header">
             <i class="fa-solid fa-stopwatch" title="مؤقت العيادة"></i>
