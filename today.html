@@ -137,7 +137,6 @@
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
         
-        /* القائمة المنسدلة لحالة الدفع داخل الجدول */
         .inline-pay-select {
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -423,6 +422,7 @@
                         display.innerText = 'انتهى الوقت';
                         display.classList.add('time-ended');
                         document.getElementById('timerIcon').classList.add('time-ended');
+                        
                         document.getElementById('btnTimerPlay').style.display = 'none';
                     } else {
                         updateGlobalTimerDisplay();
@@ -501,27 +501,35 @@
             cancelBtn.onclick = () => modal.style.display = 'none';
         }
 
+        // ================= دالة ذكية لإرسال البيانات كـ Form لتجنب مشاكل جوجل =================
+        async function sendDataToGoogle(actionData) {
+            // نقوم بإنشاء فورم وهمية في الذاكرة لتمرير البيانات بأمان
+            const formData = new URLSearchParams();
+            formData.append('dataPayload', JSON.stringify(actionData));
+
+            let response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            });
+
+            if (!response.ok) throw new Error("فشل الاتصال بخوادم جوجل");
+            let textResult = await response.text();
+            
+            try {
+                return JSON.parse(textResult);
+            } catch (e) {
+                throw new Error("بيانات غير مقروءة من السيرفر.");
+            }
+        }
+
         // ================= الاتصال بجوجل شيت =================
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
             showSyncStatus('جاري جلب البيانات...');
             
             try {
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow',
-                    body: JSON.stringify({ action: 'GET_DATA', date: date })
-                });
-                
-                let textResult = await response.text();
-                
-                let result;
-                try {
-                    result = JSON.parse(textResult);
-                } catch (e) {
-                    throw new Error("جوجل رفض الطلب. (تأكد إنك عملت New Version في السكريبت)");
-                }
+                let result = await sendDataToGoogle({ action: 'GET_DATA', date: date });
 
                 if(result.status === 'success') {
                     patientsQueue = result.data.map(p => ({
@@ -532,7 +540,7 @@
                     throw new Error(result.message);
                 }
             } catch(e) {
-                showModal({type: 'error', title: 'تفاصيل المشكلة', message: e.message});
+                console.error(e);
             }
             hideSyncStatus();
         }
@@ -546,21 +554,7 @@
                     name: p.name, dept: p.dept, type: p.type, payment: p.payment
                 }));
                 
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow',
-                    body: JSON.stringify({ action: 'SYNC_DATA', date: date, data: cleanData })
-                });
-
-                let textResult = await response.text();
-                
-                let result;
-                try {
-                    result = JSON.parse(textResult);
-                } catch (e) {
-                    throw new Error("جوجل رفض استقبال البيانات. (تأكد إنك عملت New Version)");
-                }
+                let result = await sendDataToGoogle({ action: 'SYNC_DATA', date: date, data: cleanData });
                 
                 if(result.status !== 'success') {
                     throw new Error(result.message);
@@ -569,8 +563,8 @@
                 console.error("فشل المزامنة", e);
                 showModal({
                     type: 'error', 
-                    title: 'لم يتم الحفظ!', 
-                    message: `سبب الخطأ: <strong>${e.message}</strong>`
+                    title: 'تنبيه: لم يتم الحفظ!', 
+                    message: `تأكد من تحديث كود السيرفر أو الاتصال بالإنترنت.`
                 });
             }
             hideSyncStatus();
@@ -600,11 +594,10 @@
             syncDataToGoogle();
         }
 
-        // دالة تغيير الدفع يدوياً للمريض من الجدول
         function updatePayment(index, newPaymentStatus) {
             patientsQueue[index].payment = newPaymentStatus;
-            renderTable(); // عشان اللون يتحدث
-            syncDataToGoogle(); // عشان يحفظ التعديل في الشيت فوراً
+            renderTable(); 
+            syncDataToGoogle(); 
         }
 
         function renderTable() {
@@ -682,15 +675,7 @@
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
-                            let response = await fetch(SCRIPT_URL, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                                redirect: 'follow',
-                                body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept })
-                            });
-                            
-                            let textResult = await response.text();
-                            let result = JSON.parse(textResult);
+                            let result = await sendDataToGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept });
                             
                             if(result.status !== 'success') throw new Error();
 
