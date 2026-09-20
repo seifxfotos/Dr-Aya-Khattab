@@ -136,8 +136,22 @@
         .badge-galsa { background-color: #9b59b6; }
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
-        .status-paid { color: var(--primary-green); font-weight: 700; font-size: 14px;}
-        .status-unpaid { color: var(--danger); font-weight: 700; font-size: 14px;}
+        
+        /* القائمة المنسدلة لحالة الدفع داخل الجدول */
+        .inline-pay-select {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-family: 'Cairo';
+            font-weight: 700;
+            font-size: 13px;
+            outline: none;
+            background-color: var(--input-bg);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
+        .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
 
         .floating-timer {
             position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); border-radius: 10px;
@@ -190,12 +204,10 @@
 </head>
 <body>
 
-    <!-- شريط حالة المزامنة -->
     <div id="syncIndicator" class="sync-indicator">
         <i class="fa-solid fa-spinner"></i> <span id="syncIndicatorText">جاري الحفظ...</span>
     </div>
 
-    <!-- سويتش الدارك مود -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
@@ -207,6 +219,7 @@
     </div>
 
     <div class="container">
+        
         <div class="header-section">
             <div>
                 <h1>الجدول اليومي للحجوزات</h1>
@@ -292,7 +305,7 @@
         </div>
     </div>
 
-    <!-- النوافذ المنبثقة للتأكيد والأخطاء -->
+    <!-- النوافذ المنبثقة -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -330,7 +343,7 @@
         toggleSwitch.addEventListener('change', switchTheme, false);
 
         // رابط جوجل سكريبت 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1ovEHQ4V1CJ2LtHEcrZ2k62ihqap5zN5xCXF76edIkB8_Qy9kRg-DJaADl7ZwCXyi/exec';
 
         const now = new Date();
         const year = now.getFullYear();
@@ -410,7 +423,6 @@
                         display.innerText = 'انتهى الوقت';
                         display.classList.add('time-ended');
                         document.getElementById('timerIcon').classList.add('time-ended');
-                        
                         document.getElementById('btnTimerPlay').style.display = 'none';
                     } else {
                         updateGlobalTimerDisplay();
@@ -527,7 +539,7 @@
 
         async function syncDataToGoogle() {
             const date = document.getElementById('todayDate').value;
-            showSyncStatus('جاري الحفظ في الشيت...');
+            showSyncStatus('جاري الحفظ...');
             
             try {
                 let cleanData = patientsQueue.map(p => ({
@@ -555,7 +567,6 @@
                 }
             } catch(e) {
                 console.error("فشل المزامنة", e);
-                // الكود الجديد هيطبعلك الخطأ الحقيقي هنا
                 showModal({
                     type: 'error', 
                     title: 'لم يتم الحفظ!', 
@@ -589,6 +600,13 @@
             syncDataToGoogle();
         }
 
+        // دالة تغيير الدفع يدوياً للمريض من الجدول
+        function updatePayment(index, newPaymentStatus) {
+            patientsQueue[index].payment = newPaymentStatus;
+            renderTable(); // عشان اللون يتحدث
+            syncDataToGoogle(); // عشان يحفظ التعديل في الشيت فوراً
+        }
+
         function renderTable() {
             const tbody = document.getElementById('scheduleBody');
             tbody.innerHTML = '';
@@ -604,7 +622,13 @@
                         <td style="font-weight:700">${patient.name}</td>
                         <td><span class="badge ${badgeDeptClass}">${patient.dept}</span></td>
                         <td><span class="badge ${badgeTypeClass}">${patient.type}</span></td>
-                        <td class="${payClass}">${patient.payment}</td>
+                        <td>
+                            <select class="inline-pay-select ${payClass}" onchange="updatePayment(${index}, this.value)">
+                                <option value="تم الدفع" ${patient.payment === 'تم الدفع' ? 'selected' : ''} style="color:var(--primary-green)">تم الدفع</option>
+                                <option value="لم يدفع" ${patient.payment === 'لم يدفع' ? 'selected' : ''} style="color:var(--danger)">لم يدفع</option>
+                                <option value="مدفوع مسبقاً" ${patient.payment === 'مدفوع مسبقاً' ? 'selected' : ''} style="color:var(--primary-green)">مدفوع مسبقاً</option>
+                            </select>
+                        </td>
                         <td>
                             <div class="action-btns">
                                 <button title="رفع" onclick="moveUp(${index})"><i class="fa-solid fa-arrow-up"></i></button>
