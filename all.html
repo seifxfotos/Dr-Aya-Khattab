@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة النظام - عيادة د. آية خطاب</title>
     
-    <!-- خط كايرو لدعم العربي بشكل احترافي -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- مكتبة الأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -43,26 +41,17 @@
             color: var(--text-dark);
             transition: background-color 0.5s ease;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* دوائر زخرفية في الخلفية لإعطاء عمق */
         .blob {
             position: absolute;
             filter: blur(80px);
             z-index: -1;
             opacity: 0.6;
         }
-        .blob-1 {
-            top: -10%; left: -10%;
-            width: 400px; height: 400px;
-            background-color: var(--primary-blue);
-        }
-        .blob-2 {
-            bottom: -10%; right: -10%;
-            width: 350px; height: 350px;
-            background-color: var(--primary-green);
-        }
+        .blob-1 { top: -10%; left: -10%; width: 400px; height: 400px; background-color: var(--primary-blue); }
+        .blob-2 { bottom: -10%; right: -10%; width: 350px; height: 350px; background-color: var(--primary-green); }
 
         .main-container {
             width: 90%;
@@ -72,7 +61,7 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            padding: 50px 30px;
+            padding: 40px 30px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -83,51 +72,35 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* منطقة اللوجو والترحيب */
-        .clinic-header {
-            margin-bottom: 40px;
-        }
+        .clinic-header { margin-bottom: 30px; }
         
         .clinic-logo {
-            margin: 0 auto 20px;
+            margin: 0 auto 10px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .clinic-logo img {
-            max-width: 260px; /* حجم متناسق للوجو العرضي */
+            max-width: 200px;
             height: auto;
-            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
-            transition: transform 0.3s ease;
-        }
-        
-        .clinic-logo img:hover {
-            transform: scale(1.02);
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
         }
 
-        .clinic-header h1 {
+        .clinic-header h2 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 800;
+            font-size: 20px;
+            font-weight: 700;
             background: linear-gradient(to left, var(--primary-blue), var(--primary-green));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .clinic-header p {
-            margin: 8px 0 0;
-            font-size: 15px;
-            opacity: 0.8;
-            font-weight: 600;
-        }
-
-        /* منطقة الأزرار (البوابات) */
         .gates-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+            gap: 20px;
+            margin-top: 20px;
         }
 
         .gate-card {
@@ -135,7 +108,7 @@
             color: inherit;
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(0, 147, 208, 0.1);
-            padding: 30px 20px;
+            padding: 25px 20px;
             border-radius: 20px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
@@ -158,51 +131,28 @@
         }
 
         .gate-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-8px);
             border-color: transparent;
             box-shadow: 0 15px 30px rgba(0, 147, 208, 0.3);
             color: white;
         }
 
-        .gate-card:hover::before {
-            opacity: 1;
-        }
+        .gate-card:hover::before { opacity: 1; }
 
         .gate-icon {
-            font-size: 45px;
-            margin-bottom: 15px;
+            font-size: 40px;
+            margin-bottom: 12px;
             color: var(--primary-blue);
             transition: color 0.4s ease;
         }
 
-        .gate-card:hover .gate-icon {
-            color: white;
-            animation: pulse 1s infinite;
-        }
+        .gate-card:hover .gate-icon { color: white; }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .gate-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0 0 8px;
-        }
-
-        .gate-desc {
-            font-size: 13px;
-            opacity: 0.8;
-            margin: 0;
-            line-height: 1.5;
-        }
+        .gate-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
+        .gate-desc { font-size: 12px; opacity: 0.8; margin: 0; line-height: 1.4; }
 
         /* زر الدارك مود */
-        .theme-switch-wrapper { 
-            position: fixed; top: 25px; left: 25px; z-index: 100;
-        }
+        .theme-switch-wrapper { position: fixed; top: 25px; left: 25px; z-index: 100; }
         .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
         .theme-switch input { display: none; }
         .slider { 
@@ -221,23 +171,81 @@
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* نسخة الموبايل */
+        /* تصميم الشات الحي */
+        .chat-toggle-btn {
+            position: fixed; bottom: 25px; right: 25px; z-index: 1000;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white; border: none; width: 60px; height: 60px; border-radius: 50%;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px;
+            display: flex; align-items: center; justify-content: center; transition: 0.3s;
+        }
+        .chat-toggle-btn:hover { transform: scale(1.1); }
+
+        .chat-box-wrapper {
+            position: fixed; bottom: 95px; right: 25px; width: 350px; max-width: 90vw;
+            height: 450px; background: var(--card-bg); backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            z-index: 1000; display: none; flex-direction: column; overflow: hidden; animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .chat-header {
+            background: var(--primary-blue); color: white; padding: 12px 15px;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 700;
+        }
+        .chat-header select {
+            background: rgba(255,255,255,0.2); border: 1px solid white; color: white;
+            padding: 3px 8px; border-radius: 6px; font-family: 'Cairo'; font-size: 13px; outline: none; cursor: pointer;
+        }
+        .chat-header select option { background: #333; color: white; }
+
+        .chat-messages {
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px;
+        }
+        
+        .message {
+            max-width: 80%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; word-break: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .message.doctor { 
+            background-color: var(--primary-blue); color: white; 
+            align-self: flex-start; border-bottom-right-radius: 4px; 
+            border-right: 4px solid #005f8d;
+        }
+        .message.reception { 
+            background-color: var(--primary-green); color: white; 
+            align-self: flex-end; border-bottom-left-radius: 4px; 
+            border-left: 4px solid #5d8e20;
+        }
+        .message .sender-name { 
+            font-size: 11px; font-weight: 700; opacity: 0.9; display: block; margin-bottom: 3px; 
+            border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;
+        }
+
+        .chat-input-area {
+            padding: 10px; background: rgba(0,0,0,0.03); display: flex; gap: 8px; border-top: 1px solid var(--glass-border);
+        }
+        .chat-input-area input {
+            flex: 1; padding: 8px 12px; border: 1px solid var(--glass-border); border-radius: 8px;
+            font-family: 'Cairo'; font-size: 14px; outline: none; background: var(--card-bg); color: var(--text-dark);
+        }
+        .chat-input-area button {
+            background: var(--primary-blue); color: white; border: none; padding: 0 15px;
+            border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;
+        }
+
         @media (max-width: 600px) {
-            .main-container { padding: 40px 20px; border-radius: 15px;}
-            .clinic-logo img { max-width: 200px; }
-            .clinic-header h1 { font-size: 24px; }
+            .main-container { padding: 30px 15px; }
+            .clinic-logo img { max-width: 160px; }
             .gates-container { grid-template-columns: 1fr; }
-            .theme-switch-wrapper { top: 15px; left: 15px; }
+            .chat-box-wrapper { bottom: 85px; right: 10px; left: 10px; width: auto; }
         }
     </style>
 </head>
 <body>
 
-    <!-- الدوائر الخلفية -->
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
-    <!-- زر الوضع الليلي/النهاري -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox" title="تغيير المظهر">
             <input type="checkbox" id="checkbox" />
@@ -254,19 +262,16 @@
             <div class="clinic-logo">
                 <img src="Logo_Dr_Aya.webp" alt="لوجو عيادة د. آية خطاب">
             </div>
-            <h1>عيادة د. آية خطاب</h1>
-            <p>نظام الإدارة الشامل - التغذية العلاجية والعلاج الطبيعي</p>
+            <h2>نظام الإدارة الشامل</h2>
         </div>
 
         <div class="gates-container">
-            <!-- الكارت الأول: جدول الحجوزات -->
             <a href="https://drayakhattab.com/today" class="gate-card">
                 <i class="fa-solid fa-calendar-check gate-icon"></i>
                 <h3 class="gate-title">جدول الحجوزات اليومي</h3>
                 <p class="gate-desc">إدارة كشوفات اليوم، المتابعات، الجلسات، وتسجيل حضور المرضى وحالة الدفع.</p>
             </a>
 
-            <!-- الكارت الثاني: استمارة المرضى (الكروت) -->
             <a href="https://drayakhattab.com/cards" class="gate-card">
                 <i class="fa-solid fa-address-card gate-icon"></i>
                 <h3 class="gate-title">سجل استمارات المرضى</h3>
@@ -276,29 +281,126 @@
 
     </div>
 
+    <!-- زر فتح الشات -->
+    <button class="chat-toggle-btn" onclick="toggleChat()" title="محادثة عيادة د.آية">
+        <i class="fa-solid fa-comments"></i>
+    </button>
+
+    <!-- صندوق الشات الحي -->
+    <div class="chat-box-wrapper" id="chatBox">
+        <div class="chat-header">
+            <span>محادثة العيادة (اليومية)</span>
+            <select id="userRole" onchange="changeUserRole()">
+                <option value="reception">موظف الاستقبال</option>
+                <option value="doctor">د. آية خطاب</option>
+            </select>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">إرسال</button>
+        </div>
+    </div>
+
     <script>
-        // إعدادات المظهر (الدارك مود) مع حفظ الاختيار
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
-
         if (currentTheme) {
             document.documentElement.setAttribute('data-theme', currentTheme);
-            if (currentTheme === 'dark') {
-                toggleSwitch.checked = true;
-            }
+            if (currentTheme === 'dark') toggleSwitch.checked = true;
         }
-
-        function switchTheme(e) {
+        toggleSwitch.addEventListener('change', (e) => {
             if (e.target.checked) {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
             } else {
                 document.documentElement.setAttribute('data-theme', 'light');
                 localStorage.setItem('theme', 'light');
-            }    
+            }
+        });
+
+        function toggleChat() {
+            const box = document.getElementById('chatBox');
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+            if(box.style.display === 'flex') {
+                scrollToBottom();
+            }
         }
-        
-        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        function changeUserRole() {
+            const role = document.getElementById('userRole').value;
+            localStorage.setItem('chat_current_role', role);
+        }
+
+        // الحصول على تاريخ اليوم بصيغة YYYY-MM-DD عشان الرسايل تتصفر لوحدها كل يوم
+        function getTodayKey() {
+            const d = new Date();
+            return `clinic_chat_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let savedRole = localStorage.getItem('chat_current_role') || 'reception';
+            document.getElementById('userRole').value = savedRole;
+            loadMessages();
+            setInterval(loadMessages, 2000);
+        });
+
+        function loadMessages() {
+            let chatKey = getTodayKey();
+            let messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+            const container = document.getElementById('chatMessages');
+            let isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+            container.innerHTML = '';
+            if(messages.length === 0) {
+                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px;">رسايل النهارده هتبدأ هنا.. صباح الخير!</div>';
+                return;
+            }
+
+            messages.forEach(msg => {
+                let div = document.createElement('div');
+                div.className = `message ${msg.role}`;
+                let senderTitle = msg.role === 'doctor' ? '🩺 د. آية خطاب' : '🧑‍💻 موظف الاستقبال';
+                div.innerHTML = `<span class="sender-name">${senderTitle}</span>${msg.text}`;
+                container.appendChild(div);
+            });
+
+            if (isAtBottom) {
+                scrollToBottom();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const role = document.getElementById('userRole').value;
+            let chatKey = getTodayKey();
+            let messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+
+            messages.push({
+                role: role,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            localStorage.setItem(chatKey, JSON.stringify(messages));
+            input.value = '';
+            loadMessages();
+            scrollToBottom();
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
     </script>
 </body>
 </html>
