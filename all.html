@@ -171,7 +171,7 @@
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* تصميم الشات الحي */
+        /* تصميم الشات الحي السحابي */
         .chat-toggle-btn {
             position: fixed; bottom: 25px; right: 25px; z-index: 1000;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
@@ -286,16 +286,18 @@
         <i class="fa-solid fa-comments"></i>
     </button>
 
-    <!-- صندوق الشات الحي -->
+    <!-- صندوق الشات الحي السحابي -->
     <div class="chat-box-wrapper" id="chatBox">
         <div class="chat-header">
-            <span>محادثة العيادة (اليومية)</span>
+            <span>محادثة العيادة (سحابية فورية)</span>
             <select id="userRole" onchange="changeUserRole()">
                 <option value="reception">موظف الاستقبال</option>
                 <option value="doctor">د. آية خطاب</option>
             </select>
         </div>
-        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-messages" id="chatMessages">
+            <div style="text-align:center; opacity:0.5; margin-top:80px;">جاري تحميل الرسائل...</div>
+        </div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">إرسال</button>
@@ -303,6 +305,9 @@
     </div>
 
     <script>
+        // رابط جوجل سكريبت الخاص بك
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwOngf3IBkuTMHvy0mrnYFwqO3NYoxgjdmZVqCS48HfYBjWFV2mN_5Gf6FrOum_AOx/exec';
+
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme) {
@@ -323,6 +328,7 @@
             const box = document.getElementById('chatBox');
             box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
             if(box.style.display === 'flex') {
+                loadCloudMessages();
                 scrollToBottom();
             }
         }
@@ -332,28 +338,43 @@
             localStorage.setItem('chat_current_role', role);
         }
 
-        // الحصول على تاريخ اليوم بصيغة YYYY-MM-DD عشان الرسايل تتصفر لوحدها كل يوم
-        function getTodayKey() {
+        function getTodayDateStr() {
             const d = new Date();
-            return `clinic_chat_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             let savedRole = localStorage.getItem('chat_current_role') || 'reception';
             document.getElementById('userRole').value = savedRole;
-            loadMessages();
-            setInterval(loadMessages, 2000);
+            loadCloudMessages();
+            // تحديث لايف كل ثانيتين من السيرفر
+            setInterval(loadCloudMessages, 2000);
         });
 
-        function loadMessages() {
-            let chatKey = getTodayKey();
-            let messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+        async function loadCloudMessages() {
+            const dateStr = getTodayDateStr();
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'GET_CHAT', date: dateStr })
+                });
+                let result = await response.json();
+                
+                if (result.status === 'success') {
+                    renderMessages(result.data);
+                }
+            } catch (e) {
+                console.error("فشل جلب الرسائل", e);
+            }
+        }
+
+        function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
             let isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
 
             container.innerHTML = '';
-            if(messages.length === 0) {
-                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px;">رسايل النهارده هتبدأ هنا.. صباح الخير!</div>';
+            if(!messages || messages.length === 0) {
+                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px;">رسايل النهاردة هتبدأ هنا.. صباح الخير!</div>';
                 return;
             }
 
@@ -370,25 +391,32 @@
             }
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if(!text) return;
 
             const role = document.getElementById('userRole').value;
-            let chatKey = getTodayKey();
-            let messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+            const dateStr = getTodayDateStr();
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            messages.push({
-                role: role,
-                text: text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
+            input.value = ''; // تفريغ الحقل فوراً لسرعة الاستجابة
 
-            localStorage.setItem(chatKey, JSON.stringify(messages));
-            input.value = '';
-            loadMessages();
-            scrollToBottom();
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'SEND_CHAT', 
+                        date: dateStr, 
+                        time: timeStr, 
+                        role: role, 
+                        text: text 
+                    })
+                });
+                loadCloudMessages(); // تحديث فوري بعد الإرسال
+            } catch (e) {
+                console.error("فشل إرسال الرسالة", e);
+            }
         }
 
         function handleKeyPress(e) {
