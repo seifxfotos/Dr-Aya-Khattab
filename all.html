@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة النظام - عيادة د. آية خطاب</title>
+    
+    <!-- خط كايرو لدعم العربي بشكل احترافي -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- مكتبة الأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0093D0;
+            --primary-green: #8CC63F;
+            --bg-color: #f4f7f6;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-dark: #2c3e50;
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+
+        :root[data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: rgba(30, 30, 30, 0.85);
+            --text-dark: #e0e0e0;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 147, 208, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(140, 198, 63, 0.08), transparent 25%);
+            color: var(--text-dark);
+            transition: background-color 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* دوائر زخرفية في الخلفية لإعطاء عمق */
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+        }
+        .blob-1 {
+            top: -10%; left: -10%;
+            width: 400px; height: 400px;
+            background-color: var(--primary-blue);
+        }
+        .blob-2 {
+            bottom: -10%; right: -10%;
+            width: 350px; height: 350px;
+            background-color: var(--primary-green);
+        }
+
+        .main-container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 50px 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* منطقة اللوجو والترحيب */
+        .clinic-header {
+            margin-bottom: 40px;
+        }
+        
+        .clinic-logo {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 147, 208, 0.2);
+            position: relative;
+        }
+
+        .clinic-logo i {
+            font-size: 60px;
+            color: white;
+        }
+
+        .clinic-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(to left, var(--primary-blue), var(--primary-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .clinic-header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+
+        /* منطقة الأزرار (البوابات) */
+        .gates-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .gate-card {
+            text-decoration: none;
+            color: inherit;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 147, 208, 0.1);
+            padding: 30px 20px;
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .gate-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .gate-card:hover {
+            transform: translateY(-10px);
+            border-color: transparent;
+            box-shadow: 0 15px 30px rgba(0, 147, 208, 0.3);
+            color: white;
+        }
+
+        .gate-card:hover::before {
+            opacity: 1;
+        }
+
+        .gate-icon {
+            font-size: 45px;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+            transition: color 0.4s ease;
+        }
+
+        .gate-card:hover .gate-icon {
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .gate-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 8px;
+        }
+
+        .gate-desc {
+            font-size: 13px;
+            opacity: 0.8;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* زر الدارك مود */
+        .theme-switch-wrapper { 
+            position: fixed; top: 25px; left: 25px; z-index: 100;
+        }
+        .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
+        .theme-switch input { display: none; }
+        .slider { 
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: rgba(0,0,0,0.1); border: 1px solid var(--glass-border);
+            transition: .4s; border-radius: 34px; 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 6px;
+        }
+        .slider .fa-sun { color: #f39c12; font-size: 14px; z-index: 1;}
+        .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
+        .slider:before { 
+            position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 3px; 
+            background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: rgba(255,255,255,0.1); }
+        input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
+
+        /* نسخة الموبايل */
+        @media (max-width: 600px) {
+            .main-container { padding: 40px 20px; border-radius: 15px;}
+            .clinic-logo { width: 100px; height: 100px; }
+            .clinic-logo i { font-size: 40px; }
+            .clinic-header h1 { font-size: 24px; }
+            .gates-container { grid-template-columns: 1fr; }
+            .theme-switch-wrapper { top: 15px; left: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الدوائر الخلفية -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <!-- زر الوضع الليلي/النهاري -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox" title="تغيير المظهر">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round">
+                <i class="fa-solid fa-moon"></i>
+                <i class="fa-solid fa-sun"></i>
+            </div>
+        </label>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="clinic-header">
+            <!-- أيقونة اللوجو (لو عندك صورة حقيقية للوجو تقدر تبدلها بـ <img> هنا) -->
+            <div class="clinic-logo">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <h1>عيادة د. آية خطاب</h1>
+            <p>نظام الإدارة الشامل - التغذية العلاجية والعلاج الطبيعي</p>
+        </div>
+
+        <div class="gates-container">
+            <!-- الكارت الأول: جدول الحجوزات -->
+            <a href="https://drayakhattab.com/today" class="gate-card">
+                <i class="fa-solid fa-calendar-check gate-icon"></i>
+                <h3 class="gate-title">جدول الحجوزات اليومي</h3>
+                <p class="gate-desc">إدارة كشوفات اليوم، المتابعات، الجلسات، وتسجيل حضور المرضى وحالة الدفع.</p>
+            </a>
+
+            <!-- الكارت الثاني: استمارة المرضى (الكروت) -->
+            <a href="https://drayakhattab.com/cards" class="gate-card">
+                <i class="fa-solid fa-address-card gate-icon"></i>
+                <h3 class="gate-title">سجل استمارات المرضى</h3>
+                <p class="gate-desc">البحث عن كروت المرضى، تسجيل البيانات الطبية، إضافة جلسات، وتاريخ الحالات.</p>
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        // إعدادات المظهر (الدارك مود) مع حفظ الاختيار
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const currentTheme = localStorage.getItem('theme');
+
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true;
+            }
+        }
+
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }    
+        }
+        
+        toggleSwitch.addEventListener('change', switchTheme, false);
+    </script>
+</body>
+</html>
