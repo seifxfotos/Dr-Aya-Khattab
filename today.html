@@ -137,6 +137,7 @@
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
         
+        /* القائمة المنسدلة لحالة الدفع داخل الجدول */
         .inline-pay-select {
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -197,8 +198,6 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
 <body>
@@ -341,8 +340,8 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        // رابط جوجل سكريبت 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfE9qeFQEf63fZzcfkDsbt_iuaboN7kv0Bkc1rrfyt10vaVi_fF_ZppYeq_FaVQkq/exec';
+        // رابط السكريبت الجديد اللي متصل بالشيت المباشر
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYFj2KcVNsMuwaZhFvvd3Z1eddZw4tXi7Nal2VrsOl1AukyVNmQm6qw35cRMcNaWuJ/exec';
 
         const now = new Date();
         const year = now.getFullYear();
@@ -422,7 +421,6 @@
                         display.innerText = 'انتهى الوقت';
                         display.classList.add('time-ended');
                         document.getElementById('timerIcon').classList.add('time-ended');
-                        
                         document.getElementById('btnTimerPlay').style.display = 'none';
                     } else {
                         updateGlobalTimerDisplay();
@@ -501,35 +499,30 @@
             cancelBtn.onclick = () => modal.style.display = 'none';
         }
 
-        // ================= دالة ذكية لإرسال البيانات كـ Form لتجنب مشاكل جوجل =================
-        async function sendDataToGoogle(actionData) {
-            // نقوم بإنشاء فورم وهمية في الذاكرة لتمرير البيانات بأمان
-            const formData = new URLSearchParams();
-            formData.append('dataPayload', JSON.stringify(actionData));
-
+        // ================= الاتصال بجوجل شيت بطريقة مباشرة لتفادي البلوك =================
+        async function fetchFromGoogle(payload) {
             let response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString()
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
             });
-
-            if (!response.ok) throw new Error("فشل الاتصال بخوادم جوجل");
-            let textResult = await response.text();
             
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            
+            let textResult = await response.text();
             try {
                 return JSON.parse(textResult);
             } catch (e) {
-                throw new Error("بيانات غير مقروءة من السيرفر.");
+                throw new Error("خطأ في قراءة رد السيرفر");
             }
         }
 
-        // ================= الاتصال بجوجل شيت =================
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
             showSyncStatus('جاري جلب البيانات...');
             
             try {
-                let result = await sendDataToGoogle({ action: 'GET_DATA', date: date });
+                let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
 
                 if(result.status === 'success') {
                     patientsQueue = result.data.map(p => ({
@@ -554,7 +547,7 @@
                     name: p.name, dept: p.dept, type: p.type, payment: p.payment
                 }));
                 
-                let result = await sendDataToGoogle({ action: 'SYNC_DATA', date: date, data: cleanData });
+                let result = await fetchFromGoogle({ action: 'SYNC_DATA', date: date, data: cleanData });
                 
                 if(result.status !== 'success') {
                     throw new Error(result.message);
@@ -563,8 +556,8 @@
                 console.error("فشل المزامنة", e);
                 showModal({
                     type: 'error', 
-                    title: 'تنبيه: لم يتم الحفظ!', 
-                    message: `تأكد من تحديث كود السيرفر أو الاتصال بالإنترنت.`
+                    title: 'خطأ في الاتصال', 
+                    message: `لم يتم حفظ التعديل الأخير، يرجى تحديث الصفحة.`
                 });
             }
             hideSyncStatus();
@@ -675,7 +668,7 @@
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
-                            let result = await sendDataToGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept });
+                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept });
                             
                             if(result.status !== 'success') throw new Error();
 
