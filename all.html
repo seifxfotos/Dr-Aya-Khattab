@@ -183,7 +183,7 @@
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* تصميم الشات الحي السحابي */
+        /* تصميم الشات الحي السحابي مع شارة التنبيه الحمراء */
         .chat-toggle-btn {
             position: fixed; bottom: 25px; right: 25px; z-index: 1000;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
@@ -192,6 +192,20 @@
             display: flex; align-items: center; justify-content: center; transition: 0.3s;
         }
         .chat-toggle-btn:hover { transform: scale(1.1); }
+
+        .chat-badge {
+            position: absolute; top: -5px; right: -5px;
+            background-color: #e74c3c; color: white; border-radius: 50%;
+            width: 24px; height: 24px; font-size: 12px; font-weight: 800;
+            display: none; align-items: center; justify-content: center;
+            border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            animation: pulseBadge 1.5s infinite;
+        }
+        @keyframes pulseBadge {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
 
         .chat-box-wrapper {
             position: fixed; bottom: 95px; right: 25px; width: 350px; max-width: 90vw;
@@ -280,14 +294,12 @@
         </div>
 
         <div class="gates-container">
-            <!-- يفتح في صفحة جديدة target="_blank" -->
             <a href="https://drayakhattab.com/today" target="_blank" class="gate-card">
                 <i class="fa-solid fa-calendar-check gate-icon"></i>
                 <h3 class="gate-title">جدول الحجوزات اليومي</h3>
                 <p class="gate-desc">إدارة كشوفات اليوم، المتابعات والجلسات، وتسجيل حضور المرضى وحالة الدفع.</p>
             </a>
 
-            <!-- يفتح في صفحة جديدة target="_blank" -->
             <a href="https://drayakhattab.com/cards" target="_blank" class="gate-card">
                 <i class="fa-solid fa-address-card gate-icon"></i>
                 <h3 class="gate-title">سجل استمارات المرضى</h3>
@@ -297,9 +309,10 @@
 
     </div>
 
-    <!-- زر فتح الشات -->
+    <!-- زر فتح الشات مع شارة التنبيه -->
     <button class="chat-toggle-btn" onclick="toggleChat()" title="محادثة عيادة د.آية">
         <i class="fa-solid fa-comments"></i>
+        <span class="chat-badge" id="chatBadge">0</span>
     </button>
 
     <!-- صندوق الشات الحي السحابي -->
@@ -341,8 +354,13 @@
 
         function toggleChat() {
             const box = document.getElementById('chatBox');
-            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-            if(box.style.display === 'flex') {
+            const isHidden = box.style.display !== 'flex';
+            box.style.display = isHidden ? 'flex' : 'none';
+            
+            if(isHidden) {
+                // عند فتح الشات يتم تصفير التنبيهات
+                document.getElementById('chatBadge').style.display = 'none';
+                localStorage.setItem('last_seen_msg_count', window.totalMessagesCount || 0);
                 loadCloudMessages();
                 scrollToBottom();
             }
@@ -362,7 +380,7 @@
             let savedRole = localStorage.getItem('chat_current_role') || 'reception';
             document.getElementById('userRole').value = savedRole;
             loadCloudMessages();
-            setInterval(loadCloudMessages, 2000);
+            setInterval(loadCloudMessages, 3000); // تحديث هادي كل 3 ثواني لراحة السيرفر
         });
 
         async function loadCloudMessages() {
@@ -385,6 +403,11 @@
         function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
             let isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+            const currentRole = document.getElementById('userRole').value;
+            const box = document.getElementById('chatBox');
+            const isBoxOpen = box.style.display === 'flex';
+
+            window.totalMessagesCount = messages ? messages.length : 0;
 
             container.innerHTML = '';
             if(!messages || messages.length === 0) {
@@ -405,6 +428,23 @@
                 `;
                 container.appendChild(div);
             });
+
+            // منطق شارة التنبيه الحمراء الذكية
+            let lastSeenCount = parseInt(localStorage.getItem('last_seen_msg_count') || '0');
+            const badge = document.getElementById('chatBadge');
+
+            if (!isBoxOpen && messages.length > lastSeenCount) {
+                // التحقق هل آخر رسالة جاية من الطرف التاني مش مني
+                let lastMsg = messages[messages.length - 1];
+                if (lastMsg.role !== currentRole) {
+                    let newUnreadCount = messages.length - lastSeenCount;
+                    badge.innerText = newUnreadCount > 9 ? '9+' : newUnreadCount;
+                    badge.style.display = 'flex';
+                }
+            } else if (isBoxOpen) {
+                badge.style.display = 'none';
+                localStorage.setItem('last_seen_msg_count', messages.length);
+            }
 
             if (isAtBottom) {
                 scrollToBottom();
