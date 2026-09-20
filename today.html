@@ -137,7 +137,6 @@
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
         
-        /* القائمة المنسدلة لحالة الدفع داخل الجدول */
         .inline-pay-select {
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -340,8 +339,8 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        // رابط السكريبت الجديد اللي متصل بالشيت المباشر
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYFj2KcVNsMuwaZhFvvd3Z1eddZw4tXi7Nal2VrsOl1AukyVNmQm6qw35cRMcNaWuJ/exec';
+        // رابط السكريبت بتاعك
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfrCyPxWyD6XpbLvPw799-x7E6rYPDNYgID2-3ns8xKPlsaRvuacyB2eF4E8BPBRZD/exec';
 
         const now = new Date();
         const year = now.getFullYear();
@@ -499,21 +498,21 @@
             cancelBtn.onclick = () => modal.style.display = 'none';
         }
 
-        // ================= الاتصال بجوجل شيت بطريقة مباشرة لتفادي البلوك =================
+        // ================= الإتصال المباشر الخالي من القيود =================
         async function fetchFromGoogle(payload) {
             let response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                // لا نضع headers لكي يعامله المتصفح كـ Simple Request ويسمح بمروره
                 body: JSON.stringify(payload)
             });
             
-            if (!response.ok) throw new Error("HTTP " + response.status);
+            if (!response.ok) throw new Error("مشكلة في الاتصال (HTTP " + response.status + ")");
             
             let textResult = await response.text();
             try {
                 return JSON.parse(textResult);
             } catch (e) {
-                throw new Error("خطأ في قراءة رد السيرفر");
+                throw new Error("بيانات غير مقروءة من السيرفر: " + textResult.substring(0, 80));
             }
         }
 
@@ -554,10 +553,11 @@
                 }
             } catch(e) {
                 console.error("فشل المزامنة", e);
+                // طباعة الخطأ الفعلي بدلاً من الخطأ العام
                 showModal({
                     type: 'error', 
-                    title: 'خطأ في الاتصال', 
-                    message: `لم يتم حفظ التعديل الأخير، يرجى تحديث الصفحة.`
+                    title: 'حدث خطأ أثناء الحفظ', 
+                    message: `<span style="color:var(--danger); font-size:13px; font-weight:bold;">${e.message}</span><br>تأكد من إعطاء التصريح (Run) للسكريبت.`
                 });
             }
             hideSyncStatus();
@@ -670,7 +670,7 @@
                         try {
                             let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept });
                             
-                            if(result.status !== 'success') throw new Error();
+                            if(result.status !== 'success') throw new Error(result.message);
 
                             patientsQueue.splice(index, 1);
                             renderTable();
@@ -678,7 +678,7 @@
                             
                             showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة يوم ${confirmDate}` });
                         } catch (e) {
-                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد. تأكد من اتصالك بالإنترنت.' });
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message });
                         }
                         hideSyncStatus();
                     }
