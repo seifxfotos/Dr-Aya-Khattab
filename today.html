@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- مكتبة التقويم الاحترافي (Flatpickr) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
     <style>
@@ -125,6 +124,16 @@
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
         .schedule-table tr:last-child td { border-bottom: none; }
         
+        /* تنسيق الصف المشطوب عند دخول المريض */
+        .row-finished {
+            opacity: 0.5;
+            text-decoration: line-through;
+            background-color: rgba(0,0,0,0.02);
+        }
+        :root[data-theme="dark"] .row-finished {
+            background-color: rgba(255,255,255,0.02);
+        }
+
         .action-btns { display: flex; gap: 5px; align-items: center;}
         .action-btns button { 
             background: var(--input-bg); border: 1px solid var(--border); padding: 6px 10px; 
@@ -133,6 +142,7 @@
         .action-btns button:hover { background: var(--border); }
         .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
         .btn-book-next:hover { background-color: #7ab033 !important; }
+        .btn-done { color: var(--primary-green) !important; }
 
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-kashf { background-color: var(--primary-blue); }
@@ -204,7 +214,6 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         
-        /* ضبط خط التقويم العربي */
         .flatpickr-calendar { font-family: 'Cairo', sans-serif !important; direction: rtl; }
     </style>
 </head>
@@ -380,11 +389,9 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        // تم إضافة رابط السكريبت الخاص بك هنا
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0-43L3Wwgw51ozvw8e6vRovR6-_VX0Lz4XcHvsnkgHBd8VCY4AJN0uX3WPhSsJ1Vh/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqZraYM6stxtlsu6CyR617nn7nGqMJElok3j2fDyUSGHMVYA3xYWaSvHuw4YkSUHGfxg/exec';
 
         const now = new Date();
-        
         let patientsQueue = [];
 
         document.querySelectorAll('select').forEach(select => {
@@ -576,7 +583,7 @@
 
                 if(result.status === 'success') {
                     patientsQueue = result.data.map(p => ({
-                        name: p.name, dept: p.dept, type: p.type, payment: p.payment
+                        name: p.name, dept: p.dept, type: p.type, payment: p.payment, finished: p.finished === true || p.finished === "true"
                     }));
                     renderTable();
                 } else {
@@ -594,7 +601,7 @@
             
             try {
                 let cleanData = patientsQueue.map(p => ({
-                    name: p.name, dept: p.dept, type: p.type, payment: p.payment
+                    name: p.name, dept: p.dept, type: p.type, payment: p.payment, finished: p.finished || false
                 }));
                 
                 let result = await fetchFromGoogle({ action: 'SYNC_DATA', date: date, data: cleanData });
@@ -604,11 +611,6 @@
                 }
             } catch(e) {
                 console.error("فشل المزامنة", e);
-                showModal({
-                    type: 'error', 
-                    title: 'حدث خطأ أثناء الحفظ', 
-                    message: `<span style="color:var(--danger); font-size:13px; font-weight:bold;">${e.message}</span><br>تأكد من إعطاء التصريح (Run) للسكريبت.`
-                });
             }
             hideSyncStatus();
         }
@@ -624,7 +626,7 @@
                 return; 
             }
             
-            patientsQueue.push({ name, dept, type, payment });
+            patientsQueue.push({ name, dept, type, payment, finished: false });
             
             document.getElementById('patientName').value = '';
             smartSelectDepartment(); 
@@ -643,6 +645,13 @@
             syncDataToGoogle(); 
         }
 
+        // دالة تبديل حالة الشطب (انتهى الكشف)
+        function toggleFinished(index) {
+            patientsQueue[index].finished = !patientsQueue[index].finished;
+            renderTable();
+            syncDataToGoogle();
+        }
+
         function renderTable() {
             const tbody = document.getElementById('scheduleBody');
             tbody.innerHTML = '';
@@ -651,9 +660,10 @@
                 let badgeTypeClass = patient.type === 'كشف' ? 'badge-kashf' : (patient.type === 'متابعة' ? 'badge-motab3a' : 'badge-galsa');
                 let badgeDeptClass = patient.dept === 'تغذية علاجية' ? 'badge-dept-nutrition' : 'badge-dept-physio';
                 let payClass = (patient.payment === 'تم الدفع' || patient.payment === 'مدفوع مسبقاً') ? 'status-paid' : 'status-unpaid';
+                let rowFinishedClass = patient.finished ? 'row-finished' : '';
 
                 let row = `
-                    <tr>
+                    <tr class="${rowFinishedClass}">
                         <td style="font-weight:bold; color:var(--primary-blue)">#${index + 1}</td>
                         <td style="font-weight:700">${patient.name}</td>
                         <td><span class="badge ${badgeDeptClass}">${patient.dept}</span></td>
@@ -667,6 +677,9 @@
                         </td>
                         <td>
                             <div class="action-btns">
+                                <button title="تم الكشف (شطب)" class="btn-done" onclick="toggleFinished(${index})">
+                                    <i class="fa-solid ${patient.finished ? 'fa-rotate-left' : 'fa-check'}"></i>
+                                </button>
                                 <button title="رفع" onclick="moveUp(${index})"><i class="fa-solid fa-arrow-up"></i></button>
                                 <button title="تنزيل" onclick="moveDown(${index})"><i class="fa-solid fa-arrow-down"></i></button>
                                 <button title="إنهاء وحذف" style="color:var(--danger)" onclick="removePatient(${index})"><i class="fa-solid fa-trash"></i></button>
@@ -724,8 +737,6 @@
                             
                             if(result.status !== 'success') throw new Error(result.message);
 
-                            // تم التعديل: لن يتم حذف المريض من الجدول الحالي هنا
-                            
                             showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة للمريض في يوم ${confirmDate} بنجاح.` });
                         } catch (e) {
                             showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message });
