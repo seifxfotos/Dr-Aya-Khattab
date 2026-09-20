@@ -216,10 +216,12 @@
             align-self: flex-end; border-bottom-left-radius: 4px; 
             border-left: 4px solid #5d8e20;
         }
-        .message .sender-name { 
-            font-size: 11px; font-weight: 700; opacity: 0.9; display: block; margin-bottom: 3px; 
-            border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;
+        .message .sender-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; margin-bottom: 4px;
         }
+        .message .sender-name { font-size: 11px; font-weight: 700; opacity: 0.9; }
+        .message .msg-time { font-size: 9px; opacity: 0.8; direction: ltr; }
 
         .chat-input-area {
             padding: 10px; background: rgba(0,0,0,0.03); display: flex; gap: 8px; border-top: 1px solid var(--glass-border);
@@ -289,9 +291,9 @@
     <!-- صندوق الشات الحي السحابي -->
     <div class="chat-box-wrapper" id="chatBox">
         <div class="chat-header">
-            <span>محادثة العيادة (سحابية فورية)</span>
+            <span>محادثة العيادة</span>
             <select id="userRole" onchange="changeUserRole()">
-                <option value="reception">موظف الاستقبال</option>
+                <option value="reception">الريسبشن</option>
                 <option value="doctor">د. آية خطاب</option>
             </select>
         </div>
@@ -379,8 +381,14 @@
             messages.forEach(msg => {
                 let div = document.createElement('div');
                 div.className = `message ${msg.role}`;
-                let senderTitle = msg.role === 'doctor' ? '🩺 د. آية خطاب' : '🧑‍💻 موظف الاستقبال';
-                div.innerHTML = `<span class="sender-name">${senderTitle}</span>${msg.text}`;
+                let senderTitle = msg.role === 'doctor' ? 'د. آية خطاب' : 'الريسبشن';
+                div.innerHTML = `
+                    <div class="sender-header">
+                        <span class="sender-name">${senderTitle}</span>
+                        <span class="msg-time">${msg.time || ''}</span>
+                    </div>
+                    ${msg.text}
+                `;
                 container.appendChild(div);
             });
 
@@ -389,7 +397,6 @@
             }
         }
 
-        // تم تعديل هذه الدالة للاستجابة اللحظية الفورية (Zero Delay)
         async function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
@@ -399,18 +406,9 @@
             const dateStr = getTodayDateStr();
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            input.value = ''; // تفريغ حقل الكتابة فوراً
+            input.value = '';
 
-            // إظهار الرسالة محلياً فوراً بدون انتظار رد السيرفر
-            const container = document.getElementById('chatMessages');
-            let tempDiv = document.createElement('div');
-            tempDiv.className = `message ${role}`;
-            let senderTitle = role === 'doctor' ? '🩺 د. آية خطاب' : '🧑‍💻 موظف الاستقبال';
-            tempDiv.innerHTML = `<span class="sender-name">${senderTitle}</span>${text}`;
-            container.appendChild(tempDiv);
-            scrollToBottom();
-
-            // رفعها للسيرفر والشيت في الخلفية بصمت
+            // حفظ الرسالة مباشرة في السيرفر وتحديث العرض بدون أي اختفاء
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -422,8 +420,9 @@
                         text: text 
                     })
                 });
+                loadCloudMessages();
             } catch (e) {
-                console.error("فشل إرسال الرسالة للسيرفر", e);
+                console.error("فشل إرسال الرسالة", e);
             }
         }
 
