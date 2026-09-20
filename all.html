@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة النظام - عيادة د. آية خطاب</title>
     
-    <!-- خط كايرو لدعم العربي بشكل احترافي -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- مكتبة الأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -46,7 +44,6 @@
             overflow: hidden;
         }
 
-        /* دوائر زخرفية في الخلفية لإعطاء عمق */
         .blob {
             position: absolute;
             filter: blur(80px);
@@ -83,27 +80,25 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* منطقة اللوجو والترحيب */
         .clinic-header {
             margin-bottom: 40px;
         }
         
         .clinic-logo {
-            width: 140px;
-            height: 140px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            border-radius: 50%;
-            margin: 0 auto 20px;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 25px rgba(0, 147, 208, 0.2);
             position: relative;
         }
 
-        .clinic-logo i {
-            font-size: 60px;
-            color: white;
+        .clinic-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.08));
         }
 
         .clinic-header h1 {
@@ -115,14 +110,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .clinic-header p {
-            margin: 5px 0 0;
-            font-size: 16px;
-            opacity: 0.7;
-            font-weight: 600;
-        }
-
-        /* منطقة الأزرار (البوابات) */
         .gates-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -199,7 +186,6 @@
             line-height: 1.5;
         }
 
-        /* زر الدارك مود */
         .theme-switch-wrapper { 
             position: fixed; top: 25px; left: 25px; z-index: 100;
         }
@@ -221,11 +207,9 @@
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* نسخة الموبايل */
         @media (max-width: 600px) {
             .main-container { padding: 40px 20px; border-radius: 15px;}
-            .clinic-logo { width: 100px; height: 100px; }
-            .clinic-logo i { font-size: 40px; }
+            .clinic-logo { width: 130px; height: 130px; }
             .clinic-header h1 { font-size: 24px; }
             .gates-container { grid-template-columns: 1fr; }
             .theme-switch-wrapper { top: 15px; left: 15px; }
@@ -234,11 +218,9 @@
 </head>
 <body>
 
-    <!-- الدوائر الخلفية -->
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
-    <!-- زر الوضع الليلي/النهاري -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox" title="تغيير المظهر">
             <input type="checkbox" id="checkbox" />
@@ -252,23 +234,20 @@
     <div class="main-container">
         
         <div class="clinic-header">
-            <!-- أيقونة اللوجو (لو عندك صورة حقيقية للوجو تقدر تبدلها بـ <img> هنا) -->
+            <!-- اللوجو الفعلي للدكتورة -->
             <div class="clinic-logo">
-                <i class="fa-solid fa-heart-pulse"></i>
+                <img src="Logo-Dr-Aya-W.webp" alt="لوجو عيادة د. آية خطاب">
             </div>
             <h1>عيادة د. آية خطاب</h1>
-            <p>نظام الإدارة الشامل - التغذية العلاجية والعلاج الطبيعي</p>
         </div>
 
         <div class="gates-container">
-            <!-- الكارت الأول: جدول الحجوزات -->
             <a href="https://drayakhattab.com/today" class="gate-card">
                 <i class="fa-solid fa-calendar-check gate-icon"></i>
                 <h3 class="gate-title">جدول الحجوزات اليومي</h3>
                 <p class="gate-desc">إدارة كشوفات اليوم، المتابعات، الجلسات، وتسجيل حضور المرضى وحالة الدفع.</p>
             </a>
 
-            <!-- الكارت الثاني: استمارة المرضى (الكروت) -->
             <a href="https://drayakhattab.com/cards" class="gate-card">
                 <i class="fa-solid fa-address-card gate-icon"></i>
                 <h3 class="gate-title">سجل استمارات المرضى</h3>
@@ -279,7 +258,6 @@
     </div>
 
     <script>
-        // إعدادات المظهر (الدارك مود) مع حفظ الاختيار
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
 
