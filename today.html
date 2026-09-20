@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- مكتبة التقويم الاحترافي (Flatpickr) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
     <style>
         :root {
             --primary-blue: #0093D0;
@@ -65,9 +68,10 @@
         .date-picker { 
             font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); 
             padding: 8px 15px; border-radius: 8px; border: 1px solid white; 
-            color: white; outline: none; font-family: 'Cairo';
+            color: white; outline: none; font-family: 'Cairo'; cursor: pointer;
+            text-align: center;
         }
-        .date-picker::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .date-picker::-webkit-calendar-picker-indicator { display: none; }
 
         .theme-switch-wrapper { 
             position: fixed; bottom: 20px; right: 20px; z-index: 100;
@@ -192,11 +196,15 @@
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-box h3 { margin-top: 0; font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-dark);}
         .modal-box p { color: var(--text-dark); margin-bottom: 20px; line-height: 1.6; font-size: 15px; font-weight: 600;}
-        .modal-input { width: 90%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; margin-bottom: 20px; outline: none; font-size: 16px; text-align: center; background: var(--input-bg); color: var(--text-dark);}
+        
+        .modal-input { width: 90%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; margin-bottom: 20px; outline: none; font-size: 16px; text-align: center; background: var(--input-bg); color: var(--text-dark); cursor: pointer;}
+        
         .modal-actions { display: flex; justify-content: center; gap: 10px; }
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;}
         
+        /* ضبط خط التقويم العربي */
+        .flatpickr-calendar { font-family: 'Cairo', sans-serif !important; direction: rtl; }
     </style>
 </head>
 <body>
@@ -224,7 +232,7 @@
             </div>
             
             <div class="header-controls">
-                <input type="date" id="todayDate" class="date-picker" onchange="loadDataFromGoogle()">
+                <input type="text" id="todayDate" class="date-picker">
             </div>
         </div>
 
@@ -308,7 +316,8 @@
             <h3 id="modalTitle">عنوان التنبيه</h3>
             <p id="modalMessage">رسالة التنبيه</p>
             <div id="modalInputContainer" style="display: none;">
-                <input type="date" id="modalDateInput" class="modal-input">
+                <!-- input جاهز لمكتبة التقويم العربي -->
+                <input type="text" id="modalDateInput" class="modal-input">
             </div>
             <div class="modal-actions">
                 <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
@@ -317,7 +326,33 @@
         </div>
     </div>
 
+    <!-- استدعاء سكريبت التقويم العربي -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
+
     <script>
+        // ================= التقويم العربي =================
+        let headerDatePicker;
+        let modalDatePicker;
+
+        function initDatePickers() {
+            headerDatePicker = flatpickr("#todayDate", {
+                locale: "ar",
+                defaultDate: "today",
+                dateFormat: "Y-m-d",
+                onChange: function(selectedDates, dateStr, instance) {
+                    loadDataFromGoogle(); 
+                }
+            });
+
+            modalDatePicker = flatpickr("#modalDateInput", {
+                locale: "ar",
+                dateFormat: "Y-m-d",
+                disableMobile: "true" 
+            });
+        }
+        // ===================================================
+
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
 
@@ -339,14 +374,10 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        // رابط السكريبت بتاعك
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxinwxe4W0CLcmBVExFlnOQDG-4BLAbUjCuK1Gg29puQUZBiZCwkydXDPOWpkh3dIie/exec';
+        // رابط جوجل سكريبت (استبدله بالرابط بتاعك لو عملت شيت جديد)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp8cF7ASJDxr3ojw3rrhUlz3E0pWdO50en9tNx9Xx1DdI5MlZ2cC2uILWXipIG47Yr/exec';
 
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        document.getElementById('todayDate').value = `${year}-${month}-${day}`;
         
         let patientsQueue = [];
 
@@ -354,6 +385,7 @@
             select.addEventListener('change', function() { this.style.color = 'var(--text-dark)'; });
         });
 
+        // دالة اختيار القسم (بناءً على يوم الأسبوع الحالي فقط لتسهيل الإضافة، بدون تأثير على مواعيد المتابعة)
         function smartSelectDepartment() {
             const currentDay = now.getDay(); 
             const deptSelect = document.getElementById('department');
@@ -486,7 +518,7 @@
 
             if (options.type === 'prompt') {
                 inputContainer.style.display = 'block';
-                dateInput.value = options.inputValue || '';
+                modalDatePicker.setDate(options.inputValue || '');
                 cancelBtn.style.display = 'inline-block';
             }
 
@@ -498,11 +530,9 @@
             cancelBtn.onclick = () => modal.style.display = 'none';
         }
 
-        // ================= الإتصال المباشر الخالي من القيود =================
         async function fetchFromGoogle(payload) {
             let response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                // لا نضع headers لكي يعامله المتصفح كـ Simple Request ويسمح بمروره
                 body: JSON.stringify(payload)
             });
             
@@ -553,7 +583,6 @@
                 }
             } catch(e) {
                 console.error("فشل المزامنة", e);
-                // طباعة الخطأ الفعلي بدلاً من الخطأ العام
                 showModal({
                     type: 'error', 
                     title: 'حدث خطأ أثناء الحفظ', 
@@ -663,7 +692,10 @@
                 type: 'prompt',
                 title: 'حجز موعد المتابعة',
                 message: `تحديد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
+                
+                // هنا دالة المتابعة بتزود 7 أيام (أسبوع) بالظبط بدون أي تدخل أو استنتاجات لأيام العيادة
                 inputValue: getNextWeekDate(),
+                
                 onConfirm: async (confirmDate) => {
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
@@ -686,6 +718,7 @@
             });
         }
 
+        // دالة زيادة أسبوع واحد على تاريخ اليوم
         function getNextWeekDate() {
             let nextWeek = new Date();
             nextWeek.setDate(nextWeek.getDate() + 7);
@@ -696,6 +729,7 @@
         }
 
         window.onload = () => {
+            initDatePickers(); 
             smartSelectDepartment(); 
             resetGlobalTimer(); 
             loadDataFromGoogle(); 
