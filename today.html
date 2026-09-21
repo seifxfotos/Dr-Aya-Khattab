@@ -143,7 +143,7 @@
             background-color: rgba(255,255,255,0.02);
         }
 
-        /* تنسيقات السحب والإفلات الجديدة */
+        /* تنسيقات السحب والإفلات */
         .draggable-row { transition: background-color 0.2s; }
         .drag-handle { cursor: grab; }
         .drag-handle:active { cursor: grabbing; }
@@ -760,9 +760,7 @@
                         if (manualSlot && i > startIndex) {
                             autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة كحد أقصى لـ (${vType}). تم الترحيل التلقائي لفترة (${s}). يمكنكم التعديل يدوياً بالأسهم أو السحب.`;
                         } 
-                        else if (!manualSlot && i > 0) {
-                            autoMovedMsg = `تم نقل المريض تلقائياً إلى فترة (${s}) نظراً لاكتمال الحد الأقصى لحجوزات (${vType}) في الفترات السابقة.`;
-                        }
+                        // تم إزالة التنبيه في حالة "تلقائي" لترحيل المريض في صمت كما طلبت مسبقاً
                         break;
                     }
                 }
@@ -771,9 +769,7 @@
                     foundSlot = slots[slots.length - 1];
                     if (manualSlot && foundSlot !== manualSlot) {
                          autoMovedMsg = `جميع الفترات ممتلئة لـ (${vType})! تم ترحيله لآخر فترة متاحة (${foundSlot}).`;
-                    } else if (!manualSlot) {
-                         autoMovedMsg = `جميع الفترات ممتلئة لـ (${vType})! تم الإضافة في الفترة الأخيرة.`;
-                    }
+                    } 
                 }
                 targetSlot = foundSlot;
             }
@@ -815,7 +811,7 @@
             syncDataToGoogle();
         }
 
-        // ================== نظام السحب والإفلات الدقيق ==================
+        // ================== نظام السحب والإفلات ==================
         function handleDragStart(e, index) {
             draggedItemIndex = index;
             e.dataTransfer.effectAllowed = 'move';
@@ -991,7 +987,6 @@
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
             if (list.length === 0) {
-                // الصف الفارغ لا نضع له كلاس "draggable-row" حتى لا يتداخل مع الحسابات
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; pointer-events:none; padding:15px;">
                                       لا يوجد حجوزات في هذه الفترة. اسحب المرضى هنا لترتيبهم.
                                    </td></tr>`;
