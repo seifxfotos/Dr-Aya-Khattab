@@ -315,7 +315,6 @@
             <div id="modalInputContainer" style="display: none; flex-direction: column; align-items: center;">
                 <input type="text" id="modalDateInput" class="modal-input" placeholder="اختار التاريخ">
                 
-                <!-- تم إضافة خانة الساعة لحجز المتابعة هنا -->
                 <select id="modalSlotInput" class="modal-input" style="display: none;">
                     <option value="">تلقائي (أول فترة متاحة)</option>
                 </select>
@@ -342,8 +341,8 @@
         let modalDatePicker;
         let draggedItemIndex = null;
         let isLoadingData = false; 
+        let syncTimeout = null; // متغير تجميع وحفظ التعديلات (Debounce)
 
-        // دوال للتعامل مع الفترات الخاصة بتاريخ معين (للنافذة المنبثقة)
         function getSlotsForSpecificDate(dateStr) {
             if (!dateStr) return null;
             const d = new Date(dateStr);
@@ -385,7 +384,6 @@
                 locale: "ar", 
                 dateFormat: "Y-m-d", 
                 disableMobile: "true",
-                // تحديث قائمة الساعات ديناميكياً لما تغير التاريخ جوه النافذة
                 onChange: function(selectedDates, dateStr) {
                     updateModalSlotDropdown(dateStr);
                 }
@@ -572,7 +570,6 @@
                 }
                 modal.style.display = 'none';
                 if (options.type === 'prompt' && options.onConfirm) {
-                    // نبعت الـ 3 قيم (التاريخ، الدفع، الساعة)
                     options.onConfirm(dateInput.value, paymentInput.value, slotInput.value);
                 }
             };
@@ -600,18 +597,27 @@
             } catch(e) { return {}; }
         }
 
-        function saveLocalFinishedStates(date, states) {
-            try { localStorage.setItem('clinic_finished_' + date, JSON.stringify(states)); } catch(e) {}
-        }
-
+        // ================= نظام الكاش السريع للتحميل =================
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
             isLoadingData = true;
-            patientsQueue = [];
-            renderTable(); 
             
-            showSyncStatus('جاري جلب البيانات...');
+            // 1. عرض البيانات من الكاش المحلي فوراً (لتسريع التحميل)
+            const cachedData = localStorage.getItem('clinic_cache_' + date);
+            if (cachedData) {
+                try {
+                    patientsQueue = JSON.parse(cachedData);
+                    isLoadingData = false; 
+                    renderTable(); // الجدول بيظهر في لحظتها
+                } catch(e) { patientsQueue = []; }
+            } else {
+                patientsQueue = [];
+                renderTable(); // يظهر شاشة التحميل لو مفيش كاش
+            }
             
+            showSyncStatus('جاري المزامنة مع السحابة...');
+            
+            // 2. تحديث البيانات في الخلفية من جوجل
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
 
@@ -625,31 +631,47 @@
                         payment: p.payment || '', 
                         finished: localFinished[p.name + '_' + idx] !== undefined ? localFinished[p.name + '_' + idx] : (p.finished === true || String(p.finished).toLowerCase() === "true")
                     }));
-                } else {
-                    throw new Error(result.message);
+                    
+                    // تحديث الكاش بالبيانات الجديدة
+                    localStorage.setItem('clinic_cache_' + date, JSON.stringify(patientsQueue));
+                    
+                    isLoadingData = false;
+                    renderTable(); 
                 }
             } catch(e) {
                 console.error(e);
-                showModal({ type: 'error', title: 'خطأ في الاتصال', message: 'فشل تحميل بيانات اليوم. لا تقم بالإضافة حتى يتم التحديث.' });
+                if (!cachedData) showModal({ type: 'error', title: 'خطأ', message: 'تأكد من اتصالك بالإنترنت.' });
             } finally {
                 isLoadingData = false;
-                renderTable();
                 hideSyncStatus();
             }
         }
 
-        async function syncDataToGoogle() {
-            if (isLoadingData) return; 
-
+        // ================= نظام تأجيل الحفظ (Debounce) لسرعة الأداء =================
+        function scheduleSync() {
+            if (isLoadingData) return;
             const date = document.getElementById('todayDate').value;
-            showSyncStatus('جاري الحفظ...');
+            
+            // الحفظ فوراً في الكاش عشان مفيش داتا تضيع
+            localStorage.setItem('clinic_cache_' + date, JSON.stringify(patientsQueue));
             
             let localFinished = {};
-            patientsQueue.forEach((p, idx) => {
-                localFinished[p.name + '_' + idx] = p.finished;
-            });
-            saveLocalFinishedStates(date, localFinished);
+            patientsQueue.forEach((p, idx) => { localFinished[p.name + '_' + idx] = p.finished; });
+            localStorage.setItem('clinic_finished_' + date, JSON.stringify(localFinished));
+            
+            showSyncStatus('تعديلات معلقة...');
+            
+            // تأجيل الإرسال لجوجل (ثانيتين) لتجميع الحركات
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                syncDataToGoogle();
+            }, 2000); 
+        }
 
+        async function syncDataToGoogle() {
+            const date = document.getElementById('todayDate').value;
+            showSyncStatus('جاري الحفظ سحابياً...');
+            
             try {
                 let cleanData = patientsQueue.map(p => ({
                     slot: p.slot || 'عام',
@@ -708,11 +730,6 @@
         }
 
         function addPatient() {
-            if (isLoadingData) {
-                showModal({ type: 'warning', title: 'انتظر قليلاً', message: 'لا يمكن الإضافة أثناء تحميل البيانات لتجنب مسح الشيت.'});
-                return;
-            }
-
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
             const type = document.getElementById('visitType').value;
@@ -758,7 +775,7 @@
                     if (!isFull) {
                         foundSlot = s;
                         if (manualSlot && i > startIndex) {
-                            autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة كحد أقصى لـ (${vType}). تم الترحيل التلقائي لفترة (${s}). يمكنكم التعديل يدوياً بالأسهم أو السحب.`;
+                            autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة. تم الترحيل التلقائي لفترة (${s}).`;
                         } 
                         break;
                     }
@@ -766,7 +783,7 @@
                 if (!foundSlot) {
                     foundSlot = slots[slots.length - 1];
                     if (manualSlot && foundSlot !== manualSlot) {
-                         autoMovedMsg = `جميع الفترات ممتلئة لـ (${vType})! تم ترحيله لآخر فترة متاحة (${foundSlot}).`;
+                         autoMovedMsg = `جميع الفترات ممتلئة! تم ترحيله لآخر فترة متاحة (${foundSlot}).`;
                     } 
                 }
                 targetSlot = foundSlot;
@@ -785,31 +802,24 @@
             document.getElementById('manualSlot').style.color = '#7f8c8d';
 
             renderTable();
-            syncDataToGoogle();
+            scheduleSync(); // استخدام نظام الحفظ الذكي الجديد
 
             if (autoMovedMsg) showModal({ type: 'warning', title: 'تنبيه الترحيل التلقائي', message: autoMovedMsg });
         }
 
         function updatePayment(index, newPaymentStatus) {
-            if (isLoadingData) return;
             patientsQueue[index].payment = newPaymentStatus;
             renderTable(); 
-            syncDataToGoogle(); 
+            scheduleSync(); 
         }
 
         function toggleFinished(index) {
-            if (isLoadingData) return;
             patientsQueue[index].finished = !patientsQueue[index].finished;
-            const date = document.getElementById('todayDate').value;
-            let localFinished = getLocalFinishedStates(date);
-            localFinished[patientsQueue[index].name + '_' + index] = patientsQueue[index].finished;
-            saveLocalFinishedStates(date, localFinished);
             renderTable();
-            syncDataToGoogle();
+            scheduleSync();
         }
 
         function handleDragStart(e, index) {
-            if (isLoadingData) { e.preventDefault(); return; }
             draggedItemIndex = index;
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', index.toString());
@@ -852,7 +862,6 @@
         function handleDrop(e, targetSlot) {
             e.preventDefault();
             e.stopPropagation();
-            if (isLoadingData) return;
 
             let table = e.currentTarget;
             table.classList.remove('drag-over-table');
@@ -896,7 +905,7 @@
             patientsQueue.splice(insertAt, 0, patient);
             enforceQueueSorting(); 
             renderTable();
-            syncDataToGoogle();
+            scheduleSync(); // نظام الحفظ الذكي
         }
 
         function getDragAfterElement(container, y) {
@@ -952,7 +961,7 @@
                     <tr style="pointer-events: none;">
                         <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.8; padding: 40px 15px; border: 2px dashed var(--border);">
                             <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--primary-blue); margin-bottom: 10px;"></i><br>
-                            جاري تحميل بيانات هذا اليوم بأمان... يرجى الانتظار
+                            جاري تحميل التحديثات...
                         </td>
                     </tr>
                 `;
@@ -1015,68 +1024,47 @@
         }
 
         function moveUp(index) {
-            if (isLoadingData) return;
             if (index > 0) {
                 let current = patientsQueue[index];
                 let prev = patientsQueue[index - 1];
                 if (current.slot !== prev.slot) current.slot = prev.slot; 
                 else { patientsQueue[index] = prev; patientsQueue[index - 1] = current; }
-                enforceQueueSorting(); renderTable(); syncDataToGoogle();
+                enforceQueueSorting(); renderTable(); scheduleSync();
             }
         }
 
         function moveDown(index) {
-            if (isLoadingData) return;
             if (index < patientsQueue.length - 1) {
                 let current = patientsQueue[index];
                 let next = patientsQueue[index + 1];
                 if (current.slot !== next.slot) current.slot = next.slot; 
                 else { patientsQueue[index] = next; patientsQueue[index + 1] = current; }
-                enforceQueueSorting(); renderTable(); syncDataToGoogle();
+                enforceQueueSorting(); renderTable(); scheduleSync();
             }
         }
 
         function removePatient(index) {
-            if (isLoadingData) return;
             patientsQueue.splice(index, 1);
             renderTable();
-            syncDataToGoogle();
+            scheduleSync();
         }
 
         function bookNextVisit(index) {
-            if (isLoadingData) return;
             let patient = patientsQueue[index];
-            
             showModal({
-                type: 'prompt', 
-                title: 'حجز موعد المتابعة',
+                type: 'prompt', title: 'حجز موعد المتابعة',
                 message: `تحديد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
-                inputValue: getNextWeekDate(), 
-                showPayment: true, 
-                showSlot: true, // إظهار خانة اختيار الساعة
-                defaultSlot: patient.slot, // اقتراح نفس الساعة الحالية للمريض
-                
+                inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, 
                 onConfirm: async (confirmDate, confirmPayment, confirmSlot) => {
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
                             let finalSlot = confirmSlot || 'عام';
-                            let result = await fetchFromGoogle({ 
-                                action: 'BOOK_FUTURE', 
-                                futureDate: confirmDate, 
-                                name: patient.name, 
-                                dept: patient.dept, 
-                                payment: confirmPayment, 
-                                slot: finalSlot // إرسال الساعة للباك إند
-                            });
-                            
+                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: finalSlot });
                             if(result.status !== 'success') throw new Error(result.message);
-                            
                             let timeMsg = finalSlot !== 'عام' ? `الساعة (${finalSlot})` : '';
                             showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة للمريض في يوم ${confirmDate} ${timeMsg} بنجاح.` });
-                        } catch (e) { 
-                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message }); 
-                        }
+                        } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message }); }
                         hideSyncStatus();
                     }
                 }
