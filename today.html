@@ -143,6 +143,13 @@
             background-color: rgba(255,255,255,0.02);
         }
 
+        /* تنسيقات السحب والإفلات */
+        .draggable-row { transition: background-color 0.2s; }
+        .drag-handle { cursor: grab; padding-left: 10px; }
+        .drag-handle:active { cursor: grabbing; }
+        .drag-over { border-top: 3px dashed var(--primary-blue) !important; background-color: rgba(0, 147, 208, 0.05) !important; }
+        .drag-over-table { border: 2px dashed var(--primary-green) !important; background-color: rgba(140, 198, 63, 0.05) !important; }
+
         .action-btns { display: flex; gap: 5px; align-items: center;}
         .action-btns button { 
             background: var(--input-bg); border: 1px solid var(--border); padding: 6px 10px; 
@@ -353,6 +360,7 @@
     <script>
         let headerDatePicker;
         let modalDatePicker;
+        let draggedItemIndex = null;
 
         function initDatePickers() {
             headerDatePicker = flatpickr("#todayDate", {
@@ -682,6 +690,22 @@
             }
         }
 
+        // دالة هامة للحفاظ على توافق ترتيب المصفوفة مع الساعات (خاصة بعد النقل اليدوي)
+        function enforceQueueSorting() {
+            const slots = getSlotsForDay();
+            if (!slots) return; 
+            
+            patientsQueue.sort((a, b) => {
+                let sA = a.slot || 'عام';
+                let sB = b.slot || 'عام';
+                let idxA = slots.indexOf(sA.trim());
+                let idxB = slots.indexOf(sB.trim());
+                if (idxA === -1) idxA = 999;
+                if (idxB === -1) idxB = 999;
+                return idxA - idxB;
+            });
+        }
+
         function addPatient() {
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
@@ -702,7 +726,6 @@
             if (!slots) {
                 targetSlot = 'عام';
             } else {
-                // تحديد بداية البحث. إذا تم تحديد ساعة يدوياً، نبدأ الفحص منها للتأكد من سعتها
                 let startIndex = 0;
                 if (targetSlot) {
                     startIndex = slots.findIndex(s => s.trim() === targetSlot.trim());
@@ -711,7 +734,6 @@
 
                 let foundSlot = null;
 
-                // فحص الساعات المتاحة لتطبيق القيود: (كشف: 3، جلسة: 6، متابعة: 8)
                 for (let i = startIndex; i < slots.length; i++) {
                     let s = slots[i].trim();
                     
@@ -734,11 +756,9 @@
 
                     if (!isFull) {
                         foundSlot = s;
-                        // لو اختاروا ساعة ممتلئة وتم ترحيله لساعة تالية
                         if (manualSlot && i > startIndex) {
-                            autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة كحد أقصى لـ (${vType}). تم الترحيل التلقائي لفترة (${s}). يمكنكم التعديل يدوياً بالأسهم.`;
+                            autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة كحد أقصى لـ (${vType}). تم الترحيل التلقائي لفترة (${s}). يمكنكم التعديل يدوياً بالأسهم أو السحب.`;
                         } 
-                        // لو الإضافة تلقائية وتم ترحيله
                         else if (!manualSlot && i > 0) {
                             autoMovedMsg = `تم نقل المريض تلقائياً إلى فترة (${s}) نظراً لاكتمال الحد الأقصى لحجوزات (${vType}) في الفترات السابقة.`;
                         }
@@ -746,7 +766,6 @@
                     }
                 }
                 
-                // في حالة امتلاء جميع الساعات بالكامل، يوضع في آخر ساعة
                 if (!foundSlot) {
                     foundSlot = slots[slots.length - 1];
                     if (manualSlot && foundSlot !== manualSlot) {
@@ -755,11 +774,11 @@
                          autoMovedMsg = `جميع الفترات ممتلئة لـ (${vType})! تم الإضافة في الفترة الأخيرة.`;
                     }
                 }
-                
                 targetSlot = foundSlot;
             }
 
             patientsQueue.push({ slot: targetSlot, name, dept, type: vType, payment, finished: false });
+            enforceQueueSorting(); 
             
             document.getElementById('patientName').value = '';
             smartSelectDepartment(); 
@@ -791,6 +810,86 @@
             localFinished[patientsQueue[index].name + '_' + index] = patientsQueue[index].finished;
             saveLocalFinishedStates(date, localFinished);
 
+            renderTable();
+            syncDataToGoogle();
+        }
+
+        // أحداث السحب والإفلات (Drag and Drop Events)
+        function handleDragStart(e, index) {
+            draggedItemIndex = index;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => e.target.style.opacity = '0.5', 0);
+        }
+
+        function handleDragEnd(e) {
+            e.target.style.opacity = '1';
+            document.querySelectorAll('.drag-over, .drag-over-table').forEach(el => el.classList.remove('drag-over', 'drag-over-table'));
+            draggedItemIndex = null;
+        }
+
+        function handleDragOverRow(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            let tr = e.target.closest('tr');
+            if(tr) tr.classList.add('drag-over');
+        }
+
+        function handleDragLeaveRow(e) {
+            let tr = e.target.closest('tr');
+            if(tr) tr.classList.remove('drag-over');
+        }
+
+        function handleDropOnRow(e, targetIndex, targetSlot) {
+            e.preventDefault();
+            e.stopPropagation();
+            let tr = e.target.closest('tr');
+            if(tr) tr.classList.remove('drag-over');
+            
+            if (draggedItemIndex === null || draggedItemIndex === targetIndex) return;
+
+            let patient = patientsQueue.splice(draggedItemIndex, 1)[0];
+            patient.slot = targetSlot;
+
+            if (draggedItemIndex < targetIndex) { targetIndex--; }
+            
+            patientsQueue.splice(targetIndex, 0, patient);
+            enforceQueueSorting();
+            renderTable();
+            syncDataToGoogle();
+        }
+
+        function handleDragOverTable(e) {
+            e.preventDefault();
+            let tbody = e.target.closest('tbody');
+            if(tbody) tbody.classList.add('drag-over-table');
+        }
+
+        function handleDragLeaveTable(e) {
+            let tbody = e.target.closest('tbody');
+            if(tbody) tbody.classList.remove('drag-over-table');
+        }
+
+        function handleDropOnTable(e, targetSlot) {
+            e.preventDefault();
+            e.stopPropagation();
+            let tbody = e.target.closest('tbody');
+            if(tbody) tbody.classList.remove('drag-over-table');
+
+            if (draggedItemIndex === null) return;
+
+            let patient = patientsQueue.splice(draggedItemIndex, 1)[0];
+            patient.slot = targetSlot;
+            
+            let insertIndex = patientsQueue.length;
+            for (let i = patientsQueue.length - 1; i >= 0; i--) {
+                if (patientsQueue[i].slot === targetSlot) {
+                    insertIndex = i + 1;
+                    break;
+                }
+            }
+            
+            patientsQueue.splice(insertIndex, 0, patient);
+            enforceQueueSorting();
             renderTable();
             syncDataToGoogle();
         }
@@ -835,7 +934,11 @@
                                     <th>إجراءات / ترتيب</th>
                                 </tr>
                             </thead>
-                            <tbody id="scheduleBody_${slot}"></tbody>
+                            <tbody id="scheduleBody_${slot}" 
+                                   ondragover="handleDragOverTable(event)" 
+                                   ondragleave="handleDragLeaveTable(event)" 
+                                   ondrop="handleDropOnTable(event, '${slot}')">
+                            </tbody>
                         </table>
                     `;
                     container.appendChild(slotDiv);
@@ -854,7 +957,11 @@
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6;">لا يوجد حجوزات في هذه الفترة</td></tr>`;
+                tbody.innerHTML = `<tr ondragover="handleDragOverTable(event)" ondrop="handleDropOnTable(event, '${slotName}')">
+                                      <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; pointer-events:none; padding:15px;">
+                                          لا يوجد حجوزات في هذه الفترة. اسحب المرضى هنا.
+                                      </td>
+                                   </tr>`;
                 return;
             }
 
@@ -867,8 +974,18 @@
                 let rowFinishedClass = patient.finished ? 'row-finished' : '';
 
                 let row = `
-                    <tr class="${rowFinishedClass}">
-                        <td style="font-weight:bold; color:var(--primary-blue)">#${subIndex + 1}</td>
+                    <tr class="${rowFinishedClass} draggable-row" 
+                        draggable="true" 
+                        ondragstart="handleDragStart(event, ${globalIndex})" 
+                        ondragend="handleDragEnd(event)"
+                        ondragover="handleDragOverRow(event)" 
+                        ondragleave="handleDragLeaveRow(event)" 
+                        ondrop="handleDropOnRow(event, ${globalIndex}, '${slotName || 'عام'}')">
+                        
+                        <td class="drag-handle" style="font-weight:bold; color:var(--primary-blue)" title="اسحب من هنا لتحريك المريض (Drag & Drop)">
+                            <i class="fa-solid fa-grip-vertical" style="margin-left:8px; color:#bdc3c7;"></i>
+                            #${subIndex + 1}
+                        </td>
                         <td style="font-weight:700">${patient.name}</td>
                         <td><span class="badge ${badgeDeptClass}">${patient.dept}</span></td>
                         <td><span class="badge ${badgeTypeClass}">${patient.type}</span></td>
@@ -898,16 +1015,19 @@
             });
         }
 
+        // تم برمجة الأسهم للتبديل الذكي (إذا كان المريض أولاً، ينضم للساعة السابقة بدون تبديل مع آخر شخص)
         function moveUp(index) {
             if (index > 0) {
-                // تبديل الفترات (Slots) لتنقل المريض بين الساعات بحرية بدون رفض
-                let tempSlot = patientsQueue[index].slot;
-                patientsQueue[index].slot = patientsQueue[index - 1].slot;
-                patientsQueue[index - 1].slot = tempSlot;
+                let current = patientsQueue[index];
+                let prev = patientsQueue[index - 1];
 
-                let temp = patientsQueue[index];
-                patientsQueue[index] = patientsQueue[index - 1];
-                patientsQueue[index - 1] = temp;
+                if (current.slot !== prev.slot) {
+                    current.slot = prev.slot; 
+                } else {
+                    patientsQueue[index] = prev;
+                    patientsQueue[index - 1] = current;
+                }
+                enforceQueueSorting();
                 renderTable();
                 syncDataToGoogle();
             }
@@ -915,14 +1035,16 @@
 
         function moveDown(index) {
             if (index < patientsQueue.length - 1) {
-                // تبديل الفترات (Slots) لتنقل المريض بين الساعات بحرية بدون رفض
-                let tempSlot = patientsQueue[index].slot;
-                patientsQueue[index].slot = patientsQueue[index + 1].slot;
-                patientsQueue[index + 1].slot = tempSlot;
+                let current = patientsQueue[index];
+                let next = patientsQueue[index + 1];
 
-                let temp = patientsQueue[index];
-                patientsQueue[index] = patientsQueue[index + 1];
-                patientsQueue[index + 1] = temp;
+                if (current.slot !== next.slot) {
+                    current.slot = next.slot; 
+                } else {
+                    patientsQueue[index] = next;
+                    patientsQueue[index + 1] = current;
+                }
+                enforceQueueSorting();
                 renderTable();
                 syncDataToGoogle();
             }
