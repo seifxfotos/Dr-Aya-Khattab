@@ -701,7 +701,7 @@
             if (!slots) {
                 targetSlot = 'عام';
             } else if (!targetSlot) {
-                // الفحص الدقيق لكل نوع زيارة على حدة (كشف: 3، متابعة: 8، جلسة: 6)
+                // فحص دقيق للحد الأقصى لكل ساعة بناءً على نوع الزيارة (كشف: 3، متابعة: 8، جلسة: 6)
                 for (let i = 0; i < slots.length; i++) {
                     let s = slots[i];
                     let currentInSlot = patientsQueue.filter(p => p.slot === s);
@@ -809,7 +809,8 @@
                     `;
                     container.appendChild(slotDiv);
 
-                    let slotPatients = patientsQueue.filter(p => p.slot === slot || !p.slot);
+                    // فلترة المرضى التابعين لهذه الساعة تحديداً
+                    let slotPatients = patientsQueue.filter(p => (p.slot || slots[0]) === slot);
                     let tbody = document.getElementById(`scheduleBody_${slot}`);
                     populateTableBody(tbody, slotPatients, slot);
                 });
