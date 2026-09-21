@@ -287,9 +287,9 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>الساعة (اختیاري)</label>
+                <label>الساعة (اختياري)</label>
                 <select id="manualSlot">
-                    <option value="">تلقائي (أو토)</option>
+                    <option value="">تلقائي</option>
                 </select>
             </div>
             <button class="btn-add" onclick="addPatient()">
@@ -670,7 +670,7 @@
 
         function updateManualSlotDropdown() {
             const slotSelect = document.getElementById('manualSlot');
-            slotSelect.innerHTML = '<option value="">تلقائي (أو토)</option>';
+            slotSelect.innerHTML = '<option value="">تلقائي</option>';
             const slots = getSlotsForDay();
             if (slots) {
                 slots.forEach(slot => {
@@ -701,8 +701,6 @@
             if (!slots) {
                 targetSlot = 'عام';
             } else if (!targetSlot) {
-                // حساب تلقائي مع التحقق من الحدود القصوى (كشف: 3، جلسات: 6، متابعات: 8)
-                // لو الساعة اجتمع فيها أنواع مختلفة أو تم الوصول للحد الأقصى، بننقل للساعة اللي بعدها
                 for (let i = 0; i < slots.length; i++) {
                     let s = slots[i];
                     let currentInSlot = patientsQueue.filter(p => p.slot === s);
@@ -716,7 +714,6 @@
                     if (type === 'جلسة' && galsaCount >= 6) isFull = true;
                     if (type === 'متابعة' && motab3aCount >= 8) isFull = true;
 
-                    // لو الساعة فيها خليط من الأنواع، بنسيب لهم التحكم أو نشوف المتاح
                     if (!isFull) {
                         targetSlot = s;
                         if (i > 0 && !manualSlot) {
@@ -726,7 +723,7 @@
                     }
                 }
                 if (!targetSlot) {
-                    targetSlot = slots[slots.length - 1]; // لو كله ممتلئ، ينزل في آخر ساعة
+                    targetSlot = slots[slots.length - 1];
                 }
             }
 
