@@ -603,10 +603,10 @@
                 if(result.status === 'success') {
                     let localFinished = getLocalFinishedStates(date);
                     patientsQueue = result.data.map((p, idx) => ({
-                        slot: p.slot || 'عام',
+                        slot: p.slot ? p.slot.trim() : 'عام',
                         name: p.name, 
                         dept: p.dept, 
-                        type: p.type, 
+                        type: p.type ? p.type.trim() : "", 
                         payment: p.payment, 
                         finished: localFinished[p.name + '_' + idx] !== undefined ? localFinished[p.name + '_' + idx] : (p.finished === true || p.finished === "true")
                     }));
@@ -697,45 +697,69 @@
             const slots = getSlotsForDay();
             let targetSlot = manualSlot;
             let autoMovedMsg = "";
+            let vType = type.trim();
 
             if (!slots) {
                 targetSlot = 'عام';
-            } else if (!targetSlot) {
-                // الفحص الدقيق والمحكم لتوزيع المرضى على الساعات
-                for (let i = 0; i < slots.length; i++) {
-                    let s = slots[i];
+            } else {
+                // تحديد بداية البحث. إذا تم تحديد ساعة يدوياً، نبدأ الفحص منها للتأكد من سعتها
+                let startIndex = 0;
+                if (targetSlot) {
+                    startIndex = slots.findIndex(s => s.trim() === targetSlot.trim());
+                    if (startIndex === -1) startIndex = 0;
+                }
+
+                let foundSlot = null;
+
+                // فحص الساعات المتاحة لتطبيق القيود: (كشف: 3، جلسة: 6، متابعة: 8)
+                for (let i = startIndex; i < slots.length; i++) {
+                    let s = slots[i].trim();
                     
-                    // نقوم بعدّ المرضى الذين يطابقون هذه الساعة (مع اعتبار المرضى بدون ساعة صريحة كجزء من الساعة الأولى)
-                    let currentInSlot = patientsQueue.filter(p => {
-                        let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot : slots[0];
-                        return actualSlot === s;
-                    });
-                    
-                    let kashfCount = currentInSlot.filter(p => p.type && p.type.trim() === 'كشف').length;
-                    let motab3aCount = currentInSlot.filter(p => p.type && p.type.trim() === 'متابعة').length;
-                    let galsaCount = currentInSlot.filter(p => p.type && p.type.trim() === 'جلسة').length;
+                    let countInThisSlot = patientsQueue.filter(p => {
+                        let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot.trim() : slots[0].trim();
+                        let pType = p.type ? p.type.trim() : "";
+                        
+                        let matchType = false;
+                        if (vType.includes('كشف') && pType.includes('كشف')) matchType = true;
+                        else if (vType.includes('متابعة') && pType.includes('متابعة')) matchType = true;
+                        else if (vType.includes('جلسة') && pType.includes('جلسة')) matchType = true;
+                        
+                        return actualSlot === s && matchType;
+                    }).length;
 
                     let isFull = false;
-                    let vType = type.trim();
-                    if (vType === 'كشف' && kashfCount >= 3) isFull = true;
-                    if (vType === 'متابعة' && motab3aCount >= 8) isFull = true;
-                    if (vType === 'جلسة' && galsaCount >= 6) isFull = true;
+                    if (vType.includes('كشف') && countInThisSlot >= 3) isFull = true;
+                    if (vType.includes('متابعة') && countInThisSlot >= 8) isFull = true;
+                    if (vType.includes('جلسة') && countInThisSlot >= 6) isFull = true;
 
                     if (!isFull) {
-                        targetSlot = s;
-                        if (i > 0) {
-                            autoMovedMsg = `تم نقل المريض تلقائياً إلى الساعة (${s}) نظراً لاكتمال الحد الأقصى لحجوزات (${type}) في الساعة السابقة.`;
+                        foundSlot = s;
+                        // لو اختاروا ساعة ممتلئة وتم ترحيله لساعة تالية
+                        if (manualSlot && i > startIndex) {
+                            autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة كحد أقصى لـ (${vType}). تم الترحيل التلقائي لفترة (${s}). يمكنكم التعديل يدوياً بالأسهم.`;
+                        } 
+                        // لو الإضافة تلقائية وتم ترحيله
+                        else if (!manualSlot && i > 0) {
+                            autoMovedMsg = `تم نقل المريض تلقائياً إلى فترة (${s}) نظراً لاكتمال الحد الأقصى لحجوزات (${vType}) في الفترات السابقة.`;
                         }
                         break;
                     }
                 }
-                if (!targetSlot) {
-                    targetSlot = slots[slots.length - 1];
-                    autoMovedMsg = `تم الوصول للحد الأقصى في جميع الساعات، تمت الإضافة في الساعة الأخيرة.`;
+                
+                // في حالة امتلاء جميع الساعات بالكامل، يوضع في آخر ساعة
+                if (!foundSlot) {
+                    foundSlot = slots[slots.length - 1];
+                    if (manualSlot && foundSlot !== manualSlot) {
+                         autoMovedMsg = `جميع الفترات ممتلئة لـ (${vType})! تم ترحيله لآخر فترة متاحة (${foundSlot}).`;
+                    } else if (!manualSlot) {
+                         autoMovedMsg = `جميع الفترات ممتلئة لـ (${vType})! تم الإضافة في الفترة الأخيرة.`;
+                    }
                 }
+                
+                targetSlot = foundSlot;
             }
 
-            patientsQueue.push({ slot: targetSlot, name, dept, type, payment, finished: false });
+            patientsQueue.push({ slot: targetSlot, name, dept, type: vType, payment, finished: false });
             
             document.getElementById('patientName').value = '';
             smartSelectDepartment(); 
@@ -750,7 +774,7 @@
             syncDataToGoogle();
 
             if (autoMovedMsg) {
-                showModal({ type: 'warning', title: 'تم التوجيه التلقائي', message: autoMovedMsg });
+                showModal({ type: 'warning', title: 'تنبيه الترحيل التلقائي', message: autoMovedMsg });
             }
         }
 
@@ -816,10 +840,9 @@
                     `;
                     container.appendChild(slotDiv);
 
-                    // التأكد من تطابق المريض مع هذه الساعة بدقة
                     let slotPatients = patientsQueue.filter(p => {
-                        let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot : slots[0];
-                        return actualSlot === slot;
+                        let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot.trim() : slots[0].trim();
+                        return actualSlot === slot.trim();
                     });
                     
                     let tbody = document.getElementById(`scheduleBody_${slot}`);
@@ -837,7 +860,8 @@
 
             list.forEach((patient, subIndex) => {
                 let globalIndex = patientsQueue.indexOf(patient);
-                let badgeTypeClass = patient.type === 'كشف' ? 'badge-kashf' : (patient.type === 'متابعة' ? 'badge-motab3a' : 'badge-galsa');
+                let pTypeTrimmed = patient.type ? patient.type.trim() : "";
+                let badgeTypeClass = pTypeTrimmed.includes('كشف') ? 'badge-kashf' : (pTypeTrimmed.includes('متابعة') ? 'badge-motab3a' : 'badge-galsa');
                 let badgeDeptClass = patient.dept === 'تغذية علاجية' ? 'badge-dept-nutrition' : 'badge-dept-physio';
                 let payClass = (patient.payment === 'تم الدفع' || patient.payment === 'مدفوع مسبقاً') ? 'status-paid' : 'status-unpaid';
                 let rowFinishedClass = patient.finished ? 'row-finished' : '';
@@ -874,9 +898,9 @@
             });
         }
 
-        // تم تعديل الأسهم لتسمح بانتقال المريض للساعة التالية أو السابقة عند الضغط عليها
         function moveUp(index) {
             if (index > 0) {
+                // تبديل الفترات (Slots) لتنقل المريض بين الساعات بحرية بدون رفض
                 let tempSlot = patientsQueue[index].slot;
                 patientsQueue[index].slot = patientsQueue[index - 1].slot;
                 patientsQueue[index - 1].slot = tempSlot;
@@ -891,6 +915,7 @@
 
         function moveDown(index) {
             if (index < patientsQueue.length - 1) {
+                // تبديل الفترات (Slots) لتنقل المريض بين الساعات بحرية بدون رفض
                 let tempSlot = patientsQueue[index].slot;
                 patientsQueue[index].slot = patientsQueue[index + 1].slot;
                 patientsQueue[index + 1].slot = tempSlot;
