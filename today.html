@@ -6,7 +6,6 @@
     <title>جدول الحجوزات اليومي - عيادة د. آية خطاب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
     <style>
@@ -134,16 +133,9 @@
             margin-top: 20px;
         }
 
-        .row-finished {
-            opacity: 0.5;
-            text-decoration: line-through;
-            background-color: rgba(0,0,0,0.02);
-        }
-        :root[data-theme="dark"] .row-finished {
-            background-color: rgba(255,255,255,0.02);
-        }
+        .row-finished { opacity: 0.5; text-decoration: line-through; background-color: rgba(0,0,0,0.02); }
+        :root[data-theme="dark"] .row-finished { background-color: rgba(255,255,255,0.02); }
 
-        /* --- تحسينات السحب والإفلات --- */
         .schedule-table { min-height: 100px; display: table; transition: outline 0.2s, background-color 0.2s; }
         .draggable-row { transition: background-color 0.2s; }
         .drag-handle { cursor: grab; }
@@ -171,16 +163,9 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         
         .inline-pay-select {
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-family: 'Cairo';
-            font-weight: 700;
-            font-size: 13px;
-            outline: none;
-            background-color: var(--input-bg);
-            cursor: pointer;
-            transition: 0.3s;
+            border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px;
+            font-family: 'Cairo'; font-weight: 700; font-size: 13px; outline: none;
+            background-color: var(--input-bg); cursor: pointer; transition: 0.3s;
         }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
@@ -188,22 +173,14 @@
         .floating-timer {
             position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.25); border: 1px solid var(--border);
-            z-index: 100; overflow: hidden; display: flex; align-items: stretch; 
-            transition: background-color 0.3s; height: 50px; 
+            z-index: 100; overflow: hidden; display: flex; align-items: stretch; transition: background-color 0.3s; height: 50px; 
         }
-        .timer-header {
-            background: var(--primary-blue); color: white; padding: 0 15px; 
-            font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center;
-        }
-        .timer-body {
-            padding: 0 15px; display: flex; align-items: center; gap: 15px; 
-            background: var(--card-bg); transition: background-color 0.3s;
-        }
+        .timer-header { background: var(--primary-blue); color: white; padding: 0 15px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .timer-body { padding: 0 15px; display: flex; align-items: center; gap: 15px; background: var(--card-bg); transition: background-color 0.3s; }
         .timer-display-global { font-size: 24px; font-weight: 800; font-family: monospace; color: var(--text-dark); min-width: 80px; text-align: center;}
         
         .time-ended { color: var(--danger) !important; animation: blink 1s infinite; }
         .timer-display-global.time-ended { font-size: 15px; font-family: 'Cairo', sans-serif; font-weight: 700; }
-        
         @keyframes blink { 50% { opacity: 0.3; } }
         
         .timer-select { 
@@ -312,9 +289,7 @@
 
     <!-- التايمر العائم -->
     <div class="floating-timer" id="floatingTimer">
-        <div class="timer-header">
-            <i class="fa-solid fa-stopwatch" id="timerIcon" title="مؤقت العيادة"></i>
-        </div>
+        <div class="timer-header"><i class="fa-solid fa-stopwatch" id="timerIcon" title="مؤقت العيادة"></i></div>
         <div class="timer-body">
             <div class="timer-display-global" id="globalTimerDisplay">10:00</div>
             <select id="timerDuration" class="timer-select" onchange="resetGlobalTimer()">
@@ -337,10 +312,14 @@
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
             <p id="modalMessage">رسالة التنبيه</p>
-            
             <div id="modalInputContainer" style="display: none; flex-direction: column; align-items: center;">
                 <input type="text" id="modalDateInput" class="modal-input" placeholder="اختار التاريخ">
                 
+                <!-- تم إضافة خانة الساعة لحجز المتابعة هنا -->
+                <select id="modalSlotInput" class="modal-input" style="display: none;">
+                    <option value="">تلقائي (أول فترة متاحة)</option>
+                </select>
+
                 <select id="modalPaymentInput" class="modal-input" style="display: none;" required>
                     <option value="" disabled selected>اختار حالة الدفع</option>
                     <option value="تم الدفع">تم الدفع</option>
@@ -348,7 +327,6 @@
                     <option value="مدفوع مسبقاً">مدفوع مسبقاً</option>
                 </select>
             </div>
-
             <div class="modal-actions">
                 <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
                 <button id="modalCancelBtn" class="btn-cancel" style="display: none;">إلغاء</button>
@@ -363,6 +341,34 @@
         let headerDatePicker;
         let modalDatePicker;
         let draggedItemIndex = null;
+        let isLoadingData = false; 
+
+        // دوال للتعامل مع الفترات الخاصة بتاريخ معين (للنافذة المنبثقة)
+        function getSlotsForSpecificDate(dateStr) {
+            if (!dateStr) return null;
+            const d = new Date(dateStr);
+            const dayOfWeek = d.getDay(); 
+            if (dayOfWeek === 6) {
+                return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'];
+            } else if (dayOfWeek === 2 || dayOfWeek === 1 || dayOfWeek === 3) {
+                return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'];
+            }
+            return null;
+        }
+
+        function updateModalSlotDropdown(dateStr) {
+            const slotSelect = document.getElementById('modalSlotInput');
+            slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>';
+            const slots = getSlotsForSpecificDate(dateStr);
+            if (slots) {
+                slots.forEach(slot => {
+                    let opt = document.createElement('option');
+                    opt.value = slot;
+                    opt.innerText = slot;
+                    slotSelect.appendChild(opt);
+                });
+            }
+        }
 
         function initDatePickers() {
             headerDatePicker = flatpickr("#todayDate", {
@@ -375,10 +381,14 @@
                 }
             });
 
-            modalDatePicker = flatpickr("#modalDateInput", {
-                locale: "ar",
-                dateFormat: "Y-m-d",
-                disableMobile: "true" 
+            modalDatePicker = flatpickr("#modalDateInput", { 
+                locale: "ar", 
+                dateFormat: "Y-m-d", 
+                disableMobile: "true",
+                // تحديث قائمة الساعات ديناميكياً لما تغير التاريخ جوه النافذة
+                onChange: function(selectedDates, dateStr) {
+                    updateModalSlotDropdown(dateStr);
+                }
             });
         }
 
@@ -387,9 +397,7 @@
 
         if (currentTheme) {
             document.documentElement.setAttribute('data-theme', currentTheme);
-            if (currentTheme === 'dark') {
-                toggleSwitch.checked = true;
-            }
+            if (currentTheme === 'dark') toggleSwitch.checked = true;
         }
 
         function switchTheme(e) {
@@ -403,7 +411,7 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxT1amdQ3Tsi6QU3vZ4oQDn9ADRMQjnupfwhJy9uAbNeC4wnOk4tiEZLWjlZM7rAW0R/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Dp79__uMzPVGEnYygrVo10p1xnsDMTTIYC6ReuUtGeMMkPFR1pPP-3PSXsHOGALo/exec';
 
         const now = new Date();
         let patientsQueue = [];
@@ -417,11 +425,8 @@
             const deptSelect = document.getElementById('department');
             let defaultDept = "";
 
-            if (currentDay === 1 || currentDay === 3) { 
-                defaultDept = "علاج طبيعي";
-            } else if (currentDay === 2) { 
-                defaultDept = "تغذية علاجية";
-            }
+            if (currentDay === 1 || currentDay === 3) defaultDept = "علاج طبيعي";
+            else if (currentDay === 2) defaultDept = "تغذية علاجية";
             
             if (defaultDept !== "") {
                 deptSelect.value = defaultDept;
@@ -454,7 +459,6 @@
 
         function toggleGlobalTimer() {
             const btn = document.getElementById('btnTimerPlay');
-            
             if (isGlobalTimerRunning) {
                 clearInterval(globalTimerInterval);
                 isGlobalTimerRunning = false;
@@ -462,18 +466,15 @@
                 btn.style.backgroundColor = 'var(--primary-blue)';
             } else {
                 if (globalTimeLeft <= 0) resetGlobalTimer(); 
-                
                 isGlobalTimerRunning = true;
                 btn.innerHTML = 'إيقاف';
                 btn.style.backgroundColor = 'var(--warning)';
 
                 globalTimerInterval = setInterval(() => {
                     globalTimeLeft--;
-                    
                     if (globalTimeLeft <= 0) {
                         clearInterval(globalTimerInterval);
                         isGlobalTimerRunning = false;
-                        
                         const display = document.getElementById('globalTimerDisplay');
                         display.innerText = 'انتهى الوقت';
                         display.classList.add('time-ended');
@@ -489,7 +490,6 @@
         function resetGlobalTimer() {
             clearInterval(globalTimerInterval);
             isGlobalTimerRunning = false;
-            
             const btn = document.getElementById('btnTimerPlay');
             btn.style.display = 'flex';
             btn.innerHTML = 'تشغيل';
@@ -521,11 +521,13 @@
             const msgEl = document.getElementById('modalMessage');
             const inputContainer = document.getElementById('modalInputContainer');
             const dateInput = document.getElementById('modalDateInput');
+            const slotInput = document.getElementById('modalSlotInput');
             const paymentInput = document.getElementById('modalPaymentInput');
             const confirmBtn = document.getElementById('modalConfirmBtn');
             const cancelBtn = document.getElementById('modalCancelBtn');
 
             inputContainer.style.display = 'none';
+            slotInput.style.display = 'none';
             paymentInput.style.display = 'none';
             cancelBtn.style.display = 'none';
             msgEl.innerHTML = options.message || '';
@@ -548,12 +550,17 @@
                 inputContainer.style.display = 'flex';
                 modalDatePicker.setDate(options.inputValue || '');
                 
+                if (options.showSlot) {
+                    slotInput.style.display = 'block';
+                    updateModalSlotDropdown(options.inputValue); 
+                    if (options.defaultSlot) slotInput.value = options.defaultSlot;
+                }
+
                 if (options.showPayment) {
                     paymentInput.style.display = 'block';
                     paymentInput.value = ''; 
                     paymentInput.style.borderColor = 'var(--border)'; 
                 }
-
                 cancelBtn.style.display = 'inline-block';
             }
 
@@ -563,10 +570,10 @@
                     paymentInput.style.borderColor = 'var(--danger)';
                     return; 
                 }
-
                 modal.style.display = 'none';
                 if (options.type === 'prompt' && options.onConfirm) {
-                    options.onConfirm(dateInput.value, paymentInput.value);
+                    // نبعت الـ 3 قيم (التاريخ، الدفع، الساعة)
+                    options.onConfirm(dateInput.value, paymentInput.value, slotInput.value);
                 }
             };
             cancelBtn.onclick = () => modal.style.display = 'none';
@@ -577,9 +584,7 @@
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
-            
             if (!response.ok) throw new Error("مشكلة في الاتصال (HTTP " + response.status + ")");
-            
             let textResult = await response.text();
             try {
                 return JSON.parse(textResult);
@@ -592,19 +597,19 @@
             try {
                 let saved = localStorage.getItem('clinic_finished_' + date);
                 return saved ? JSON.parse(saved) : {};
-            } catch(e) {
-                return {};
-            }
+            } catch(e) { return {}; }
         }
 
         function saveLocalFinishedStates(date, states) {
-            try {
-                localStorage.setItem('clinic_finished_' + date, JSON.stringify(states));
-            } catch(e) {}
+            try { localStorage.setItem('clinic_finished_' + date, JSON.stringify(states)); } catch(e) {}
         }
 
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
+            isLoadingData = true;
+            patientsQueue = [];
+            renderTable(); 
+            
             showSyncStatus('جاري جلب البيانات...');
             
             try {
@@ -613,24 +618,29 @@
                 if(result.status === 'success') {
                     let localFinished = getLocalFinishedStates(date);
                     patientsQueue = result.data.map((p, idx) => ({
-                        slot: p.slot ? p.slot.trim() : 'عام',
-                        name: p.name, 
-                        dept: p.dept, 
-                        type: p.type ? p.type.trim() : "", 
-                        payment: p.payment, 
-                        finished: localFinished[p.name + '_' + idx] !== undefined ? localFinished[p.name + '_' + idx] : (p.finished === true || p.finished === "true")
+                        slot: p.slot ? String(p.slot).trim() : 'عام',
+                        name: p.name || 'بدون اسم', 
+                        dept: p.dept || '', 
+                        type: p.type ? String(p.type).trim() : "", 
+                        payment: p.payment || '', 
+                        finished: localFinished[p.name + '_' + idx] !== undefined ? localFinished[p.name + '_' + idx] : (p.finished === true || String(p.finished).toLowerCase() === "true")
                     }));
-                    renderTable();
                 } else {
                     throw new Error(result.message);
                 }
             } catch(e) {
                 console.error(e);
+                showModal({ type: 'error', title: 'خطأ في الاتصال', message: 'فشل تحميل بيانات اليوم. لا تقم بالإضافة حتى يتم التحديث.' });
+            } finally {
+                isLoadingData = false;
+                renderTable();
+                hideSyncStatus();
             }
-            hideSyncStatus();
         }
 
         async function syncDataToGoogle() {
+            if (isLoadingData) return; 
+
             const date = document.getElementById('todayDate').value;
             showSyncStatus('جاري الحفظ...');
             
@@ -651,10 +661,7 @@
                 }));
                 
                 let result = await fetchFromGoogle({ action: 'SYNC_DATA', date: date, data: cleanData });
-                
-                if(result.status !== 'success') {
-                    throw new Error(result.message);
-                }
+                if(result.status !== 'success') throw new Error(result.message);
             } catch(e) {
                 console.error("فشل المزامنة", e);
             }
@@ -664,16 +671,10 @@
         function getSlotsForDay() {
             const currentDateObj = new Date(document.getElementById('todayDate').value);
             const dayOfWeek = currentDateObj.getDay(); 
-
             if (dayOfWeek === 6) {
-                return [
-                    '1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', 
-                    '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'
-                ];
+                return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'];
             } else if (dayOfWeek === 2 || dayOfWeek === 1 || dayOfWeek === 3) {
-                return [
-                    '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'
-                ];
+                return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'];
             }
             return null;
         }
@@ -695,7 +696,6 @@
         function enforceQueueSorting() {
             const slots = getSlotsForDay();
             if (!slots) return; 
-            
             patientsQueue.sort((a, b) => {
                 let sA = a.slot || 'عام';
                 let sB = b.slot || 'عام';
@@ -708,6 +708,11 @@
         }
 
         function addPatient() {
+            if (isLoadingData) {
+                showModal({ type: 'warning', title: 'انتظر قليلاً', message: 'لا يمكن الإضافة أثناء تحميل البيانات لتجنب مسح الشيت.'});
+                return;
+            }
+
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
             const type = document.getElementById('visitType').value;
@@ -732,21 +737,16 @@
                     startIndex = slots.findIndex(s => s.trim() === targetSlot.trim());
                     if (startIndex === -1) startIndex = 0;
                 }
-
                 let foundSlot = null;
-
                 for (let i = startIndex; i < slots.length; i++) {
                     let s = slots[i].trim();
-                    
                     let countInThisSlot = patientsQueue.filter(p => {
                         let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot.trim() : slots[0].trim();
                         let pType = p.type ? p.type.trim() : "";
-                        
                         let matchType = false;
                         if (vType.includes('كشف') && pType.includes('كشف')) matchType = true;
                         else if (vType.includes('متابعة') && pType.includes('متابعة')) matchType = true;
                         else if (vType.includes('جلسة') && pType.includes('جلسة')) matchType = true;
-                        
                         return actualSlot === s && matchType;
                     }).length;
 
@@ -763,7 +763,6 @@
                         break;
                     }
                 }
-                
                 if (!foundSlot) {
                     foundSlot = slots[slots.length - 1];
                     if (manualSlot && foundSlot !== manualSlot) {
@@ -788,30 +787,29 @@
             renderTable();
             syncDataToGoogle();
 
-            if (autoMovedMsg) {
-                showModal({ type: 'warning', title: 'تنبيه الترحيل التلقائي', message: autoMovedMsg });
-            }
+            if (autoMovedMsg) showModal({ type: 'warning', title: 'تنبيه الترحيل التلقائي', message: autoMovedMsg });
         }
 
         function updatePayment(index, newPaymentStatus) {
+            if (isLoadingData) return;
             patientsQueue[index].payment = newPaymentStatus;
             renderTable(); 
             syncDataToGoogle(); 
         }
 
         function toggleFinished(index) {
+            if (isLoadingData) return;
             patientsQueue[index].finished = !patientsQueue[index].finished;
             const date = document.getElementById('todayDate').value;
             let localFinished = getLocalFinishedStates(date);
             localFinished[patientsQueue[index].name + '_' + index] = patientsQueue[index].finished;
             saveLocalFinishedStates(date, localFinished);
-
             renderTable();
             syncDataToGoogle();
         }
 
-        // ================== نظام السحب والإفلات الجذري (يعمل 100% بين جميع الحالات) ==================
         function handleDragStart(e, index) {
+            if (isLoadingData) { e.preventDefault(); return; }
             draggedItemIndex = index;
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', index.toString());
@@ -830,26 +828,16 @@
         function handleDragOver(e) {
             e.preventDefault(); 
             e.dataTransfer.dropEffect = 'move';
-            
             let table = e.currentTarget; 
             table.classList.add('drag-over-table');
-            
             let tbody = table.querySelector('tbody');
             if(!tbody) return;
-
             const afterElement = getDragAfterElement(tbody, e.clientY);
-            
-            tbody.querySelectorAll('.draggable-row').forEach(row => {
-                row.classList.remove('drop-preview-before', 'drop-preview-after');
-            });
-            
-            if (afterElement) {
-                afterElement.classList.add('drop-preview-before');
-            } else {
+            tbody.querySelectorAll('.draggable-row').forEach(row => { row.classList.remove('drop-preview-before', 'drop-preview-after'); });
+            if (afterElement) { afterElement.classList.add('drop-preview-before'); } 
+            else {
                 const rows = tbody.querySelectorAll('.draggable-row:not(.dragging)');
-                if (rows.length > 0) {
-                    rows[rows.length - 1].classList.add('drop-preview-after');
-                }
+                if (rows.length > 0) rows[rows.length - 1].classList.add('drop-preview-after');
             }
         }
 
@@ -857,47 +845,35 @@
             let table = e.currentTarget;
             if (!table.contains(e.relatedTarget)) {
                 table.classList.remove('drag-over-table');
-                table.querySelectorAll('.draggable-row').forEach(row => {
-                    row.classList.remove('drop-preview-before', 'drop-preview-after');
-                });
+                table.querySelectorAll('.draggable-row').forEach(row => { row.classList.remove('drop-preview-before', 'drop-preview-after'); });
             }
         }
 
         function handleDrop(e, targetSlot) {
             e.preventDefault();
             e.stopPropagation();
-            
+            if (isLoadingData) return;
+
             let table = e.currentTarget;
             table.classList.remove('drag-over-table');
-            table.querySelectorAll('.draggable-row').forEach(row => {
-                row.classList.remove('drop-preview-before', 'drop-preview-after');
-            });
+            table.querySelectorAll('.draggable-row').forEach(row => { row.classList.remove('drop-preview-before', 'drop-preview-after'); });
 
-            // الاعتماد الكامل على e.dataTransfer بدل المتغيرات العادية لضمان عدم ضياع الداتا
             let draggedIdxStr = e.dataTransfer.getData('text/plain');
             let fromIndex = draggedIdxStr !== "" ? parseInt(draggedIdxStr) : draggedItemIndex;
-            
             if (fromIndex === null || isNaN(fromIndex)) return;
 
             let tbody = table.querySelector('tbody');
             const afterElement = getDragAfterElement(tbody, e.clientY);
-            
             let patient = patientsQueue[fromIndex];
-            
-            // تغيير فترة المريض رسمياً للفترة الجديدة المرمي فيها
             patient.slot = targetSlot; 
-            
-            // سحب المريض من مكانه القديم
             patientsQueue.splice(fromIndex, 1); 
 
             let insertAt = patientsQueue.length;
-
             if (afterElement) {
                 let afterIndex = parseInt(afterElement.getAttribute('data-global-index'));
                 if (afterIndex > fromIndex) { afterIndex--; }
                 insertAt = afterIndex;
             } else {
-                // إذا رمى المريض في آخر الجدول أو كان الجدول فاضي تماماً
                 let foundTargetSlotEnd = -1;
                 for (let i = patientsQueue.length - 1; i >= 0; i--) {
                     if (patientsQueue[i].slot === targetSlot) {
@@ -905,28 +881,19 @@
                         break;
                     }
                 }
-                
-                if (foundTargetSlotEnd !== -1) {
-                    insertAt = foundTargetSlotEnd;
-                } else {
-                    // الساعة دي فارغة تماماً ولا يوجد بها مرضى سابقين، هنا هنحطه في الترتيب المظبوط وسط الساعات الأخرى
+                if (foundTargetSlotEnd !== -1) insertAt = foundTargetSlotEnd;
+                else {
                     const slots = getSlotsForDay() || ['عام'];
                     let targetSlotIdx = slots.indexOf(targetSlot);
-                    insertAt = patientsQueue.length; // افتراضياً للآخر
-                    
+                    insertAt = patientsQueue.length; 
                     for (let i = 0; i < patientsQueue.length; i++) {
                         let sIdx = slots.indexOf(patientsQueue[i].slot);
-                        if (sIdx > targetSlotIdx) {
-                            insertAt = i;
-                            break;
-                        }
+                        if (sIdx > targetSlotIdx) { insertAt = i; break; }
                     }
                 }
             }
 
-            // حقن المريض في الترتيب الجديد المحسوب
             patientsQueue.splice(insertAt, 0, patient);
-
             enforceQueueSorting(); 
             renderTable();
             syncDataToGoogle();
@@ -934,39 +901,23 @@
 
         function getDragAfterElement(container, y) {
             const draggableElements = [...container.querySelectorAll('.draggable-row:not(.dragging)')];
-
             return draggableElements.reduce((closest, child) => {
                 const box = child.getBoundingClientRect();
                 const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
+                if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+                else return closest;
             }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
         }
-
-        // ================================================================
 
         function renderTable() {
             const container = document.getElementById('tablesContainer');
             container.innerHTML = '';
-
             const slots = getSlotsForDay();
 
             if (!slots) {
                 container.innerHTML = `
                     <table class="schedule-table" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'عام')">
-                        <thead>
-                            <tr>
-                                <th>الدور</th>
-                                <th>الاسم</th>
-                                <th>القسم</th>
-                                <th>النوع</th>
-                                <th>الدفع</th>
-                                <th>إجراءات / ترتيب</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>الدور</th><th>الاسم</th><th>القسم</th><th>النوع</th><th>الدفع</th><th>إجراءات / ترتيب</th></tr></thead>
                         <tbody id="scheduleBody_all"></tbody>
                     </table>
                 `;
@@ -975,32 +926,18 @@
             } else {
                 slots.forEach(slot => {
                     let slotDiv = document.createElement('div');
-                    
-                    // نقل أحداث الـ drop إلى مستوى الـ table نفسه
                     slotDiv.innerHTML = `
                         <div class="slot-title"><i class="fa-regular fa-clock"></i> فترة الساعة: ${slot}</div>
                         <table class="schedule-table" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${slot}')">
-                            <thead>
-                                <tr>
-                                    <th>الدور</th>
-                                    <th>الاسم</th>
-                                    <th>القسم</th>
-                                    <th>النوع</th>
-                                    <th>الدفع</th>
-                                    <th>إجراءات / ترتيب</th>
-                                </tr>
-                            </thead>
-                            <tbody id="scheduleBody_${slot}">
-                            </tbody>
+                            <thead><tr><th>الدور</th><th>الاسم</th><th>القسم</th><th>النوع</th><th>الدفع</th><th>إجراءات / ترتيب</th></tr></thead>
+                            <tbody id="scheduleBody_${slot}"></tbody>
                         </table>
                     `;
                     container.appendChild(slotDiv);
-
                     let slotPatients = patientsQueue.filter(p => {
                         let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot.trim() : slots[0].trim();
                         return actualSlot === slot.trim();
                     });
-                    
                     let tbody = document.getElementById(`scheduleBody_${slot}`);
                     populateTableBody(tbody, slotPatients, slot);
                 });
@@ -1010,7 +947,18 @@
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
             
-            // تم تحسين تصميم الساعة الفارغة لتكون مساحتها كبيرة وتستقبل المريض بشكل مريح
+            if (isLoadingData) {
+                tbody.innerHTML = `
+                    <tr style="pointer-events: none;">
+                        <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.8; padding: 40px 15px; border: 2px dashed var(--border);">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--primary-blue); margin-bottom: 10px;"></i><br>
+                            جاري تحميل بيانات هذا اليوم بأمان... يرجى الانتظار
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             if (list.length === 0) {
                 tbody.innerHTML = `
                     <tr style="pointer-events: none;">
@@ -1032,15 +980,10 @@
                 let rowFinishedClass = patient.finished ? 'row-finished' : '';
 
                 let row = `
-                    <tr class="${rowFinishedClass} draggable-row" 
-                        draggable="true" 
-                        data-global-index="${globalIndex}"
-                        ondragstart="handleDragStart(event, ${globalIndex})" 
-                        ondragend="handleDragEnd(event)">
-                        
+                    <tr class="${rowFinishedClass} draggable-row" draggable="true" data-global-index="${globalIndex}"
+                        ondragstart="handleDragStart(event, ${globalIndex})" ondragend="handleDragEnd(event)">
                         <td style="font-weight:bold; color:var(--primary-blue)" class="drag-handle" title="اسحب من هنا (Drag & Drop)">
-                            <i class="fa-solid fa-grip-vertical" style="margin-left:8px; color:#bdc3c7;"></i>
-                            #${subIndex + 1}
+                            <i class="fa-solid fa-grip-vertical" style="margin-left:8px; color:#bdc3c7;"></i> #${subIndex + 1}
                         </td>
                         <td style="font-weight:700">${patient.name}</td>
                         <td><span class="badge ${badgeDeptClass}">${patient.dept}</span></td>
@@ -1072,65 +1015,67 @@
         }
 
         function moveUp(index) {
+            if (isLoadingData) return;
             if (index > 0) {
                 let current = patientsQueue[index];
                 let prev = patientsQueue[index - 1];
-
-                if (current.slot !== prev.slot) {
-                    current.slot = prev.slot; 
-                } else {
-                    patientsQueue[index] = prev;
-                    patientsQueue[index - 1] = current;
-                }
-                enforceQueueSorting();
-                renderTable();
-                syncDataToGoogle();
+                if (current.slot !== prev.slot) current.slot = prev.slot; 
+                else { patientsQueue[index] = prev; patientsQueue[index - 1] = current; }
+                enforceQueueSorting(); renderTable(); syncDataToGoogle();
             }
         }
 
         function moveDown(index) {
+            if (isLoadingData) return;
             if (index < patientsQueue.length - 1) {
                 let current = patientsQueue[index];
                 let next = patientsQueue[index + 1];
-
-                if (current.slot !== next.slot) {
-                    current.slot = next.slot; 
-                } else {
-                    patientsQueue[index] = next;
-                    patientsQueue[index + 1] = current;
-                }
-                enforceQueueSorting();
-                renderTable();
-                syncDataToGoogle();
+                if (current.slot !== next.slot) current.slot = next.slot; 
+                else { patientsQueue[index] = next; patientsQueue[index + 1] = current; }
+                enforceQueueSorting(); renderTable(); syncDataToGoogle();
             }
         }
 
         function removePatient(index) {
+            if (isLoadingData) return;
             patientsQueue.splice(index, 1);
             renderTable();
             syncDataToGoogle();
         }
 
         function bookNextVisit(index) {
+            if (isLoadingData) return;
             let patient = patientsQueue[index];
+            
             showModal({
-                type: 'prompt',
+                type: 'prompt', 
                 title: 'حجز موعد المتابعة',
                 message: `تحديد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
-                inputValue: getNextWeekDate(),
+                inputValue: getNextWeekDate(), 
                 showPayment: true, 
+                showSlot: true, // إظهار خانة اختيار الساعة
+                defaultSlot: patient.slot, // اقتراح نفس الساعة الحالية للمريض
                 
-                onConfirm: async (confirmDate, confirmPayment) => {
+                onConfirm: async (confirmDate, confirmPayment, confirmSlot) => {
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
-                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: patient.slot || 'عام' });
+                            let finalSlot = confirmSlot || 'عام';
+                            let result = await fetchFromGoogle({ 
+                                action: 'BOOK_FUTURE', 
+                                futureDate: confirmDate, 
+                                name: patient.name, 
+                                dept: patient.dept, 
+                                payment: confirmPayment, 
+                                slot: finalSlot // إرسال الساعة للباك إند
+                            });
                             
                             if(result.status !== 'success') throw new Error(result.message);
-
-                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة للمريض في يوم ${confirmDate} بنجاح.` });
-                        } catch (e) {
-                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message });
+                            
+                            let timeMsg = finalSlot !== 'عام' ? `الساعة (${finalSlot})` : '';
+                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة للمريض في يوم ${confirmDate} ${timeMsg} بنجاح.` });
+                        } catch (e) { 
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message }); 
                         }
                         hideSyncStatus();
                     }
@@ -1139,8 +1084,7 @@
         }
 
         function getNextWeekDate() {
-            let nextWeek = new Date();
-            nextWeek.setDate(nextWeek.getDate() + 7);
+            let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7);
             const year = nextWeek.getFullYear();
             const month = String(nextWeek.getMonth() + 1).padStart(2, '0');
             const day = String(nextWeek.getDate()).padStart(2, '0');
@@ -1148,11 +1092,8 @@
         }
 
         window.onload = () => {
-            initDatePickers(); 
-            smartSelectDepartment(); 
-            resetGlobalTimer(); 
-            updateManualSlotDropdown();
-            loadDataFromGoogle(); 
+            initDatePickers(); smartSelectDepartment(); resetGlobalTimer(); 
+            updateManualSlotDropdown(); loadDataFromGoogle(); 
         };
     </script>
 </body>
