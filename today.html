@@ -143,16 +143,13 @@
             background-color: rgba(255,255,255,0.02);
         }
 
-        /* تنسيقات السحب والإفلات المحسنة */
-        .schedule-table tbody {
-            min-height: 60px;
-            display: table-row-group;
-        }
+        /* --- تحسينات السحب والإفلات --- */
+        .schedule-table { min-height: 100px; display: table; transition: outline 0.2s, background-color 0.2s; }
         .draggable-row { transition: background-color 0.2s; }
         .drag-handle { cursor: grab; }
         .drag-handle:active { cursor: grabbing; }
         .dragging { opacity: 0.5; background-color: var(--input-bg); }
-        .drag-over-table { background-color: rgba(140, 198, 63, 0.08) !important; outline: 2px dashed var(--primary-green); }
+        .drag-over-table { background-color: rgba(140, 198, 63, 0.08) !important; outline: 2px dashed var(--primary-green) !important; outline-offset: -2px; }
         .drop-preview-before td { border-top: 3px solid var(--primary-blue) !important; }
         .drop-preview-after td { border-bottom: 3px solid var(--primary-blue) !important; }
 
@@ -310,7 +307,6 @@
             </button>
         </div>
 
-        <!-- حاوية الجداول -->
         <div id="tablesContainer"></div>
     </div>
 
@@ -814,18 +810,18 @@
             syncDataToGoogle();
         }
 
-        // ================== نظام السحب والإفلات المحسن ==================
+        // ================== نظام السحب والإفلات الجذري (يعمل 100% بين جميع الحالات) ==================
         function handleDragStart(e, index) {
             draggedItemIndex = index;
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', index);
+            e.dataTransfer.setData('text/plain', index.toString());
             setTimeout(() => e.target.classList.add('dragging'), 0);
         }
 
         function handleDragEnd(e) {
             e.target.classList.remove('dragging');
             document.querySelectorAll('.drag-over-table').forEach(el => el.classList.remove('drag-over-table'));
-            document.querySelectorAll('.draggable-row').forEach(row => {
+            document.querySelectorAll('.drop-preview-before, .drop-preview-after').forEach(row => {
                 row.classList.remove('drop-preview-before', 'drop-preview-after');
             });
             draggedItemIndex = null;
@@ -835,9 +831,12 @@
             e.preventDefault(); 
             e.dataTransfer.dropEffect = 'move';
             
-            let tbody = e.currentTarget;
-            tbody.classList.add('drag-over-table');
+            let table = e.currentTarget; 
+            table.classList.add('drag-over-table');
             
+            let tbody = table.querySelector('tbody');
+            if(!tbody) return;
+
             const afterElement = getDragAfterElement(tbody, e.clientY);
             
             tbody.querySelectorAll('.draggable-row').forEach(row => {
@@ -855,10 +854,10 @@
         }
 
         function handleDragLeave(e) {
-            let tbody = e.currentTarget;
-            if (!tbody.contains(e.relatedTarget)) {
-                tbody.classList.remove('drag-over-table');
-                tbody.querySelectorAll('.draggable-row').forEach(row => {
+            let table = e.currentTarget;
+            if (!table.contains(e.relatedTarget)) {
+                table.classList.remove('drag-over-table');
+                table.querySelectorAll('.draggable-row').forEach(row => {
                     row.classList.remove('drop-preview-before', 'drop-preview-after');
                 });
             }
@@ -868,34 +867,53 @@
             e.preventDefault();
             e.stopPropagation();
             
-            let tbody = e.currentTarget;
-            tbody.classList.remove('drag-over-table');
-            tbody.querySelectorAll('.draggable-row').forEach(row => {
+            let table = e.currentTarget;
+            table.classList.remove('drag-over-table');
+            table.querySelectorAll('.draggable-row').forEach(row => {
                 row.classList.remove('drop-preview-before', 'drop-preview-after');
             });
 
-            if (draggedItemIndex === null) return;
+            // الاعتماد الكامل على e.dataTransfer بدل المتغيرات العادية لضمان عدم ضياع الداتا
+            let draggedIdxStr = e.dataTransfer.getData('text/plain');
+            let fromIndex = draggedIdxStr !== "" ? parseInt(draggedIdxStr) : draggedItemIndex;
+            
+            if (fromIndex === null || isNaN(fromIndex)) return;
 
+            let tbody = table.querySelector('tbody');
             const afterElement = getDragAfterElement(tbody, e.clientY);
-            let patient = patientsQueue.splice(draggedItemIndex, 1)[0];
-            patient.slot = targetSlot;
+            
+            let patient = patientsQueue[fromIndex];
+            
+            // تغيير فترة المريض رسمياً للفترة الجديدة المرمي فيها
+            patient.slot = targetSlot; 
+            
+            // سحب المريض من مكانه القديم
+            patientsQueue.splice(fromIndex, 1); 
+
+            let insertAt = patientsQueue.length;
 
             if (afterElement) {
                 let afterIndex = parseInt(afterElement.getAttribute('data-global-index'));
-                if (afterIndex > draggedItemIndex) { afterIndex--; }
-                patientsQueue.splice(afterIndex, 0, patient);
+                if (afterIndex > fromIndex) { afterIndex--; }
+                insertAt = afterIndex;
             } else {
-                let insertAt = -1;
+                // إذا رمى المريض في آخر الجدول أو كان الجدول فاضي تماماً
+                let foundTargetSlotEnd = -1;
                 for (let i = patientsQueue.length - 1; i >= 0; i--) {
                     if (patientsQueue[i].slot === targetSlot) {
-                        insertAt = i + 1;
+                        foundTargetSlotEnd = i + 1;
                         break;
                     }
                 }
-                if (insertAt === -1) {
-                    const slots = getSlotsForDay();
+                
+                if (foundTargetSlotEnd !== -1) {
+                    insertAt = foundTargetSlotEnd;
+                } else {
+                    // الساعة دي فارغة تماماً ولا يوجد بها مرضى سابقين، هنا هنحطه في الترتيب المظبوط وسط الساعات الأخرى
+                    const slots = getSlotsForDay() || ['عام'];
                     let targetSlotIdx = slots.indexOf(targetSlot);
-                    insertAt = patientsQueue.length;
+                    insertAt = patientsQueue.length; // افتراضياً للآخر
+                    
                     for (let i = 0; i < patientsQueue.length; i++) {
                         let sIdx = slots.indexOf(patientsQueue[i].slot);
                         if (sIdx > targetSlotIdx) {
@@ -904,8 +922,10 @@
                         }
                     }
                 }
-                patientsQueue.splice(insertAt, 0, patient);
             }
+
+            // حقن المريض في الترتيب الجديد المحسوب
+            patientsQueue.splice(insertAt, 0, patient);
 
             enforceQueueSorting(); 
             renderTable();
@@ -936,7 +956,7 @@
 
             if (!slots) {
                 container.innerHTML = `
-                    <table class="schedule-table">
+                    <table class="schedule-table" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'عام')">
                         <thead>
                             <tr>
                                 <th>الدور</th>
@@ -947,10 +967,7 @@
                                 <th>إجراءات / ترتيب</th>
                             </tr>
                         </thead>
-                        <tbody id="scheduleBody_all"
-                               ondragover="handleDragOver(event)" 
-                               ondragleave="handleDragLeave(event)" 
-                               ondrop="handleDrop(event, 'عام')"></tbody>
+                        <tbody id="scheduleBody_all"></tbody>
                     </table>
                 `;
                 const tbody = document.getElementById('scheduleBody_all');
@@ -958,9 +975,11 @@
             } else {
                 slots.forEach(slot => {
                     let slotDiv = document.createElement('div');
+                    
+                    // نقل أحداث الـ drop إلى مستوى الـ table نفسه
                     slotDiv.innerHTML = `
                         <div class="slot-title"><i class="fa-regular fa-clock"></i> فترة الساعة: ${slot}</div>
-                        <table class="schedule-table">
+                        <table class="schedule-table" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${slot}')">
                             <thead>
                                 <tr>
                                     <th>الدور</th>
@@ -971,10 +990,7 @@
                                     <th>إجراءات / ترتيب</th>
                                 </tr>
                             </thead>
-                            <tbody id="scheduleBody_${slot}" 
-                                   ondragover="handleDragOver(event)" 
-                                   ondragleave="handleDragLeave(event)" 
-                                   ondrop="handleDrop(event, '${slot}')">
+                            <tbody id="scheduleBody_${slot}">
                             </tbody>
                         </table>
                     `;
@@ -993,10 +1009,17 @@
 
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
+            
+            // تم تحسين تصميم الساعة الفارغة لتكون مساحتها كبيرة وتستقبل المريض بشكل مريح
             if (list.length === 0) {
-                tbody.innerHTML = `<tr style="pointer-events: none;"><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; padding:25px;">
-                                        اسحب المرضى هنا لترتيبهم أو إضافتهم لهذه الفترة.
-                                   </td></tr>`;
+                tbody.innerHTML = `
+                    <tr style="pointer-events: none;">
+                        <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; padding: 40px 15px; border: 2px dashed var(--border);">
+                            <i class="fa-solid fa-download" style="font-size: 20px; color: var(--border); margin-bottom: 10px;"></i><br>
+                            اسحب المرضى هنا لترتيبهم أو إضافتهم لهذه الفترة.
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
@@ -1048,7 +1071,6 @@
             });
         }
 
-        // الأسهم الذكية تنقل المريض للساعة السابقة/التالية دون التبديل مع أحد
         function moveUp(index) {
             if (index > 0) {
                 let current = patientsQueue[index];
