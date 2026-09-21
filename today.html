@@ -151,8 +151,14 @@
             border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px; 
         }
         .action-btns button:hover { background: var(--border); }
+        
         .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
         .btn-book-next:hover { background-color: #7ab033 !important; }
+        
+        /* زر الجلسة الجديد */
+        .btn-book-session { background-color: #9b59b6 !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
+        .btn-book-session:hover { background-color: #8e44ad !important; }
+
         .btn-done { color: var(--primary-green) !important; }
 
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
@@ -341,7 +347,7 @@
         let modalDatePicker;
         let draggedItemIndex = null;
         let isLoadingData = false; 
-        let syncTimeout = null; // متغير تجميع وحفظ التعديلات (Debounce)
+        let syncTimeout = null; 
 
         function getSlotsForSpecificDate(dateStr) {
             if (!dateStr) return null;
@@ -597,27 +603,24 @@
             } catch(e) { return {}; }
         }
 
-        // ================= نظام الكاش السريع للتحميل =================
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
             isLoadingData = true;
             
-            // 1. عرض البيانات من الكاش المحلي فوراً (لتسريع التحميل)
             const cachedData = localStorage.getItem('clinic_cache_' + date);
             if (cachedData) {
                 try {
                     patientsQueue = JSON.parse(cachedData);
                     isLoadingData = false; 
-                    renderTable(); // الجدول بيظهر في لحظتها
+                    renderTable(); 
                 } catch(e) { patientsQueue = []; }
             } else {
                 patientsQueue = [];
-                renderTable(); // يظهر شاشة التحميل لو مفيش كاش
+                renderTable(); 
             }
             
             showSyncStatus('جاري المزامنة مع السحابة...');
             
-            // 2. تحديث البيانات في الخلفية من جوجل
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
 
@@ -632,9 +635,7 @@
                         finished: localFinished[p.name + '_' + idx] !== undefined ? localFinished[p.name + '_' + idx] : (p.finished === true || String(p.finished).toLowerCase() === "true")
                     }));
                     
-                    // تحديث الكاش بالبيانات الجديدة
                     localStorage.setItem('clinic_cache_' + date, JSON.stringify(patientsQueue));
-                    
                     isLoadingData = false;
                     renderTable(); 
                 }
@@ -647,12 +648,10 @@
             }
         }
 
-        // ================= نظام تأجيل الحفظ (Debounce) لسرعة الأداء =================
         function scheduleSync() {
             if (isLoadingData) return;
             const date = document.getElementById('todayDate').value;
             
-            // الحفظ فوراً في الكاش عشان مفيش داتا تضيع
             localStorage.setItem('clinic_cache_' + date, JSON.stringify(patientsQueue));
             
             let localFinished = {};
@@ -661,7 +660,6 @@
             
             showSyncStatus('تعديلات معلقة...');
             
-            // تأجيل الإرسال لجوجل (ثانيتين) لتجميع الحركات
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(() => {
                 syncDataToGoogle();
@@ -802,7 +800,7 @@
             document.getElementById('manualSlot').style.color = '#7f8c8d';
 
             renderTable();
-            scheduleSync(); // استخدام نظام الحفظ الذكي الجديد
+            scheduleSync(); 
 
             if (autoMovedMsg) showModal({ type: 'warning', title: 'تنبيه الترحيل التلقائي', message: autoMovedMsg });
         }
@@ -905,7 +903,7 @@
             patientsQueue.splice(insertAt, 0, patient);
             enforceQueueSorting(); 
             renderTable();
-            scheduleSync(); // نظام الحفظ الذكي
+            scheduleSync(); 
         }
 
         function getDragAfterElement(container, y) {
@@ -1012,8 +1010,13 @@
                                 <button title="رفع" onclick="moveUp(${globalIndex})"><i class="fa-solid fa-arrow-up"></i></button>
                                 <button title="تنزيل" onclick="moveDown(${globalIndex})"><i class="fa-solid fa-arrow-down"></i></button>
                                 <button title="إنهاء وحذف" style="color:var(--danger)" onclick="removePatient(${globalIndex})"><i class="fa-solid fa-trash"></i></button>
-                                <button class="btn-book-next" title="دفع وحجز المتابعة" onclick="bookNextVisit(${globalIndex})">
+                                
+                                <button class="btn-book-next" title="دفع وحجز متابعة" onclick="bookFutureAppt(${globalIndex}, 'متابعة')">
                                     <i class="fa-regular fa-calendar-check"></i> متابعة
+                                </button>
+                                
+                                <button class="btn-book-session" title="دفع وحجز جلسة" onclick="bookFutureAppt(${globalIndex}, 'جلسة')">
+                                    <i class="fa-regular fa-calendar-check"></i> جلسة
                                 </button>
                             </div>
                         </td>
@@ -1049,21 +1052,23 @@
             scheduleSync();
         }
 
-        function bookNextVisit(index) {
+        // دالة موحدة ذكية لحجز المتابعة أو الجلسة
+        function bookFutureAppt(index, visitType) {
             let patient = patientsQueue[index];
             showModal({
-                type: 'prompt', title: 'حجز موعد المتابعة',
-                message: `تحديد متابعة للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
+                type: 'prompt', title: `حجز ${visitType}`,
+                message: `تحديد ${visitType} للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
                 inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, 
                 onConfirm: async (confirmDate, confirmPayment, confirmSlot) => {
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
                             let finalSlot = confirmSlot || 'عام';
-                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: finalSlot });
+                            // بعتنا نوع الزيارة (visitType) للباك إند عشان يسجلها متابعة أو جلسة بناءً على اختيارك
+                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: finalSlot, visitType: visitType });
                             if(result.status !== 'success') throw new Error(result.message);
                             let timeMsg = finalSlot !== 'عام' ? `الساعة (${finalSlot})` : '';
-                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة المتابعة للمريض في يوم ${confirmDate} ${timeMsg} بنجاح.` });
+                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة الـ ${visitType} للمريض في يوم ${confirmDate} ${timeMsg} بنجاح.` });
                         } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message }); }
                         hideSyncStatus();
                     }
