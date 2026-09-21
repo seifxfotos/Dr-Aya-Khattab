@@ -701,23 +701,24 @@
             if (!slots) {
                 targetSlot = 'عام';
             } else if (!targetSlot) {
+                // الفحص الدقيق لكل نوع زيارة على حدة (كشف: 3، متابعة: 8، جلسة: 6)
                 for (let i = 0; i < slots.length; i++) {
                     let s = slots[i];
                     let currentInSlot = patientsQueue.filter(p => p.slot === s);
                     
                     let kashfCount = currentInSlot.filter(p => p.type === 'كشف').length;
-                    let galsaCount = currentInSlot.filter(p => p.type === 'جلسة').length;
                     let motab3aCount = currentInSlot.filter(p => p.type === 'متابعة').length;
+                    let galsaCount = currentInSlot.filter(p => p.type === 'جلسة').length;
 
                     let isFull = false;
                     if (type === 'كشف' && kashfCount >= 3) isFull = true;
-                    if (type === 'جلسة' && galsaCount >= 6) isFull = true;
                     if (type === 'متابعة' && motab3aCount >= 8) isFull = true;
+                    if (type === 'جلسة' && galsaCount >= 6) isFull = true;
 
                     if (!isFull) {
                         targetSlot = s;
-                        if (i > 0 && !manualSlot) {
-                            autoMovedMsg = `تم نقل المريض تلقائياً إلى الساعة (${s}) نظراً لاكتمال الحد الأقصى في الساعات السابقة.`;
+                        if (i > 0) {
+                            autoMovedMsg = `تم نقل المريض تلقائياً إلى الساعة (${s}) نظراً لاكتمال الحد الأقصى لنوع (${type}) في الساعات السابقة.`;
                         }
                         break;
                     }
