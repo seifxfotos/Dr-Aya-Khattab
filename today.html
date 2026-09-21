@@ -155,7 +155,6 @@
         .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
         .btn-book-next:hover { background-color: #7ab033 !important; }
         
-        /* زر الجلسة الجديد */
         .btn-book-session { background-color: #9b59b6 !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
         .btn-book-session:hover { background-color: #8e44ad !important; }
 
@@ -415,7 +414,7 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Dp79__uMzPVGEnYygrVo10p1xnsDMTTIYC6ReuUtGeMMkPFR1pPP-3PSXsHOGALo/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpsoA0tKgYOEUQSey4Vm4O1mBsd5yzNSracFMPKUeAQdk66HvAu0eWJB0TLcS24Hs_/exec';
 
         const now = new Date();
         let patientsQueue = [];
@@ -1052,7 +1051,6 @@
             scheduleSync();
         }
 
-        // دالة موحدة ذكية لحجز المتابعة أو الجلسة
         function bookFutureAppt(index, visitType) {
             let patient = patientsQueue[index];
             showModal({
@@ -1063,13 +1061,21 @@
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
-                            let finalSlot = confirmSlot || 'عام';
-                            // بعتنا نوع الزيارة (visitType) للباك إند عشان يسجلها متابعة أو جلسة بناءً على اختيارك
+                            let finalSlot = confirmSlot;
+                            
+                            // التحقق وإعطاء المريض أول فترة متاحة في اليوم إذا كان الاختيار "تلقائي"
+                            if (!finalSlot || finalSlot.trim() === "") {
+                                let daySlots = getSlotsForSpecificDate(confirmDate);
+                                finalSlot = (daySlots && daySlots.length > 0) ? daySlots[0] : 'عام';
+                            }
+                            
                             let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: finalSlot, visitType: visitType });
                             if(result.status !== 'success') throw new Error(result.message);
-                            let timeMsg = finalSlot !== 'عام' ? `الساعة (${finalSlot})` : '';
-                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة الـ ${visitType} للمريض في يوم ${confirmDate} ${timeMsg} بنجاح.` });
-                        } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message }); }
+                            
+                            showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة الـ ${visitType} للمريض في يوم ${confirmDate} الساعة (${finalSlot}) بنجاح.` });
+                        } catch (e) { 
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message }); 
+                        }
                         hideSyncStatus();
                     }
                 }
