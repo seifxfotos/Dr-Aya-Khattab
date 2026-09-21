@@ -349,15 +349,14 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7HlVAT9ta2kG32dUu2XDwc1QQk5rcTPmkgCA3C33k1P-3M6tgzAV1kUnghBMI0O8L/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7ndL5dYTFTSTsFY5eeAa94XrOZ64JnDDcYpQDZRKxKq7DZO-GcLq1veW3TCspWjPN/exec";
         
         let globalSearchResults = []; 
         let totalCards = 1;
         let cardRowCounts = { 1: { start: 1, current: 12 } };
+        let searchCache = {}; // ذاكرة مؤقتة محلية لنتائج البحث لضمان السرعة الفورية
 
         // ================== إعدادات الدارك مود المستمرة ==================
-        
-        // عند تحميل الصفحة، بنقرأ الاختيار المحفوظ في الجهاز
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
@@ -366,14 +365,13 @@
             }
         });
 
-        // تفعيل وحفظ اختيار الوضع
         function toggleTheme(e) {
             if(e.checked) {
                 document.body.classList.add('dark-mode');
-                localStorage.setItem('theme', 'dark'); // حفظ الاختيار
+                localStorage.setItem('theme', 'dark');
             } else {
                 document.body.classList.remove('dark-mode');
-                localStorage.setItem('theme', 'light'); // حفظ الاختيار
+                localStorage.setItem('theme', 'light');
             }
         }
 
@@ -382,17 +380,15 @@
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                 let active = document.activeElement;
                 
-                // هنطبق التنقل على الخانات والنصوص بس
                 if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) return;
                 
-                // بالنسبة للمربعات الكبيرة (زي بروتوكول العلاج)، السهم بينقل لو المؤشر في آخر/أول الكلام
                 if (active.tagName === 'TEXTAREA') {
                     if (e.key === 'ArrowDown' && active.selectionEnd === active.value.length) {
                         // يكمل نزول
                     } else if (e.key === 'ArrowUp' && active.selectionStart === 0) {
                         // يكمل طلوع
                     } else {
-                        return; // يسيب السهم يقلب بين سطور الكلام عادي
+                        return; 
                     }
                 }
 
@@ -433,14 +429,14 @@
                 if (nextId) {
                     let nextEl = document.getElementById(nextId);
                     if (nextEl) {
-                        e.preventDefault(); // منع الشاشة من الاهتزاز
-                        nextEl.focus(); // نقل المؤشر للمربع اللي بعده
+                        e.preventDefault(); 
+                        nextEl.focus(); 
                     }
                 }
             }
         });
 
-        // ================== باقي كود الاستمارة ==================
+        // ================== دوال البحث والتعامل مع البيانات ==================
         document.getElementById('searchName').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchPatient();
         });
@@ -512,7 +508,7 @@
 
         function removeLastCard() {
             if(totalCards <= 1) return;
-            if(confirm(`هل أنت متأكد من إزالة الكرت رقم ${totalCards} بكل محتوياته؟ (لن يؤثر ذلك على الكروت التي قبله)`)) {
+            if(confirm(`هل أنت متأكد من إزالة الكرت رقم ${totalCards} بكل محتوياته؟`)) {
                 document.getElementById(`card_${totalCards}`).remove();
                 delete cardRowCounts[totalCards];
                 totalCards--;
@@ -626,6 +622,13 @@
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
             let searchInput = convertToEnglishNumbers(rawSearch);
+            
+            // التحقق من الكاش المحلي للبحث الفوري دون انتظار الخادم
+            if (searchCache[searchInput]) {
+                handleSearchResult(searchCache[searchInput]);
+                return;
+            }
+
             let btn = document.querySelector('.btn-search');
             btn.innerText = "جاري البحث...";
 
@@ -639,47 +642,55 @@
                     return;
                 }
                 let res = JSON.parse(text);
+                
+                // حفظ النتيجة في الذاكرة المؤقتة للسرعة مستقبلاً
+                searchCache[searchInput] = res;
+                handleSearchResult(res);
 
-                if(res.status === "not_found") {
-                    alert("المريض غير موجود، يمكنك كتابة بياناته والضغط على حفظ لإنشاء ملف جديد.");
-                } else if(res.status === "found") {
-                    if(res.data.length === 1) {
-                        loadPatientData(res.data[0]);
-                    } else {
-                        globalSearchResults = res.data;
-                        let listHtml = "";
-                        res.data.forEach((patient, index) => {
-                            listHtml += `
-                                <div class="patient-option" onclick="selectPatient(${index})">
-                                    <div>
-                                        <div class="patient-name">${patient.name}</div>
-                                        <div class="patient-details">${patient.phone || "بدون رقم"}</div>
-                                    </div>
-                                    <div class="select-badge">فتح الملف</div>
-                                </div>
-                            `;
-                        });
-                        document.getElementById('patientList').innerHTML = listHtml;
-                        document.getElementById('patientModal').style.display = "flex";
-                    }
-                } else if(res.status === "error") {
-                    alert("حدث خطأ داخل جوجل شيت.");
-                }
             } catch(e) {
                 alert("تعذر الوصول لقاعدة البيانات.");
             }
             btn.innerText = "بحث";
         }
 
+        function handleSearchResult(res) {
+            if(res.status === "not_found") {
+                alert("المريض غير موجود، يمكنك كتابة بياناته والضغط على حفظ لإنشاء ملف جديد.");
+            } else if(res.status === "found") {
+                if(res.data.length === 1) {
+                    loadPatientData(res.data[0]);
+                } else {
+                    globalSearchResults = res.data;
+                    let listHtml = "";
+                    res.data.forEach((patient, index) => {
+                        listHtml += `
+                            <div class="patient-option" onclick="selectPatient(${index})">
+                                <div>
+                                    <div class="patient-name">${patient.name}</div>
+                                    <div class="patient-details">${patient.phone || "بدون رقم"}</div>
+                                </div>
+                                <div class="select-badge">فتح الملف</div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('patientList').innerHTML = listHtml;
+                    document.getElementById('patientModal').style.display = "flex";
+                }
+            } else if(res.status === "error") {
+                alert("حدث خطأ داخل جوجل شيت.");
+            }
+        }
+
         async function deletePatient() {
             let phone = document.getElementById('p_phone').value;
+            let name = document.getElementById('p_name').value;
             if(!phone) { alert("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!"); return; }
 
             if(confirm(`هل أنت متأكد من مسح بيانات المريض من الشيت نهائياً؟`)) {
                 let btn = document.querySelector('.btn-delete');
                 btn.innerText = "جاري الحذف...";
                 try {
-                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone), { method: 'GET', redirect: 'follow' });
+                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' });
                     let res = await response.json();
                     if(res.status === "success") {
                         alert("تم الحذف بنجاح!");
@@ -823,6 +834,10 @@
                 medical_notes: document.getElementById('p_medical_notes').value, 
                 sessions: sessions
             };
+
+            // مسح الكاش لهذا المريض عند التعديل لضمان جلب البيانات المحدثة لاحقاً
+            if(searchCache[phone]) delete searchCache[phone];
+            if(searchCache[name]) delete searchCache[name];
 
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload), mode: "no-cors" })
             .then(() => {
