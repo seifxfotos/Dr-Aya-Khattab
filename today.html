@@ -143,12 +143,16 @@
             background-color: rgba(255,255,255,0.02);
         }
 
-        /* تنسيقات السحب والإفلات */
+        /* تنسيقات السحب والإفلات المحسنة */
+        .schedule-table tbody {
+            min-height: 60px;
+            display: table-row-group;
+        }
         .draggable-row { transition: background-color 0.2s; }
         .drag-handle { cursor: grab; }
         .drag-handle:active { cursor: grabbing; }
         .dragging { opacity: 0.5; background-color: var(--input-bg); }
-        .drag-over-table { background-color: rgba(140, 198, 63, 0.05) !important; border: 2px dashed var(--primary-green) !important; }
+        .drag-over-table { background-color: rgba(140, 198, 63, 0.08) !important; outline: 2px dashed var(--primary-green); }
         .drop-preview-before td { border-top: 3px solid var(--primary-blue) !important; }
         .drop-preview-after td { border-bottom: 3px solid var(--primary-blue) !important; }
 
@@ -760,7 +764,6 @@
                         if (manualSlot && i > startIndex) {
                             autoMovedMsg = `عذراً، فترة (${manualSlot}) ممتلئة كحد أقصى لـ (${vType}). تم الترحيل التلقائي لفترة (${s}). يمكنكم التعديل يدوياً بالأسهم أو السحب.`;
                         } 
-                        // تم إزالة التنبيه في حالة "تلقائي" لترحيل المريض في صمت كما طلبت مسبقاً
                         break;
                     }
                 }
@@ -811,10 +814,11 @@
             syncDataToGoogle();
         }
 
-        // ================== نظام السحب والإفلات ==================
+        // ================== نظام السحب والإفلات المحسن ==================
         function handleDragStart(e, index) {
             draggedItemIndex = index;
             e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', index);
             setTimeout(() => e.target.classList.add('dragging'), 0);
         }
 
@@ -943,11 +947,14 @@
                                 <th>إجراءات / ترتيب</th>
                             </tr>
                         </thead>
-                        <tbody id="scheduleBody_all"></tbody>
+                        <tbody id="scheduleBody_all"
+                               ondragover="handleDragOver(event)" 
+                               ondragleave="handleDragLeave(event)" 
+                               ondrop="handleDrop(event, 'عام')"></tbody>
                     </table>
                 `;
                 const tbody = document.getElementById('scheduleBody_all');
-                populateTableBody(tbody, patientsQueue);
+                populateTableBody(tbody, patientsQueue, 'عام');
             } else {
                 slots.forEach(slot => {
                     let slotDiv = document.createElement('div');
@@ -987,8 +994,8 @@
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; pointer-events:none; padding:15px;">
-                                      لا يوجد حجوزات في هذه الفترة. اسحب المرضى هنا لترتيبهم.
+                tbody.innerHTML = `<tr style="pointer-events: none;"><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; padding:25px;">
+                                        اسحب المرضى هنا لترتيبهم أو إضافتهم لهذه الفترة.
                                    </td></tr>`;
                 return;
             }
