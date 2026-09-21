@@ -701,30 +701,37 @@
             if (!slots) {
                 targetSlot = 'عام';
             } else if (!targetSlot) {
-                // فحص دقيق للحد الأقصى لكل ساعة بناءً على نوع الزيارة (كشف: 3، متابعة: 8، جلسة: 6)
+                // الفحص الدقيق والمحكم لتوزيع المرضى على الساعات
                 for (let i = 0; i < slots.length; i++) {
                     let s = slots[i];
-                    let currentInSlot = patientsQueue.filter(p => p.slot === s);
                     
-                    let kashfCount = currentInSlot.filter(p => p.type === 'كشف').length;
-                    let motab3aCount = currentInSlot.filter(p => p.type === 'متابعة').length;
-                    let galsaCount = currentInSlot.filter(p => p.type === 'جلسة').length;
+                    // نقوم بعدّ المرضى الذين يطابقون هذه الساعة (مع اعتبار المرضى بدون ساعة صريحة كجزء من الساعة الأولى)
+                    let currentInSlot = patientsQueue.filter(p => {
+                        let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot : slots[0];
+                        return actualSlot === s;
+                    });
+                    
+                    let kashfCount = currentInSlot.filter(p => p.type && p.type.trim() === 'كشف').length;
+                    let motab3aCount = currentInSlot.filter(p => p.type && p.type.trim() === 'متابعة').length;
+                    let galsaCount = currentInSlot.filter(p => p.type && p.type.trim() === 'جلسة').length;
 
                     let isFull = false;
-                    if (type === 'كشف' && kashfCount >= 3) isFull = true;
-                    if (type === 'متابعة' && motab3aCount >= 8) isFull = true;
-                    if (type === 'جلسة' && galsaCount >= 6) isFull = true;
+                    let vType = type.trim();
+                    if (vType === 'كشف' && kashfCount >= 3) isFull = true;
+                    if (vType === 'متابعة' && motab3aCount >= 8) isFull = true;
+                    if (vType === 'جلسة' && galsaCount >= 6) isFull = true;
 
                     if (!isFull) {
                         targetSlot = s;
                         if (i > 0) {
-                            autoMovedMsg = `تم نقل المريض تلقائياً إلى الساعة (${s}) نظراً لاكتمال الحد الأقصى لنوع (${type}) في الساعات السابقة.`;
+                            autoMovedMsg = `تم نقل المريض تلقائياً إلى الساعة (${s}) نظراً لاكتمال الحد الأقصى لحجوزات (${type}) في الساعة السابقة.`;
                         }
                         break;
                     }
                 }
                 if (!targetSlot) {
                     targetSlot = slots[slots.length - 1];
+                    autoMovedMsg = `تم الوصول للحد الأقصى في جميع الساعات، تمت الإضافة في الساعة الأخيرة.`;
                 }
             }
 
@@ -809,8 +816,12 @@
                     `;
                     container.appendChild(slotDiv);
 
-                    // فلترة المرضى التابعين لهذه الساعة تحديداً
-                    let slotPatients = patientsQueue.filter(p => (p.slot || slots[0]) === slot);
+                    // التأكد من تطابق المريض مع هذه الساعة بدقة
+                    let slotPatients = patientsQueue.filter(p => {
+                        let actualSlot = (p.slot && p.slot !== 'عام' && p.slot !== "") ? p.slot : slots[0];
+                        return actualSlot === slot;
+                    });
+                    
                     let tbody = document.getElementById(`scheduleBody_${slot}`);
                     populateTableBody(tbody, slotPatients, slot);
                 });
@@ -820,7 +831,7 @@
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6;">لا توجد حجوزات في هذه الفترة</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6;">لا يوجد حجوزات في هذه الفترة</td></tr>`;
                 return;
             }
 
@@ -863,8 +874,13 @@
             });
         }
 
+        // تم تعديل الأسهم لتسمح بانتقال المريض للساعة التالية أو السابقة عند الضغط عليها
         function moveUp(index) {
             if (index > 0) {
+                let tempSlot = patientsQueue[index].slot;
+                patientsQueue[index].slot = patientsQueue[index - 1].slot;
+                patientsQueue[index - 1].slot = tempSlot;
+
                 let temp = patientsQueue[index];
                 patientsQueue[index] = patientsQueue[index - 1];
                 patientsQueue[index - 1] = temp;
@@ -875,6 +891,10 @@
 
         function moveDown(index) {
             if (index < patientsQueue.length - 1) {
+                let tempSlot = patientsQueue[index].slot;
+                patientsQueue[index].slot = patientsQueue[index + 1].slot;
+                patientsQueue[index + 1].slot = tempSlot;
+
                 let temp = patientsQueue[index];
                 patientsQueue[index] = patientsQueue[index + 1];
                 patientsQueue[index + 1] = temp;
