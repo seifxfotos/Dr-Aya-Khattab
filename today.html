@@ -143,12 +143,14 @@
             background-color: rgba(255,255,255,0.02);
         }
 
-        /* تنسيقات السحب والإفلات */
+        /* تنسيقات السحب والإفلات الجديدة */
         .draggable-row { transition: background-color 0.2s; }
-        .drag-handle { cursor: grab; padding-left: 10px; }
+        .drag-handle { cursor: grab; }
         .drag-handle:active { cursor: grabbing; }
-        .drag-over { border-top: 3px dashed var(--primary-blue) !important; background-color: rgba(0, 147, 208, 0.05) !important; }
-        .drag-over-table { border: 2px dashed var(--primary-green) !important; background-color: rgba(140, 198, 63, 0.05) !important; }
+        .dragging { opacity: 0.5; background-color: var(--input-bg); }
+        .drag-over-table { background-color: rgba(140, 198, 63, 0.05) !important; border: 2px dashed var(--primary-green) !important; }
+        .drop-preview-before td { border-top: 3px solid var(--primary-blue) !important; }
+        .drop-preview-after td { border-bottom: 3px solid var(--primary-blue) !important; }
 
         .action-btns { display: flex; gap: 5px; align-items: center;}
         .action-btns button { 
@@ -690,7 +692,6 @@
             }
         }
 
-        // دالة هامة للحفاظ على توافق ترتيب المصفوفة مع الساعات (خاصة بعد النقل اليدوي)
         function enforceQueueSorting() {
             const slots = getSlotsForDay();
             if (!slots) return; 
@@ -814,85 +815,118 @@
             syncDataToGoogle();
         }
 
-        // أحداث السحب والإفلات (Drag and Drop Events)
+        // ================== نظام السحب والإفلات الدقيق ==================
         function handleDragStart(e, index) {
             draggedItemIndex = index;
             e.dataTransfer.effectAllowed = 'move';
-            setTimeout(() => e.target.style.opacity = '0.5', 0);
+            setTimeout(() => e.target.classList.add('dragging'), 0);
         }
 
         function handleDragEnd(e) {
-            e.target.style.opacity = '1';
-            document.querySelectorAll('.drag-over, .drag-over-table').forEach(el => el.classList.remove('drag-over', 'drag-over-table'));
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.drag-over-table').forEach(el => el.classList.remove('drag-over-table'));
+            document.querySelectorAll('.draggable-row').forEach(row => {
+                row.classList.remove('drop-preview-before', 'drop-preview-after');
+            });
             draggedItemIndex = null;
         }
 
-        function handleDragOverRow(e) {
-            e.preventDefault();
+        function handleDragOver(e) {
+            e.preventDefault(); 
             e.dataTransfer.dropEffect = 'move';
-            let tr = e.target.closest('tr');
-            if(tr) tr.classList.add('drag-over');
+            
+            let tbody = e.currentTarget;
+            tbody.classList.add('drag-over-table');
+            
+            const afterElement = getDragAfterElement(tbody, e.clientY);
+            
+            tbody.querySelectorAll('.draggable-row').forEach(row => {
+                row.classList.remove('drop-preview-before', 'drop-preview-after');
+            });
+            
+            if (afterElement) {
+                afterElement.classList.add('drop-preview-before');
+            } else {
+                const rows = tbody.querySelectorAll('.draggable-row:not(.dragging)');
+                if (rows.length > 0) {
+                    rows[rows.length - 1].classList.add('drop-preview-after');
+                }
+            }
         }
 
-        function handleDragLeaveRow(e) {
-            let tr = e.target.closest('tr');
-            if(tr) tr.classList.remove('drag-over');
+        function handleDragLeave(e) {
+            let tbody = e.currentTarget;
+            if (!tbody.contains(e.relatedTarget)) {
+                tbody.classList.remove('drag-over-table');
+                tbody.querySelectorAll('.draggable-row').forEach(row => {
+                    row.classList.remove('drop-preview-before', 'drop-preview-after');
+                });
+            }
         }
 
-        function handleDropOnRow(e, targetIndex, targetSlot) {
+        function handleDrop(e, targetSlot) {
             e.preventDefault();
             e.stopPropagation();
-            let tr = e.target.closest('tr');
-            if(tr) tr.classList.remove('drag-over');
             
-            if (draggedItemIndex === null || draggedItemIndex === targetIndex) return;
-
-            let patient = patientsQueue.splice(draggedItemIndex, 1)[0];
-            patient.slot = targetSlot;
-
-            if (draggedItemIndex < targetIndex) { targetIndex--; }
-            
-            patientsQueue.splice(targetIndex, 0, patient);
-            enforceQueueSorting();
-            renderTable();
-            syncDataToGoogle();
-        }
-
-        function handleDragOverTable(e) {
-            e.preventDefault();
-            let tbody = e.target.closest('tbody');
-            if(tbody) tbody.classList.add('drag-over-table');
-        }
-
-        function handleDragLeaveTable(e) {
-            let tbody = e.target.closest('tbody');
-            if(tbody) tbody.classList.remove('drag-over-table');
-        }
-
-        function handleDropOnTable(e, targetSlot) {
-            e.preventDefault();
-            e.stopPropagation();
-            let tbody = e.target.closest('tbody');
-            if(tbody) tbody.classList.remove('drag-over-table');
+            let tbody = e.currentTarget;
+            tbody.classList.remove('drag-over-table');
+            tbody.querySelectorAll('.draggable-row').forEach(row => {
+                row.classList.remove('drop-preview-before', 'drop-preview-after');
+            });
 
             if (draggedItemIndex === null) return;
 
+            const afterElement = getDragAfterElement(tbody, e.clientY);
             let patient = patientsQueue.splice(draggedItemIndex, 1)[0];
             patient.slot = targetSlot;
-            
-            let insertIndex = patientsQueue.length;
-            for (let i = patientsQueue.length - 1; i >= 0; i--) {
-                if (patientsQueue[i].slot === targetSlot) {
-                    insertIndex = i + 1;
-                    break;
+
+            if (afterElement) {
+                let afterIndex = parseInt(afterElement.getAttribute('data-global-index'));
+                if (afterIndex > draggedItemIndex) { afterIndex--; }
+                patientsQueue.splice(afterIndex, 0, patient);
+            } else {
+                let insertAt = -1;
+                for (let i = patientsQueue.length - 1; i >= 0; i--) {
+                    if (patientsQueue[i].slot === targetSlot) {
+                        insertAt = i + 1;
+                        break;
+                    }
                 }
+                if (insertAt === -1) {
+                    const slots = getSlotsForDay();
+                    let targetSlotIdx = slots.indexOf(targetSlot);
+                    insertAt = patientsQueue.length;
+                    for (let i = 0; i < patientsQueue.length; i++) {
+                        let sIdx = slots.indexOf(patientsQueue[i].slot);
+                        if (sIdx > targetSlotIdx) {
+                            insertAt = i;
+                            break;
+                        }
+                    }
+                }
+                patientsQueue.splice(insertAt, 0, patient);
             }
-            
-            patientsQueue.splice(insertIndex, 0, patient);
-            enforceQueueSorting();
+
+            enforceQueueSorting(); 
             renderTable();
             syncDataToGoogle();
         }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable-row:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+        }
+
+        // ================================================================
 
         function renderTable() {
             const container = document.getElementById('tablesContainer');
@@ -935,9 +969,9 @@
                                 </tr>
                             </thead>
                             <tbody id="scheduleBody_${slot}" 
-                                   ondragover="handleDragOverTable(event)" 
-                                   ondragleave="handleDragLeaveTable(event)" 
-                                   ondrop="handleDropOnTable(event, '${slot}')">
+                                   ondragover="handleDragOver(event)" 
+                                   ondragleave="handleDragLeave(event)" 
+                                   ondrop="handleDrop(event, '${slot}')">
                             </tbody>
                         </table>
                     `;
@@ -957,11 +991,10 @@
         function populateTableBody(tbody, list, slotName = null) {
             tbody.innerHTML = '';
             if (list.length === 0) {
-                tbody.innerHTML = `<tr ondragover="handleDragOverTable(event)" ondrop="handleDropOnTable(event, '${slotName}')">
-                                      <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; pointer-events:none; padding:15px;">
-                                          لا يوجد حجوزات في هذه الفترة. اسحب المرضى هنا.
-                                      </td>
-                                   </tr>`;
+                // الصف الفارغ لا نضع له كلاس "draggable-row" حتى لا يتداخل مع الحسابات
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; pointer-events:none; padding:15px;">
+                                      لا يوجد حجوزات في هذه الفترة. اسحب المرضى هنا لترتيبهم.
+                                   </td></tr>`;
                 return;
             }
 
@@ -976,13 +1009,11 @@
                 let row = `
                     <tr class="${rowFinishedClass} draggable-row" 
                         draggable="true" 
+                        data-global-index="${globalIndex}"
                         ondragstart="handleDragStart(event, ${globalIndex})" 
-                        ondragend="handleDragEnd(event)"
-                        ondragover="handleDragOverRow(event)" 
-                        ondragleave="handleDragLeaveRow(event)" 
-                        ondrop="handleDropOnRow(event, ${globalIndex}, '${slotName || 'عام'}')">
+                        ondragend="handleDragEnd(event)">
                         
-                        <td class="drag-handle" style="font-weight:bold; color:var(--primary-blue)" title="اسحب من هنا لتحريك المريض (Drag & Drop)">
+                        <td style="font-weight:bold; color:var(--primary-blue)" class="drag-handle" title="اسحب من هنا (Drag & Drop)">
                             <i class="fa-solid fa-grip-vertical" style="margin-left:8px; color:#bdc3c7;"></i>
                             #${subIndex + 1}
                         </td>
@@ -1015,7 +1046,7 @@
             });
         }
 
-        // تم برمجة الأسهم للتبديل الذكي (إذا كان المريض أولاً، ينضم للساعة السابقة بدون تبديل مع آخر شخص)
+        // الأسهم الذكية تنقل المريض للساعة السابقة/التالية دون التبديل مع أحد
         function moveUp(index) {
             if (index > 0) {
                 let current = patientsQueue[index];
