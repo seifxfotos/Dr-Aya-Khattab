@@ -55,11 +55,17 @@
         .slot-title { background-color: var(--primary-green); color: white; font-weight: 700; padding: 10px 15px; font-size: 16px; border-radius: 8px 8px 0 0; margin-top: 20px; }
         .row-finished { opacity: 0.5; text-decoration: line-through; background-color: rgba(0,0,0,0.02); }
         :root[data-theme="dark"] .row-finished { background-color: rgba(255,255,255,0.02); }
+        
         .action-btns { display: flex; gap: 4px; align-items: center; flex-wrap: wrap;}
         .action-btns button { background: var(--input-bg); border: 1px solid var(--border); padding: 5px 8px; border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 13px; }
         .action-btns button:hover { background: var(--border); }
+        
+        /* تصميم زراير الحجز بوضوح */
         .btn-book-next, .btn-book-session { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 4px; border:none !important;}
         .btn-book-session { background-color: #9b59b6 !important; }
+        .btn-book-next:hover { background-color: #7ab033 !important; }
+        .btn-book-session:hover { background-color: #8e44ad !important; }
+        
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-kashf { background-color: var(--primary-blue); }
         .badge-motab3a { background-color: var(--primary-green); }
@@ -67,6 +73,7 @@
         .badge-dept-nutrition { background-color: var(--dept-nutrition); }
         .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
+        
         .inline-pay-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
@@ -83,9 +90,9 @@
         .revenue-item { display: flex; align-items: center; gap: 5px; }
         .revenue-item i { font-size: 18px; opacity: 0.7;}
         .revenue-total { border-right: 2px solid var(--border); padding-right: 15px; color: var(--primary-blue); font-weight: 800; font-size: 16px;}
-
         .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         @media (max-width: 1000px) { .grid-3col { grid-template-columns: 1fr; } }
+        
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-box h3 { margin-top: 0; color: var(--text-dark);}
@@ -174,6 +181,7 @@
         </div>
     </div>
 
+    <!-- نافذة منبثقة موحدة ومتأمنة -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -203,8 +211,19 @@
         let glpQueue = [];
         let financialsQueue = [];
 
-        // 🚨 هام جداً: حط الرابط بتاعك هنا 🚨
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTcyXVava3VE5X1WaBTWlzNJIgkYg2R-8UgIwluPk-UmTeagKcF4LZSHe92ZdhHiMo/exec';
+        // 🚨 هام جداً: حط الرابط الجديد بتاعك هنا 🚨
+        const SCRIPT_URL = 'ضع_الرابط_الجديد_هنا';
+
+        function showSyncStatus(text) {
+            const indicator = document.getElementById('syncIndicator');
+            document.getElementById('syncIndicatorText').innerText = text;
+            indicator.classList.add('show');
+        }
+
+        function hideSyncStatus() {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.classList.remove('show');
+        }
 
         let timerInterval;
         function updateTimerDisplay(secondsLeft) {
@@ -280,22 +299,16 @@
         function calculateTotals() {
             let cash = 0; let elec = 0; let meds = 0;
             
-            // حساب الكشوفات والجلسات والمقدمات
             patientsQueue.forEach(p => {
                 let amt = parseFloat(p.amount);
                 if (!isNaN(amt)) { if (p.method === 'فودافون كاش' || p.method === 'أنستا باي') elec += amt; else cash += amt; }
             });
             
-            // حساب المصروفات والأدوية
             financialsQueue.forEach(f => {
                 let amt = parseFloat(f.amount);
                 if (!isNaN(amt)) {
-                    if (f.type === 'دواء') { 
-                        meds += amt; // تجميع الأدوية في متغير منفصل تماماً
-                    } 
-                    else if (f.type === 'مصروف') { 
-                        cash -= amt; // خصم المصروف من الكاش فقط
-                    }
+                    if (f.type === 'دواء') { meds += amt; } 
+                    else if (f.type === 'مصروف') { cash -= amt; }
                 }
             });
             
@@ -305,37 +318,66 @@
             document.getElementById('totalRevenueValue').innerText = (cash + elec + meds);
         }
 
+        // --- نظام المودال الآمن والكامل ---
         function showModal(opts) {
             const modal = document.getElementById('customModal');
             document.getElementById('modalTitle').innerHTML = opts.title;
             document.getElementById('modalMessage').innerHTML = opts.message;
-            ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn'].forEach(id => document.getElementById(id).style.display = 'none');
+            
+            // إخفاء كل المدخلات في البداية
+            let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn'];
+            elementsToHide.forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.style.display = 'none';
+            });
             
             if (opts.type === 'prompt') {
                 document.getElementById('modalInputContainer').style.display = 'flex';
-                modalDatePicker.setDate(opts.inputValue || '');
-                if (opts.showSlot) { document.getElementById('modalSlotInput').style.display = 'block'; updateModalSlotDropdown(opts.inputValue); }
+                if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || '');
+                if (opts.showSlot) { 
+                    document.getElementById('modalSlotInput').style.display = 'block'; 
+                    updateModalSlotDropdown(opts.inputValue); 
+                }
                 if (opts.showPayment) { 
                     document.getElementById('modalPaymentInput').style.display = 'block'; 
                     document.getElementById('modalPaymentMethodInput').style.display = 'block'; 
                     document.getElementById('modalAmountInput').style.display = 'block'; 
+                    
+                    document.getElementById('modalPaymentInput').value = 'تم الدفع';
+                    document.getElementById('modalPaymentMethodInput').value = 'كاش';
+                    document.getElementById('modalAmountInput').value = '';
                 }
                 document.getElementById('modalCancelBtn').style.display = 'inline-block';
             }
+            
             modal.style.display = 'flex';
+            
+            // تعيين وظيفة زر التأكيد
             document.getElementById('modalConfirmBtn').onclick = () => {
+                if (opts.type === 'prompt' && opts.showPayment && !document.getElementById('modalPaymentInput').value) {
+                    document.getElementById('modalPaymentInput').style.borderColor = 'var(--danger)';
+                    return; 
+                }
                 modal.style.display = 'none';
-                if (opts.type === 'prompt' && opts.onConfirm) opts.onConfirm(document.getElementById('modalDateInput').value, document.getElementById('modalPaymentInput').value, document.getElementById('modalSlotInput').value, document.getElementById('modalAmountInput').value, document.getElementById('modalPaymentMethodInput').value);
+                if (opts.type === 'prompt' && opts.onConfirm) {
+                    opts.onConfirm(
+                        document.getElementById('modalDateInput').value, 
+                        document.getElementById('modalPaymentInput').value, 
+                        document.getElementById('modalSlotInput').value, 
+                        document.getElementById('modalAmountInput').value, 
+                        document.getElementById('modalPaymentMethodInput').value
+                    );
+                }
             };
+            
             document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none';
         }
 
         async function fetchFromGoogle(payload) {
             let res = await fetch(SCRIPT_URL, { 
                 method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload) 
-            });
+            }); // تم إزالة الـ headers عشان يمنع مشكلة الـ CORS
             if (!res.ok) throw new Error("فشل الاتصال بالسيرفر");
             return JSON.parse(await res.text());
         }
@@ -358,18 +400,17 @@
                 }
             } catch(e) {}
 
-            if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) {
+            if (!SCRIPT_URL || SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbxMo7xAoBRGMVX3j9bjB07J-RiPvPrUbIYjz63yFySDfCAFvTM9qyQDGeB5e3jmbCK5/exec')) {
                 showModal({ type: 'error', title: 'تنبيه هام', message: 'برجاء وضع الرابط الجديد المستخرج من جوجل شيت في الكود.' });
                 return;
             }
 
             isLoadingData = true;
-            document.getElementById('syncIndicator').classList.add('show');
+            showSyncStatus('جاري تحميل البيانات...');
             
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
                 if(result.status === 'success') {
-                    
                     let validSlots = getSlotsForDay();
                     let fetchedSchedule = Array.isArray(result.data) ? result.data : (result.data.schedule || []);
                     
@@ -399,7 +440,7 @@
             }
             
             isLoadingData = false;
-            document.getElementById('syncIndicator').classList.remove('show');
+            hideSyncStatus();
         }
 
         function scheduleSync() {
@@ -411,13 +452,13 @@
             let savedFin = {}; patientsQueue.forEach((p,i) => savedFin[p.name+'_'+i] = p.finished);
             localStorage.setItem('clinic_fin_'+date, JSON.stringify(savedFin));
             
-            document.getElementById('syncIndicator').classList.add('show');
+            showSyncStatus('تعديلات معلقة...');
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(async () => {
                 try {
                     await fetchFromGoogle({ action: 'SYNC_DATA', date: date, schedule: patientsQueue, glp: glpQueue, financials: financialsQueue });
                 } catch(e) {}
-                document.getElementById('syncIndicator').classList.remove('show');
+                hideSyncStatus();
             }, 2000); 
         }
 
@@ -453,22 +494,66 @@
             renderUI(); scheduleSync();
         }
 
+        // --- دالة حجز المتابعة/الجلسة بكل التنبيهات ورسائل النجاح ---
         function bookFutureAppt(idx, visitType) {
             let patient = patientsQueue[idx];
             showModal({
-                type: 'prompt', title: `حجز ${visitType}`,
+                type: 'prompt', 
+                title: `حجز ${visitType}`,
                 message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`,
-                inputValue: getNextWeekDate(), showPayment: true, showSlot: true,
+                inputValue: getNextWeekDate(), 
+                showPayment: true, 
+                showSlot: true,
                 onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => {
                     if(cDate) {
-                        let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0];
-                        let amtVal = parseFloat(cAmt);
-                        if (!isNaN(amtVal) && amtVal > 0) {
-                            patientsQueue.push({ slot: patient.slot || 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', finished: false });
-                            renderUI(); scheduleSync(); 
-                            cPay = "مدفوع مسبقاً"; cAmt = "";
+                        showSyncStatus('جاري تسجيل الموعد السحابي...');
+                        try {
+                            let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0];
+                            let amtVal = parseFloat(cAmt);
+                            
+                            // لو دفع مقدم، ضيفه كحجز جديد النهارده عشان الفلوس تدخل الحساب
+                            if (!isNaN(amtVal) && amtVal > 0) {
+                                patientsQueue.push({ 
+                                    slot: patient.slot || 'عام', 
+                                    name: patient.name + ` (مقدم ${visitType})`, 
+                                    dept: patient.dept, 
+                                    type: 'مقدم', 
+                                    payment: 'تم الدفع', 
+                                    method: cMethod, 
+                                    amount: amtVal, 
+                                    debt: '', 
+                                    finished: false 
+                                });
+                                patientsQueue.sort((a,b) => getSlotsForDay().indexOf(a.slot) - getSlotsForDay().indexOf(b.slot));
+                                renderUI(); 
+                                scheduleSync(); 
+                                
+                                cPay = "مدفوع مسبقاً"; 
+                                cAmt = "";
+                            }
+                            
+                            // إرسال الموعد المستقبلي لجوجل شيت
+                            let result = await fetchFromGoogle({ 
+                                action: 'BOOK_FUTURE', 
+                                futureDate: cDate, 
+                                name: patient.name, 
+                                dept: patient.dept, 
+                                payment: cPay, 
+                                slot: fSlot, 
+                                visitType: visitType, 
+                                amount: cAmt, 
+                                method: cMethod 
+                            });
+                            
+                            if(result.status === 'success') {
+                                showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate} الساعة (${fSlot}).` });
+                            } else {
+                                showModal({ type: 'error', title: 'خطأ في السيرفر', message: result.message });
+                            }
+                        } catch (e) {
+                            showModal({ type: 'error', title: 'خطأ', message: 'فشل حجز الموعد: ' + e.message });
                         }
-                        await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod });
+                        hideSyncStatus();
                     }
                 }
             });
@@ -517,12 +602,12 @@
                         <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
                         <td>
                             <div class="action-btns">
-                                <button onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button>
-                                <button onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button>
-                                <button onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button>
-                                <button onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i></button>
-                                <button onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i></button>
-                                <button onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+                                <button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button>
+                                <button title="رفع" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button title="تنزيل" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button>
+                                <button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button>
+                                <button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>`;
