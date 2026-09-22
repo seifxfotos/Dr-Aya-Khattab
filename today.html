@@ -185,7 +185,6 @@
 
         <div id="tablesContainer"></div>
 
-        <!-- الأقسام الثلاثة الجديدة -->
         <div class="grid-3col">
             <!-- برنامج GLP -->
             <div class="card-panel">
@@ -205,7 +204,7 @@
                 </table>
             </div>
 
-            <!-- مبيعات الأدوية (صيدلية العيادة) -->
+            <!-- مبيعات الأدوية -->
             <div class="card-panel">
                 <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
                 <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
@@ -285,9 +284,9 @@
         let glpQueue = [];
         let financialsQueue = [];
 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvUk_S-3jNrsC7hVo49OtKpNDxOMp1FclMus6ZFCAA3UkgX-GsueqNKYovGJA3D9zR/exec';
+        // تأكد إن الرابط ده هو نفس الرابط الجديد اللي طلعلك من جوجل شيت
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxo0r95yB10fPzXbgJm_FYRQlcRqOi56F9YlvP6NU9CI9IJQ0QN-tWREe5_SemkTz9Q/exec';
 
-        // --- التايمر الذكي المستمر ---
         let timerInterval;
         function updateTimerDisplay(secondsLeft) {
             let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60;
@@ -353,7 +352,6 @@
                 playTone(523.25, 0, 0.5); playTone(659.25, 0.2, 0.6); 
             } catch (e) {}
         }
-        // ----------------------------------------
 
         function initDatePickers() {
             headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); loadDataFromGoogle(); } });
@@ -369,11 +367,9 @@
             if (d === 1 || d === 3) sel.value = "علاج طبيعي"; else if (d === 2) sel.value = "تغذية علاجية";
         }
 
-        // --- الحسابات المالية الدقيقة للمبيعات والمصروفات ---
         function calculateTotals() {
             let cash = 0; let elec = 0;
             
-            // 1. حسابات جدول الكشوفات والجلسات (والمقدمات)
             patientsQueue.forEach(p => {
                 let amt = parseFloat(p.amount);
                 if (!isNaN(amt)) {
@@ -382,15 +378,12 @@
                 }
             });
 
-            // 2. حسابات الأدوية والمصروفات
             financialsQueue.forEach(f => {
                 let amt = parseFloat(f.amount);
                 if (!isNaN(amt)) {
                     if (f.type === 'دواء') {
-                        // إضافة ثمن الدواء للحساب المناسب
                         if(f.method === 'كاش') cash += amt; else elec += amt;
                     } else if (f.type === 'مصروف') {
-                        // المصروف يخصم من الكاش فقط كما طلبت
                         cash -= amt;
                     }
                 }
@@ -439,14 +432,26 @@
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
                 if(result.status === 'success') {
-                    patientsQueue = result.data.schedule || [];
+                    let validSlots = getSlotsForDay();
+                    
+                    // تصحيح الفترات اللي متسجلة غلط أو فيها مسافات زيادة عشان متختفيش
+                    patientsQueue = (result.data.schedule || []).map(p => {
+                        let s = p.slot ? String(p.slot).trim() : '';
+                        if (!validSlots.includes(s)) s = validSlots[0]; // رمي الداتا الغريبة في أول فترة للحماية
+                        return { ...p, slot: s };
+                    });
+                    
                     glpQueue = result.data.glp || [];
                     financialsQueue = result.data.financials || [];
                     
                     let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
-                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] || false; });
+                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] || p.finished || false; });
+                } else {
+                    console.error("Error from server:", result.message);
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error("Fetch Error:", e);
+            }
             
             isLoadingData = false; renderUI();
             document.getElementById('syncIndicator').classList.remove('show');
@@ -477,7 +482,6 @@
         function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م'];}
         function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => s.innerHTML += `<option value="${x}">${x}</option>`); }
 
-        // --- وظائف GLP ---
         function addGLP() {
             let n = document.getElementById('glpName').value.trim();
             let d = document.getElementById('glpDose').value;
@@ -488,7 +492,6 @@
         }
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
 
-        // --- وظائف الماليات (أدوية ومصروفات مفصولة في الواجهة لكن متجمعة في الكود) ---
         function addMedication() {
             let name = document.getElementById('medName').value.trim();
             let buyer = document.getElementById('medBuyer').value.trim();
@@ -496,14 +499,10 @@
             let method = document.getElementById('medMethod').value;
             if(!name || !amt) return;
             
-            // دمج اسم الدواء والمشتري بشكل احترافي عشان يتسجل في الشيت
             let desc = buyer ? `${name} (للمريض: ${buyer})` : name;
-            
             financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt});
             
-            document.getElementById('medName').value = ''; 
-            document.getElementById('medBuyer').value = ''; 
-            document.getElementById('medAmount').value = '';
+            document.getElementById('medName').value = ''; document.getElementById('medBuyer').value = ''; document.getElementById('medAmount').value = '';
             renderUI(); scheduleSync();
         }
 
@@ -513,15 +512,12 @@
             if(!desc || !amt) return;
             
             financialsQueue.push({type: 'مصروف', desc: desc, method: 'كاش', amount: amt});
-            
-            document.getElementById('expDesc').value = ''; 
-            document.getElementById('expAmount').value = '';
+            document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = '';
             renderUI(); scheduleSync();
         }
 
         function removeFin(idx) { financialsQueue.splice(idx,1); renderUI(); scheduleSync(); }
 
-        // --- Schedule Functions ---
         function addPatient() {
             const name = document.getElementById('patientName').value.trim();
             const dept = document.getElementById('department').value;
@@ -542,6 +538,7 @@
         }
 
         function updateScheduleField(idx, field, val) { patientsQueue[idx][field] = val; if(field==='amount' || field==='method') calculateTotals(); scheduleSync(); }
+        // التصليح اللي كان بيمنع زرار المكتمل يشتغل
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         function removePatient(idx) { patientsQueue.splice(idx, 1); renderUI(); scheduleSync(); }
         function moveRow(idx, dir) { 
@@ -571,7 +568,6 @@
             });
         }
 
-        // --- Drag & Drop ---
         function handleDragStart(e, idx) { draggedItemIndex = idx; e.dataTransfer.setData('text/plain', idx); }
         function handleDragOver(e) { e.preventDefault(); }
         function handleDrop(e, tSlot) {
@@ -582,23 +578,15 @@
         }
 
         function renderUI() {
-            // Render GLP
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${g.name}</td><td><span class="badge badge-glp">${g.dose}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             
-            // Render Medications (فصلنا الأدوية في جدول لوحدها)
-            let medsHtml = '';
-            let expsHtml = '';
+            let medsHtml = ''; let expsHtml = '';
             financialsQueue.forEach((f, i) => {
-                if (f.type === 'دواء') {
-                    medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-                } else if (f.type === 'مصروف') {
-                    expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-                }
+                if (f.type === 'دواء') medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                else if (f.type === 'مصروف') expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
             });
-            document.getElementById('medTableBody').innerHTML = medsHtml;
-            document.getElementById('expTableBody').innerHTML = expsHtml;
+            document.getElementById('medTableBody').innerHTML = medsHtml; document.getElementById('expTableBody').innerHTML = expsHtml;
 
-            // Render Schedule
             const cont = document.getElementById('tablesContainer'); cont.innerHTML = '';
             let sCount = 0;
             getSlotsForDay().forEach(slot => {
