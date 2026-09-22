@@ -42,7 +42,7 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1150px; margin: 0 auto; }
 
         .sync-indicator {
             position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
@@ -96,21 +96,21 @@
         .add-patient-card {
             background: var(--card-bg); padding: 20px; border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px;
-            display: grid; grid-template-columns: 1.8fr 1.1fr 1.1fr 1.1fr 1.1fr 1fr; gap: 12px; align-items: end;
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 0.8fr 1fr 0.8fr; gap: 10px; align-items: end;
             transition: background-color 0.3s;
         }
         .input-group { display: flex; flex-direction: column; }
-        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 13px; }
         .input-group input, .input-group select {
             padding: 10px; border: 1px solid var(--border); border-radius: 8px; 
-            font-family: 'Cairo'; font-size: 14px; outline: none; transition: 0.3s;
+            font-family: 'Cairo'; font-size: 13px; outline: none; transition: 0.3s;
             background-color: var(--input-bg); color: var(--text-dark);
         }
         .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); }
         select:invalid { color: #7f8c8d; }
         
         .btn-add {
-            background-color: var(--primary-blue); color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo';
+            background-color: var(--primary-blue); color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; font-family: 'Cairo';
         }
         .btn-add:hover { background-color: #007bb5; }
 
@@ -119,8 +119,8 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse;
             transition: background-color 0.3s; margin-bottom: 20px;
         }
-        .schedule-table th, .schedule-table td { padding: 12px 15px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 15px;}
+        .schedule-table th, .schedule-table td { padding: 12px 10px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px;}
         .schedule-table tr:last-child td { border-bottom: none; }
         
         .slot-title {
@@ -145,17 +145,17 @@
         .drop-preview-before td { border-top: 3px solid var(--primary-blue) !important; }
         .drop-preview-after td { border-bottom: 3px solid var(--primary-blue) !important; }
 
-        .action-btns { display: flex; gap: 5px; align-items: center;}
+        .action-btns { display: flex; gap: 4px; align-items: center; flex-wrap: wrap;}
         .action-btns button { 
-            background: var(--input-bg); border: 1px solid var(--border); padding: 6px 10px; 
-            border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px; 
+            background: var(--input-bg); border: 1px solid var(--border); padding: 5px 8px; 
+            border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 13px; 
         }
         .action-btns button:hover { background: var(--border); }
         
-        .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
+        .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 4px; border:none !important;}
         .btn-book-next:hover { background-color: #7ab033 !important; }
         
-        .btn-book-session { background-color: #9b59b6 !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 5px; border:none !important;}
+        .btn-book-session { background-color: #9b59b6 !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 4px; border:none !important;}
         .btn-book-session:hover { background-color: #8e44ad !important; }
 
         .btn-done { color: var(--primary-green) !important; }
@@ -168,12 +168,19 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         
         .inline-pay-select {
-            border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px;
-            font-family: 'Cairo'; font-weight: 700; font-size: 13px; outline: none;
+            border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px;
+            font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none;
             background-color: var(--input-bg); cursor: pointer; transition: 0.3s;
         }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
+
+        .inline-amount-input {
+            width: 60px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px;
+            font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: center;
+            outline: none; background-color: var(--input-bg); color: var(--text-dark); transition: 0.3s;
+        }
+        .inline-amount-input:focus { border-color: var(--primary-blue); }
 
         .floating-timer {
             position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); border-radius: 10px;
@@ -201,6 +208,14 @@
         .btn-play { background: var(--primary-blue); font-size: 13px; min-width: 75px; justify-content: center;}
         .btn-reset { background: #95a5a6; font-size: 13px; justify-content: center; padding: 0 10px;}
         .btn-reset:hover { background: #7f8c8d; }
+
+        .total-revenue-bar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--card-bg); border: 2px solid var(--primary-green); color: var(--text-dark);
+            padding: 10px 25px; border-radius: 30px; font-size: 18px; font-weight: 800;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 100; display: flex; align-items: center; gap: 10px; transition: 0.3s;
+        }
+        .total-revenue-bar i { color: var(--primary-green); font-size: 22px; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease; transition: background-color 0.3s;}
@@ -232,6 +247,11 @@
                 <i class="fa-solid fa-sun"></i>
             </div>
         </label>
+    </div>
+
+    <!-- شريط الإجمالي اليومي -->
+    <div class="total-revenue-bar" id="totalRevenueBar">
+        <i class="fa-solid fa-wallet"></i> الإجمالي اليومي: <span id="totalRevenueValue">0</span> ج.م
     </div>
 
     <div class="container">
@@ -277,6 +297,10 @@
                     <option value="لم يدفع">لم يدفع</option>
                     <option value="مدفوع مسبقاً">مدفوع مسبقاً</option>
                 </select>
+            </div>
+            <div class="input-group">
+                <label>المبلغ (ج.م)</label>
+                <input type="number" id="paidAmount" placeholder="0" min="0">
             </div>
             <div class="input-group">
                 <label>الساعة (اختياري)</label>
@@ -330,6 +354,8 @@
                     <option value="لم يدفع">لم يدفع</option>
                     <option value="مدفوع مسبقاً">مدفوع مسبقاً</option>
                 </select>
+
+                <input type="number" id="modalAmountInput" class="modal-input" placeholder="المبلغ المدفوع (اختياري)" style="display: none;" min="0">
             </div>
             <div class="modal-actions">
                 <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
@@ -414,7 +440,7 @@
         }
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxo0r95yB10fPzXbgJm_FYRQlcRqOi56F9YlvP6NU9CI9IJQ0QN-tWREe5_SemkTz9Q/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFI37s5JzpCIy4Zq3OJw5_CYt27R0Epe2UWlljjGUpJStIaGqafekzQ-1QEOp_NrfW/exec';
 
         const now = new Date();
         let patientsQueue = [];
@@ -518,6 +544,17 @@
             indicator.classList.remove('show');
         }
 
+        function calculateTotal() {
+            let total = 0;
+            patientsQueue.forEach(p => {
+                let amt = parseFloat(p.amount);
+                if (!isNaN(amt)) {
+                    total += amt;
+                }
+            });
+            document.getElementById('totalRevenueValue').innerText = total;
+        }
+
         function showModal(options) {
             const modal = document.getElementById('customModal');
             const titleEl = document.getElementById('modalTitle');
@@ -526,12 +563,14 @@
             const dateInput = document.getElementById('modalDateInput');
             const slotInput = document.getElementById('modalSlotInput');
             const paymentInput = document.getElementById('modalPaymentInput');
+            const amountInput = document.getElementById('modalAmountInput');
             const confirmBtn = document.getElementById('modalConfirmBtn');
             const cancelBtn = document.getElementById('modalCancelBtn');
 
             inputContainer.style.display = 'none';
             slotInput.style.display = 'none';
             paymentInput.style.display = 'none';
+            amountInput.style.display = 'none';
             cancelBtn.style.display = 'none';
             msgEl.innerHTML = options.message || '';
 
@@ -561,7 +600,9 @@
 
                 if (options.showPayment) {
                     paymentInput.style.display = 'block';
+                    amountInput.style.display = 'block';
                     paymentInput.value = ''; 
+                    amountInput.value = '';
                     paymentInput.style.borderColor = 'var(--border)'; 
                 }
                 cancelBtn.style.display = 'inline-block';
@@ -575,7 +616,7 @@
                 }
                 modal.style.display = 'none';
                 if (options.type === 'prompt' && options.onConfirm) {
-                    options.onConfirm(dateInput.value, paymentInput.value, slotInput.value);
+                    options.onConfirm(dateInput.value, paymentInput.value, slotInput.value, amountInput.value);
                 }
             };
             cancelBtn.onclick = () => modal.style.display = 'none';
@@ -631,6 +672,7 @@
                         dept: p.dept || '', 
                         type: p.type ? String(p.type).trim() : "", 
                         payment: p.payment || '', 
+                        amount: p.amount || '',
                         finished: localFinished[p.name + '_' + idx] !== undefined ? localFinished[p.name + '_' + idx] : (p.finished === true || String(p.finished).toLowerCase() === "true")
                     }));
                     
@@ -676,6 +718,7 @@
                     dept: p.dept, 
                     type: p.type, 
                     payment: p.payment, 
+                    amount: p.amount,
                     finished: p.finished || false
                 }));
                 
@@ -731,6 +774,7 @@
             const dept = document.getElementById('department').value;
             const type = document.getElementById('visitType').value;
             const payment = document.getElementById('paymentStatus').value;
+            const amount = document.getElementById('paidAmount').value;
             let manualSlot = document.getElementById('manualSlot').value;
             
             if(!name || !dept || !type || !payment) { 
@@ -786,13 +830,14 @@
                 targetSlot = foundSlot;
             }
 
-            patientsQueue.push({ slot: targetSlot, name, dept, type: vType, payment, finished: false });
+            patientsQueue.push({ slot: targetSlot, name, dept, type: vType, payment, amount, finished: false });
             enforceQueueSorting(); 
             
             document.getElementById('patientName').value = '';
             smartSelectDepartment(); 
             document.getElementById('visitType').value = '';
             document.getElementById('paymentStatus').value = '';
+            document.getElementById('paidAmount').value = '';
             document.getElementById('manualSlot').value = '';
             document.getElementById('visitType').style.color = '#7f8c8d';
             document.getElementById('paymentStatus').style.color = '#7f8c8d';
@@ -808,6 +853,12 @@
             patientsQueue[index].payment = newPaymentStatus;
             renderTable(); 
             scheduleSync(); 
+        }
+
+        function updateAmount(index, newAmount) {
+            patientsQueue[index].amount = newAmount;
+            calculateTotal();
+            scheduleSync();
         }
 
         function toggleFinished(index) {
@@ -923,7 +974,7 @@
             if (!slots) {
                 container.innerHTML = `
                     <table class="schedule-table" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'عام')">
-                        <thead><tr><th>الدور</th><th>الاسم</th><th>القسم</th><th>النوع</th><th>الدفع</th><th>إجراءات / ترتيب</th></tr></thead>
+                        <thead><tr><th>الدور</th><th>الاسم</th><th>القسم</th><th>النوع</th><th>الدفع</th><th>المبلغ</th><th>إجراءات / ترتيب</th></tr></thead>
                         <tbody id="scheduleBody_all"></tbody>
                     </table>
                 `;
@@ -935,7 +986,7 @@
                     slotDiv.innerHTML = `
                         <div class="slot-title"><i class="fa-regular fa-clock"></i> فترة الساعة: ${slot}</div>
                         <table class="schedule-table" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${slot}')">
-                            <thead><tr><th>الدور</th><th>الاسم</th><th>القسم</th><th>النوع</th><th>الدفع</th><th>إجراءات / ترتيب</th></tr></thead>
+                            <thead><tr><th>الدور</th><th>الاسم</th><th>القسم</th><th>النوع</th><th>الدفع</th><th>المبلغ</th><th>إجراءات / ترتيب</th></tr></thead>
                             <tbody id="scheduleBody_${slot}"></tbody>
                         </table>
                     `;
@@ -948,6 +999,7 @@
                     populateTableBody(tbody, slotPatients, slot);
                 });
             }
+            calculateTotal(); // تحديث المجموع بعد أي تغيير في الجداول
         }
 
         function populateTableBody(tbody, list, slotName = null) {
@@ -956,7 +1008,7 @@
             if (isLoadingData) {
                 tbody.innerHTML = `
                     <tr style="pointer-events: none;">
-                        <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.8; padding: 40px 15px; border: 2px dashed var(--border);">
+                        <td colspan="7" style="text-align:center; color:var(--text-dark); opacity:0.8; padding: 40px 15px; border: 2px dashed var(--border);">
                             <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--primary-blue); margin-bottom: 10px;"></i><br>
                             جاري تحميل التحديثات...
                         </td>
@@ -968,7 +1020,7 @@
             if (list.length === 0) {
                 tbody.innerHTML = `
                     <tr style="pointer-events: none;">
-                        <td colspan="6" style="text-align:center; color:var(--text-dark); opacity:0.6; padding: 40px 15px; border: 2px dashed var(--border);">
+                        <td colspan="7" style="text-align:center; color:var(--text-dark); opacity:0.6; padding: 40px 15px; border: 2px dashed var(--border);">
                             <i class="fa-solid fa-download" style="font-size: 20px; color: var(--border); margin-bottom: 10px;"></i><br>
                             اسحب المرضى هنا لترتيبهم أو إضافتهم لهذه الفترة.
                         </td>
@@ -1000,6 +1052,9 @@
                                 <option value="لم يدفع" ${patient.payment === 'لم يدفع' ? 'selected' : ''} style="color:var(--danger)">لم يدفع</option>
                                 <option value="مدفوع مسبقاً" ${patient.payment === 'مدفوع مسبقاً' ? 'selected' : ''} style="color:var(--primary-green)">مدفوع مسبقاً</option>
                             </select>
+                        </td>
+                        <td>
+                            <input type="number" class="inline-amount-input" value="${patient.amount || ''}" onchange="updateAmount(${globalIndex}, this.value)" placeholder="0">
                         </td>
                         <td>
                             <div class="action-btns">
@@ -1057,19 +1112,17 @@
                 type: 'prompt', title: `حجز ${visitType}`,
                 message: `تحديد ${visitType} للمريض: <strong>${patient.name}</strong><br>القسم: ${patient.dept}`,
                 inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, 
-                onConfirm: async (confirmDate, confirmPayment, confirmSlot) => {
+                onConfirm: async (confirmDate, confirmPayment, confirmSlot, confirmAmount) => {
                     if(confirmDate) {
                         showSyncStatus('جاري تسجيل الموعد...');
                         try {
                             let finalSlot = confirmSlot;
-                            
-                            // التحقق وإعطاء المريض أول فترة متاحة في اليوم إذا كان الاختيار "تلقائي"
                             if (!finalSlot || finalSlot.trim() === "") {
                                 let daySlots = getSlotsForSpecificDate(confirmDate);
                                 finalSlot = (daySlots && daySlots.length > 0) ? daySlots[0] : 'عام';
                             }
                             
-                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: finalSlot, visitType: visitType });
+                            let result = await fetchFromGoogle({ action: 'BOOK_FUTURE', futureDate: confirmDate, name: patient.name, dept: patient.dept, payment: confirmPayment, slot: finalSlot, visitType: visitType, amount: confirmAmount });
                             if(result.status !== 'success') throw new Error(result.message);
                             
                             showModal({ type: 'success', title: 'تم الحجز!', message: `تم جدولة الـ ${visitType} للمريض في يوم ${confirmDate} الساعة (${finalSlot}) بنجاح.` });
