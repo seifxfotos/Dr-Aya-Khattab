@@ -270,8 +270,8 @@
         let glpQueue = [];
         let financialsQueue = [];
 
-        // 🚨 حط الرابط الجديد بتاعك هنا بين علامتين التنصيص
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIfXgo75aQcy8PTMynZeLto3lC2wKnav6gAjGdh4zN7D76iT7x2N6y-EC0SYpOHKCU/exec';
+        // 🚨 هام جداً: ضع الرابط الجديد المستخرج من جوجل شيت هنا
+        const SCRIPT_URL = 'ضع_الرابط_الجديد_هنا';
 
         let timerInterval;
         function updateTimerDisplay(secondsLeft) {
@@ -403,58 +403,87 @@
         }
 
         async function fetchFromGoogle(payload) {
-            let res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            let res = await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // تأمين منع الحجب (CORS)
+                body: JSON.stringify(payload) 
+            });
+            if (!res.ok) throw new Error("فشل الاتصال بالسيرفر");
             return JSON.parse(await res.text());
         }
 
         async function loadDataFromGoogle() {
             const date = document.getElementById('todayDate').value;
-            isLoadingData = true; renderUI();
+            
+            // 1. تشغيل نظام الذاكرة المؤقتة (Cache) فوراً لعدم مسح الشاشة
+            try {
+                let cachedData = localStorage.getItem('clinic_cache_' + date);
+                if (cachedData) {
+                    let parsed = JSON.parse(cachedData);
+                    if (Array.isArray(parsed)) {
+                        patientsQueue = parsed; // صيغة قديمة
+                    } else {
+                        patientsQueue = parsed.schedule || []; // صيغة جديدة
+                        glpQueue = parsed.glp || [];
+                        financialsQueue = parsed.financials || [];
+                    }
+                    renderUI(); // العرض الفوري من الذاكرة
+                }
+            } catch(e) {}
+
+            // تحذير لو الرابط لم يتم تحديثه
+            if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) {
+                showModal({ type: 'error', title: 'تنبيه هام', message: 'برجاء وضع الرابط الجديد المستخرج من جوجل شيت في الكود.' });
+                return;
+            }
+
+            isLoadingData = true;
             document.getElementById('syncIndicator').classList.add('show');
             
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
                 if(result.status === 'success') {
-                    // نظام الطوارئ لقراءة الداتا سواء من الرابط القديم أو الجديد
-                    let fetchedSchedule = [];
-                    if (Array.isArray(result.data)) {
-                        fetchedSchedule = result.data; // لو الرابط القديم لسه شغال
-                    } else if (result.data && result.data.schedule) {
-                        fetchedSchedule = result.data.schedule; // لو الرابط الجديد شغال
-                    }
-
-                    // نظام حماية لتسكين الفترات الغير معروفة أو القديمة
+                    
                     let validSlots = getSlotsForDay();
-                    patientsQueue = fetchedSchedule.map((p, idx) => {
+                    let fetchedSchedule = Array.isArray(result.data) ? result.data : (result.data.schedule || []);
+                    
+                    // تنظيف البيانات وإجبار أي مريض بدون فترة سليمة إنه ينزل في أول جدول
+                    patientsQueue = fetchedSchedule.map(p => {
                         let s = p.slot ? String(p.slot).trim() : 'عام';
                         if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { 
-                            ...p, 
-                            slot: s,
-                            name: p.name || 'بدون اسم',
-                            method: p.method || 'كاش',
-                            amount: p.amount || '',
-                            debt: p.debt || ''
-                        };
+                        return { ...p, slot: s, name: p.name || 'بدون اسم', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '' };
                     });
                     
                     glpQueue = result.data.glp || [];
                     financialsQueue = result.data.financials || [];
                     
+                    // تحديث الذاكرة المؤقتة بالبيانات النظيفة
+                    localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
+
                     let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
                     patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
+                    
+                    renderUI(); // التحديث النهائي من السيرفر
+                } else {
+                    console.error("خطأ من السيرفر: ", result.message);
                 }
             } catch(e) {
-                console.error("Fetch Error:", e);
+                console.error("خطأ في الجلب: ", e);
+                if (patientsQueue.length === 0) {
+                    showModal({ type: 'error', title: 'خطأ في الاتصال', message: 'لم نتمكن من جلب البيانات، تأكد من صحة الرابط الجديد أو جودة الإنترنت.' });
+                }
             }
             
-            isLoadingData = false; renderUI();
+            isLoadingData = false;
             document.getElementById('syncIndicator').classList.remove('show');
         }
 
         function scheduleSync() {
             if (isLoadingData) return;
             const date = document.getElementById('todayDate').value;
+            
+            // حفظ التعديلات فوراً في الذاكرة لضمان عدم ضياعها
+            localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
             
             let savedFin = {}; patientsQueue.forEach((p,i) => savedFin[p.name+'_'+i] = p.finished);
             localStorage.setItem('clinic_fin_'+date, JSON.stringify(savedFin));
@@ -584,8 +613,10 @@
 
             const cont = document.getElementById('tablesContainer'); cont.innerHTML = '';
             let sCount = 0;
-            getSlotsForDay().forEach(slot => {
-                let sPats = patientsQueue.filter(p => p.slot === slot || (slot === getSlotsForDay()[0] && p.slot === 'عام'));
+            let validSlots = getSlotsForDay();
+
+            validSlots.forEach(slot => {
+                let sPats = patientsQueue.filter(p => p.slot === slot || (slot === validSlots[0] && p.slot === 'عام'));
                 let html = `<div class="slot-title">${slot}</div><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>إجراءات</th></tr></thead><tbody>`;
                 
                 if (sPats.length===0) html += `<tr><td colspan="7" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
