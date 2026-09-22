@@ -10,28 +10,15 @@
     
     <style>
         :root {
-            --primary-blue: #0093D0;
-            --primary-green: #8CC63F;
-            --dept-nutrition: #e67e22; 
-            --dept-physio: #27ae60;    
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-dark: #2c3e50;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --border: #e1e8ed;
-            --input-bg: #ffffff;
-            --glp-color: #3498db;
+            --primary-blue: #0093D0; --primary-green: #8CC63F; --dept-nutrition: #e67e22; 
+            --dept-physio: #27ae60; --bg-color: #f4f7f6; --card-bg: #ffffff;
+            --text-dark: #2c3e50; --danger: #e74c3c; --warning: #f39c12;
+            --border: #e1e8ed; --input-bg: #ffffff; --glp-color: #3498db;
         }
 
         :root[data-theme="dark"] {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-dark: #e0e0e0;
-            --border: #333333;
-            --input-bg: #2c2c2c;
-            --primary-blue: #0082b8;
-            --primary-green: #7bb530;
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-dark: #e0e0e0;
+            --border: #333333; --input-bg: #2c2c2c; --primary-blue: #0082b8; --primary-green: #7bb530;
         }
 
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; }
@@ -83,10 +70,9 @@
         .action-btns button { background: var(--input-bg); border: 1px solid var(--border); padding: 5px 8px; border-radius: 5px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 13px; }
         .action-btns button:hover { background: var(--border); }
         
-        .btn-book-next { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 4px; border:none !important;}
-        .btn-book-session { background-color: #9b59b6 !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 4px; border:none !important;}
-        .btn-done { color: var(--primary-green) !important; }
-
+        .btn-book-next, .btn-book-session { background-color: var(--primary-green) !important; color: white !important; font-family: 'Cairo'; font-weight: 600; font-size: 12px !important; display: flex; align-items: center; gap: 4px; border:none !important;}
+        .btn-book-session { background-color: #9b59b6 !important; }
+        
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-kashf { background-color: var(--primary-blue); }
         .badge-motab3a { background-color: var(--primary-green); }
@@ -284,8 +270,8 @@
         let glpQueue = [];
         let financialsQueue = [];
 
-        // تأكد إن الرابط ده هو نفس الرابط الجديد اللي طلعلك من جوجل شيت
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvUk_S-3jNrsC7hVo49OtKpNDxOMp1FclMus6ZFCAA3UkgX-GsueqNKYovGJA3D9zR/exec';
+        // 🚨 حط الرابط الجديد بتاعك هنا بين علامتين التنصيص
+        const SCRIPT_URL = 'ضع_الرابط_الجديد_هنا';
 
         let timerInterval;
         function updateTimerDisplay(secondsLeft) {
@@ -369,7 +355,6 @@
 
         function calculateTotals() {
             let cash = 0; let elec = 0;
-            
             patientsQueue.forEach(p => {
                 let amt = parseFloat(p.amount);
                 if (!isNaN(amt)) {
@@ -377,7 +362,6 @@
                     else cash += amt; 
                 }
             });
-
             financialsQueue.forEach(f => {
                 let amt = parseFloat(f.amount);
                 if (!isNaN(amt)) {
@@ -388,7 +372,6 @@
                     }
                 }
             });
-
             document.getElementById('totalCash').innerText = cash;
             document.getElementById('totalElec').innerText = elec;
             document.getElementById('totalRevenueValue').innerText = (cash + elec);
@@ -432,22 +415,34 @@
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
                 if(result.status === 'success') {
+                    // نظام الطوارئ لقراءة الداتا سواء من الرابط القديم أو الجديد
+                    let fetchedSchedule = [];
+                    if (Array.isArray(result.data)) {
+                        fetchedSchedule = result.data; // لو الرابط القديم لسه شغال
+                    } else if (result.data && result.data.schedule) {
+                        fetchedSchedule = result.data.schedule; // لو الرابط الجديد شغال
+                    }
+
+                    // نظام حماية لتسكين الفترات الغير معروفة أو القديمة
                     let validSlots = getSlotsForDay();
-                    
-                    // تصحيح الفترات اللي متسجلة غلط أو فيها مسافات زيادة عشان متختفيش
-                    patientsQueue = (result.data.schedule || []).map(p => {
-                        let s = p.slot ? String(p.slot).trim() : '';
-                        if (!validSlots.includes(s)) s = validSlots[0]; // رمي الداتا الغريبة في أول فترة للحماية
-                        return { ...p, slot: s };
+                    patientsQueue = fetchedSchedule.map((p, idx) => {
+                        let s = p.slot ? String(p.slot).trim() : 'عام';
+                        if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
+                        return { 
+                            ...p, 
+                            slot: s,
+                            name: p.name || 'بدون اسم',
+                            method: p.method || 'كاش',
+                            amount: p.amount || '',
+                            debt: p.debt || ''
+                        };
                     });
                     
                     glpQueue = result.data.glp || [];
                     financialsQueue = result.data.financials || [];
                     
                     let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
-                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] || p.finished || false; });
-                } else {
-                    console.error("Error from server:", result.message);
+                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
                 }
             } catch(e) {
                 console.error("Fetch Error:", e);
@@ -538,7 +533,7 @@
         }
 
         function updateScheduleField(idx, field, val) { patientsQueue[idx][field] = val; if(field==='amount' || field==='method') calculateTotals(); scheduleSync(); }
-        // التصليح اللي كان بيمنع زرار المكتمل يشتغل
+        
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         function removePatient(idx) { patientsQueue.splice(idx, 1); renderUI(); scheduleSync(); }
         function moveRow(idx, dir) { 
@@ -590,7 +585,7 @@
             const cont = document.getElementById('tablesContainer'); cont.innerHTML = '';
             let sCount = 0;
             getSlotsForDay().forEach(slot => {
-                let sPats = patientsQueue.filter(p => p.slot === slot);
+                let sPats = patientsQueue.filter(p => p.slot === slot || (slot === getSlotsForDay()[0] && p.slot === 'عام'));
                 let html = `<div class="slot-title">${slot}</div><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>إجراءات</th></tr></thead><tbody>`;
                 
                 if (sPats.length===0) html += `<tr><td colspan="7" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
