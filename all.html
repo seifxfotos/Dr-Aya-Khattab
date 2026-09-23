@@ -16,6 +16,7 @@
             --card-bg: rgba(255, 255, 255, 0.9);
             --text-dark: #2c3e50;
             --glass-border: rgba(255, 255, 255, 0.5);
+            --chat-bg: #e5ded8;
         }
 
         :root[data-theme="dark"] {
@@ -23,143 +24,57 @@
             --card-bg: rgba(30, 30, 30, 0.85);
             --text-dark: #e0e0e0;
             --glass-border: rgba(255, 255, 255, 0.1);
+            --chat-bg: #0b141a;
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Cairo', sans-serif; margin: 0; padding: 0;
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             background: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(0, 147, 208, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(140, 198, 63, 0.08), transparent 25%);
-            color: var(--text-dark);
-            transition: background-color 0.5s ease;
-            position: relative;
-            overflow-x: hidden;
+            background-image: radial-gradient(circle at 15% 50%, rgba(0, 147, 208, 0.08), transparent 25%), radial-gradient(circle at 85% 30%, rgba(140, 198, 63, 0.08), transparent 25%);
+            color: var(--text-dark); transition: background-color 0.5s ease;
+            position: relative; overflow-x: hidden;
         }
 
-        .blob {
-            position: absolute;
-            filter: blur(80px);
-            z-index: -1;
-            opacity: 0.6;
-        }
+        .blob { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.6; }
         .blob-1 { top: -10%; left: -10%; width: 400px; height: 400px; background-color: var(--primary-blue); }
         .blob-2 { bottom: -10%; right: -10%; width: 350px; height: 350px; background-color: var(--primary-green); }
 
         .main-container {
-            width: 90%;
-            max-width: 800px;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            width: 90%; max-width: 800px; background: var(--card-bg);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 40px 30px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .clinic-header { 
-            margin-bottom: 30px; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        
-        .clinic-logo {
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
+        .clinic-header { margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .clinic-logo { margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .clinic-logo img { max-width: 200px; height: auto; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1)); display: block; }
+        .clinic-header h2 { margin: 5px 0 0; font-size: 21px; font-weight: 800; color: var(--primary-green); text-align: center; width: 100%; }
 
-        .clinic-logo img {
-            max-width: 200px;
-            height: auto;
-            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
-            display: block;
-        }
-
-        .clinic-header h2 {
-            margin: 5px 0 0;
-            font-size: 21px;
-            font-weight: 800;
-            color: var(--primary-green);
-            text-align: center;
-            width: 100%;
-        }
-
-        .gates-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-            width: 100%;
-        }
+        .gates-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; width: 100%; }
 
         .gate-card {
-            text-decoration: none;
-            color: inherit;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(0, 147, 208, 0.1);
-            padding: 25px 20px;
-            border-radius: 20px;
+            text-decoration: none; color: inherit; background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 147, 208, 0.1); padding: 25px 20px; border-radius: 20px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; z-index: 1;
         }
-
         .gate-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s ease;
+            z-index: -1; opacity: 0; transition: opacity 0.4s ease;
         }
-
-        .gate-card:hover {
-            transform: translateY(-8px);
-            border-color: transparent;
-            box-shadow: 0 15px 30px rgba(0, 147, 208, 0.3);
-            color: white;
-        }
-
+        .gate-card:hover { transform: translateY(-8px); border-color: transparent; box-shadow: 0 15px 30px rgba(0, 147, 208, 0.3); color: white; }
         .gate-card:hover::before { opacity: 1; }
-
-        .gate-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-            color: var(--primary-blue);
-            transition: color 0.4s ease;
-        }
-
+        .gate-icon { font-size: 40px; margin-bottom: 12px; color: var(--primary-blue); transition: color 0.4s ease; }
         .gate-card:hover .gate-icon { color: white; }
-
         .gate-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
         .gate-desc { font-size: 12px; opacity: 0.8; margin: 0; line-height: 1.4; }
 
@@ -170,20 +85,18 @@
         .slider { 
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
             background-color: rgba(0,0,0,0.1); border: 1px solid var(--glass-border);
-            transition: .4s; border-radius: 34px; 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 6px;
+            transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px;
         }
         .slider .fa-sun { color: #f39c12; font-size: 14px; z-index: 1;}
         .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
         .slider:before { 
             position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 3px; 
-            background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* تصميم الشات الحي السحابي */
+        /* زر فتح الشات */
         .chat-toggle-btn {
             position: fixed; bottom: 25px; right: 25px; z-index: 1000;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
@@ -192,104 +105,119 @@
             display: flex; align-items: center; justify-content: center; transition: 0.3s;
         }
         .chat-toggle-btn:hover { transform: scale(1.1); }
-
         .chat-badge {
-            position: absolute; top: -5px; right: -5px;
-            background-color: #e74c3c; color: white; border-radius: 50%;
-            width: 24px; height: 24px; font-size: 12px; font-weight: 800;
-            display: none; align-items: center; justify-content: center;
-            border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            animation: pulseBadge 1.5s infinite;
+            position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%;
+            width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center;
+            border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite;
         }
         @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
+        /* صندوق الشات */
         .chat-box-wrapper {
-            position: fixed; bottom: 95px; right: 25px; width: 350px; max-width: 90vw;
-            height: 480px; background: var(--card-bg); backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            z-index: 1000; display: none; flex-direction: column; overflow: hidden; animation: popIn 0.3s ease;
+            position: fixed; bottom: 95px; right: 25px; width: 380px; max-width: 90vw; height: 500px; 
+            background: var(--chat-bg); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            z-index: 1000; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right;
         }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
+        
+        /* وضع الـ Full Screen */
+        .chat-box-wrapper.fullscreen {
+            bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important;
+            max-width: 100vw !important; border-radius: 0; z-index: 9999;
+        }
+        .chat-box-wrapper.fullscreen .chat-messages { padding: 30px 10vw; }
+        .chat-box-wrapper.fullscreen .msg-text-content { font-size: 17px; }
+        .chat-box-wrapper.fullscreen .message-content { padding: 12px 18px; }
+        
+        /* هيدر الشات */
         .chat-header {
-            background: var(--primary-blue); color: white; padding: 12px 15px;
-            display: flex; justify-content: space-between; align-items: center; font-weight: 700;
+            background: var(--primary-blue); color: white; padding: 12px 20px;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
         }
+        .header-controls { display: flex; align-items: center; gap: 10px; }
         .chat-header select {
-            background: rgba(255,255,255,0.2); border: 1px solid white; color: white;
-            padding: 3px 8px; border-radius: 6px; font-family: 'Cairo'; font-size: 13px; outline: none; cursor: pointer;
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white;
+            padding: 4px 10px; border-radius: 8px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; transition: 0.3s;
         }
-        .chat-header select option { background: #333; color: white; }
+        .chat-header select:hover { background: rgba(255,255,255,0.3); }
+        .chat-header select option { background: var(--card-bg); color: var(--text-dark); }
+        .icon-btn {
+            background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 8px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
 
-        .chat-messages {
-            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px;
-        }
+        /* منطقة الرسائل */
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth;}
         
-        .message {
-            max-width: 82%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; word-break: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: relative;
-        }
-        .message.doctor { 
-            background-color: var(--primary-blue); color: white; 
-            align-self: flex-start; border-bottom-right-radius: 4px; border-right: 4px solid #005f8d;
-        }
-        .message.reception { 
-            background-color: var(--primary-green); color: white; 
-            align-self: flex-end; border-bottom-left-radius: 4px; border-left: 4px solid #5d8e20;
-        }
+        /* هيكل الرسالة الجديد */
+        .message-row { display: flex; flex-direction: column; margin-bottom: 15px; width: 100%; position: relative; }
+        .message-row.doctor { align-items: flex-start; } /* يمين */
+        .message-row.reception { align-items: flex-end; } /* يسار */
 
-        .message .sender-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; margin-bottom: 4px;
+        .msg-flex { display: flex; align-items: center; gap: 8px; max-width: 85%; }
+        .msg-flex.reception { flex-direction: row-reverse; } /* عشان الأزرار تيجي الناحية التانية */
+
+        .message-content {
+            padding: 8px 14px; border-radius: 12px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
-        .message .sender-name { font-size: 11px; font-weight: 700; opacity: 0.9; }
-        .message .msg-time { font-size: 10px; opacity: 0.8; direction: ltr; display: flex; align-items: center; gap: 4px;}
+        /* ذيل الرسالة (Tails) */
+        .message-content::before { content: ""; position: absolute; top: 0; border: 10px solid transparent; }
         
-        /* مؤشر السين والإرسال */
-        .msg-status { font-size: 12px; margin-left: 4px; opacity: 0.8; }
-        .msg-status.seen { color: #f1c40f; opacity: 1; text-shadow: 0 0 2px rgba(0,0,0,0.3); }
-
-        .msg-text-content { display: inline; }
-        .msg-edited-tag { font-size: 10px; opacity: 0.6; margin-right: 5px; font-style: italic; }
-
-        /* أزرار التعديل والحذف اللي بتظهر عند الوقوف على الرسالة */
-        .msg-actions {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            display: none; gap: 5px; flex-direction: column;
-        }
-        .message.doctor .msg-actions { left: -35px; }
-        .message.reception .msg-actions { right: -35px; }
-        .message:hover .msg-actions { display: flex; }
+        .message-content.doctor { background: var(--primary-blue); color: white; border-top-right-radius: 0; }
+        .message-content.doctor::before { right: -10px; border-top-color: var(--primary-blue); border-left-color: var(--primary-blue); }
         
+        .message-content.reception { background: var(--primary-green); color: white; border-top-left-radius: 0; }
+        .message-content.reception::before { left: -10px; border-top-color: var(--primary-green); border-right-color: var(--primary-green); }
+
+        .sender-name { font-size: 11px; font-weight: 800; margin-bottom: 2px; opacity: 0.9; }
+        .msg-text-content { font-size: 14.5px; line-height: 1.5; word-break: break-word; }
+        .msg-edited-tag { font-size: 10px; opacity: 0.7; font-style: italic; margin-right: 6px; }
+
+        /* أزرار التعديل والحذف (لا تختفي) */
+        .msg-actions { display: flex; gap: 5px; opacity: 0; visibility: hidden; transition: 0.2s ease; }
+        .msg-flex:hover .msg-actions { opacity: 1; visibility: visible; }
         .msg-actions button {
             background: var(--card-bg); color: var(--text-dark); border: 1px solid var(--glass-border);
-            width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
             font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;
         }
-        .msg-actions button:hover { background: var(--primary-blue); color: white; }
+        .msg-actions button:hover { background: var(--primary-blue); color: white; transform: scale(1.1); border-color: transparent;}
         .msg-actions button.delete-btn:hover { background: var(--danger); color: white; }
 
+        /* الوقت وعلامة السين (خارج الرسالة) */
+        .message-meta { display: flex; align-items: center; gap: 4px; font-size: 11px; margin-top: 4px; opacity: 0.6; padding: 0 5px; color: var(--text-dark); font-weight: 600;}
+        .msg-status i { font-size: 13px; }
+        .msg-status i.fa-check-double { color: #3498db; opacity: 1; text-shadow: 0 0 1px rgba(0,0,0,0.1); }
+        .msg-status i.fa-check { opacity: 0.8; }
+
+        /* حقل الإدخال الاحترافي */
         .chat-input-area {
-            padding: 10px; background: rgba(0,0,0,0.03); display: flex; gap: 8px; border-top: 1px solid var(--glass-border); align-items: center;
-            position: relative;
+            padding: 12px 15px; background: var(--card-bg); display: flex; gap: 10px; border-top: 1px solid var(--glass-border); align-items: center; position: relative; z-index: 10;
         }
         .chat-input-area input {
-            flex: 1; padding: 10px 12px; border: 1px solid var(--glass-border); border-radius: 8px;
-            font-family: 'Cairo'; font-size: 14px; outline: none; background: var(--card-bg); color: var(--text-dark);
+            flex: 1; padding: 12px 20px; border: 1px solid var(--glass-border); border-radius: 25px;
+            font-family: 'Cairo'; font-size: 14.5px; outline: none; background: var(--bg-color); color: var(--text-dark);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s;
         }
-        .chat-input-area button {
-            background: var(--primary-blue); color: white; border: none; padding: 0 15px; height: 40px;
-            border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; transition: 0.3s;
+        .chat-input-area input:focus { border-color: var(--primary-blue); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
+        
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; border: none; width: 45px; height: 45px;
+            border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
+        .send-btn:hover { transform: scale(1.08) rotate(-10deg); }
+        .send-btn.edit-mode { background: var(--warning); transform: none; }
+        
         .cancel-edit-btn {
-            position: absolute; top: -30px; right: 10px; background: var(--danger); color: white; border: none; border-radius: 10px; padding: 4px 10px; font-family: 'Cairo'; font-size: 11px; cursor: pointer; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: absolute; top: -35px; right: 15px; background: var(--danger); color: white; border: none; border-radius: 12px; padding: 5px 12px; font-family: 'Cairo'; font-size: 12px; font-weight: 700; cursor: pointer; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s;
         }
+        .cancel-edit-btn:hover { transform: translateY(-2px); }
 
         @media (max-width: 600px) {
             .main-container { padding: 30px 15px; }
             .clinic-logo img { max-width: 160px; }
             .gates-container { grid-template-columns: 1fr; }
-            .chat-box-wrapper { bottom: 85px; right: 10px; left: 10px; width: auto; }
+            .chat-box-wrapper:not(.fullscreen) { bottom: 85px; right: 10px; left: 10px; width: auto; }
         }
     </style>
 </head>
@@ -340,7 +268,7 @@
         </div>
     </div>
 
-    <!-- زر فتح الشات مع شارة التنبيه -->
+    <!-- زر فتح الشات -->
     <button class="chat-toggle-btn" onclick="toggleChat()" title="محادثة عيادة د.آية">
         <i class="fa-solid fa-comments"></i>
         <span class="chat-badge" id="chatBadge">0</span>
@@ -349,19 +277,27 @@
     <!-- صندوق الشات -->
     <div class="chat-box-wrapper" id="chatBox">
         <div class="chat-header">
-            <span>محادثة العيادة</span>
-            <select id="userRole" onchange="changeUserRole()">
-                <option value="reception">الريسبشن</option>
-                <option value="doctor">د. آية خطاب</option>
-            </select>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clinic-medical" style="font-size: 18px;"></i>
+                <span>محادثة العيادة</span>
+            </div>
+            <div class="header-controls">
+                <select id="userRole" onchange="changeUserRole()">
+                    <option value="reception">الريسبشن</option>
+                    <option value="doctor">د. آية خطاب</option>
+                </select>
+                <button class="icon-btn" onclick="toggleFullScreen()" title="تكبير/تصغير الشات">
+                    <i id="fullscreenIcon" class="fa-solid fa-expand"></i>
+                </button>
+            </div>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <div style="text-align:center; opacity:0.5; margin-top:80px;">جاري الاتصال...</div>
+            <div style="text-align:center; opacity:0.5; margin-top:80px; font-weight: bold;">جاري الاتصال بالسيرفر...</div>
         </div>
         <div class="chat-input-area">
-            <button class="cancel-edit-btn" id="cancelEditBtn" onclick="cancelEdit()">إلغاء التعديل</button>
+            <button class="cancel-edit-btn" id="cancelEditBtn" onclick="cancelEdit()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
             <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
-            <button id="sendBtn" onclick="sendMessage()">إرسال</button>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -370,17 +306,14 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // ==========================================
-        // 1. كود الـ Firebase الخاص بك
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
-            authDomain: "clinic-system-fe2e4.firebaseapp.com",
-            databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
-            projectId: "clinic-system-fe2e4",
-            storageBucket: "clinic-system-fe2e4.firebasestorage.app",
-            messagingSenderId: "528745148277",
-            appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
+const firebaseConfig = {
+  apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
+  authDomain: "clinic-system-fe2e4.firebaseapp.com",
+  databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
+  projectId: "clinic-system-fe2e4",
+  storageBucket: "clinic-system-fe2e4.firebasestorage.app",
+  messagingSenderId: "528745148277",
+  appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -388,17 +321,15 @@
         const chatRef = database.ref('clinic_chat');
 
         // ==========================================
-        // 2. إعدادات المتغيرات والأدوات
+        // 2. المتغيرات والدارك مود والتكبير
         // ==========================================
         let chatMessagesData = [];
         let editingMsgId = null; 
         let isWindowFocused = document.hasFocus();
 
-        // تتبع إذا كان المستخدم فاتح الصفحة ولا لأ (عشان السين الذكي)
         window.addEventListener('focus', () => { isWindowFocused = true; checkAndMarkSeen(); });
         window.addEventListener('blur', () => { isWindowFocused = false; });
 
-        // الدارك مود
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme) {
@@ -409,6 +340,22 @@
             if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); } 
             else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); }
         });
+
+        // دالة التكبير والتصغير (Full Screen)
+        function toggleFullScreen() {
+            const chatBox = document.getElementById('chatBox');
+            const icon = document.getElementById('fullscreenIcon');
+            chatBox.classList.toggle('fullscreen');
+            
+            if (chatBox.classList.contains('fullscreen')) {
+                icon.classList.replace('fa-expand', 'fa-compress');
+                document.body.style.overflow = 'hidden'; // لمنع سكرول الصفحة الخلفية
+            } else {
+                icon.classList.replace('fa-compress', 'fa-expand');
+                document.body.style.overflow = '';
+            }
+            setTimeout(scrollToBottom, 300); // للنزول لتحت بعد انتهاء الأنيميشن
+        }
 
         // ==========================================
         // 3. وظائف الشات والسين والتعديل
@@ -435,7 +382,6 @@
             let savedRole = localStorage.getItem('chat_current_role') || 'reception';
             document.getElementById('userRole').value = savedRole;
             
-            // الاستماع اللحظي للرسايل
             chatRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 chatMessagesData = [];
@@ -447,7 +393,6 @@
             });
         });
 
-        // --- دالة السين الذكي ---
         function checkAndMarkSeen() {
             const isBoxOpen = document.getElementById('chatBox').style.display === 'flex';
             const currentRole = document.getElementById('userRole').value;
@@ -469,52 +414,62 @@
             }
         }
 
-        // --- دالة رسم الشات ---
         function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
-            let isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+            let isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 80;
             const currentRole = document.getElementById('userRole').value;
             const isBoxOpen = document.getElementById('chatBox').style.display === 'flex';
 
             container.innerHTML = '';
             if(messages.length === 0) {
-                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px;">رسايل العيادة هتبدأ هنا.. صباح الخير!</div>';
+                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px; font-weight:bold;">رسايل العيادة هتبدأ هنا.. صباح الخير! <i class="fa-solid fa-mug-hot"></i></div>';
                 return;
             }
 
             messages.forEach(msg => {
-                let div = document.createElement('div');
-                div.className = `message ${msg.role}`;
+                let isMe = msg.role === currentRole;
                 let senderTitle = msg.role === 'doctor' ? 'د. آية خطاب' : 'الريسبشن';
                 
-                let statusIcon = msg.status === 'seen' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-check"></i>';
+                // علامة السين (خارج الرسالة الآن)
+                let statusIcon = '';
+                if (isMe) {
+                    statusIcon = msg.status === 'seen' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-check"></i>';
+                }
                 let statusClass = msg.status === 'seen' ? 'seen' : '';
-                
+
+                // أزرار التعديل والحذف مدمجة داخل الـ Flex لمنع اختفائها
                 let actionsHtml = '';
-                let statusHtml = '';
-                if (msg.role === currentRole) {
+                if (isMe) {
                     actionsHtml = `
                         <div class="msg-actions">
                             <button onclick="startEdit('${msg.id}', '${msg.text.replace(/'/g, "\\'")}')" title="تعديل"><i class="fa-solid fa-pen"></i></button>
                             <button class="delete-btn" onclick="deleteMessage('${msg.id}')" title="حذف"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     `;
-                    statusHtml = `<span class="msg-status ${statusClass}">${statusIcon}</span>`;
                 }
 
                 let editedTag = msg.edited ? '<span class="msg-edited-tag">(معدلة)</span>' : '';
 
+                let div = document.createElement('div');
+                div.className = `message-row ${msg.role}`;
+                
                 div.innerHTML = `
-                    ${actionsHtml}
-                    <div class="sender-header">
-                        <span class="sender-name">${senderTitle}</span>
-                        <span class="msg-time">${msg.time || ''} ${statusHtml}</span>
+                    <div class="msg-flex ${msg.role}">
+                        <div class="message-content ${msg.role}">
+                            <div class="sender-name">${senderTitle}</div>
+                            <div class="msg-text-content">${msg.text}</div> ${editedTag}
+                        </div>
+                        ${actionsHtml}
                     </div>
-                    <div class="msg-text-content">${msg.text}</div> ${editedTag}
+                    <div class="message-meta">
+                        <span class="msg-time">${msg.time || ''}</span>
+                        <span class="msg-status ${statusClass}">${statusIcon}</span>
+                    </div>
                 `;
                 container.appendChild(div);
             });
 
+            // تحديث شارة التنبيهات
             let lastSeenCount = parseInt(localStorage.getItem('last_seen_msg_count') || '0');
             const badge = document.getElementById('chatBadge');
 
@@ -533,7 +488,6 @@
             if (isAtBottom) scrollToBottom();
         }
 
-        // --- إرسال أو تعديل الرسالة ---
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
@@ -545,10 +499,7 @@
             input.value = '';
 
             if (editingMsgId) {
-                chatRef.child(editingMsgId).update({
-                    text: text,
-                    edited: true
-                });
+                chatRef.child(editingMsgId).update({ text: text, edited: true });
                 cancelEdit(); 
             } else {
                 const newMsgRef = chatRef.push();
@@ -564,28 +515,28 @@
             scrollToBottom();
         }
 
-        // --- تفعيل التعديل ---
         function startEdit(id, oldText) {
             editingMsgId = id;
             const input = document.getElementById('chatInput');
             input.value = oldText;
             input.focus();
             
-            document.getElementById('sendBtn').innerText = 'تعديل';
-            document.getElementById('sendBtn').style.backgroundColor = 'var(--warning)';
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+            sendBtn.classList.add('edit-mode');
             document.getElementById('cancelEditBtn').style.display = 'block';
         }
 
-        // --- إلغاء التعديل ---
         function cancelEdit() {
             editingMsgId = null;
             document.getElementById('chatInput').value = '';
-            document.getElementById('sendBtn').innerText = 'إرسال';
-            document.getElementById('sendBtn').style.backgroundColor = 'var(--primary-blue)';
+            
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+            sendBtn.classList.remove('edit-mode');
             document.getElementById('cancelEditBtn').style.display = 'none';
         }
 
-        // --- حذف الرسالة ---
         function deleteMessage(id) {
             if (confirm('هل أنت متأكد من مسح هذه الرسالة للطرفين؟')) {
                 chatRef.child(id).remove();
