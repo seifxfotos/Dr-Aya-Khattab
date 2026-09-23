@@ -1,16 +1,6 @@
-// 1. حقن تصميم الشات والدارك مود (CSS)
+// 1. تصميم الشات فقط (CSS)
 const chatStyles = document.createElement('style');
 chatStyles.innerHTML = `
-    .theme-switch-wrapper { position: fixed; bottom: 25px; left: 25px; z-index: 100; }
-    .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
-    .theme-switch input { display: none; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.1); border: 1px solid var(--glass-border); transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
-    .slider .fa-sun { color: #f39c12; font-size: 14px; z-index: 1;}
-    .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
-    .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 3px; background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    input:checked + .slider { background-color: rgba(255,255,255,0.1); }
-    input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
-
     .chat-toggle-btn { position: fixed; bottom: 25px; right: 25px; z-index: 1000; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
     .chat-toggle-btn:hover { transform: scale(1.1); }
     .chat-badge { position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite; }
@@ -66,29 +56,17 @@ chatStyles.innerHTML = `
     .send-btn:hover { transform: scale(1.08) rotate(-10deg); }
     .send-btn.edit-mode { background: var(--warning); transform: none; }
     .cancel-edit-btn { position: absolute; top: -35px; right: 15px; background: var(--danger); color: white; border: none; border-radius: 12px; padding: 5px 12px; font-family: 'Cairo'; font-size: 12px; font-weight: 700; cursor: pointer; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s; }
+    .cancel-edit-btn:hover { transform: translateY(-2px); }
 `;
 document.head.appendChild(chatStyles);
 
-// 2. حقن هيكل الشات والدارك مود (HTML)
+// 2. هيكل الشات (HTML)
 const chatWidgetHTML = `
-    <!-- الدارك مود (تحت يسار) -->
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="themeToggleCheckbox" title="تغيير المظهر">
-            <input type="checkbox" id="themeToggleCheckbox" />
-            <div class="slider round">
-                <i class="fa-solid fa-moon"></i>
-                <i class="fa-solid fa-sun"></i>
-            </div>
-        </label>
-    </div>
-
-    <!-- زر الشات (تحت يمين) -->
     <button class="chat-toggle-btn" onclick="window.toggleChat()" title="محادثة عيادة د.آية">
         <i class="fa-solid fa-comments"></i>
         <span class="chat-badge" id="chatBadge">0</span>
     </button>
 
-    <!-- صندوق الشات -->
     <div class="chat-box-wrapper" id="chatBox">
         <div class="chat-header">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -117,9 +95,7 @@ const chatWidgetHTML = `
 `;
 document.body.insertAdjacentHTML('beforeend', chatWidgetHTML);
 
-// 3. أكواد وبرمجة الشات (Firebase & Logic)
-
-// ⚠️⚠️ حط الـ config بتاعك هنا ⚠️⚠️
+// 3. برمجة الشات والـ Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
     authDomain: "clinic-system-fe2e4.firebaseapp.com",
@@ -161,19 +137,6 @@ let initialLoadDone = false;
 window.addEventListener('focus', () => { isWindowFocused = true; window.checkAndMarkSeen(); });
 window.addEventListener('blur', () => { isWindowFocused = false; });
 
-// تشغيل الدارك مود الموحد
-const themeCheckbox = document.getElementById('themeToggleCheckbox');
-const currentTheme = localStorage.getItem('theme');
-if (currentTheme) {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    if (currentTheme === 'dark') themeCheckbox.checked = true;
-}
-themeCheckbox.addEventListener('change', (e) => {
-    if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); } 
-    else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); }
-});
-
-// تعريف الدوال بشكل عام عشان تشتغل في كل الصفحات
 window.toggleFullScreen = function() {
     const chatBox = document.getElementById('chatBox');
     const icon = document.getElementById('fullscreenIcon');
