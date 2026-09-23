@@ -551,7 +551,10 @@
             .catch(error => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; setTimeout(() => loadData(true), 1500); })
             .finally(() => { submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> حفظ'; submitBtn.disabled = false; });
         });
-        }
-</script>
+}
+    });
+</script> <!-- اقفل سكريبت الدارك مود هنا -->
+
+<script src="chat-widget.js"></script>
 </body>
 </html>
