@@ -1,5 +1,14 @@
 (function () {
-    // 1. تحميل مكتبات الفايربيس تلقائياً في الخلفية بأمان تان
+    // 1. حقن مكتبة الأيقونات FontAwesome تلقائياً إذا لم تكن موجودة في الصفحة
+    if (!document.getElementById('chat-font-awesome')) {
+        const faLink = document.createElement('link');
+        faLink.id = 'chat-font-awesome';
+        faLink.rel = 'stylesheet';
+        faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        document.head.appendChild(faLink);
+    }
+
+    // 2. تحميل مكتبات الفايربيس تلقائياً في الخلفية
     function loadFirebaseSDK(callback) {
         if (typeof firebase !== 'undefined') {
             callback();
@@ -17,19 +26,19 @@
     }
 
     loadFirebaseSDK(function() {
-        // 2. إضافة تصميم الشات (CSS) إذا لم يكن موجوداً
+        // 3. إضافة تصميم الشات (CSS) مع وضعه في اليسار لعدم التعارض مع الدارك مود
         if (!document.getElementById('clinic-chat-styles')) {
             const style = document.createElement('style');
             style.id = 'clinic-chat-styles';
             style.innerHTML = `
-                .chat-toggle-btn { position: fixed; bottom: 25px; right: 25px; z-index: 99999; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+                .chat-toggle-btn { position: fixed; bottom: 25px; left: 25px; z-index: 99999; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
                 .chat-toggle-btn:hover { transform: scale(1.1); }
                 .chat-badge { position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite; }
                 @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-                .chat-box-wrapper { position: fixed; bottom: 95px; right: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 99999; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right; }
+                .chat-box-wrapper { position: fixed; bottom: 95px; left: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 99999; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom left; }
                 :root[data-theme="dark"] .chat-box-wrapper { --chat-bg: #0b141a; }
-                .chat-box-wrapper.fullscreen { bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 999999; }
+                .chat-box-wrapper.fullscreen { bottom: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 999999; }
                 .chat-box-wrapper.fullscreen .chat-messages { padding: 30px 10vw; }
                 .chat-box-wrapper.fullscreen .msg-text-content { font-size: 17px; }
                 .chat-box-wrapper.fullscreen .message-content { padding: 12px 18px; }
@@ -82,7 +91,7 @@
             document.head.appendChild(style);
         }
 
-        // 3. إضافة هيكل الشات (HTML) إذا لم يكن موجوداً
+        // 4. إضافة هيكل الشات (HTML) في الصفحة إذا لم يكن موجوداً
         if (!document.getElementById('chatBox')) {
             const chatHTML = `
                 <button class="chat-toggle-btn" onclick="toggleChat()" title="محادثة عيادة د.آية">
@@ -121,7 +130,7 @@
             document.body.appendChild(div);
         }
 
-        // 4. إعدادات الفايربيس والمنطق البرمجي العام
+        // 5. ربط الفايربيس وتفعيل وظائف الشات
         const firebaseConfig = {
             apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
             authDomain: "clinic-system-fe2e4.firebaseapp.com",
