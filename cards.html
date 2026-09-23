@@ -72,6 +72,7 @@
         .app-toast.show { top: 30px; }
         .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); }
         .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
+        .app-toast.info { border-bottom-color: var(--primary-blue); color: var(--primary-blue); }
 
         .controls {
             background: var(--sheet-bg);
@@ -282,7 +283,7 @@
 </head>
 <body>
 
-    <!-- نظام الإشعارات الذكي (Toast) -->
+    <!-- نظام الإشعارات الذكي (Toast) بديل الـ Alert -->
     <div id="appToast" class="app-toast">
         <i id="toastIcon" class="fa-solid fa-check-circle"></i>
         <span id="toastMessage">تمت العملية بنجاح</span>
@@ -299,7 +300,7 @@
         </label>
     </div>
 
-    <!-- نافذة البحث -->
+    <!-- نافذة البحث المتعدد -->
     <div id="patientModal" class="modal">
         <div class="modal-content">
             <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من كرت مسجل</h2>
@@ -351,7 +352,6 @@
                         <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
                     </thead>
                     <tbody id="sessionsTable1">
-                        <!-- يتم التوليد بالبرمجة -->
                     </tbody>
                 </table>
                 <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(1)">+ إضافة جلسة</button>
@@ -362,7 +362,7 @@
     <!-- حاوية الكروت الإضافية اللانهائية -->
     <div id="dynamicCardsContainer"></div>
 
-    <!-- أزرار الإدارة السفلية (إضافة كروت / ملف طبي) -->
+    <!-- أزرار الإدارة السفلية -->
     <div class="action-buttons-container no-print" style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin: 20px auto; max-width: 1100px;">
         <div id="cardControls" style="display: flex; gap: 15px; width: 100%; max-width: 600px;">
             <button id="addCardBtn" class="btn btn-new-card" style="flex: 1; justify-content: center;" onclick="addCard()">➕ إضافة كرت إضافي</button>
@@ -384,14 +384,15 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUmFxASBudXYY_7XL_RaYfjXECMw9ed-cL3qrRHHZguW4PAWUSmAzrc6nqsovNxHz4/exec";
+        // 🚨 حط الرابط الجديد بتاعك هنا 🚨
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
         let globalSearchResults = []; 
         let totalCards = 1;
         let cardRowCounts = { 1: { start: 1, current: 12 } };
         
-        // الذاكرة المؤقتة (Local Storage Cache) للسرعة اللحظية
-        let searchCache = JSON.parse(localStorage.getItem('clinic_patients_cache')) || {}; 
+        // ⚡ ذاكرة محلية ذكية لسحب وبحث الداتا بسرعة البرق ⚡
+        let allPatientsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || []; 
 
         // ================== نظام الإشعارات الذكي (بديل Alert) ==================
         function showToast(message, type = 'success') {
@@ -400,21 +401,37 @@
             const msg = document.getElementById('toastMessage');
             
             toast.className = `app-toast ${type}`;
-            icon.className = type === 'success' ? 'fa-solid fa-check-circle' : 'fa-solid fa-exclamation-circle';
+            if(type === 'success') icon.className = 'fa-solid fa-check-circle';
+            else if(type === 'error') icon.className = 'fa-solid fa-exclamation-circle';
+            else icon.className = 'fa-solid fa-info-circle';
+            
             msg.innerText = message;
             
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
-        // ================== إعدادات الدارك مود المستمرة ==================
+        // ================== تحميل كل الداتا في الخلفية ==================
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 let themeSwitch = document.getElementById('themeSwitch');
                 if (themeSwitch) themeSwitch.checked = true;
             }
+            // سحب البيانات بهدوء أول ما الصفحة تفتح
+            silentPreFetchAll();
         });
+
+        async function silentPreFetchAll() {
+            try {
+                let res = await fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH");
+                let data = await res.json();
+                if(data.status === 'found') {
+                    allPatientsCache = data.data;
+                    localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
+                }
+            } catch(e) { console.log("Silent fetch failed, will use cache."); }
+        }
 
         function toggleTheme(e) {
             if(e.checked) {
@@ -433,6 +450,11 @@
                 let idx = arabicNumbers.indexOf(c);
                 return idx !== -1 ? idx : c;
             }).join('');
+        }
+
+        function normalizeArabicText(text) {
+            if (!text) return "";
+            return text.toString().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/[يى]/g, 'ي').replace(/[\u064B-\u065F]/g, '').trim().toLowerCase();
         }
 
         function syncAllCardsInfo() {
@@ -604,7 +626,7 @@
             }
         }
 
-        // ================== بحث فائق السرعة ==================
+        // ================== بحث فائق السرعة (لحظي) ==================
         document.getElementById('searchName').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchPatient();
         });
@@ -612,70 +634,84 @@
         async function searchPatient() {
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل المريض للبحث!", "error");
-            let searchInput = convertToEnglishNumbers(rawSearch);
             
-            // 1. بحث لحظي من الذاكرة المحلية أولاً
-            if (searchCache[searchInput]) {
-                handleSearchResult(searchCache[searchInput]);
-                return;
+            let searchInput = convertToEnglishNumbers(rawSearch);
+            let cleanSearchName = normalizeArabicText(searchInput);
+            
+            // 1. بحث لحظي في قاعدة البيانات المحلية (0 ثانية)
+            let localResults = allPatientsCache.filter(p => {
+                let pName = normalizeArabicText(p.name);
+                let pPhone = p.phone ? p.phone : "";
+                return pName.includes(cleanSearchName) || pPhone.includes(searchInput);
+            });
+
+            if (localResults.length > 0) {
+                showToast("تم العثور على المريض لحظياً ⚡", "success");
+                if (localResults.length === 1) {
+                    loadPatientData(localResults[0]);
+                } else {
+                    globalSearchResults = localResults;
+                    renderMultiplePatientsList(localResults);
+                }
+                return; // لو لقى المريض محلياً، مش هيروح لجوجل أصلاً!
             }
 
+            // 2. لو ملقاهوش محلياً (مثلاً مريض لسه متسجل من موبايل تاني حالاً)، هيروح لجوجل
             let btn = document.getElementById('searchBtn');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري...';
 
             try {
-                let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput), { method: 'GET', redirect: 'follow' });
+                let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput));
                 let text = await response.text();
                 
                 if(text.includes("<html")) {
-                    showToast("خطأ في اللينك! تأكد من النشر الصحيح لجوجل شيت.", "error");
+                    showToast("خطأ في اللينك! تأكد من تحديث رابط السكريبت.", "error");
                     btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
                     return;
                 }
                 
                 let res = JSON.parse(text);
                 
-                // حفظ النتيجة في الذاكرة للبحث المستقبلي الصاروخي
                 if(res.status === "found") {
-                    searchCache[searchInput] = res;
-                    localStorage.setItem('clinic_patients_cache', JSON.stringify(searchCache));
+                    showToast("تم العثور على المريض بنجاح!", "success");
+                    
+                    // تحديث الكاش المحلي عشان المرة الجاية يبقى أسرع
+                    res.data.forEach(newP => {
+                        let existingIdx = allPatientsCache.findIndex(p => p.phone === newP.phone && p.name === newP.name);
+                        if(existingIdx > -1) allPatientsCache[existingIdx] = newP;
+                        else allPatientsCache.push(newP);
+                    });
+                    localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
+                    
+                    if (res.data.length === 1) loadPatientData(res.data[0]);
+                    else {
+                        globalSearchResults = res.data;
+                        renderMultiplePatientsList(res.data);
+                    }
+                } else {
+                    showToast("المريض غير موجود، يمكنك إدخال بياناته كملف جديد.", "error");
                 }
-                
-                handleSearchResult(res);
-
             } catch(e) {
                 showToast("تعذر الوصول لقاعدة البيانات. تأكد من الإنترنت.", "error");
             }
             btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
         }
 
-        function handleSearchResult(res) {
-            if(res.status === "not_found") {
-                showToast("المريض غير موجود، يمكنك إدخال بياناته للحفظ كملف جديد.", "error");
-            } else if(res.status === "found") {
-                showToast("تم العثور على المريض بنجاح!", "success");
-                if(res.data.length === 1) {
-                    loadPatientData(res.data[0]);
-                } else {
-                    globalSearchResults = res.data;
-                    let listHtml = "";
-                    res.data.forEach((patient, index) => {
-                        listHtml += `
-                            <div class="patient-option" onclick="selectPatient(${index})">
-                                <div>
-                                    <div class="patient-name">${patient.name}</div>
-                                    <div class="patient-details">${patient.phone || "بدون رقم"}</div>
-                                </div>
-                                <div class="select-badge">فتح الملف</div>
-                            </div>
-                        `;
-                    });
-                    document.getElementById('patientList').innerHTML = listHtml;
-                    document.getElementById('patientModal').style.display = "flex";
-                }
-            } else if(res.status === "error") {
-                showToast("حدث خطأ داخل جوجل شيت.", "error");
-            }
+        function renderMultiplePatientsList(results) {
+            let listHtml = "";
+            results.forEach((patient, index) => {
+                listHtml += `
+                    <div class="patient-option" onclick="selectPatient(${index})">
+                        <div>
+                            <div class="patient-name">${patient.name}</div>
+                            <div class="patient-details">${patient.phone || "بدون رقم"}</div>
+                        </div>
+                        <div class="select-badge">فتح الملف</div>
+                    </div>
+                `;
+            });
+            document.getElementById('patientList').innerHTML = listHtml;
+            document.getElementById('patientModal').style.display = "flex";
         }
 
         function selectPatient(index) {
@@ -781,9 +817,6 @@
                 return;
             }
 
-            let btn = document.getElementById('saveBtn');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
-
             let sessions = [];
             for(let c = 1; c <= totalCards; c++) {
                 let start = cardRowCounts[c].start;
@@ -812,40 +845,39 @@
             };
 
             // 1. تحديث الذاكرة المحلية (الكاش) فوراً عشان لو بحث عنه يلاقيه في ثانية
-            let localCacheData = { status: "found", data: [payload] };
-            searchCache[phone] = localCacheData;
-            searchCache[name] = localCacheData;
-            localStorage.setItem('clinic_patients_cache', JSON.stringify(searchCache));
+            let existingIdx = allPatientsCache.findIndex(p => p.phone === payload.phone && p.name === payload.name);
+            if(existingIdx > -1) allPatientsCache[existingIdx] = payload;
+            else allPatientsCache.push(payload);
+            
+            localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
 
-            // 2. إعطاء تأكيد نجاح للمستخدم فوراً (بدون تعطيل الشاشة)
-            showToast("تم حفظ بيانات المريض بنجاح!", "success");
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ البيانات';
+            // 2. إعطاء تأكيد نجاح للمستخدم فوراً (بدون أي تجميد للشاشة) تقدر تكمل شغل عادي
+            showToast("تم الحفظ في ثانية ⚡.. تقدر تكمل شغلك", "success");
 
             // 3. الإرسال الصامت لجوجل شيت في الخلفية (Background Sync)
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
             .catch(() => {
-                showToast("حدث خطأ في مزامنة السحابة، لكن البيانات محفوظة محلياً.", "error");
+                showToast("حدث خطأ في مزامنة السحابة، لكن البيانات محفوظة محلياً.", "info");
             });
         }
 
         // ================== الحذف اللحظي الذكي ==================
-        async function deletePatient() {
+        function deletePatient() {
             let phone = document.getElementById('p_phone').value;
             let name = document.getElementById('p_name').value;
             if(!phone) { showToast("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!", "error"); return; }
 
             if(confirm(`هل أنت متأكد من مسح بيانات المريض من الشيت نهائياً؟`)) {
                 // مسح من الكاش فوراً
-                delete searchCache[phone];
-                delete searchCache[name];
-                localStorage.setItem('clinic_patients_cache', JSON.stringify(searchCache));
+                allPatientsCache = allPatientsCache.filter(p => !(p.phone === phone && p.name === name));
+                localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
                 
                 showToast("تم الحذف بنجاح!", "success");
                 clearForm();
 
                 // مزامنة الحذف في الخلفية
                 fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' })
-                .catch(e => console.error("Cloud delete error", e));
+                .catch(e => console.log("Cloud sync delayed"));
             }
         }
 
@@ -863,6 +895,59 @@
             btnM.innerHTML = 'فتح الملف الطبي';
             btnM.style.backgroundColor = 'var(--primary-blue)';
         }
+
+        // نظام التنقل بالأسهم (الكيبورد نافيجيشن) - كما هو بدون تغيير
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                let active = document.activeElement;
+                if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) return;
+                
+                if (active.tagName === 'TEXTAREA') {
+                    if (e.key === 'ArrowDown' && active.selectionEnd === active.value.length) {} 
+                    else if (e.key === 'ArrowUp' && active.selectionStart === 0) {} 
+                    else { return; }
+                }
+
+                let id = active.id;
+                let nextId = null;
+
+                if (e.key === 'ArrowDown') {
+                    if (id === 'p_name') nextId = 'p_phone';
+                    else if (id === 'p_address') nextId = 'p_job';
+                    else if (id === 'p_phone' || id === 'p_job') nextId = 'p_age';
+                    else if (id === 'p_age') nextId = 'p_referred';
+                    else if (id === 'p_referred') nextId = 'p_diagnosis';
+                    else if (id === 'p_diagnosis') nextId = 'p_protocol';
+                    else if (id === 'p_protocol') nextId = 'd_1';
+                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
+                        let parts = id.split('_');
+                        let nextIdx = parseInt(parts[1]) + 1;
+                        nextId = parts[0] + '_' + nextIdx;
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    if (id === 'p_phone') nextId = 'p_name';
+                    else if (id === 'p_job') nextId = 'p_address';
+                    else if (id === 'p_age') nextId = 'p_phone'; 
+                    else if (id === 'p_referred') nextId = 'p_age';
+                    else if (id === 'p_diagnosis') nextId = 'p_referred';
+                    else if (id === 'p_protocol') nextId = 'p_diagnosis';
+                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
+                        let parts = id.split('_');
+                        let prevIdx = parseInt(parts[1]) - 1;
+                        if (prevIdx >= 1) nextId = parts[0] + '_' + prevIdx;
+                        else nextId = 'p_protocol';
+                    }
+                }
+
+                if (nextId) {
+                    let nextEl = document.getElementById(nextId);
+                    if (nextEl) {
+                        e.preventDefault(); 
+                        nextEl.focus(); 
+                    }
+                }
+            }
+        });
     </script> 
 
     <script src="chat-widget.js"></script>
