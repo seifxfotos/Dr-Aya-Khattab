@@ -551,6 +551,12 @@
             .catch(error => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; setTimeout(() => loadData(true), 1500); })
             .finally(() => { submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> حفظ'; submitBtn.disabled = false; });
         });
-    </script>
+        }
+<!-- مكتبات Firebase الأساسية -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- ملف الشات المركزي -->
+    <script src="chat-widget.js"></script>
 </body>
 </html>
