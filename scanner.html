@@ -6,287 +6,125 @@
     <title>أرشيف الكروت السريع - د. آية خطاب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- مكتبات الذكاء الاصطناعي والقص -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <style>
         :root { 
-            --bg-dark: #121212;
-            --card-bg: #1e1e1e;
-            --text-light: #e0e0e0;
-            --cyan-label: #00b0ff;
-            --green-accent: #4caf50;
-            --border-color: #333333;
-            --table-border: #00b0ff;
+            --bg-dark: #121212; --card-bg: #1e1e1e; --text-light: #e0e0e0;
+            --cyan-label: #00b0ff; --green-accent: #4caf50; --border-color: #333333;
+            --table-border: #00b0ff; --warning: #f39c12;
         }
         
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background: var(--bg-dark); 
-            margin: 0; 
-            padding: 10px 10px 85px 10px; 
-            color: var(--text-light); 
-        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px 10px 85px 10px; color: var(--text-light); }
 
-        /* الكاميرا المدمجة للموبايل */
-        .camera-box {
-            background: var(--card-bg);
-            border: 1px dashed var(--cyan-label);
-            border-radius: 8px;
-            text-align: center;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        .camera-btn {
-            background: var(--cyan-label);
-            color: #000;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-family: 'Cairo';
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            width: 100%;
-            justify-content: center;
-        }
+        /* منطقة التصوير والقص */
+        .camera-box { background: var(--card-bg); border: 1px dashed var(--cyan-label); border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: center; }
+        .camera-btn { background: var(--cyan-label); color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-family: 'Cairo'; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
         .camera-btn input { display: none; }
-        .preview-img-container { display: none; margin-top: 8px; position: relative; }
-        .preview-img-container img { width: 100%; max-height: 150px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-color); }
-        .retake-link {
-            position: absolute; top: 5px; left: 5px;
-            background: rgba(231, 76, 60, 0.9); color: white;
-            padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; border: none; font-family: 'Cairo'; font-weight: bold;
-        }
-        #ocrStatus { font-size: 12px; color: var(--green-accent); margin-top: 5px; font-weight: bold; }
+        
+        /* حاوية القص */
+        .crop-container { display: none; margin-top: 10px; }
+        .img-container { width: 100%; max-height: 300px; background: #000; margin-bottom: 10px; }
+        .img-container img { max-width: 100%; display: block; }
+        
+        .ocr-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+        .btn-extract { flex: 1; background: #8e44ad; color: white; border: none; padding: 10px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-retake { background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
+        
+        #ocrStatus { font-size: 12px; color: var(--green-accent); font-weight: bold; margin-bottom: 10px; }
 
-        /* الكارت الرئيسي (التصميم الداكن) */
-        .medical-card-sheet {
-            background: var(--card-bg);
-            border-top: 4px solid var(--green-accent);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border-left: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .header-logo {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-        .header-logo img { height: 35px; background: #fff; padding: 2px; border-radius: 4px; }
-        .qr-placeholder { width: 40px; height: 40px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000; }
+        /* الكارت الرئيسي */
+        .medical-card-sheet { background: var(--card-bg); border-top: 4px solid var(--green-accent); border-radius: 8px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
 
         /* حقول الإدخال */
         .form-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-        
         .input-row { display: flex; gap: 10px; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; }
-        .input-row label {
-            color: var(--cyan-label);
-            font-size: 13px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .input-row input {
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            font-family: 'Cairo';
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            outline: none;
-        }
+        .input-row label { color: var(--cyan-label); font-size: 13px; font-weight: 700; white-space: nowrap; }
+        .input-row input { background: transparent; border: none; color: var(--text-light); font-family: 'Cairo'; font-size: 15px; font-weight: 600; width: 100%; outline: none; }
         .input-row input::placeholder { color: #555; font-size: 12px; }
-        
         .multi-col { display: flex; gap: 15px; }
         .multi-col .input-row { flex: 1; border-bottom: 1px dashed var(--border-color); }
 
         /* جدول الجلسات */
-        .table-wrapper {
-            border: 1px solid var(--table-border);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-        }
-        th {
-            background: rgba(0, 176, 255, 0.1);
-            color: var(--cyan-label);
-            font-size: 12px;
-            padding: 8px 4px;
-            border-bottom: 1px solid var(--table-border);
-            border-left: 1px solid var(--table-border);
-        }
+        .table-wrapper { border: 1px solid var(--table-border); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th { background: rgba(0, 176, 255, 0.1); color: var(--cyan-label); font-size: 12px; padding: 8px 4px; border-bottom: 1px solid var(--table-border); border-left: 1px solid var(--table-border); }
         th:last-child { border-left: none; }
-        td {
-            border-bottom: 1px solid var(--table-border);
-            border-left: 1px solid var(--table-border);
-            padding: 0;
-        }
+        td { border-bottom: 1px solid var(--table-border); border-left: 1px solid var(--table-border); padding: 0; }
         td:last-child { border-left: none; }
-        td input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            text-align: center;
-            font-family: 'Cairo';
-            font-size: 13px;
-            padding: 6px 2px;
-            outline: none;
-            box-sizing: border-box;
-        }
-        td input:focus { background: rgba(255,255,255,0.05); }
-
-        .btn-add-row {
-            background: var(--cyan-label);
-            color: #000;
-            border: none;
-            width: 100%;
-            padding: 8px;
-            font-family: 'Cairo';
-            font-weight: 800;
-            cursor: pointer;
-            border-radius: 0 0 4px 4px;
-        }
+        td input { width: 100%; background: transparent; border: none; color: var(--text-light); text-align: center; font-family: 'Cairo'; font-size: 14px; padding: 8px 2px; outline: none; box-sizing: border-box; }
+        
+        .btn-add-row { background: var(--cyan-label); color: #000; border: none; width: 100%; padding: 8px; font-family: 'Cairo'; font-weight: 800; cursor: pointer; }
 
         /* الزر العائم */
-        .sticky-footer {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--card-bg);
-            padding: 10px 15px;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
-            border-top: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-        .btn-new-card {
-            background: var(--green-accent);
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            font-family: 'Cairo';
-            font-weight: 800;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-new-card:active { transform: scale(0.98); }
+        .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); padding: 10px 15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.8); border-top: 1px solid var(--border-color); z-index: 1000; }
+        .btn-new-card { background: var(--green-accent); color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-family: 'Cairo'; font-weight: 800; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         /* التوست */
-        .toast {
-            position: fixed; top: -60px; left: 50%; transform: translateX(-50%);
-            background: var(--green-accent); color: white; padding: 10px 20px; border-radius: 20px;
-            font-weight: bold; font-family: 'Cairo'; font-size: 14px;
-            z-index: 9999; transition: 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            white-space: nowrap;
-        }
+        .toast { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--green-accent); color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-family: 'Cairo'; font-size: 14px; z-index: 9999; transition: 0.3s; white-space: nowrap; }
         .toast.show { top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="appToast" class="toast">تم حفظ الكرت ⚡</div>
+    <div id="appToast" class="toast">تم الإجراء بنجاح ⚡</div>
 
-    <!-- الكاميرا -->
+    <!-- نظام الكاميرا والقص الذكي -->
     <div class="camera-box">
         <label class="camera-btn" id="uploadLabel">
-            <i class="fa-solid fa-camera"></i> تصوير الكرت القديم
+            <i class="fa-solid fa-camera"></i> تصوير الكرت للتحليل
             <input type="file" accept="image/*" capture="environment" id="cardImage">
         </label>
-        <div class="preview-img-container" id="previewContainer">
-            <button class="retake-link" onclick="document.getElementById('cardImage').click()">إعادة</button>
-            <img id="previewImg" src="">
+        
+        <div class="crop-container" id="cropContainer">
+            <p style="font-size: 12px; color: var(--warning); margin: 0 0 10px 0;">حدد الجزء المطلوب واسحبه للحصول على أقصى دقة</p>
+            <div class="img-container">
+                <img id="imageToCrop" src="">
+            </div>
+            
             <div id="ocrStatus"></div>
+
+            <div class="ocr-actions">
+                <button class="btn-extract" onclick="extractText('info')"><i class="fa-solid fa-user-pen"></i> سحب البيانات</button>
+                <!-- زر سحب الجدول تم إخفاءه برمجيا لانه معقد علي Tesseract، الجدول يفضل نقله بالعين -->
+                <button class="btn-retake" onclick="document.getElementById('cardImage').click()"><i class="fa-solid fa-rotate"></i></button>
+            </div>
         </div>
     </div>
 
     <!-- الكارت الورقي الديجيتال -->
     <div class="medical-card-sheet">
         <form id="archiveForm">
-            <!-- النصف العلوي: بيانات المريض -->
             <div class="form-grid">
-                <div class="input-row">
-                    <label>الاسم:</label>
-                    <input type="text" id="p_name" required>
-                </div>
-                
-                <div class="input-row">
-                    <label>العنوان:</label>
-                    <input type="text" id="p_address">
-                </div>
-
+                <div class="input-row"><label>الاسم:</label><input type="text" id="p_name" required></div>
+                <div class="input-row"><label>العنوان:</label><input type="text" id="p_address"></div>
                 <div class="multi-col">
-                    <div class="input-row">
-                        <label>رقم الموبايل:</label>
-                        <input type="tel" id="p_phone">
-                    </div>
-                    <div class="input-row">
-                        <label>السن:</label>
-                        <input type="number" id="p_age" style="width: 50px;">
-                    </div>
+                    <div class="input-row"><label>موبايل:</label><input type="tel" id="p_phone"></div>
+                    <div class="input-row"><label>السن:</label><input type="number" id="p_age" style="width: 50px;"></div>
                 </div>
-
-                <div class="input-row">
-                    <label>الوظيفة:</label>
-                    <input type="text" id="p_job">
-                </div>
-
-                <div class="input-row">
-                    <label>Referred Doctor:</label>
-                    <input type="text" id="p_referred">
-                </div>
-
-                <div class="input-row">
-                    <label>Diagnosis:</label>
-                    <input type="text" id="p_diagnosis">
-                </div>
-
-                <div class="input-row">
-                    <label>Treatment Protocol:</label>
-                    <input type="text" id="p_protocol">
-                </div>
+                <div class="input-row"><label>الوظيفة:</label><input type="text" id="p_job"></div>
+                <div class="input-row"><label>Referred Doctor:</label><input type="text" id="p_referred"></div>
+                <div class="input-row"><label>Diagnosis:</label><input type="text" id="p_diagnosis"></div>
+                <div class="input-row"><label>Treatment Protocol:</label><input type="text" id="p_protocol"></div>
             </div>
 
             <!-- النصف السفلي: جدول الجلسات -->
             <div class="table-wrapper">
                 <table id="sessionsTable">
                     <thead>
-                        <tr>
-                            <th style="width: 15%;">#</th>
-                            <th style="width: 25%;">D</th>
-                            <th style="width: 20%;">W/S</th>
-                            <th style="width: 40%;">N</th>
-                        </tr>
+                        <tr><th style="width: 15%;">#</th><th style="width: 25%;">D</th><th style="width: 20%;">W/S</th><th style="width: 40%;">N</th></tr>
                     </thead>
-                    <tbody id="tableBody">
-                        <!-- يتم إضافة الصفوف برمجياً -->
-                    </tbody>
+                    <tbody id="tableBody"></tbody>
                 </table>
                 <button type="button" class="btn-add-row" onclick="addRow()">+ إضافة جلسة</button>
             </div>
         </form>
     </div>
 
-    <!-- الزر العائم للحفظ -->
     <div class="sticky-footer">
         <button type="button" class="btn-new-card" onclick="saveAndNewCard()">
             <i class="fa-solid fa-bolt"></i> حفظ وتصوير التالي
@@ -297,11 +135,10 @@
         const SCRIPT_URL_TEMP = "https://script.google.com/macros/s/AKfycbw7Qx51J7fe6mGnR1ilh05lA2fDe2SCzOVfF0KX0OCTrRVM4lOktl2DrdWQ-EsgksIdfg/exec";
         
         let rowCount = 0;
+        let cropper = null;
         
-        // بناء 4 صفوف مبدئية للجدول
         function initTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+            document.getElementById('tableBody').innerHTML = '';
             rowCount = 0;
             for(let i=0; i<4; i++) addRow();
         }
@@ -309,23 +146,11 @@
         function addRow() {
             rowCount++;
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${rowCount}</td>
-                <td><input type="text" class="cell-d" placeholder="-"></td>
-                <td><input type="text" class="cell-ws" placeholder="-"></td>
-                <td><input type="text" class="cell-n" placeholder="-"></td>
-            `;
+            tr.innerHTML = `<td>${rowCount}</td><td><input type="text"></td><td><input type="text"></td><td><input type="text" class="cell-n"></td>`;
             document.getElementById('tableBody').appendChild(tr);
         }
 
-        // تشغيل الجدول عند فتح الصفحة
         window.onload = initTable;
-
-        const cardImage = document.getElementById('cardImage');
-        const previewContainer = document.getElementById('previewContainer');
-        const previewImg = document.getElementById('previewImg');
-        const uploadLabel = document.getElementById('uploadLabel');
-        let currentImageFile = null;
 
         function showToast(msg) {
             const toast = document.getElementById('appToast');
@@ -334,74 +159,96 @@
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        cardImage.addEventListener('change', function(e) {
+        // تهيئة الكاميرا ومكتبة القص
+        document.getElementById('cardImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                currentImageFile = file;
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    previewImg.src = event.target.result;
-                    previewContainer.style.display = 'block';
-                    uploadLabel.style.display = 'none';
-                    runOCR(file);
+                    const image = document.getElementById('imageToCrop');
+                    image.src = event.target.result;
+                    document.getElementById('cropContainer').style.display = 'block';
+                    document.getElementById('uploadLabel').style.display = 'none';
+                    
+                    if (cropper) cropper.destroy();
+                    
+                    cropper = new Cropper(image, {
+                        viewMode: 1,
+                        dragMode: 'crop',
+                        autoCropArea: 0.5,
+                        responsive: true,
+                        guides: true,
+                    });
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        async function runOCR(imageFile) {
+        // دالة استخراج النص من الجزء المقصوص فقط
+        async function extractText(type) {
+            if (!cropper) return;
+            
             const statusDiv = document.getElementById('ocrStatus');
-            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري سحب البيانات...';
-            try {
-                const worker = await Tesseract.createWorker('ara+eng');
-                const ret = await worker.recognize(imageFile);
-                const text = ret.data.text;
-                await worker.terminate();
-                
-                statusDiv.innerHTML = 'تم السحب. راجع البيانات وعدّل إن لزم.';
-                
-                // استخراج الموبايل والسن والاسم
-                const phoneMatch = text.match(/01[0-2,5]{1}[0-9]{8}/);
-                if (phoneMatch) document.getElementById('p_phone').value = phoneMatch[0];
-                const ageMatch = text.match(/(عمر|سن)\s*[:\-]?\s*(\d{1,2})/);
-                if (ageMatch) document.getElementById('p_age').value = ageMatch[2];
-                const lines = text.split('\n');
-                for(let line of lines) {
-                    let c = line.trim();
-                    if(c.length > 3 && /[أ-ي]/.test(c) && !c.includes("تاريخ") && !c.includes("موبايل")) {
-                        document.getElementById('p_name').value = c;
-                        break;
+            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تحليل الجزء المحدد بتركيز عالي...';
+            
+            // سحب الجزء المقصوص كصورة مصغرة عالية الجودة
+            cropper.getCroppedCanvas().toBlob(async (blob) => {
+                try {
+                    const worker = await Tesseract.createWorker('ara+eng');
+                    const ret = await worker.recognize(blob);
+                    const text = ret.data.text;
+                    await worker.terminate();
+                    
+                    if(text.trim() === "") {
+                        statusDiv.innerHTML = '<span style="color:#e74c3c">لم يتم التعرف، جرب تحديد جزء أوضح.</span>';
+                        return;
                     }
+
+                    statusDiv.innerHTML = '<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم استخراج البيانات.</span>';
+                    
+                    // تحليل ذكي للنص المقصوص
+                    const phoneMatch = text.match(/01[0-2,5]{1}[0-9]{8}/);
+                    if (phoneMatch) document.getElementById('p_phone').value = phoneMatch[0];
+                    
+                    const ageMatch = text.match(/(عمر|سن)\s*[:\-]?\s*(\d{1,2})/);
+                    if (ageMatch) document.getElementById('p_age').value = ageMatch[2];
+                    
+                    const lines = text.split('\n');
+                    for(let line of lines) {
+                        let c = line.trim();
+                        if(c.length > 3 && /[أ-ي]/.test(c) && !c.includes("تاريخ") && !c.includes("موبايل")) {
+                            document.getElementById('p_name').value = c;
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ في محرك الذكاء الاصطناعي.</span>';
                 }
-            } catch (err) {
-                statusDiv.innerHTML = 'فشل التعرف الآلي، أدخل البيانات يدوياً.';
-            }
+            }, 'image/jpeg');
         }
 
-        // تجميع بيانات الجدول وتحويلها لنص يمكن حفظه في جوجل شيت
         function getTableDataAsString() {
             let tableData = "";
             const rows = document.querySelectorAll('#tableBody tr');
             rows.forEach((row, index) => {
-                const d = row.querySelector('.cell-d').value.trim();
-                const ws = row.querySelector('.cell-ws').value.trim();
-                const n = row.querySelector('.cell-n').value.trim();
+                const inputs = row.querySelectorAll('input');
+                const d = inputs[0].value.trim();
+                const ws = inputs[1].value.trim();
+                const n = inputs[2].value.trim();
                 if (d || ws || n) {
                     tableData += `جـ${index + 1} [D:${d} | WS:${ws} | N:${n}]\n`;
                 }
             });
-            return tableData || "لا يوجد جلسات مسجلة";
+            return tableData || "لا يوجد جلسات";
         }
 
         function saveAndNewCard() {
             const nameInput = document.getElementById('p_name');
             if(!nameInput.value.trim()) {
-                showToast("⚠️ أدخل اسم المريض");
-                nameInput.focus();
+                showToast("⚠️ يجب إدخال اسم المريض");
                 return;
             }
 
-            // تجميع الداتا (بما فيها الجدول)
             const payload = {
                 name: nameInput.value,
                 address: document.getElementById('p_address').value,
@@ -411,24 +258,23 @@
                 referred: document.getElementById('p_referred').value,
                 diagnosis: document.getElementById('p_diagnosis').value,
                 protocol: document.getElementById('p_protocol').value,
-                medical_notes: getTableDataAsString() // بيانات الجدول بتتحفظ هنا
+                medical_notes: getTableDataAsString()
             };
 
-            // تفريغ الشاشة فوراً
+            // التفريغ الفوري
             document.getElementById('archiveForm').reset();
-            initTable(); // تصفير الجدول
-            previewContainer.style.display = 'none';
-            uploadLabel.style.display = 'inline-flex';
-            currentImageFile = null;
+            initTable();
+            if(cropper) { cropper.destroy(); cropper = null; }
+            document.getElementById('cropContainer').style.display = 'none';
+            document.getElementById('uploadLabel').style.display = 'flex';
             document.getElementById('cardImage').value = '';
             document.getElementById('ocrStatus').innerText = '';
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast("تم الإرسال ⚡ صور اللي بعده");
+            showToast("تم الحفظ ⚡ صور الكرت اللي بعده");
 
-            // الإرسال في الخلفية
             fetch(SCRIPT_URL_TEMP, { method: "POST", body: JSON.stringify(payload) })
-            .catch(err => console.error("خطأ بالاتصال"));
+            .catch(err => console.log("Background save error"));
         }
     </script>
 </body>
