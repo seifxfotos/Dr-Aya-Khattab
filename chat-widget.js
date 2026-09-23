@@ -1,114 +1,132 @@
 (function() {
-    try {
-        // 1. تصميم الشات (CSS)
-        const chatStyles = document.createElement('style');
-        chatStyles.innerHTML = `
-            .chat-toggle-btn { position: fixed; bottom: 25px; right: 25px; z-index: 1000; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-            .chat-toggle-btn:hover { transform: scale(1.1); }
-            .chat-badge { position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite; }
-            @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+    // دالة آمنة لتحميل مكتبات الفايربيس ديناميكياً إذا لم تكن موجودة
+    function loadScript(url, callback) {
+        if (document.querySelector(`script[src="${url}"]`)) {
+            if (callback) callback();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = callback;
+        document.head.appendChild(script);
+    }
 
-            .chat-box-wrapper { position: fixed; bottom: 95px; right: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 1000; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right; }
-            :root[data-theme="dark"] .chat-box-wrapper { --chat-bg: #0b141a; }
-            .chat-box-wrapper.fullscreen { bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 9999; }
-            .chat-box-wrapper.fullscreen .chat-messages { padding: 30px 10vw; }
-            .chat-box-wrapper.fullscreen .msg-text-content { font-size: 17px; }
-            .chat-box-wrapper.fullscreen .message-content { padding: 12px 18px; }
-            
-            .chat-header { background: var(--primary-blue, #0093D0); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
-            .header-controls { display: flex; align-items: center; gap: 10px; }
-            .chat-header select { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 4px 10px; border-radius: 8px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; transition: 0.3s; }
-            .chat-header select option { background: var(--card-bg, #fff); color: var(--text-dark, #333); }
-            .icon-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-            .icon-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+    loadScript("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js", function() {
+        loadScript("https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js", function() {
+            initChatWidget();
+        });
+    });
 
-            .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth;}
-            .message-row { display: flex; flex-direction: column; margin-bottom: 15px; width: 100%; position: relative; }
-            .message-row.doctor { align-items: flex-start; } 
-            .message-row.reception { align-items: flex-end; } 
-            .msg-flex { display: flex; align-items: center; gap: 8px; max-width: 85%; }
-            .msg-flex.reception { flex-direction: row-reverse; } 
+    function initChatWidget() {
+        try {
+            // 1. تصميم الشات (CSS)
+            const chatStyles = document.createElement('style');
+            chatStyles.innerHTML = `
+                .chat-toggle-btn { position: fixed; bottom: 25px; right: 25px; z-index: 1000; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+                .chat-toggle-btn:hover { transform: scale(1.1); }
+                .chat-badge { position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite; }
+                @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-            .message-content { padding: 8px 14px; border-radius: 12px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-            .message-content::before { content: ""; position: absolute; top: 0; border: 10px solid transparent; }
-            .message-content.doctor { background: var(--primary-blue, #0093D0); color: white; border-top-right-radius: 0; }
-            .message-content.doctor::before { right: -10px; border-top-color: var(--primary-blue, #0093D0); border-left-color: var(--primary-blue, #0093D0); }
-            .message-content.reception { background: var(--primary-green, #8CC63F); color: white; border-top-left-radius: 0; }
-            .message-content.reception::before { left: -10px; border-top-color: var(--primary-green, #8CC63F); border-right-color: var(--primary-green, #8CC63F); }
+                .chat-box-wrapper { position: fixed; bottom: 95px; right: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 1000; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right; }
+                :root[data-theme="dark"] .chat-box-wrapper { --chat-bg: #0b141a; }
+                .chat-box-wrapper.fullscreen { bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 9999; }
+                .chat-box-wrapper.fullscreen .chat-messages { padding: 30px 10vw; }
+                .chat-box-wrapper.fullscreen .msg-text-content { font-size: 17px; }
+                .chat-box-wrapper.fullscreen .message-content { padding: 12px 18px; }
+                
+                .chat-header { background: var(--primary-blue, #0093D0); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
+                .header-controls { display: flex; align-items: center; gap: 10px; }
+                .chat-header select { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 4px 10px; border-radius: 8px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; transition: 0.3s; }
+                .chat-header select option { background: var(--card-bg, #fff); color: var(--text-dark, #333); }
+                .icon-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+                .icon-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
 
-            .sender-name { font-size: 11px; font-weight: 800; margin-bottom: 2px; opacity: 0.9; }
-            .msg-text-content { font-size: 14.5px; line-height: 1.5; word-break: break-word; }
-            .msg-edited-tag { font-size: 10px; opacity: 0.7; font-style: italic; margin-right: 6px; }
+                .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth;}
+                .message-row { display: flex; flex-direction: column; margin-bottom: 15px; width: 100%; position: relative; }
+                .message-row.doctor { align-items: flex-start; } 
+                .message-row.reception { align-items: flex-end; } 
+                .msg-flex { display: flex; align-items: center; gap: 8px; max-width: 85%; }
+                .msg-flex.reception { flex-direction: row-reverse; } 
 
-            .msg-actions { display: flex; gap: 5px; opacity: 0; visibility: hidden; transition: 0.2s ease; }
-            .msg-flex:hover .msg-actions { opacity: 1; visibility: visible; }
-            .msg-actions button { background: var(--card-bg, #fff); color: var(--text-dark, #333); border: 1px solid var(--glass-border, #ccc); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
-            .msg-actions button:hover { background: var(--primary-blue, #0093D0); color: white; transform: scale(1.1); border-color: transparent;}
-            .msg-actions button.delete-btn:hover { background: #e74c3c; color: white; }
+                .message-content { padding: 8px 14px; border-radius: 12px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+                .message-content::before { content: ""; position: absolute; top: 0; border: 10px solid transparent; }
+                .message-content.doctor { background: var(--primary-blue, #0093D0); color: white; border-top-right-radius: 0; }
+                .message-content.doctor::before { right: -10px; border-top-color: var(--primary-blue, #0093D0); border-left-color: var(--primary-blue, #0093D0); }
+                .message-content.reception { background: var(--primary-green, #8CC63F); color: white; border-top-left-radius: 0; }
+                .message-content.reception::before { left: -10px; border-top-color: var(--primary-green, #8CC63F); border-right-color: var(--primary-green, #8CC63F); }
 
-            .message-meta { display: flex; align-items: center; gap: 4px; font-size: 11px; margin-top: 4px; opacity: 0.6; padding: 0 5px; color: var(--text-dark, #333); font-weight: 600;}
-            .msg-status i { font-size: 13px; }
-            .msg-status i.fa-check-double { color: #3498db; opacity: 1; text-shadow: 0 0 1px rgba(0,0,0,0.1); }
-            .msg-status i.fa-check { opacity: 0.8; }
+                .sender-name { font-size: 11px; font-weight: 800; margin-bottom: 2px; opacity: 0.9; }
+                .msg-text-content { font-size: 14.5px; line-height: 1.5; word-break: break-word; }
+                .msg-edited-tag { font-size: 10px; opacity: 0.7; font-style: italic; margin-right: 6px; }
 
-            .chat-input-area { padding: 12px 15px; background: var(--card-bg, #fff); display: flex; gap: 10px; border-top: 1px solid var(--glass-border, #ccc); align-items: center; position: relative; z-index: 10; }
-            .chat-input-area input { flex: 1; padding: 12px 20px; border: 1px solid var(--glass-border, #ccc); border-radius: 25px; font-family: 'Cairo'; font-size: 14.5px; outline: none; background: var(--bg-color, #f4f7f6); color: var(--text-dark, #333); box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s; }
-            .chat-input-area input:focus { border-color: var(--primary-blue, #0093D0); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
-            .send-btn { background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-            .send-btn:hover { transform: scale(1.08) rotate(-10deg); }
-            .send-btn.edit-mode { background: #f39c12; transform: none; }
-            .cancel-edit-btn { position: absolute; top: -35px; right: 15px; background: #e74c3c; color: white; border: none; border-radius: 12px; padding: 5px 12px; font-family: 'Cairo'; font-size: 12px; font-weight: 700; cursor: pointer; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s; }
-            .cancel-edit-btn:hover { transform: translateY(-2px); }
-        `;
-        document.head.appendChild(chatStyles);
+                .msg-actions { display: flex; gap: 5px; opacity: 0; visibility: hidden; transition: 0.2s ease; }
+                .msg-flex:hover .msg-actions { opacity: 1; visibility: visible; }
+                .msg-actions button { background: var(--card-bg, #fff); color: var(--text-dark, #333); border: 1px solid var(--glass-border, #ccc); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
+                .msg-actions button:hover { background: var(--primary-blue, #0093D0); color: white; transform: scale(1.1); border-color: transparent;}
+                .msg-actions button.delete-btn:hover { background: #e74c3c; color: white; }
 
-        // 2. هيكل الشات (HTML)
-        const chatWidgetHTML = `
-            <button class="chat-toggle-btn" onclick="window.toggleChat()" title="محادثة عيادة د.آية">
-                <i class="fa-solid fa-comments"></i>
-                <span class="chat-badge" id="chatBadge">0</span>
-            </button>
+                .message-meta { display: flex; align-items: center; gap: 4px; font-size: 11px; margin-top: 4px; opacity: 0.6; padding: 0 5px; color: var(--text-dark, #333); font-weight: 600;}
+                .msg-status i { font-size: 13px; }
+                .msg-status i.fa-check-double { color: #3498db; opacity: 1; text-shadow: 0 0 1px rgba(0,0,0,0.1); }
+                .msg-status i.fa-check { opacity: 0.8; }
 
-            <div class="chat-box-wrapper" id="chatBox">
-                <div class="chat-header">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-clinic-medical" style="font-size: 18px;"></i>
-                        <span>محادثة العيادة</span>
+                .chat-input-area { padding: 12px 15px; background: var(--card-bg, #fff); display: flex; gap: 10px; border-top: 1px solid var(--glass-border, #ccc); align-items: center; position: relative; z-index: 10; }
+                .chat-input-area input { flex: 1; padding: 12px 20px; border: 1px solid var(--glass-border, #ccc); border-radius: 25px; font-family: 'Cairo'; font-size: 14.5px; outline: none; background: var(--bg-color, #f4f7f6); color: var(--text-dark, #333); box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s; }
+                .chat-input-area input:focus { border-color: var(--primary-blue, #0093D0); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
+                .send-btn { background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+                .send-btn:hover { transform: scale(1.08) rotate(-10deg); }
+                .send-btn.edit-mode { background: #f39c12; transform: none; }
+                .cancel-edit-btn { position: absolute; top: -35px; right: 15px; background: #e74c3c; color: white; border: none; border-radius: 12px; padding: 5px 12px; font-family: 'Cairo'; font-size: 12px; font-weight: 700; cursor: pointer; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s; }
+                .cancel-edit-btn:hover { transform: translateY(-2px); }
+            `;
+            document.head.appendChild(chatStyles);
+
+            // 2. هيكل الشات (HTML)
+            const chatWidgetHTML = `
+                <button class="chat-toggle-btn" onclick="window.toggleChat()" title="محادثة عيادة د.آية">
+                    <i class="fa-solid fa-comments"></i>
+                    <span class="chat-badge" id="chatBadge">0</span>
+                </button>
+
+                <div class="chat-box-wrapper" id="chatBox">
+                    <div class="chat-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-clinic-medical" style="font-size: 18px;"></i>
+                            <span>محادثة العيادة</span>
+                        </div>
+                        <div class="header-controls">
+                            <select id="userRole" onchange="window.changeUserRole()">
+                                <option value="reception">الريسبشن</option>
+                                <option value="doctor">د. آية خطاب</option>
+                            </select>
+                            <button class="icon-btn" onclick="window.toggleFullScreen()" title="تكبير/تصغير الشات">
+                                <i id="fullscreenIcon" class="fa-solid fa-expand"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="header-controls">
-                        <select id="userRole" onchange="window.changeUserRole()">
-                            <option value="reception">الريسبشن</option>
-                            <option value="doctor">د. آية خطاب</option>
-                        </select>
-                        <button class="icon-btn" onclick="window.toggleFullScreen()" title="تكبير/تصغير الشات">
-                            <i id="fullscreenIcon" class="fa-solid fa-expand"></i>
-                        </button>
+                    <div class="chat-messages" id="chatMessages">
+                        <div style="text-align:center; opacity:0.5; margin-top:80px; font-weight: bold;">جاري الاتصال بالسيرفر...</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <button class="cancel-edit-btn" id="cancelEditBtn" onclick="window.cancelEdit()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
+                        <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="window.handleKeyPress(event)">
+                        <button class="send-btn" id="sendBtn" onclick="window.sendMessage()" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
                     </div>
                 </div>
-                <div class="chat-messages" id="chatMessages">
-                    <div style="text-align:center; opacity:0.5; margin-top:80px; font-weight: bold;">جاري الاتصال بالسيرفر...</div>
-                </div>
-                <div class="chat-input-area">
-                    <button class="cancel-edit-btn" id="cancelEditBtn" onclick="window.cancelEdit()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
-                    <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="window.handleKeyPress(event)">
-                    <button class="send-btn" id="sendBtn" onclick="window.sendMessage()" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', chatWidgetHTML);
+            `;
+            document.body.insertAdjacentHTML('beforeend', chatWidgetHTML);
 
-        // 3. برمجة الشات والـ Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
-            authDomain: "clinic-system-fe2e4.firebaseapp.com",
-            databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
-            projectId: "clinic-system-fe2e4",
-            storageBucket: "clinic-system-fe2e4.firebasestorage.app",
-            messagingSenderId: "528745148277",
-            appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
-        };
+            // 3. إعدادات الفايربيس والمنطق
+            const firebaseConfig = {
+                apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
+                authDomain: "clinic-system-fe2e4.firebaseapp.com",
+                databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
+                projectId: "clinic-system-fe2e4",
+                storageBucket: "clinic-system-fe2e4.firebasestorage.app",
+                messagingSenderId: "528745148277",
+                appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
+            };
 
-        if (typeof firebase !== 'undefined') {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
@@ -331,6 +349,6 @@
             };
         }
     } catch(err) {
-        console.error("Chat Widget Error (Isolated):", err);
+        console.error("Chat Widget Error:", err);
     }
 })();
