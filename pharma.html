@@ -173,7 +173,6 @@
 
                     <div class="input-group">
                         <label>علينا (المتبقي)</label>
-                        <!-- أصبحت قابلة للتعديل -->
                         <input type="number" id="owed" class="debt-input calc-manual">
                     </div>
                     <div class="input-group">
@@ -219,7 +218,7 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwayuyjy1UpSsIa5ajUYXBm4LuQmNhMsJqFWIyrWxpM83HSqoGcP6PdtCYApQePoxo/exec';
         let pharmaData = []; 
-        let formBaseCost = 0; // لحفظ التكلفة الأساسية في الفورم
+        let formBaseCost = 0;
 
         flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
 
@@ -245,17 +244,13 @@
         }
 
         // ==========================================
-        // الدوال الذكية (تم تحديثها بالكامل لتجاهل أي مسافات وتصحيح فرق التوقيت)
+        // الدوال الذكية لسحب التواريخ ومعالجة المسافات
         // ==========================================
-
         function getSafeValue(item, key) {
             if (item[key] !== undefined && item[key] !== null) return item[key];
-            // تحويل المفتاح لنسخة بدون أي مسافات تماماً للمقارنة السليمة 100%
             let cleanKey = key.replace(/\s+/g, '');
             for (let k in item) {
-                if (k.replace(/\s+/g, '') === cleanKey) {
-                    return item[k] !== null ? item[k] : '';
-                }
+                if (k.replace(/\s+/g, '') === cleanKey) return item[k] !== null ? item[k] : '';
             }
             return '';
         }
@@ -265,9 +260,7 @@
             try { 
                 let str = String(dateStr).trim();
                 let d = new Date(str);
-                // تأكد إن التاريخ صحيح
                 if (!isNaN(d.getTime())) {
-                    // نأخذ التاريخ المحلي للمتصفح عشان نعالج فرق التوقيت اللي بيأخر يوم
                     let year = d.getFullYear();
                     let month = String(d.getMonth() + 1).padStart(2, '0');
                     let day = String(d.getDate()).padStart(2, '0');
@@ -284,14 +277,12 @@
         }
 
         // ==========================================
-        // منطق الحسابات الذكية (للفورم)
+        // منطق الحسابات الذكية
         // ==========================================
-        
         function calcFormFromBasics() {
             let price = parseFloat(document.getElementById('publicPrice').value) || 0;
             let count = extractNumber(document.getElementById('productCount').value);
             let discount = parseFloat(document.getElementById('discount').value) || 0;
-            
             formBaseCost = (price - (price * (discount / 100))) * count;
             applyFormPayments();
         }
@@ -301,7 +292,6 @@
             let p1 = parseFloat(document.getElementById('pay1').value) || 0;
             let p2 = parseFloat(document.getElementById('pay2').value) || 0;
             let p3 = parseFloat(document.getElementById('pay3').value) || 0;
-            
             formBaseCost = typedOwed + p1 + p2 + p3;
             applyFormPayments();
         }
@@ -310,13 +300,11 @@
             let p1 = parseFloat(document.getElementById('pay1').value) || 0;
             let p2 = parseFloat(document.getElementById('pay2').value) || 0;
             let p3 = parseFloat(document.getElementById('pay3').value) || 0;
-
             let owed = formBaseCost - (p1 + p2 + p3);
             if (owed < 0) owed = 0;
 
             document.getElementById('owed').value = owed.toFixed(2).replace(/\.00$/, '');
             const doneField = document.getElementById('done');
-            
             if (owed === 0 && formBaseCost > 0) {
                 doneField.value = 'نعم';
                 doneField.style.color = 'var(--primary-green)';
@@ -330,9 +318,6 @@
         document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
 
-        // ==========================================
-        // تحميل البيانات من الشيت
-        // ==========================================
         function loadData(forceReload = false) {
             const tableBody = document.getElementById('tableBody');
             const today = new Date().toDateString();
@@ -361,7 +346,6 @@
                         let p1 = parseFloat(getSafeValue(item, 'دفعة 1')) || 0;
                         let p2 = parseFloat(getSafeValue(item, 'دفعة 2')) || 0;
                         let p3 = parseFloat(getSafeValue(item, 'دفعة 3')) || 0;
-                        
                         let baseCost = parsedOwed + p1 + p2 + p3;
 
                         return {
@@ -385,14 +369,13 @@
                     });
 
                     const newDataString = JSON.stringify(newDataFormatted);
-                    
                     if (newDataString !== cachedData || cacheDate !== today || forceReload) {
                         pharmaData = newDataFormatted;
                         localStorage.setItem('clinic_pharma_cache', newDataString);
                         localStorage.setItem('clinic_pharma_date', today);
                         renderTable();
                         if (cachedData && cacheDate === today && !forceReload) {
-                            showSyncStatus('تم تحديث بيانات جديدة', false);
+                            showSyncStatus('تم التحديث', false);
                             setTimeout(hideSyncStatus, 2000);
                         } else { hideSyncStatus(); }
                     } else { hideSyncStatus(); }
@@ -403,16 +386,12 @@
                 });
         }
 
-        // ==========================================
-        // رسم الجدول
-        // ==========================================
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
             
             pharmaData.forEach((row, index) => {
                 const isDoneClass = row.done === 'نعم' ? 'done-yes' : '';
-                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><input type="text" class="inline-input" value="${row.companyName}" onchange="saveRow(${index}, 'companyName', this.value)"></td>
@@ -421,31 +400,26 @@
                     <td><input type="number" class="inline-input price-input" value="${row.publicPrice}" oninput="calcRowBasics(${index}, 'publicPrice', this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="number" class="inline-input discount-input" value="${row.discount}" oninput="calcRowBasics(${index}, 'discount', this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="text" class="inline-input table-date" placeholder="وارد" value="${row.dateIn}" onchange="saveRow(${index}, 'dateIn', this.value)"></td>
-                    
                     <td>
                         <div class="dual-input-wrapper">
                             <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay1}" oninput="applyRowPayments(${index}, 'pay1', this.value)" onchange="saveRow(${index})">
                             <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect1}" onchange="saveRow(${index}, 'collect1', this.value)">
                         </div>
                     </td>
-                    
                     <td>
                         <div class="dual-input-wrapper">
                             <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay2}" oninput="applyRowPayments(${index}, 'pay2', this.value)" onchange="saveRow(${index})">
                             <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect2}" onchange="saveRow(${index}, 'collect2', this.value)">
                         </div>
                     </td>
-
                     <td>
                         <div class="dual-input-wrapper">
                             <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay3}" oninput="applyRowPayments(${index}, 'pay3', this.value)" onchange="saveRow(${index})">
                             <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect3}" onchange="saveRow(${index}, 'collect3', this.value)">
                         </div>
                     </td>
-
                     <td><input type="number" id="rowOwed_${index}" class="inline-input debt-input" value="${row.owed}" oninput="manualRowOwed(${index}, this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="text" id="rowDone_${index}" class="inline-input readonly-field ${isDoneClass}" value="${row.done}" readonly></td>
-                    
                     <td>
                         <button class="delete-btn" onclick="deleteRow(${index})" title="حذف">
                             <i class="fa-solid fa-trash"></i>
@@ -459,16 +433,11 @@
 
         loadData();
 
-        // ==========================================
-        // التعديل اللحظي جوه الجدول (3 حالات)
-        // ==========================================
-        
         function calcRowBasics(index, field, value) {
             pharmaData[index][field] = value;
             let pr = parseFloat(pharmaData[index].publicPrice) || 0;
             let c = extractNumber(pharmaData[index].productCount);
             let disc = parseFloat(pharmaData[index].discount) || 0;
-            
             pharmaData[index].baseCost = (pr - (pr * (disc / 100))) * c;
             applyRowPaymentsLogic(index);
         }
@@ -478,7 +447,6 @@
             let p1 = parseFloat(pharmaData[index].pay1) || 0;
             let p2 = parseFloat(pharmaData[index].pay2) || 0;
             let p3 = parseFloat(pharmaData[index].pay3) || 0;
-            
             pharmaData[index].baseCost = typedOwed + p1 + p2 + p3;
             pharmaData[index].owed = typedOwed; 
             applyRowPaymentsLogic(index);
@@ -493,7 +461,6 @@
             let p1 = parseFloat(pharmaData[index].pay1) || 0;
             let p2 = parseFloat(pharmaData[index].pay2) || 0;
             let p3 = parseFloat(pharmaData[index].pay3) || 0;
-
             let owed = pharmaData[index].baseCost - (p1 + p2 + p3);
             if (owed < 0) owed = 0;
 
@@ -507,45 +474,47 @@
             else doneField.classList.remove('done-yes');
         }
 
-        // حفظ التغييرات 
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
-            
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
-            let payload = { action: 'update', ...pharmaData[index] };
             
-            showSyncStatus('جاري حفظ التعديل...', true);
+            let payload = { action: 'update', ...pharmaData[index] };
+            showSyncStatus('تحديث...', true);
+            
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
-            .then(result => { showSyncStatus('تم الحفظ بنجاح', false); setTimeout(hideSyncStatus, 1500); })
+            .then(result => { showSyncStatus('تم الحفظ', false); setTimeout(hideSyncStatus, 1500); })
             .catch(err => { showSyncStatus('تم الحفظ', false); setTimeout(hideSyncStatus, 1500); });
         }
 
-        // الحذف
         function deleteRow(index) {
             if (!confirm('هل أنت متأكد من حذف هذا البيان نهائياً؟')) return;
 
             const rowNumToDelete = pharmaData[index].rowNumber;
+            
+            // حذف فوري من الواجهة بدون انتظار السيرفر (Optimistic UI)
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
             renderTable();
+            
             showSyncStatus('جاري الحذف...', true);
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNumber: rowNumToDelete }) })
             .then(res => res.json())
-            .then(result => { showSyncStatus('تم الحذف بنجاح', false); setTimeout(() => loadData(true), 1500); })
-            .catch(err => { showSyncStatus('تم الحذف', false); setTimeout(() => loadData(true), 1500); });
+            .then(result => { 
+                showSyncStatus('تم الحذف بنجاح', false); 
+                setTimeout(hideSyncStatus, 1500); 
+            })
+            .catch(err => { 
+                showSyncStatus('حدث خطأ', false); 
+                setTimeout(hideSyncStatus, 1500); 
+            });
         }
 
-        // حفظ الفورم
         const addForm = document.getElementById('addForm');
-        const submitBtn = document.getElementById('submitBtn');
-
         addForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
-            submitBtn.disabled = true;
-
+            
             const payload = {
                 action: 'add',
                 companyName: document.getElementById('companyName').value,
@@ -564,17 +533,28 @@
                 done: document.getElementById('done').value
             };
 
+            // تفريغ الفورم فوراً ليتمكن المستخدم من استكمال شغله بدون انتظار (Optimistic UI)
+            addForm.reset(); 
+            formBaseCost = 0; 
+            document.getElementById('done').value = 'لا'; 
+            document.getElementById('done').style.color = 'var(--text-dark)';
+            
+            showSyncStatus('جاري إضافة الطلبية...', true);
+
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
-            .then(result => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; loadData(true); })
-            .catch(error => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; setTimeout(() => loadData(true), 1500); })
-            .finally(() => { 
-                submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> حفظ'; 
-                submitBtn.disabled = false; 
+            .then(result => { 
+                showSyncStatus('تمت الإضافة بنجاح', false); 
+                setTimeout(hideSyncStatus, 2000); 
+                loadData(true); 
+            })
+            .catch(error => { 
+                showSyncStatus('حدث خطأ', false); 
+                setTimeout(hideSyncStatus, 2000); 
             });
         });
     </script> 
-
+    
     <script src="chat-widget.js"></script>
 </body>
 </html>
