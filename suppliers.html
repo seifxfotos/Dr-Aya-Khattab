@@ -1,1 +1,459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المستهلكات والموردين | عيادة د. آية خطاب</title>
+    
+    <style>
+        /* المتغيرات الأساسية - الوضع النهاري (الافتراضي) */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --primary-color: #007bb5; /* أزرق طبي احترافي */
+            --secondary-color: #0099cc;
+            --border-color: #dcdde1;
+            --shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            --hover-bg: #e8f4f8;
+            --input-bg: #ffffff;
+        }
 
+        /* المتغيرات - الوضع الليلي */
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #ecf0f1;
+            --card-bg: #1e1e1e;
+            --primary-color: #4eb8dd;
+            --secondary-color: #38a3c8;
+            --border-color: #333333;
+            --shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            --hover-bg: #2c3e50;
+            --input-bg: #2a2a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        /* شريط التنقل (Navbar) */
+        header {
+            background-color: var(--card-bg);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .logo-container h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        /* زر الوضع الليلي/النهاري */
+        #themeToggle {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        #themeToggle:hover {
+            border-color: var(--primary-color);
+            background-color: var(--hover-bg);
+        }
+
+        /* المحتوى الرئيسي */
+        main {
+            padding: 30px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .page-header h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        /* تصميم الكروت (الفورم والجدول) */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card h3 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* نموذج الإضافة */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .input-group input {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .submit-btn {
+            grid-column: 1 / -1;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .submit-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* الجدول */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        thead {
+            background-color: var(--hover-bg);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        tbody tr:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* رسائل التحميل */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <h1>بوابة النظام - عيادة د. آية خطاب</h1>
+        </div>
+        <div class="nav-controls">
+            <nav class="nav-links">
+                <a href="all.html">الرئيسية (ALL)</a>
+                <a href="suppliers.html" class="active">المستهلكات والموردين</a>
+                <a href="pharma.html">شركات الدواء</a>
+            </nav>
+            <button id="themeToggle">
+                <span id="themeIcon">🌙</span> 
+                <span id="themeText">الوضع الليلي</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h2>سجل المستهلكات والموردين</h2>
+        </div>
+
+        <!-- فورم إضافة مورد/صنف جديد -->
+        <div class="card">
+            <h3>إضافة بيان جديد</h3>
+            <form id="addForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>أسم المورد</label>
+                        <input type="text" id="supplierName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>أسم الصنف</label>
+                        <input type="text" id="itemName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>عدد الصنف</label>
+                        <input type="number" id="itemCount" required>
+                    </div>
+                    <div class="input-group">
+                        <label>سعر الصنف</label>
+                        <input type="number" id="itemPrice" required>
+                    </div>
+                    <div class="input-group">
+                        <label>تاريخ وارد</label>
+                        <input type="date" id="dateIn" required>
+                    </div>
+                    <div class="input-group">
+                        <label>تاريخ صادر</label>
+                        <input type="date" id="dateOut">
+                    </div>
+                    <button type="submit" class="submit-btn" id="submitBtn">حفظ وإضافة</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- جدول عرض البيانات -->
+        <div class="card">
+            <h3>البيانات المسجلة</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>أسم المورد</th>
+                            <th>أسم الصنف</th>
+                            <th>عدد الصنف</th>
+                            <th>سعر الصنف</th>
+                            <th>تاريخ وارد</th>
+                            <th>تاريخ صادر</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="6" class="loading">جاري تحميل البيانات...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // رابط API الخاص بك
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyh8jKpXbL42YwG_eb2FD9YtTl6diJ0JH5y2hl5yN6VpXnbpsi0dlkkhBzgPpCjIXVr/exec';
+
+        // -----------------------------------------------------
+        // 1. نظام الدارك مود (نفس القديم شغال بامتياز)
+        // -----------------------------------------------------
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        const savedTheme = localStorage.getItem('clinicTheme');
+
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            updateToggleUI(true);
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('clinicTheme', isDark ? 'dark' : 'light');
+            updateToggleUI(isDark);
+        });
+
+        function updateToggleUI(isDark) {
+            if (isDark) {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'الوضع النهاري';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'الوضع الليلي';
+            }
+        }
+
+        // -----------------------------------------------------
+        // 2. جلب البيانات وعرضها في الجدول (GET)
+        // -----------------------------------------------------
+        function loadData() {
+            const tableBody = document.getElementById('tableBody');
+            
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = ''; // تفريغ رسالة التحميل
+                    
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد بيانات مسجلة بعد.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(row => {
+                        // تنظيف التواريخ لو جاية بصيغة طويلة من جوجل
+                        const formatDate = (dateStr) => {
+                            if(!dateStr) return '-';
+                            try { return dateStr.split('T')[0]; } catch(e) { return dateStr; }
+                        };
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row['أسم المورد'] || '-'}</td>
+                            <td>${row['أسم الصنف'] || '-'}</td>
+                            <td>${row['عدد الصنف'] || '-'}</td>
+                            <td>${row['سعر الصنف'] || '-'}</td>
+                            <td>${formatDate(row['تاريخ وارد'])}</td>
+                            <td>${formatDate(row['تاريخ صادر'])}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                })
+                .catch(error => {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">حدث خطأ أثناء تحميل البيانات. تأكد من إعدادات الـ API.</td></tr>';
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        // تشغيل دالة الجلب أول ما الصفحة تفتح
+        loadData();
+
+        // -----------------------------------------------------
+        // 3. إرسال البيانات من الفورم للشيت (POST)
+        // -----------------------------------------------------
+        const addForm = document.getElementById('addForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // منع إعادة تحميل الصفحة
+            
+            // تغيير شكل الزر وقت التحميل
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.textContent = 'جاري الحفظ...';
+            submitBtn.disabled = true;
+
+            // تجميع البيانات من الفورم
+            const formData = {
+                supplierName: document.getElementById('supplierName').value,
+                itemName: document.getElementById('itemName').value,
+                itemCount: document.getElementById('itemCount').value,
+                itemPrice: document.getElementById('itemPrice').value,
+                dateIn: document.getElementById('dateIn').value,
+                dateOut: document.getElementById('dateOut').value
+            };
+
+            // إرسال البيانات لجوجل شيتس
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if(result.status === 'success') {
+                    alert('تم إضافة البيانات بنجاح!');
+                    addForm.reset(); // تفريغ الحقول
+                    
+                    // إعادة تحميل الجدول عشان يظهر فيه الصف الجديد
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">جاري تحديث البيانات...</td></tr>';
+                    loadData(); 
+                } else {
+                    alert('حدث خطأ أثناء الحفظ.');
+                }
+            })
+            .catch(error => {
+                // جوجل سكريبت أحياناً بيرجع خطأ CORS في الـ POST لكن البيانات بتوصل الشيت عادي
+                console.error('Error (might be CORS, but data sent):', error);
+                alert('تم إرسال الطلب، جاري تحديث الجدول للتأكد...');
+                addForm.reset();
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">جاري تحديث البيانات...</td></tr>';
+                setTimeout(loadData, 1500); // تأخير بسيط عشان الشيت يلحق يحفظ
+            })
+            .finally(() => {
+                // إرجاع الزر لشكله الطبيعي
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
