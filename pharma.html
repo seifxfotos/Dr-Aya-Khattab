@@ -244,9 +244,34 @@
             document.getElementById('syncIndicator').classList.remove('show');
         }
 
+        // ==========================================
+        // الدوال الذكية الجديدة لسحب البيانات وتصحيح التواريخ
+        // ==========================================
+
+        // 1. الدالة دي وظيفتها تتجاهل أي مسافات مخفية في عناوين جوجل شيت
+        function getSafeValue(item, key) {
+            if (item[key] !== undefined) return item[key];
+            for (let k in item) {
+                if (k.trim() === key.trim()) return item[k];
+            }
+            return '';
+        }
+
+        // 2. الدالة دي وظيفتها تفهم التاريخ سواء كان ISO أو صيغة عادية زي 9/23/2026
         const formatDate = (dateStr) => {
             if(!dateStr) return '';
-            try { return dateStr.split('T')[0]; } catch(e) { return dateStr; }
+            try { 
+                let str = String(dateStr).trim();
+                // لو جوجل شيت بعته بصيغة T
+                if (str.includes('T')) return str.split('T')[0]; 
+                
+                // لو جوجل شيت بعته بصيغة تاريخ مقروء
+                let d = new Date(str);
+                if (!isNaN(d.getTime())) {
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                }
+                return str;
+            } catch(e) { return String(dateStr); }
         };
 
         function extractNumber(str) {
@@ -305,9 +330,8 @@
         document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
 
-
         // ==========================================
-        // تحميل البيانات
+        // تحميل البيانات من الشيت
         // ==========================================
         function loadData(forceReload = false) {
             const tableBody = document.getElementById('tableBody');
@@ -333,31 +357,30 @@
                     }
 
                     const newDataFormatted = data.map(item => {
-                        let parsedOwed = parseFloat(item['علينا']) || 0;
-                        let p1 = parseFloat(item['دفعة 1']) || 0;
-                        let p2 = parseFloat(item['دفعة 2']) || 0;
-                        let p3 = parseFloat(item['دفعة 3']) || 0;
+                        let parsedOwed = parseFloat(getSafeValue(item, 'علينا')) || 0;
+                        let p1 = parseFloat(getSafeValue(item, 'دفعة 1')) || 0;
+                        let p2 = parseFloat(getSafeValue(item, 'دفعة 2')) || 0;
+                        let p3 = parseFloat(getSafeValue(item, 'دفعة 3')) || 0;
                         
-                        // بنجهز التكلفة الأساسية المخفية للجدول
                         let baseCost = parsedOwed + p1 + p2 + p3;
 
                         return {
                             rowNumber: item.rowNumber,
-                            companyName: item['أسم الشركة'] || '',
-                            productName: item['أسم المنتج'] || '',
-                            productCount: item['عدد المنتج'] || '',
-                            publicPrice: item['سعر المنتج الجمهور'] || '',
-                            discount: item['نسبة الخصم'] || '',
-                            dateIn: formatDate(item['تاريخ وارد']),
-                            pay1: item['دفعة 1'] || '',
-                            collect1: formatDate(item['تاريخ تحصيل 1']),
-                            pay2: item['دفعة 2'] || '',
-                            collect2: formatDate(item['تاريخ تحصيل 2']),
-                            pay3: item['دفعة 3'] || '',
-                            collect3: formatDate(item['تاريخ تحصيل 3']),
+                            companyName: getSafeValue(item, 'أسم الشركة'),
+                            productName: getSafeValue(item, 'أسم المنتج'),
+                            productCount: getSafeValue(item, 'عدد المنتج'),
+                            publicPrice: getSafeValue(item, 'سعر المنتج الجمهور'),
+                            discount: getSafeValue(item, 'نسبة الخصم'),
+                            dateIn: formatDate(getSafeValue(item, 'تاريخ وارد')),
+                            pay1: p1 || '',
+                            collect1: formatDate(getSafeValue(item, 'تاريخ تحصيل 1')),
+                            pay2: p2 || '',
+                            collect2: formatDate(getSafeValue(item, 'تاريخ تحصيل 2')),
+                            pay3: p3 || '',
+                            collect3: formatDate(getSafeValue(item, 'تاريخ تحصيل 3')),
                             owed: parsedOwed,
                             baseCost: baseCost,
-                            done: item['خالص'] || 'لا'
+                            done: getSafeValue(item, 'خالص') || 'لا'
                         };
                     });
 
@@ -549,7 +572,7 @@
             .then(res => res.json())
             .then(result => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; loadData(true); })
             .catch(error => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; setTimeout(() => loadData(true), 1500); })
-.finally(() => { 
+            .finally(() => { 
                 submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> حفظ'; 
                 submitBtn.disabled = false; 
             });
