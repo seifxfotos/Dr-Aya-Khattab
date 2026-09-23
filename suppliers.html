@@ -46,7 +46,6 @@
         .card-panel { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; transition: 0.3s; }
         .card-panel h2 { margin-top: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         
-        /* تنظيم جديد للشبكة يناسب الـ 11 خانة */
         .add-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; align-items: end; }
         
         .input-group { display: flex; flex-direction: column; }
@@ -61,7 +60,7 @@
         .btn-add:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
         .table-responsive { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1250px; }
         .schedule-table th, .schedule-table td { padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; padding: 12px 6px;}
         
@@ -73,6 +72,10 @@
         .price-input { color: var(--primary-blue); font-weight: 700; }
         .debt-input { color: var(--danger) !important; font-weight: 700; }
         
+        /* زر الحذف */
+        .delete-btn { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; transition: 0.2s; padding: 5px; opacity: 0.8; }
+        .delete-btn:hover { transform: scale(1.1); opacity: 1; color: #c0392b; }
+
         .loading-text { text-align: center; font-weight: bold; padding: 20px !important; color: var(--primary-blue); }
     </style>
 </head>
@@ -163,22 +166,23 @@
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th style="width: 12%;">أسم المورد</th>
-                        <th style="width: 12%;">أسم الصنف</th>
+                        <th style="width: 11%;">أسم المورد</th>
+                        <th style="width: 11%;">أسم الصنف</th>
                         <th style="width: 8%;">الكمية</th>
                         <th style="width: 8%;">السعر</th>
-                        <th style="width: 10%;">تاريخ وارد</th>
-                        <th style="width: 10%;">تاريخ صادر</th>
+                        <th style="width: 9%;">تاريخ وارد</th>
+                        <th style="width: 9%;">تاريخ صادر</th>
                         <th style="width: 8%;">علينا</th>
-                        <th style="width: 10%;">تحصيل ١</th>
-                        <th style="width: 10%;">تحصيل ٢</th>
-                        <th style="width: 10%;">تحصيل ٣</th>
+                        <th style="width: 9%;">تحصيل ١</th>
+                        <th style="width: 9%;">تحصيل ٢</th>
+                        <th style="width: 9%;">تحصيل ٣</th>
                         <th style="width: 5%;">خالص</th>
+                        <th style="width: 4%;"><i class="fa-solid fa-trash"></i></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="11" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
+                        <td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
                     </tr>
                 </tbody>
             </table>
@@ -189,8 +193,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        // رابط الـ API بتاعك (تأكد إنه شغال بعد التحديث الأخير)
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZeUiNNuhuwnpbXJl30tF8tk3ygwbm9_b2yM9k-wvcvMsz-Ku8F_RysN-uYljLX5lw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztIJ7K7xGkPRZafhzGpAY_Lp69jfpzQ1LyMRfsRbpk41Srb_Dr0wKlihcncgPqXsmB/exec';
         let suppliersData = []; 
 
         flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
@@ -222,7 +225,7 @@
         };
 
         // -----------------------------------------------------
-        // نظام الـ Cache الذكي للتحميل في لمح البصر
+        // تحميل البيانات
         // -----------------------------------------------------
         function loadData(forceReload = false) {
             const tableBody = document.getElementById('tableBody');
@@ -230,21 +233,19 @@
             const cachedData = localStorage.getItem('clinic_suppliers_cache');
             const cacheDate = localStorage.getItem('clinic_suppliers_date');
 
-            // 1. لو في داتا محفوظة بتاريخ النهارده ومفيش أمر فرض تحميل، اعرضها فوراً
             if (!forceReload && cachedData && cacheDate === today) {
                 suppliersData = JSON.parse(cachedData);
                 renderTable();
                 showSyncStatus('تزامن سحابي...', true); 
             } else if (!cachedData) {
-                tableBody.innerHTML = '<tr><td colspan="11" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات لأول مرة...</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات لأول مرة...</td></tr>';
             }
 
-            // 2. اعمل Fetch في الخلفية وتأكد لو في جديد
             fetch(SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
                     if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
+                        tableBody.innerHTML = '<tr><td colspan="12" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
                         hideSyncStatus();
                         return;
                     }
@@ -256,7 +257,7 @@
                         itemCount: item['عدد الصنف'] || '',
                         itemPrice: item['سعر الصنف'] || '',
                         dateIn: formatDate(item['تاريخ وارد']),
-                        dateOut: formatDate(item['تاريخ صادر']), // هيأخد آخر "تاريخ صادر" لو في أعمدة مكررة
+                        dateOut: formatDate(item['تاريخ صادر']),
                         owed: item['علينا'] || '',
                         collect1: formatDate(item['تاريخ تحصيل ١']),
                         collect2: formatDate(item['تاريخ تحصيل ٢']),
@@ -266,27 +267,25 @@
 
                     const newDataString = JSON.stringify(newDataFormatted);
                     
-                    // لو الداتا اللي جات من السيرفر مختلفة عن اللي متخزنة (أو أول مرة)، حدث الجدول واعرض الداتا الجديدة
-                    if (newDataString !== cachedData || cacheDate !== today) {
+                    if (newDataString !== cachedData || cacheDate !== today || forceReload) {
                         suppliersData = newDataFormatted;
                         localStorage.setItem('clinic_suppliers_cache', newDataString);
                         localStorage.setItem('clinic_suppliers_date', today);
                         renderTable();
                         
-                        if (cachedData && cacheDate === today) {
+                        if (cachedData && cacheDate === today && !forceReload) {
                             showSyncStatus('تم تحديث بيانات جديدة', false);
                             setTimeout(hideSyncStatus, 2000);
                         } else {
                             hideSyncStatus();
                         }
                     } else {
-                        // لو مفيش جديد، اقفل الرسالة بصمت
                         hideSyncStatus();
                     }
                 })
                 .catch(error => {
                     if (!cachedData) {
-                        tableBody.innerHTML = '<tr><td colspan="11" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
+                        tableBody.innerHTML = '<tr><td colspan="12" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
                     }
                     hideSyncStatus();
                 });
@@ -316,6 +315,11 @@
                             <option value="لا" ${row.done === 'لا' ? 'selected' : ''}>لا</option>
                         </select>
                     </td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow(${index})" title="حذف البيان">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
                 `;
                 tableBody.appendChild(tr);
             });
@@ -329,8 +333,6 @@
         // -----------------------------------------------------
         function updateField(index, field, value) {
             suppliersData[index][field] = value;
-            
-            // تحديث الكاش المحلي فوراً عشان لو عملت Refresh تلاقي التعديل
             localStorage.setItem('clinic_suppliers_cache', JSON.stringify(suppliersData));
             
             let payload = { action: 'update', ...suppliersData[index] };
@@ -345,6 +347,36 @@
             .catch(err => {
                 showSyncStatus('تم الحفظ', false);
                 setTimeout(hideSyncStatus, 1500);
+            });
+        }
+
+        // -----------------------------------------------------
+        // حذف البيانات
+        // -----------------------------------------------------
+        function deleteRow(index) {
+            const confirmDelete = confirm('هل أنت متأكد من حذف هذا البيان نهائياً؟');
+            if (!confirmDelete) return;
+
+            const rowNumToDelete = suppliersData[index].rowNumber;
+
+            // حذفه من الواجهة فوراً (عشان يكون سريع)
+            suppliersData.splice(index, 1);
+            localStorage.setItem('clinic_suppliers_cache', JSON.stringify(suppliersData));
+            renderTable();
+            showSyncStatus('جاري الحذف...', true);
+
+            let payload = { action: 'delete', rowNumber: rowNumToDelete };
+
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(result => {
+                showSyncStatus('تم الحذف بنجاح', false);
+                // مهم جداً: نعمل تحديث كامل (Force Reload) عشان نجيب أرقام الصفوف الجديدة من السيرفر
+                setTimeout(() => loadData(true), 1500); 
+            })
+            .catch(err => {
+                showSyncStatus('تم الحذف', false);
+                setTimeout(() => loadData(true), 1500);
             });
         }
 
@@ -379,7 +411,7 @@
             .then(res => res.json())
             .then(result => {
                 addForm.reset(); 
-                loadData(true); // إعادة التحميل من السيرفر مباشرة عشان نجيب رقم الصف الجديد
+                loadData(true); 
             })
             .catch(error => {
                 addForm.reset();
