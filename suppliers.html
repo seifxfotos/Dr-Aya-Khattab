@@ -3,287 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المستهلكات والموردين | عيادة د. آية خطاب</title>
+    <title>المستهلكات والموردين - د. آية خطاب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-
-        /* المتغيرات الأساسية - متطابقة مع ألوان موقعك */
+        /* نفس المتغيرات والألوان من الكود الأصلي للموقع */
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-main: #ffffff;
-            --text-muted: #a0a0a0;
-            
-            /* ألوان النيون المميزة من صور الموقع */
-            --accent-blue: #00a8cc; /* الأزرق السماوي */
-            --accent-green: #7dc544; /* الأخضر الزاهي */
-            --accent-red: #e74c3c;
-            --accent-yellow: #f1c40f;
-            
-            --border-dark: #333333;
-            --input-bg: #121212;
-            
-            --shadow-neon-blue: 0 0 10px rgba(0, 168, 204, 0.2);
-            --shadow-neon-green: 0 0 10px rgba(125, 197, 68, 0.2);
-        }
-
-        /* وضع اللايت مود (لو المستخدم حابب يعكس) */
-        body.light-mode {
-            --bg-color: #f0f2f5;
+            --primary-blue: #0093D0; 
+            --primary-green: #8CC63F; 
+            --bg-color: #f4f7f6; 
             --card-bg: #ffffff;
-            --text-main: #2c3e50;
-            --border-dark: #cccccc;
-            --input-bg: #f9f9f9;
+            --text-dark: #2c3e50; 
+            --danger: #e74c3c; 
+            --border: #e1e8ed; 
+            --input-bg: #ffffff; 
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif; /* خط متناسق مع التصميمات العربية الحديثة */
+        :root[data-theme="dark"] {
+            --bg-color: #121212; 
+            --card-bg: #1e1e1e; 
+            --text-dark: #e0e0e0;
+            --border: #333333; 
+            --input-bg: #2c2c2c; 
+            --primary-blue: #0082b8; 
+            --primary-green: #7bb530;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            transition: all 0.3s ease;
-            min-height: 100vh;
-            padding-bottom: 60px;
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px 20px 100px 20px; 
+            color: var(--text-dark); 
+            transition: 0.3s; 
         }
+        
+        .container { max-width: 1250px; margin: 0 auto; }
 
-        /* حاوية الصفحة الرئيسية */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+        /* الهيدر المتدرج */
+        .header-section { 
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
         }
-
-        /* الهيدر الأخضر العلوي */
-        .main-header {
-            background: linear-gradient(90deg, #6bb344, #88c751);
-            border-radius: 12px;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #fff;
-            box-shadow: var(--shadow-neon-green);
-        }
-
-        .main-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
+        .header-section h1 { margin: 0; font-size: 24px; }
+        
         .nav-links a {
-            color: #fff;
+            color: white;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             padding: 8px 15px;
-            background-color: rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.2);
             border-radius: 8px;
+            margin-right: 10px;
             transition: 0.3s;
+            border: 1px solid transparent;
         }
-
         .nav-links a:hover, .nav-links a.active {
-            background-color: rgba(0,0,0,0.4);
-            box-shadow: 0 0 8px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.3);
+            border-color: white;
         }
 
-        /* تصميم الكروت (البطاقات الداكنة) */
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-dark);
-            border-radius: 12px;
-            padding: 25px;
-            position: relative;
+        /* زر الدارك مود مطابق للكود بتاعك */
+        .theme-switch-wrapper { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 100; 
+            background: var(--card-bg); 
+            padding: 8px 12px; 
+            border-radius: 30px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            border: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            transition: 0.3s; 
+        }
+        .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
+        .theme-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+        .slider .fa-sun { color: #ffeb3b; font-size: 14px; z-index: 1;}
+        .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
+        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2; }
+        input:checked + .slider { background-color: #34495e; }
+        input:checked + .slider:before { transform: translateX(28px); }
+
+        /* الكروت والمدخلات */
+        .card-panel { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            margin-bottom: 25px; 
+            transition: 0.3s; 
+        }
+        .card-panel h2 { 
+            margin-top: 0; 
+            font-size: 17px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 10px;
+        }
+        
+        .add-grid { 
+            display: grid; 
+            grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 1fr 0.8fr; 
+            gap: 8px; 
+            align-items: end; 
+        }
+        @media (max-width: 900px) {
+            .add-grid { grid-template-columns: 1fr 1fr; }
+            .btn-add { grid-column: 1 / -1; }
         }
 
-        /* إضافة لمسة الإطار الأزرق زي كارت المريض */
-        .card.bordered-blue {
-            border: 1px solid var(--accent-blue);
-            box-shadow: var(--shadow-neon-blue);
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 13px; }
+        .input-group input { 
+            padding: 8px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            font-family: 'Cairo'; 
+            font-size: 13px; 
+            outline: none; 
+            transition: 0.3s; 
+            background-color: var(--input-bg); 
+            color: var(--text-dark); 
         }
+        .input-group input:focus { border-color: var(--primary-blue); }
+        
+        .btn-add { 
+            background-color: var(--primary-blue); 
+            color: white; 
+            border: none; 
+            padding: 9px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-family: 'Cairo'; 
+        }
+        .btn-add:hover { background-color: #007bb5; }
+        .btn-add:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
-        .card-header {
-            color: var(--accent-blue);
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* الجدول مطابق لجدول المواعيد */
+        .schedule-table { 
+            width: 100%; 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            border-collapse: collapse; 
+            margin-bottom: 20px; 
         }
+        .schedule-table th, .schedule-table td { 
+            padding: 12px 10px; 
+            text-align: right; 
+            border-bottom: 1px solid var(--border); 
+            vertical-align: middle; 
+            font-size: 14px;
+        }
+        .schedule-table th { 
+            background-color: var(--primary-blue); 
+            color: white; 
+            font-weight: 700; 
+            font-size: 15px;
+        }
+        .schedule-table tr:last-child td { border-bottom: none; }
+        .schedule-table tbody tr:hover { background-color: rgba(0, 147, 208, 0.05); }
 
-        /* تصميم الفورم (نموذج الإدخال) */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: end;
+        .badge { 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            font-weight: 700; 
+            color: white; 
+            display: inline-block;
+            background-color: var(--primary-green);
         }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-group label {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .input-group input {
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-dark);
-            color: var(--text-main);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .input-group input:focus {
-            border-color: var(--accent-green);
-            box-shadow: var(--shadow-neon-green);
-        }
-
-        /* أزرار الأكشن */
-        .btn {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            color: #fff;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .btn-blue {
-            background-color: var(--accent-blue);
-        }
-        .btn-blue:hover {
-            background-color: #008ba8;
-            box-shadow: var(--shadow-neon-blue);
-        }
-
-        /* تصميم الجدول (متطابق مع صفحة العيادة اليومية) */
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid var(--border-dark);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-        }
-
-        thead tr {
-            background-color: var(--accent-blue);
-            color: #fff;
-        }
-
-        th {
-            padding: 15px 10px;
-            font-weight: 700;
-            font-size: 0.95rem;
-        }
-
-        td {
-            padding: 12px 10px;
-            border-bottom: 1px solid var(--border-dark);
-            color: var(--text-main);
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        tbody tr {
-            background-color: var(--card-bg);
-            transition: 0.2s;
-        }
-
-        tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        /* زر الدارك مود السفلي */
-        .theme-switch-wrapper {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-        }
-
-        .theme-switch {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-dark);
-            color: var(--text-main);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: 0.3s;
-        }
-
-        .theme-switch:hover {
-            border-color: var(--accent-blue);
-        }
-
-        /* حالة التحميل */
-        .loading-text {
-            color: var(--accent-blue);
-            font-weight: 700;
-            padding: 20px;
-        }
+        
+        .loading-text { text-align: center; font-weight: bold; padding: 20px !important; color: var(--primary-blue); }
     </style>
 </head>
 <body>
 
+    <!-- زر الدارك مود مطابق تماماً -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></div>
+        </label>
+    </div>
+
     <div class="container">
-        <!-- الهيدر الأخضر -->
-        <header class="main-header">
+        <!-- الهيدر -->
+        <div class="header-section">
             <div>
-                <h1>المستهلكات والموردين</h1>
-                <span style="font-size: 0.85rem; opacity: 0.9;">تنظيم فواتير المستهلكات وتوريدات العيادة</span>
+                <h1>إدارة المستهلكات والموردين</h1>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم وتتبع فواتير التوريدات <i class="fa-solid fa-boxes-packing"></i></span>
             </div>
-            <nav class="nav-links">
+            <div class="nav-links">
                 <a href="all.html">الرئيسية</a>
                 <a href="suppliers.html" class="active">الموردين</a>
                 <a href="pharma.html">الشركات</a>
-            </nav>
-        </header>
-
-        <!-- كارت الإضافة (بإطار أزرق نيون) -->
-        <div class="card bordered-blue">
-            <div class="card-header">
-                <span>➕ إضافة بيان توريد جديد</span>
             </div>
-            
+        </div>
+
+        <!-- إضافة توريد جديد -->
+        <div class="card-panel">
+            <h2 style="color: var(--primary-blue);"><i class="fa-solid fa-cart-plus"></i> إضافة بيان توريد جديد</h2>
             <form id="addForm">
-                <div class="form-grid">
+                <div class="add-grid">
                     <div class="input-group">
                         <label>أسم المورد</label>
                         <input type="text" id="supplierName" placeholder="أدخل اسم المورد..." required>
@@ -297,7 +236,7 @@
                         <input type="number" id="itemCount" placeholder="0" required>
                     </div>
                     <div class="input-group">
-                        <label>سعر الصنف (الإجمالي)</label>
+                        <label>سعر الصنف</label>
                         <input type="number" id="itemPrice" placeholder="0.00" required>
                     </div>
                     <div class="input-group">
@@ -308,65 +247,52 @@
                         <label>تاريخ الصادر</label>
                         <input type="date" id="dateOut">
                     </div>
-                    <button type="submit" class="btn btn-blue" id="submitBtn">حفظ البيانات</button>
+                    <button type="submit" class="btn-add" id="submitBtn"><i class="fa-solid fa-plus"></i> إضافة</button>
                 </div>
             </form>
         </div>
 
-        <!-- كارت عرض البيانات (الجدول) -->
-        <div class="card">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>أسم المورد</th>
-                            <th>أسم الصنف</th>
-                            <th>عدد الصنف</th>
-                            <th>سعر الصنف</th>
-                            <th>تاريخ وارد</th>
-                            <th>تاريخ صادر</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr>
-                            <td colspan="6" class="loading-text">جاري مزامنة البيانات...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- جدول البيانات -->
+        <div class="card-panel" style="padding: 0; background: transparent; box-shadow: none;">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>أسم المورد</th>
+                        <th>أسم الصنف</th>
+                        <th>عدد الصنف</th>
+                        <th>سعر الصنف</th>
+                        <th>تاريخ وارد</th>
+                        <th>تاريخ صادر</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="6" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- زر تبديل الوضع (موجود أسفل اليمين زي كارت المريض) -->
-    <div class="theme-switch-wrapper">
-        <button class="theme-switch" id="themeToggle" title="تبديل الإضاءة">🌙</button>
-    </div>
-
     <script>
-        // رابط API الخاص بك
+        // رابط API الخاص بك - تأكد منه
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyh8jKpXbL42YwG_eb2FD9YtTl6diJ0JH5y2hl5yN6VpXnbpsi0dlkkhBzgPpCjIXVr/exec';
 
         // -----------------------------------------------------
-        // 1. نظام الدارك/لايت مود 
+        // 1. نظام الدارك مود (نفس كودك بالظبط)
         // -----------------------------------------------------
-        const themeToggleBtn = document.getElementById('themeToggle');
-        const savedTheme = localStorage.getItem('clinicTheme');
-
-        // الوضع الافتراضي هو الدارك مود بناءً على تصميمك
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-mode');
-            themeToggleBtn.textContent = '☀️';
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        if (localStorage.getItem('theme') === 'dark') { 
+            document.documentElement.setAttribute('data-theme', 'dark'); 
+            toggleSwitch.checked = true; 
         }
-
-        themeToggleBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            localStorage.setItem('clinicTheme', isLight ? 'light' : 'dark');
-            themeToggleBtn.textContent = isLight ? '☀️' : '🌙';
+        toggleSwitch.addEventListener('change', (e) => { 
+            document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light'); 
+            localStorage.setItem('theme', e.target.checked ? 'dark' : 'light'); 
         });
 
         // -----------------------------------------------------
-        // 2. جلب البيانات وعرضها في الجدول (GET)
+        // 2. جلب البيانات وعرضها في الجدول
         // -----------------------------------------------------
         function loadData() {
             const tableBody = document.getElementById('tableBody');
@@ -377,7 +303,7 @@
                     tableBody.innerHTML = ''; 
                     
                     if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted);">لا توجد بيانات مسجلة بعد.</td></tr>';
+                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
                         return;
                     }
 
@@ -389,10 +315,10 @@
 
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td style="color: var(--accent-blue);">${row['أسم المورد'] || '-'}</td>
-                            <td>${row['أسم الصنف'] || '-'}</td>
-                            <td><span style="background:#2ecc71; color:#000; padding:2px 8px; border-radius:12px;">${row['عدد الصنف'] || '-'}</span></td>
-                            <td style="color: var(--accent-yellow);">${row['سعر الصنف'] || '-'} ج.م</td>
+                            <td style="font-weight:bold; color:var(--primary-blue)">${row['أسم المورد'] || '-'}</td>
+                            <td style="font-weight:600;">${row['أسم الصنف'] || '-'}</td>
+                            <td><span class="badge">${row['عدد الصنف'] || '-'}</span></td>
+                            <td style="font-weight:bold;">${row['سعر الصنف'] || '-'} ج.م</td>
                             <td>${formatDate(row['تاريخ وارد'])}</td>
                             <td>${formatDate(row['تاريخ صادر'])}</td>
                         `;
@@ -400,7 +326,7 @@
                     });
                 })
                 .catch(error => {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="color:var(--accent-red);">حدث خطأ في جلب البيانات من الخادم.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="6" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بقاعدة البيانات.</td></tr>';
                     console.error('Error fetching data:', error);
                 });
         }
@@ -408,7 +334,7 @@
         loadData();
 
         // -----------------------------------------------------
-        // 3. إرسال البيانات من الفورم للشيت (POST)
+        // 3. إرسال البيانات من الفورم
         // -----------------------------------------------------
         const addForm = document.getElementById('addForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -416,9 +342,8 @@
         addForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
             
-            const originalBtnText = submitBtn.textContent;
-            submitBtn.textContent = 'جاري الحفظ... ⏳';
-            submitBtn.style.opacity = '0.7';
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> حفظ...';
             submitBtn.disabled = true;
 
             const formData = {
@@ -438,19 +363,18 @@
             .then(result => {
                 if(result.status === 'success') {
                     addForm.reset(); 
-                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading-text">جاري تحديث الجدول...</td></tr>';
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...</td></tr>';
                     loadData(); 
                 }
             })
             .catch(error => {
-                console.error('Data sent (CORS expected):', error);
+                // تجاوز خطأ الـ CORS المعتاد في جوجل سكريبت
                 addForm.reset();
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading-text">جاري تحديث الجدول...</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...</td></tr>';
                 setTimeout(loadData, 1500); 
             })
             .finally(() => {
-                submitBtn.textContent = originalBtnText;
-                submitBtn.style.opacity = '1';
+                submitBtn.innerHTML = originalBtnHtml;
                 submitBtn.disabled = false;
             });
         });
