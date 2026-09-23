@@ -96,7 +96,7 @@
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* زر فتح الشات */
+        /* زر الشات */
         .chat-toggle-btn {
             position: fixed; bottom: 25px; right: 25px; z-index: 1000;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
@@ -119,7 +119,6 @@
             z-index: 1000; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right;
         }
         
-        /* وضع الـ Full Screen */
         .chat-box-wrapper.fullscreen {
             bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important;
             max-width: 100vw !important; border-radius: 0; z-index: 9999;
@@ -128,7 +127,6 @@
         .chat-box-wrapper.fullscreen .msg-text-content { font-size: 17px; }
         .chat-box-wrapper.fullscreen .message-content { padding: 12px 18px; }
         
-        /* هيدر الشات */
         .chat-header {
             background: var(--primary-blue); color: white; padding: 12px 20px;
             display: flex; justify-content: space-between; align-items: center; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
@@ -146,21 +144,18 @@
         }
         .icon-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
 
-        /* منطقة الرسائل */
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth;}
         
-        /* هيكل الرسالة الجديد */
         .message-row { display: flex; flex-direction: column; margin-bottom: 15px; width: 100%; position: relative; }
-        .message-row.doctor { align-items: flex-start; } /* يمين */
-        .message-row.reception { align-items: flex-end; } /* يسار */
+        .message-row.doctor { align-items: flex-start; } 
+        .message-row.reception { align-items: flex-end; } 
 
         .msg-flex { display: flex; align-items: center; gap: 8px; max-width: 85%; }
-        .msg-flex.reception { flex-direction: row-reverse; } /* عشان الأزرار تيجي الناحية التانية */
+        .msg-flex.reception { flex-direction: row-reverse; } 
 
         .message-content {
             padding: 8px 14px; border-radius: 12px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
-        /* ذيل الرسالة (Tails) */
         .message-content::before { content: ""; position: absolute; top: 0; border: 10px solid transparent; }
         
         .message-content.doctor { background: var(--primary-blue); color: white; border-top-right-radius: 0; }
@@ -173,7 +168,6 @@
         .msg-text-content { font-size: 14.5px; line-height: 1.5; word-break: break-word; }
         .msg-edited-tag { font-size: 10px; opacity: 0.7; font-style: italic; margin-right: 6px; }
 
-        /* أزرار التعديل والحذف (لا تختفي) */
         .msg-actions { display: flex; gap: 5px; opacity: 0; visibility: hidden; transition: 0.2s ease; }
         .msg-flex:hover .msg-actions { opacity: 1; visibility: visible; }
         .msg-actions button {
@@ -184,13 +178,11 @@
         .msg-actions button:hover { background: var(--primary-blue); color: white; transform: scale(1.1); border-color: transparent;}
         .msg-actions button.delete-btn:hover { background: var(--danger); color: white; }
 
-        /* الوقت وعلامة السين (خارج الرسالة) */
         .message-meta { display: flex; align-items: center; gap: 4px; font-size: 11px; margin-top: 4px; opacity: 0.6; padding: 0 5px; color: var(--text-dark); font-weight: 600;}
         .msg-status i { font-size: 13px; }
         .msg-status i.fa-check-double { color: #3498db; opacity: 1; text-shadow: 0 0 1px rgba(0,0,0,0.1); }
         .msg-status i.fa-check { opacity: 0.8; }
 
-        /* حقل الإدخال الاحترافي */
         .chat-input-area {
             padding: 12px 15px; background: var(--card-bg); display: flex; gap: 10px; border-top: 1px solid var(--glass-border); align-items: center; position: relative; z-index: 10;
         }
@@ -268,7 +260,7 @@
         </div>
     </div>
 
-    <!-- زر فتح الشات -->
+    <!-- زر الشات -->
     <button class="chat-toggle-btn" onclick="toggleChat()" title="محادثة عيادة د.آية">
         <i class="fa-solid fa-comments"></i>
         <span class="chat-badge" id="chatBadge">0</span>
@@ -306,14 +298,17 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
-  authDomain: "clinic-system-fe2e4.firebaseapp.com",
-  databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
-  projectId: "clinic-system-fe2e4",
-  storageBucket: "clinic-system-fe2e4.firebasestorage.app",
-  messagingSenderId: "528745148277",
-  appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
+        // ==========================================
+        // 1. إعدادات Firebase الخاصة بك
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
+            authDomain: "clinic-system-fe2e4.firebaseapp.com",
+            databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
+            projectId: "clinic-system-fe2e4",
+            storageBucket: "clinic-system-fe2e4.firebasestorage.app",
+            messagingSenderId: "528745148277",
+            appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -321,11 +316,38 @@ const firebaseConfig = {
         const chatRef = database.ref('clinic_chat');
 
         // ==========================================
-        // 2. المتغيرات والدارك مود والتكبير
+        // 2. الصوت الذكي (يعمل بدون ملفات خارجية)
+        // ==========================================
+        function playNotificationSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // نغمة رقيقة
+                oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {
+                console.log("Audio not allowed yet");
+            }
+        }
+
+        // ==========================================
+        // 3. المتغيرات والدارك مود والتكبير
         // ==========================================
         let chatMessagesData = [];
         let editingMsgId = null; 
         let isWindowFocused = document.hasFocus();
+        let initialLoadDone = false; // لمنع تشغيل الصوت عند تحميل الصفحة لأول مرة
 
         window.addEventListener('focus', () => { isWindowFocused = true; checkAndMarkSeen(); });
         window.addEventListener('blur', () => { isWindowFocused = false; });
@@ -341,7 +363,6 @@ const firebaseConfig = {
             else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); }
         });
 
-        // دالة التكبير والتصغير (Full Screen)
         function toggleFullScreen() {
             const chatBox = document.getElementById('chatBox');
             const icon = document.getElementById('fullscreenIcon');
@@ -349,17 +370,14 @@ const firebaseConfig = {
             
             if (chatBox.classList.contains('fullscreen')) {
                 icon.classList.replace('fa-expand', 'fa-compress');
-                document.body.style.overflow = 'hidden'; // لمنع سكرول الصفحة الخلفية
+                document.body.style.overflow = 'hidden'; 
             } else {
                 icon.classList.replace('fa-compress', 'fa-expand');
                 document.body.style.overflow = '';
             }
-            setTimeout(scrollToBottom, 300); // للنزول لتحت بعد انتهاء الأنيميشن
+            setTimeout(scrollToBottom, 300); 
         }
 
-        // ==========================================
-        // 3. وظائف الشات والسين والتعديل
-        // ==========================================
         function toggleChat() {
             const box = document.getElementById('chatBox');
             const isHidden = box.style.display !== 'flex';
@@ -384,10 +402,26 @@ const firebaseConfig = {
             
             chatRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                chatMessagesData = [];
+                let newMessages = [];
                 for (let key in data) {
-                    chatMessagesData.push({ id: key, ...data[key] });
+                    newMessages.push({ id: key, ...data[key] });
                 }
+
+                // فحص هل فيه رسالة جديدة واصلة من الطرف التاني والشات مقفول أو مش Active
+                if (initialLoadDone && newMessages.length > chatMessagesData.length) {
+                    let lastMsg = newMessages[newMessages.length - 1];
+                    let currentRole = document.getElementById('userRole').value;
+                    let isBoxOpen = document.getElementById('chatBox').style.display === 'flex';
+
+                    // لو الرسالة مش بتاعتي (جاية من الطرف التاني)، شغل الصوت التنبيهي فوراً
+                    if (lastMsg.role !== currentRole) {
+                        playNotificationSound();
+                    }
+                }
+
+                chatMessagesData = newMessages;
+                initialLoadDone = true;
+
                 renderMessages(chatMessagesData);
                 checkAndMarkSeen(); 
             });
@@ -430,14 +464,12 @@ const firebaseConfig = {
                 let isMe = msg.role === currentRole;
                 let senderTitle = msg.role === 'doctor' ? 'د. آية خطاب' : 'الريسبشن';
                 
-                // علامة السين (خارج الرسالة الآن)
                 let statusIcon = '';
                 if (isMe) {
                     statusIcon = msg.status === 'seen' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-check"></i>';
                 }
                 let statusClass = msg.status === 'seen' ? 'seen' : '';
 
-                // أزرار التعديل والحذف مدمجة داخل الـ Flex لمنع اختفائها
                 let actionsHtml = '';
                 if (isMe) {
                     actionsHtml = `
@@ -469,7 +501,6 @@ const firebaseConfig = {
                 container.appendChild(div);
             });
 
-            // تحديث شارة التنبيهات
             let lastSeenCount = parseInt(localStorage.getItem('last_seen_msg_count') || '0');
             const badge = document.getElementById('chatBadge');
 
