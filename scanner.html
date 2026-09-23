@@ -2,7 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <!-- إعدادات هامة جداً لمنع الزووم المزعج في الموبايل وجعل التصميم متجاوب -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>سكانر الكروت - د. آية خطاب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -25,7 +24,6 @@
             font-family: 'Cairo', sans-serif; 
             background: var(--bg); 
             margin: 0; 
-            /* مسافة سفلية عشان زرار الحفظ العائم ميغطيش على حاجة */
             padding: 15px 15px 90px 15px; 
             color: var(--text); 
         }
@@ -43,7 +41,7 @@
             border: 1px solid var(--border);
         }
 
-        /* قسم الكاميرا للموبايل */
+        /* قسم الكاميرا */
         .camera-section { text-align: center; }
         .upload-btn { 
             background: var(--primary-blue); 
@@ -119,7 +117,7 @@
             border-radius: 8px; 
             font-family: 'Cairo'; 
             font-weight: 600;
-            font-size: 16px; /* 16px تمنع زووم الآيفون */
+            font-size: 16px; 
             box-sizing: border-box; 
             background-color: #fafbfc;
         }
@@ -128,7 +126,7 @@
         .row { display: flex; gap: 10px; }
         .row .form-group { flex: 1; }
 
-        /* زر الحفظ العائم (Sticky Bottom Bar) للموبايل */
+        /* الشريط السفلي العائم */
         .sticky-footer {
             position: fixed;
             bottom: 0;
@@ -154,7 +152,7 @@
             border-radius: 8px; 
             font-family: 'Cairo'; 
             font-weight: 800; 
-            font-size: 18px; 
+            font-size: 20px; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -162,9 +160,9 @@
             box-shadow: 0 4px 15px rgba(140, 198, 63, 0.3);
             cursor: pointer;
         }
-        .btn-save:active { transform: scale(0.98); } /* تأثير ضغطة الزرار */
+        .btn-save:active { transform: scale(0.98); }
 
-        /* توست الإشعارات */
+        /* التوست (الإشعارات) */
         .toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: #fff; padding: 12px 20px; border-radius: 30px;
@@ -181,7 +179,7 @@
     <!-- الإشعارات -->
     <div id="appToast" class="toast">
         <i id="toastIcon" class="fa-solid fa-check-circle"></i>
-        <span id="toastMsg">تم الإرسال ⚡</span>
+        <span id="toastMsg">تم الإرسال</span>
     </div>
 
     <div class="header">
@@ -245,16 +243,16 @@
         </form>
     </div>
 
-    <!-- زر الحفظ العائم في أسفل الموبايل -->
+    <!-- زر كرت جديد -->
     <div class="sticky-footer">
-        <button type="button" class="btn-save" id="saveBtn" onclick="submitForm()">
-            <i class="fa-solid fa-bolt"></i> حفظ وتصوير التالي
+        <button type="button" class="btn-save" onclick="saveAndNewCard()">
+            <i class="fa-solid fa-plus-circle"></i> كرت جديد
         </button>
     </div>
 
     <script>
-        // اللينك الجديد بتاع الشيت المؤقت
-        const SCRIPT_URL_TEMP = "https://script.google.com/macros/s/AKfycbzpVd7GaaRKeg9j8Xw_QCm_hLi32Cjqs17BK-dmYJDM9qkJc9ibBfrTNJkVCLr5AEabYQ/exec";
+        // الرابط الجديد الذي تم إرساله
+        const SCRIPT_URL_TEMP = "https://script.google.com/macros/s/AKfycbw7Qx51J7fe6mGnR1ilh05lA2fDe2SCzOVfF0KX0OCTrRVM4lOktl2DrdWQ-EsgksIdfg/exec";
         
         const cardImage = document.getElementById('cardImage');
         const previewContainer = document.getElementById('previewContainer');
@@ -266,12 +264,12 @@
             const toast = document.getElementById('appToast');
             document.getElementById('toastMsg').innerText = msg;
             toast.className = `toast ${type}`;
-            document.getElementById('toastIcon').className = type === 'success' ? 'fa-solid fa-bolt' : 'fa-solid fa-triangle-exclamation';
+            document.getElementById('toastIcon').className = type === 'success' ? 'fa-solid fa-check-circle' : 'fa-solid fa-triangle-exclamation';
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000); // بيختفي بسرعة
+            setTimeout(() => toast.classList.remove('show'), 2500); 
         }
 
-        // 1. عرض الصورة عند التقاطها
+        // عرض الصورة
         cardImage.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -287,7 +285,7 @@
             }
         });
 
-        // 2. الذكاء الاصطناعي للاستخراج (اختياري لو خط الدكتور واضح)
+        // الذكاء الاصطناعي
         async function extractText() {
             if (!currentImageFile) return;
             
@@ -330,16 +328,16 @@
             }
         }
 
-        // 3. دالة "أضرب واجري" (Optimistic Save / Background Sync)
-        function submitForm() {
+        // الدالة لترحيل البيانات في الخلفية وتفريغ الشاشة فوراً
+        function saveAndNewCard() {
             const nameInput = document.getElementById('p_name');
             if(!nameInput.value.trim()) {
-                showToast("يرجى إدخال اسم المريض على الأقل", "error");
+                showToast("يرجى كتابة اسم المريض لفتح كرت جديد", "error");
                 nameInput.focus();
                 return;
             }
 
-            // تجميع البيانات
+            // 1. تجميع البيانات
             const payload = {
                 name: nameInput.value,
                 phone: document.getElementById('p_phone').value,
@@ -349,25 +347,23 @@
                 medical_notes: document.getElementById('p_notes').value
             };
 
-            // ---- اللقطة السحرية ⚡ ----
-            // 1. تفريغ الفورم والشاشة فوراً في (صفر ثانية) عشان الموبايل يكون جاهز للكرت اللي بعده
+            // 2. تصفير الشاشة فوراً
             document.getElementById('archiveForm').reset();
             previewContainer.style.display = 'none';
             uploadLabel.style.display = 'flex';
             currentImageFile = null;
             document.getElementById('cardImage').value = '';
+            document.getElementById('ocrText').innerText = '';
+            document.getElementById('ocrText').style.display = 'none';
             
-            // 2. إعطاء إشعار سريع للمستخدم إن الموضوع تم
-            showToast("تم الإرسال ⚡ صور اللي بعده", "success");
-            
-            // 3. رفع الشاشة لفوق عند الكاميرا أوتوماتيك
+            // 3. التمرير لأعلى الشاشة لإشعار المستخدم وإعداد الكاميرا
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast("جاهز للكرت الجديد! ⚡", "success");
 
-            // 4. إرسال البيانات لجوجل شيت "في الخلفية بصمت تام" من غير ما نوقف الشاشة
+            // 4. إرسال الكرت القديم في الخلفية
             fetch(SCRIPT_URL_TEMP, { method: "POST", body: JSON.stringify(payload) })
             .catch(err => {
-                // لو النت قطع وقتها، هيدي تنبيه للمستخدم
-                showToast("⚠️ لم يتم حفظ الكرت الأخير بسبب مشكلة بالإنترنت", "error");
+                console.error("خطأ في الاتصال بالإنترنت");
             });
         }
     </script>
