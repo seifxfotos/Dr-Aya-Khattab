@@ -1,1 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شركات الدواء - د. آية خطاب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0093D0; --primary-green: #8CC63F; --bg-color: #f4f7f6; 
+            --card-bg: #ffffff; --text-dark: #2c3e50; --danger: #e74c3c; 
+            --border: #e1e8ed; --input-bg: #ffffff; --warning: #f39c12;
+        }
+        :root[data-theme="dark"] {
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-dark: #e0e0e0;
+            --border: #333333; --input-bg: #2c2c2c; --primary-blue: #0082b8; --primary-green: #7bb530;
+        }
 
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .sync-indicator { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background-color: var(--primary-blue); color: white; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: 0.3s; }
+        .sync-indicator.show { opacity: 1; visibility: visible; }
+        .sync-indicator i.spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .header-section { background: linear-gradient(135deg, var(--primary-blue), var(--warning)); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header-section h1 { margin: 0; font-size: 24px; }
+        .nav-links a { color: white; text-decoration: none; font-weight: 700; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 8px; margin-right: 10px; transition: 0.3s; border: 1px solid transparent; }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.3); border-color: white; }
+
+        .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 100; background: var(--card-bg); padding: 8px 12px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; align-items: center; transition: 0.3s; }
+        .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
+        .theme-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+        .slider .fa-sun { color: #ffeb3b; font-size: 14px; z-index: 1;}
+        .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
+        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2; }
+        input:checked + .slider { background-color: #34495e; }
+        input:checked + .slider:before { transform: translateX(28px); }
+
+        .card-panel { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; transition: 0.3s; }
+        .card-panel h2 { margin-top: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        
+        .add-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; align-items: end; }
+        
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 12px; }
+        .input-group label span.req { color: var(--danger); }
+        .input-group input, .input-group select { padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 13px; outline: none; transition: 0.3s; background-color: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box;}
+        .input-group input:focus, .input-group select:focus { border-color: var(--warning); }
+        .date-picker-input { cursor: pointer; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23f39c12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>'); background-repeat: no-repeat; background-position: left 10px center; padding-left: 30px !important;}
+        
+        .readonly-field { background-color: rgba(0,0,0,0.05) !important; cursor: not-allowed; font-weight: bold; }
+        :root[data-theme="dark"] .readonly-field { background-color: rgba(255,255,255,0.05) !important; }
+
+        .btn-add { background-color: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; grid-column: 1 / -1; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-add:hover { background-color: #007bb5; }
+        .btn-add:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+        .table-responsive { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        .schedule-table th, .schedule-table td { padding: 8px 4px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 13px; padding: 12px 6px;}
+        
+        .inline-input { width: 100%; min-width: 60px; padding: 6px 4px; border: 1px solid transparent; border-radius: 6px; background-color: transparent; color: var(--text-dark); font-family: 'Cairo'; font-size: 13px; font-weight: 600; text-align: center; transition: 0.3s; box-sizing: border-box; margin-bottom: 3px;}
+        .inline-input:hover:not(:read-only) { border-color: var(--border); background-color: rgba(0, 147, 208, 0.05); }
+        .inline-input:focus:not(:read-only) { border-color: var(--warning); background-color: var(--input-bg); outline: none; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
+        
+        .count-input { color: var(--primary-green); font-weight: 700; }
+        .price-input { color: var(--primary-blue); font-weight: 700; }
+        .discount-input { color: var(--warning); font-weight: 700; }
+        .pay-amount { color: #8e44ad; font-weight: bold; border-bottom: 1px dashed var(--border) !important;}
+        .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 14px;}
+        .done-yes { color: var(--primary-green) !important; font-weight: bold; }
+        
+        .delete-btn { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; transition: 0.2s; padding: 5px; opacity: 0.8; }
+        .delete-btn:hover { transform: scale(1.1); opacity: 1; color: #c0392b; }
+
+        .loading-text { text-align: center; font-weight: bold; padding: 20px !important; color: var(--primary-blue); }
+    </style>
+</head>
+<body>
+
+    <div id="syncIndicator" class="sync-indicator">
+        <i id="syncIcon" class="fa-solid fa-spinner spin"></i> <span id="syncIndicatorText">جاري التحديث...</span>
+    </div>
+
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></div>
+        </label>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <div>
+                <h1>إدارة شركات الدواء</h1>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم وتتبع طلبيات الأدوية، الخصومات، والمديونيات <i class="fa-solid fa-pills"></i></span>
+            </div>
+            <div class="nav-links">
+                <a href="all.html">الرئيسية</a>
+                <a href="suppliers.html">الموردين</a>
+                <a href="pharma.html" class="active">الشركات</a>
+            </div>
+        </div>
+
+        <div class="card-panel">
+            <h2 style="color: var(--primary-blue);"><i class="fa-solid fa-cart-plus"></i> إضافة طلبية أدوية جديدة</h2>
+            <form id="addForm">
+                <div class="add-grid">
+                    <div class="input-group">
+                        <label>أسم الشركة <span class="req">*</span></label>
+                        <input type="text" id="companyName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>أسم المنتج <span class="req">*</span></label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>الكمية / العدد <span class="req">*</span></label>
+                        <input type="text" id="productCount" class="auto-calc" placeholder="مثال: 10 علب" required>
+                    </div>
+                    <div class="input-group">
+                        <label>سعر الجمهور <span class="req">*</span></label>
+                        <input type="number" id="publicPrice" class="auto-calc" placeholder="0.00" required>
+                    </div>
+                    <div class="input-group">
+                        <label>الخصم (%) <span class="req">*</span></label>
+                        <input type="number" id="discount" class="auto-calc" placeholder="مثال: 20" required>
+                    </div>
+                    <div class="input-group">
+                        <label>تاريخ وارد</label>
+                        <input type="text" id="dateIn" class="date-picker-input main-date" placeholder="اختياري">
+                    </div>
+
+                    <div class="input-group">
+                        <label>دفعة 1</label>
+                        <input type="number" id="pay1" class="auto-calc" placeholder="المبلغ">
+                    </div>
+                    <div class="input-group">
+                        <label>تاريخ تحصيل 1</label>
+                        <input type="text" id="collect1" class="date-picker-input main-date" placeholder="التاريخ">
+                    </div>
+
+                    <div class="input-group">
+                        <label>دفعة 2</label>
+                        <input type="number" id="pay2" class="auto-calc" placeholder="المبلغ">
+                    </div>
+                    <div class="input-group">
+                        <label>تاريخ تحصيل 2</label>
+                        <input type="text" id="collect2" class="date-picker-input main-date" placeholder="التاريخ">
+                    </div>
+
+                    <div class="input-group">
+                        <label>دفعة 3</label>
+                        <input type="number" id="pay3" class="auto-calc" placeholder="المبلغ">
+                    </div>
+                    <div class="input-group">
+                        <label>تاريخ تحصيل 3</label>
+                        <input type="text" id="collect3" class="date-picker-input main-date" placeholder="التاريخ">
+                    </div>
+
+                    <!-- الحسابات الآلية -->
+                    <div class="input-group">
+                        <label>علينا (المتبقي)</label>
+                        <input type="number" id="owed" class="readonly-field debt-input" readonly>
+                    </div>
+                    <div class="input-group">
+                        <label>خالص ؟</label>
+                        <input type="text" id="done" class="readonly-field" readonly value="لا">
+                    </div>
+
+                    <button type="submit" class="btn-add" id="submitBtn"><i class="fa-solid fa-plus"></i> حفظ</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">الشركة</th>
+                        <th style="width: 10%;">المنتج</th>
+                        <th style="width: 7%;">العدد</th>
+                        <th style="width: 7%;">سعر الجمهور</th>
+                        <th style="width: 5%;">الخصم(%)</th>
+                        <th style="width: 8%;">تاريخ وارد</th>
+                        <th style="width: 11%;">تحصيل 1 (مبلغ/تاريخ)</th>
+                        <th style="width: 11%;">تحصيل 2 (مبلغ/تاريخ)</th>
+                        <th style="width: 11%;">تحصيل 3 (مبلغ/تاريخ)</th>
+                        <th style="width: 8%;">علينا</th>
+                        <th style="width: 6%;">خالص</th>
+                        <th style="width: 4%;"><i class="fa-solid fa-trash"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
+
+    <script>
+        // رابط الـ API الجديد الخاص بشيت شركات الأدوية
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwayuyjy1UpSsIa5ajUYXBm4LuQmNhMsJqFWIyrWxpM83HSqoGcP6PdtCYApQePoxo/exec';
+        let pharmaData = []; 
+
+        flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
+
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        if (localStorage.getItem('theme') === 'dark') { 
+            document.documentElement.setAttribute('data-theme', 'dark'); toggleSwitch.checked = true; 
+        }
+        toggleSwitch.addEventListener('change', (e) => { 
+            document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light'); 
+            localStorage.setItem('theme', e.target.checked ? 'dark' : 'light'); 
+        });
+
+        function showSyncStatus(text, spin = true) {
+            document.getElementById('syncIndicatorText').innerText = text;
+            const icon = document.getElementById('syncIcon');
+            spin ? icon.classList.add('spin') : icon.classList.remove('spin');
+            if(!spin) icon.className = 'fa-solid fa-check';
+            else icon.className = 'fa-solid fa-spinner spin';
+            document.getElementById('syncIndicator').classList.add('show');
+        }
+        function hideSyncStatus() {
+            document.getElementById('syncIndicator').classList.remove('show');
+        }
+
+        const formatDate = (dateStr) => {
+            if(!dateStr) return '';
+            try { return dateStr.split('T')[0]; } catch(e) { return dateStr; }
+        };
+
+        // استخراج الرقم من نص الكمية (عشان لو كتب "10 علب" يسحب الـ 10 بس للعملية الحسابية)
+        function extractNumber(str) {
+            if (!str) return 1;
+            let matches = String(str).match(/[\d\.]+/);
+            return matches ? parseFloat(matches[0]) : 1;
+        }
+
+        // -----------------------------------------------------
+        // دالة الحساب الذكية (السعر بعد الخصم × العدد - الدفعات)
+        // -----------------------------------------------------
+        function calculateDebtCore(price, countStr, discount, p1, p2, p3) {
+            let pr = parseFloat(price) || 0;
+            let c = extractNumber(countStr); // استخراج العدد الذكي
+            let disc = parseFloat(discount) || 0;
+            
+            let pay1 = parseFloat(p1) || 0;
+            let pay2 = parseFloat(p2) || 0;
+            let pay3 = parseFloat(p3) || 0;
+
+            // التكلفة للقطعة الواحدة بعد الخصم
+            let unitCost = pr - (pr * (disc / 100));
+            // إجمالي التكلفة
+            let totalCost = unitCost * c;
+            
+            let owed = totalCost - (pay1 + pay2 + pay3);
+            if (owed < 0) owed = 0; // حماية من الأرقام السالبة
+            
+            let isDone = (owed === 0 && totalCost > 0) ? 'نعم' : 'لا';
+            
+            return { owed: owed.toFixed(2).replace(/\.00$/, ''), isDone: isDone };
+        }
+
+        function calculateFormDebt() {
+            let price = document.getElementById('publicPrice').value;
+            let count = document.getElementById('productCount').value;
+            let discount = document.getElementById('discount').value;
+            let p1 = document.getElementById('pay1').value;
+            let p2 = document.getElementById('pay2').value;
+            let p3 = document.getElementById('pay3').value;
+
+            let result = calculateDebtCore(price, count, discount, p1, p2, p3);
+            
+            document.getElementById('owed').value = result.owed;
+            const doneField = document.getElementById('done');
+            doneField.value = result.isDone;
+            
+            if (result.isDone === 'نعم') {
+                doneField.style.color = 'var(--primary-green)';
+            } else {
+                doneField.style.color = 'var(--text-dark)';
+            }
+        }
+        
+        document.querySelectorAll('.auto-calc').forEach(input => {
+            input.addEventListener('input', calculateFormDebt);
+        });
+
+        // -----------------------------------------------------
+        // تحميل البيانات وعرضها
+        // -----------------------------------------------------
+        function loadData(forceReload = false) {
+            const tableBody = document.getElementById('tableBody');
+            const today = new Date().toDateString();
+            const cachedData = localStorage.getItem('clinic_pharma_cache');
+            const cacheDate = localStorage.getItem('clinic_pharma_date');
+
+            if (!forceReload && cachedData && cacheDate === today) {
+                pharmaData = JSON.parse(cachedData);
+                renderTable();
+                showSyncStatus('تزامن سحابي...', true); 
+            } else if (!cachedData) {
+                tableBody.innerHTML = '<tr><td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات لأول مرة...</td></tr>';
+            }
+
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="12" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
+                        hideSyncStatus();
+                        return;
+                    }
+
+                    const newDataFormatted = data.map(item => ({
+                        rowNumber: item.rowNumber,
+                        companyName: item['أسم الشركة'] || '',
+                        productName: item['أسم المنتج'] || '',
+                        productCount: item['عدد المنتج'] || '',
+                        publicPrice: item['سعر المنتج الجمهور'] || '',
+                        discount: item['نسبة الخصم'] || '',
+                        dateIn: formatDate(item['تاريخ وارد']),
+                        pay1: item['دفعة 1'] || '',
+                        collect1: formatDate(item['تاريخ تحصيل 1']),
+                        pay2: item['دفعة 2'] || '',
+                        collect2: formatDate(item['تاريخ تحصيل 2']),
+                        pay3: item['دفعة 3'] || '',
+                        collect3: formatDate(item['تاريخ تحصيل 3']),
+                        owed: item['علينا'] || 0,
+                        done: item['خالص'] || 'لا'
+                    }));
+
+                    const newDataString = JSON.stringify(newDataFormatted);
+                    
+                    if (newDataString !== cachedData || cacheDate !== today || forceReload) {
+                        pharmaData = newDataFormatted;
+                        localStorage.setItem('clinic_pharma_cache', newDataString);
+                        localStorage.setItem('clinic_pharma_date', today);
+                        renderTable();
+                        if (cachedData && cacheDate === today && !forceReload) {
+                            showSyncStatus('تم تحديث بيانات جديدة', false);
+                            setTimeout(hideSyncStatus, 2000);
+                        } else { hideSyncStatus(); }
+                    } else { hideSyncStatus(); }
+                })
+                .catch(error => {
+                    if (!cachedData) tableBody.innerHTML = '<tr><td colspan="12" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
+                    hideSyncStatus();
+                });
+        }
+
+        // -----------------------------------------------------
+        // رسم الجدول
+        // -----------------------------------------------------
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            pharmaData.forEach((row, index) => {
+                const isDoneClass = row.done === 'نعم' ? 'done-yes' : '';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="inline-input" value="${row.companyName}" onchange="saveRow(${index}, 'companyName', this.value)"></td>
+                    <td><input type="text" class="inline-input" value="${row.productName}" onchange="saveRow(${index}, 'productName', this.value)"></td>
+                    <td><input type="text" class="inline-input count-input" value="${row.productCount}" oninput="calcRowDebt(${index}, 'productCount', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="number" class="inline-input price-input" value="${row.publicPrice}" oninput="calcRowDebt(${index}, 'publicPrice', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="number" class="inline-input discount-input" value="${row.discount}" oninput="calcRowDebt(${index}, 'discount', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="text" class="inline-input table-date" placeholder="وارد" value="${row.dateIn}" onchange="saveRow(${index}, 'dateIn', this.value)"></td>
+                    
+                    <td>
+                        <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay1}" oninput="calcRowDebt(${index}, 'pay1', this.value)" onchange="saveRow(${index})">
+                        <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect1}" onchange="saveRow(${index}, 'collect1', this.value)">
+                    </td>
+                    
+                    <td>
+                        <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay2}" oninput="calcRowDebt(${index}, 'pay2', this.value)" onchange="saveRow(${index})">
+                        <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect2}" onchange="saveRow(${index}, 'collect2', this.value)">
+                    </td>
+
+                    <td>
+                        <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay3}" oninput="calcRowDebt(${index}, 'pay3', this.value)" onchange="saveRow(${index})">
+                        <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect3}" onchange="saveRow(${index}, 'collect3', this.value)">
+                    </td>
+
+                    <td><input type="text" id="rowOwed_${index}" class="inline-input debt-input readonly-field" value="${row.owed}" readonly></td>
+                    <td><input type="text" id="rowDone_${index}" class="inline-input readonly-field ${isDoneClass}" value="${row.done}" readonly></td>
+                    
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow(${index})" title="حذف">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            flatpickr(".table-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
+        }
+
+        loadData();
+
+        // -----------------------------------------------------
+        // التعديل اللحظي جوه الجدول
+        // -----------------------------------------------------
+        function calcRowDebt(index, field, value) {
+            pharmaData[index][field] = value; 
+            
+            let result = calculateDebtCore(
+                pharmaData[index].publicPrice, 
+                pharmaData[index].productCount, 
+                pharmaData[index].discount, 
+                pharmaData[index].pay1, 
+                pharmaData[index].pay2, 
+                pharmaData[index].pay3
+            );
+            
+            pharmaData[index].owed = result.owed;
+            pharmaData[index].done = result.isDone;
+
+            document.getElementById(`rowOwed_${index}`).value = result.owed;
+            const doneField = document.getElementById(`rowDone_${index}`);
+            doneField.value = result.isDone;
+            
+            if(result.isDone === 'نعم') doneField.classList.add('done-yes');
+            else doneField.classList.remove('done-yes');
+        }
+
+        function saveRow(index, field, value) {
+            if (field) pharmaData[index][field] = value; 
+            
+            localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            let payload = { action: 'update', ...pharmaData[index] };
+            
+            showSyncStatus('جاري حفظ التعديل...', true);
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(result => { showSyncStatus('تم الحفظ بنجاح', false); setTimeout(hideSyncStatus, 1500); })
+            .catch(err => { showSyncStatus('تم الحفظ', false); setTimeout(hideSyncStatus, 1500); });
+        }
+
+        // -----------------------------------------------------
+        // الحذف
+        // -----------------------------------------------------
+        function deleteRow(index) {
+            if (!confirm('هل أنت متأكد من حذف هذا البيان نهائياً؟')) return;
+
+            const rowNumToDelete = pharmaData[index].rowNumber;
+            pharmaData.splice(index, 1);
+            localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            renderTable();
+            showSyncStatus('جاري الحذف...', true);
+
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNumber: rowNumToDelete }) })
+            .then(res => res.json())
+            .then(result => { showSyncStatus('تم الحذف بنجاح', false); setTimeout(() => loadData(true), 1500); })
+            .catch(err => { showSyncStatus('تم الحذف', false); setTimeout(() => loadData(true), 1500); });
+        }
+
+        // -----------------------------------------------------
+        // حفظ فورم الإضافة
+        // -----------------------------------------------------
+        const addForm = document.getElementById('addForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+            submitBtn.disabled = true;
+
+            const payload = {
+                action: 'add',
+                companyName: document.getElementById('companyName').value,
+                productName: document.getElementById('productName').value,
+                productCount: document.getElementById('productCount').value,
+                publicPrice: document.getElementById('publicPrice').value,
+                discount: document.getElementById('discount').value,
+                dateIn: document.getElementById('dateIn').value,
+                pay1: document.getElementById('pay1').value,
+                collect1: document.getElementById('collect1').value,
+                pay2: document.getElementById('pay2').value,
+                collect2: document.getElementById('collect2').value,
+                pay3: document.getElementById('pay3').value,
+                collect3: document.getElementById('collect3').value,
+                owed: document.getElementById('owed').value,
+                done: document.getElementById('done').value
+            };
+
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(result => { addForm.reset(); calculateFormDebt(); loadData(true); })
+            .catch(error => { addForm.reset(); calculateFormDebt(); setTimeout(() => loadData(true), 1500); })
+            .finally(() => { submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> حفظ'; submitBtn.disabled = false; });
+        });
+    </script>
+</body>
+</html>
