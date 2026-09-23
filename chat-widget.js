@@ -26,19 +26,19 @@
     }
 
     loadFirebaseSDK(function() {
-        // 3. إضافة تصميم الشات (CSS) مع وضعه في اليسار لعدم التعارض مع الدارك مود
+        // 3. إضافة تصميم الشات (CSS) مع وضعه في اليمين فوق زر الدارك مود
         if (!document.getElementById('clinic-chat-styles')) {
             const style = document.createElement('style');
             style.id = 'clinic-chat-styles';
             style.innerHTML = `
-                .chat-toggle-btn { position: fixed; bottom: 25px; left: 25px; z-index: 99999; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+                .chat-toggle-btn { position: fixed; bottom: 95px; right: 25px; z-index: 99999; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
                 .chat-toggle-btn:hover { transform: scale(1.1); }
                 .chat-badge { position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite; }
                 @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-                .chat-box-wrapper { position: fixed; bottom: 95px; left: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 99999; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom left; }
+                .chat-box-wrapper { position: fixed; bottom: 165px; right: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 99999; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right; }
                 :root[data-theme="dark"] .chat-box-wrapper { --chat-bg: #0b141a; }
-                .chat-box-wrapper.fullscreen { bottom: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 999999; }
+                .chat-box-wrapper.fullscreen { bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 999999; }
                 .chat-box-wrapper.fullscreen .chat-messages { padding: 30px 10vw; }
                 .chat-box-wrapper.fullscreen .msg-text-content { font-size: 17px; }
                 .chat-box-wrapper.fullscreen .message-content { padding: 12px 18px; }
@@ -339,7 +339,7 @@
             if(cancelBtn) cancelBtn.style.display = 'block';
         };
 
-        window.cancelEdit = function() {
+        window.cancelEditor = function() { // alias or standard
             window.editingMsgId = null; 
             const input = document.getElementById('chatInput');
             if(input) input.value = '';
@@ -351,6 +351,7 @@
             const cancelBtn = document.getElementById('cancelEditBtn');
             if(cancelBtn) cancelBtn.style.display = 'none';
         };
+        window.cancelEdit = window.cancelEditor;
 
         window.deleteMessage = function(id) { if (confirm('هل أنت متأكد من مسح هذه الرسالة للطرفين؟')) chatRef.child(id).remove(); };
         window.handleKeyPress = function(e) { if (e.key === 'Enter') window.sendMessage(); };
