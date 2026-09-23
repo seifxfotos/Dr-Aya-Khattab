@@ -243,13 +243,20 @@
         }
 
         // ==========================================
-        // الدوال الذكية لسحب التواريخ ومعالجة المسافات
+        // الدوال الذكية المحسنة (لتفادي أي طيران في التواريخ)
         // ==========================================
-        function getSafeValue(item, key) {
-            if (item[key] !== undefined && item[key] !== null) return item[key];
-            let cleanKey = key.replace(/\s+/g, '');
+        function getSafeValue(item, ...possibleKeys) {
+            // أولاً: بحث مباشر
+            for (let key of possibleKeys) {
+                if (item[key] !== undefined && item[key] !== null) return item[key];
+            }
+            // ثانياً: بحث عميق بدون مسافات أو (ال) وبتحويل الأرقام العربي
             for (let k in item) {
-                if (k.replace(/\s+/g, '') === cleanKey) return item[k] !== null ? item[k] : '';
+                let cleanK = k.replace(/\s+/g, '').replace(/ال/g, '').replace(/١/g,'1').replace(/٢/g,'2').replace(/٣/g,'3');
+                for (let key of possibleKeys) {
+                    let cleanKey = key.replace(/\s+/g, '').replace(/ال/g, '').replace(/١/g,'1').replace(/٢/g,'2').replace(/٣/g,'3');
+                    if (cleanK === cleanKey) return item[k] !== null ? item[k] : '';
+                }
             }
             return '';
         }
@@ -259,6 +266,7 @@
             try { 
                 let str = String(dateStr).trim();
                 let d = new Date(str);
+                // بنترجم التاريخ المحلي عشان نمنع فرق التوقيت تماماً
                 if (!isNaN(d.getTime())) {
                     let year = d.getFullYear();
                     let month = String(d.getMonth() + 1).padStart(2, '0');
@@ -346,29 +354,29 @@
                     }
 
                     const newDataFormatted = data.map(item => {
-                        let parsedOwed = parseFloat(getSafeValue(item, 'علينا')) || 0;
-                        let p1 = parseFloat(getSafeValue(item, 'دفعة 1')) || 0;
-                        let p2 = parseFloat(getSafeValue(item, 'دفعة 2')) || 0;
-                        let p3 = parseFloat(getSafeValue(item, 'دفعة 3')) || 0;
+                        let parsedOwed = parseFloat(getSafeValue(item, 'علينا', 'owed')) || 0;
+                        let p1 = parseFloat(getSafeValue(item, 'دفعة 1', 'pay1')) || 0;
+                        let p2 = parseFloat(getSafeValue(item, 'دفعة 2', 'pay2')) || 0;
+                        let p3 = parseFloat(getSafeValue(item, 'دفعة 3', 'pay3')) || 0;
                         let baseCost = parsedOwed + p1 + p2 + p3;
 
                         return {
                             rowNumber: item.rowNumber,
-                            companyName: getSafeValue(item, 'أسم الشركة'),
-                            productName: getSafeValue(item, 'أسم المنتج'),
-                            productCount: getSafeValue(item, 'عدد المنتج'),
-                            publicPrice: getSafeValue(item, 'سعر المنتج الجمهور'),
-                            discount: getSafeValue(item, 'نسبة الخصم'),
-                            dateIn: formatDate(getSafeValue(item, 'تاريخ وارد')),
+                            companyName: getSafeValue(item, 'أسم الشركة', 'companyName'),
+                            productName: getSafeValue(item, 'أسم المنتج', 'productName'),
+                            productCount: getSafeValue(item, 'عدد المنتج', 'productCount'),
+                            publicPrice: getSafeValue(item, 'سعر المنتج الجمهور', 'publicPrice'),
+                            discount: getSafeValue(item, 'نسبة الخصم', 'discount'),
+                            dateIn: formatDate(getSafeValue(item, 'تاريخ وارد', 'تاريخ الوارد', 'dateIn')),
                             pay1: p1 || '',
-                            collect1: formatDate(getSafeValue(item, 'تاريخ تحصيل 1')),
+                            collect1: formatDate(getSafeValue(item, 'تاريخ تحصيل 1', 'تاريخ التحصيل 1', 'collect1')),
                             pay2: p2 || '',
-                            collect2: formatDate(getSafeValue(item, 'تاريخ تحصيل 2')),
+                            collect2: formatDate(getSafeValue(item, 'تاريخ تحصيل 2', 'تاريخ التحصيل 2', 'collect2')),
                             pay3: p3 || '',
-                            collect3: formatDate(getSafeValue(item, 'تاريخ تحصيل 3')),
+                            collect3: formatDate(getSafeValue(item, 'تاريخ تحصيل 3', 'تاريخ التحصيل 3', 'collect3')),
                             owed: parsedOwed,
                             baseCost: baseCost,
-                            done: getSafeValue(item, 'خالص') || 'لا'
+                            done: getSafeValue(item, 'خالص', 'done') || 'لا'
                         };
                     });
 
@@ -482,7 +490,7 @@
         }
 
         // ==========================================
-        // التعديل والحذف اللحظي
+        // التحديث والحذف اللحظي (بدون فريز للصفحة)
         // ==========================================
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
@@ -502,7 +510,7 @@
 
             const rowNumToDelete = pharmaData[index].rowNumber;
             
-            // مسح فوري من قدامك (Optimistic)
+            // حذف فوري من الواجهة بدون انتظار السيرفر (Optimistic UI)
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
             renderTable();
@@ -512,7 +520,7 @@
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNumber: rowNumToDelete }) })
             .then(res => res.json())
             .then(result => { 
-                showSyncStatus('تم الحذف', false); 
+                showSyncStatus('تم الحذف بنجاح', false); 
                 setTimeout(hideSyncStatus, 1500); 
             })
             .catch(err => { 
@@ -522,10 +530,9 @@
         }
 
         // ==========================================
-        // إضافة لحظية (بدون تجميد الصفحة)
+        // الإضافة اللحظية السريعة (بدون تعطيل الشاشة)
         // ==========================================
         const addForm = document.getElementById('addForm');
-
         addForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
             
@@ -580,7 +587,7 @@
                 done: payload.done
             };
 
-            // رسم الجدول فوراً وتفريغ الفورم للمستخدم
+            // رسم الجدول فوراً وتفريغ الفورم للمستخدم عشان يكمل شغل
             pharmaData.push(tempRow);
             renderTable();
             addForm.reset(); 
