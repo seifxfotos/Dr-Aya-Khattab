@@ -374,7 +374,13 @@
         // 1. كود الـ Firebase الخاص بك
         // ==========================================
         const firebaseConfig = {
-            // حط الكود بتاعك هنا
+            apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
+            authDomain: "clinic-system-fe2e4.firebaseapp.com",
+            databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
+            projectId: "clinic-system-fe2e4",
+            storageBucket: "clinic-system-fe2e4.firebasestorage.app",
+            messagingSenderId: "528745148277",
+            appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -385,7 +391,7 @@
         // 2. إعدادات المتغيرات والأدوات
         // ==========================================
         let chatMessagesData = [];
-        let editingMsgId = null; // بيحتفظ بـ ID الرسالة اللي بتتعدل
+        let editingMsgId = null; 
         let isWindowFocused = document.hasFocus();
 
         // تتبع إذا كان المستخدم فاتح الصفحة ولا لأ (عشان السين الذكي)
@@ -416,13 +422,13 @@
                 document.getElementById('chatBadge').style.display = 'none';
                 localStorage.setItem('last_seen_msg_count', chatMessagesData.length);
                 scrollToBottom();
-                checkAndMarkSeen(); // بمجرد ما يفتح الشات، يدي للطرف التاني سين
+                checkAndMarkSeen(); 
             }
         }
 
         function changeUserRole() {
             localStorage.setItem('chat_current_role', document.getElementById('userRole').value);
-            renderMessages(chatMessagesData); // إعادة رسم الشات عشان الألوان تتظبط
+            renderMessages(chatMessagesData); 
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -437,7 +443,7 @@
                     chatMessagesData.push({ id: key, ...data[key] });
                 }
                 renderMessages(chatMessagesData);
-                checkAndMarkSeen(); // لو استلم رسالة وهو فاتح الشات والصفحة بيفعل السين فوراً
+                checkAndMarkSeen(); 
             });
         });
 
@@ -446,13 +452,11 @@
             const isBoxOpen = document.getElementById('chatBox').style.display === 'flex';
             const currentRole = document.getElementById('userRole').value;
             
-            // السين مبيتحسبش غير لو الشات مفتوح والماوس في الصفحة (Active)
             if (isBoxOpen && isWindowFocused && chatMessagesData.length > 0) {
                 let updates = {};
                 let hasUpdates = false;
                 
                 chatMessagesData.forEach(msg => {
-                    // لو الرسالة مبعوتة من الطرف التاني ولسه مش Seen
                     if (msg.role !== currentRole && msg.status !== 'seen') {
                         updates[`${msg.id}/status`] = 'seen';
                         hasUpdates = true;
@@ -483,11 +487,9 @@
                 div.className = `message ${msg.role}`;
                 let senderTitle = msg.role === 'doctor' ? 'د. آية خطاب' : 'الريسبشن';
                 
-                // تحديد شكل علامة الصح (واحدة رمادي لو اتبعتت، 2 أصفر/أزرق لو اتشافت)
                 let statusIcon = msg.status === 'seen' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-check"></i>';
                 let statusClass = msg.status === 'seen' ? 'seen' : '';
                 
-                // أزرار التعديل والحذف (بتظهر بس لصاحب الرسالة)
                 let actionsHtml = '';
                 let statusHtml = '';
                 if (msg.role === currentRole) {
@@ -513,7 +515,6 @@
                 container.appendChild(div);
             });
 
-            // التنبيهات
             let lastSeenCount = parseInt(localStorage.getItem('last_seen_msg_count') || '0');
             const badge = document.getElementById('chatBadge');
 
@@ -544,14 +545,12 @@
             input.value = '';
 
             if (editingMsgId) {
-                // لو بنعدل رسالة قديمة
                 chatRef.child(editingMsgId).update({
                     text: text,
                     edited: true
                 });
-                cancelEdit(); // إرجاع الزرار لشكله الطبيعي
+                cancelEdit(); 
             } else {
-                // لو بنبعت رسالة جديدة (الستاتس الافتراضي sent)
                 const newMsgRef = chatRef.push();
                 newMsgRef.set({
                     role: role,
