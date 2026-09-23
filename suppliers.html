@@ -20,7 +20,7 @@
         }
 
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1300px; margin: 0 auto; }
 
         .sync-indicator { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background-color: var(--primary-blue); color: white; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: 0.3s; }
         .sync-indicator.show { opacity: 1; visibility: visible; }
@@ -45,39 +45,32 @@
         .card-panel { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; transition: 0.3s; }
         .card-panel h2 { margin-top: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         
-        .add-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-items: end; }
+        .add-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; align-items: end; }
         
         .input-group { display: flex; flex-direction: column; }
-        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 12px; }
+        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 13px; }
         .input-group label span.req { color: var(--danger); }
-        .input-group input, .input-group select { padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 13px; outline: none; transition: 0.3s; background-color: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box;}
-        .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); }
+        .input-group input { padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 13px; outline: none; transition: 0.3s; background-color: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box;}
+        .input-group input:focus { border-color: var(--primary-blue); }
         .date-picker-input { cursor: pointer; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%230093D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>'); background-repeat: no-repeat; background-position: left 10px center; padding-left: 30px !important;}
         
-        /* قفل التعديل للخانات المحسوبة آلياً */
-        .readonly-field { background-color: rgba(0,0,0,0.05) !important; cursor: not-allowed; font-weight: bold; }
-        :root[data-theme="dark"] .readonly-field { background-color: rgba(255,255,255,0.05) !important; }
-
-        .btn-add { background-color: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; grid-column: 1 / -1; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-add { background-color: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; grid-column: 1 / -1; margin-top: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn-add:hover { background-color: #007bb5; }
         .btn-add:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
         .table-responsive { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1300px; }
+        .schedule-table { width: 100%; border-collapse: collapse; min-width: 900px; }
         .schedule-table th, .schedule-table td { padding: 8px 4px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
-        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 13px; padding: 12px 6px;}
+        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; padding: 12px 6px;}
         
-        .inline-input { width: 100%; min-width: 70px; padding: 6px 4px; border: 1px solid transparent; border-radius: 6px; background-color: transparent; color: var(--text-dark); font-family: 'Cairo'; font-size: 13px; font-weight: 600; text-align: center; transition: 0.3s; box-sizing: border-box; margin-bottom: 3px;}
-        .inline-input:hover:not(:read-only) { border-color: var(--border); background-color: rgba(0, 147, 208, 0.05); }
-        .inline-input:focus:not(:read-only) { border-color: var(--primary-blue); background-color: var(--input-bg); outline: none; box-shadow: 0 0 5px rgba(0, 147, 208, 0.2); }
+        .inline-input { width: 100%; min-width: 80px; padding: 8px 4px; border: 1px solid transparent; border-radius: 6px; background-color: transparent; color: var(--text-dark); font-family: 'Cairo'; font-size: 14px; font-weight: 600; text-align: center; transition: 0.3s; box-sizing: border-box; }
+        .inline-input:hover { border-color: var(--border); background-color: rgba(0, 147, 208, 0.05); }
+        .inline-input:focus { border-color: var(--primary-blue); background-color: var(--input-bg); outline: none; box-shadow: 0 0 5px rgba(0, 147, 208, 0.2); }
         
         .count-input { color: var(--primary-green); font-weight: 700; }
         .price-input { color: var(--primary-blue); font-weight: 700; }
-        .pay-amount { color: #f39c12; font-weight: bold; border-bottom: 1px dashed var(--border) !important;}
-        .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 14px;}
-        .done-yes { color: var(--primary-green) !important; font-weight: bold; }
         
-        .delete-btn { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; transition: 0.2s; padding: 5px; opacity: 0.8; }
+        .delete-btn { background: none; border: none; color: var(--danger); font-size: 18px; cursor: pointer; transition: 0.2s; padding: 5px; opacity: 0.8; }
         .delete-btn:hover { transform: scale(1.1); opacity: 1; color: #c0392b; }
 
         .loading-text { text-align: center; font-weight: bold; padding: 20px !important; color: var(--primary-blue); }
@@ -100,7 +93,7 @@
         <div class="header-section">
             <div>
                 <h1>إدارة المستهلكات والموردين</h1>
-                <span style="font-size: 14px; opacity: 0.9;">تنظيم وتتبع فواتير التوريدات والمديونيات <i class="fa-solid fa-boxes-packing"></i></span>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم وتتبع التوريدات <i class="fa-solid fa-boxes-packing"></i></span>
             </div>
             <div class="nav-links">
                 <a href="all.html">الرئيسية</a>
@@ -114,7 +107,6 @@
             <h2 style="color: var(--primary-blue);"><i class="fa-solid fa-cart-plus"></i> إضافة جديدة</h2>
             <form id="addForm">
                 <div class="add-grid">
-                    <!-- الأساسيات -->
                     <div class="input-group">
                         <label>أسم المورد <span class="req">*</span></label>
                         <input type="text" id="supplierName" required>
@@ -129,10 +121,8 @@
                     </div>
                     <div class="input-group">
                         <label>سعر الصنف <span class="req">*</span></label>
-                        <input type="number" id="itemPrice" class="auto-calc" required>
+                        <input type="number" id="itemPrice" required>
                     </div>
-                    
-                    <!-- التواريخ -->
                     <div class="input-group">
                         <label>تاريخ وارد</label>
                         <input type="text" id="dateIn" class="date-picker-input main-date" placeholder="اختياري">
@@ -140,46 +130,6 @@
                     <div class="input-group">
                         <label>تاريخ صادر</label>
                         <input type="text" id="dateOut" class="date-picker-input main-date" placeholder="اختياري">
-                    </div>
-
-                    <!-- التحصيل ١ -->
-                    <div class="input-group">
-                        <label>الدفعة 1</label>
-                        <input type="number" id="pay1" class="auto-calc" placeholder="المبلغ">
-                    </div>
-                    <div class="input-group">
-                        <label>تاريخ تحصيل 1</label>
-                        <input type="text" id="collect1" class="date-picker-input main-date" placeholder="التاريخ">
-                    </div>
-
-                    <!-- التحصيل ٢ -->
-                    <div class="input-group">
-                        <label>الدفعة 2</label>
-                        <input type="number" id="pay2" class="auto-calc" placeholder="المبلغ">
-                    </div>
-                    <div class="input-group">
-                        <label>تاريخ تحصيل 2</label>
-                        <input type="text" id="collect2" class="date-picker-input main-date" placeholder="التاريخ">
-                    </div>
-
-                    <!-- التحصيل ٣ -->
-                    <div class="input-group">
-                        <label>الدفعة 3</label>
-                        <input type="number" id="pay3" class="auto-calc" placeholder="المبلغ">
-                    </div>
-                    <div class="input-group">
-                        <label>تاريخ تحصيل 3</label>
-                        <input type="text" id="collect3" class="date-picker-input main-date" placeholder="التاريخ">
-                    </div>
-
-                    <!-- الحسابات الآلية (غير قابلة للكتابة اليدوية) -->
-                    <div class="input-group">
-                        <label>علينا (المتبقي)</label>
-                        <input type="number" id="owed" class="readonly-field debt-input" readonly>
-                    </div>
-                    <div class="input-group">
-                        <label>خالص ؟</label>
-                        <input type="text" id="done" class="readonly-field" readonly value="لا">
                     </div>
 
                     <button type="submit" class="btn-add" id="submitBtn"><i class="fa-solid fa-plus"></i> حفظ</button>
@@ -192,22 +142,18 @@
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th style="width: 10%;">المورد</th>
-                        <th style="width: 10%;">الصنف</th>
-                        <th style="width: 6%;">الكمية</th>
-                        <th style="width: 6%;">السعر</th>
-                        <th style="width: 9%;">وارد / صادر</th>
-                        <th style="width: 11%;">تحصيل 1 (مبلغ/تاريخ)</th>
-                        <th style="width: 11%;">تحصيل 2 (مبلغ/تاريخ)</th>
-                        <th style="width: 11%;">تحصيل 3 (مبلغ/تاريخ)</th>
-                        <th style="width: 8%;">علينا</th>
-                        <th style="width: 5%;">خالص</th>
-                        <th style="width: 4%;"><i class="fa-solid fa-trash"></i></th>
+                        <th style="width: 20%;">أسم المورد</th>
+                        <th style="width: 20%;">أسم الصنف</th>
+                        <th style="width: 15%;">الكمية</th>
+                        <th style="width: 15%;">السعر</th>
+                        <th style="width: 12%;">تاريخ وارد</th>
+                        <th style="width: 12%;">تاريخ صادر</th>
+                        <th style="width: 6%;"><i class="fa-solid fa-trash"></i></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="11" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
+                        <td colspan="7" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
                     </tr>
                 </tbody>
             </table>
@@ -218,7 +164,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_kYQrvJKwS-uxFAjEnNqHhvCAXRSehKRRoWtAThEBoAJrBWxXLnJOs6v8gWAwnmpw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHWHZGtgqh2i1fe9zKRP5HlRq4aDJGCXoZnQ7fRlgXONbp4tjIuKpvXGELSQiITgtY/exec';
         let suppliersData = []; 
 
         flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
@@ -250,55 +196,27 @@
         };
 
         // -----------------------------------------------------
-        // دالة الحساب التلقائي (للفورم الأساسي)
-        // -----------------------------------------------------
-        function calculateFormDebt() {
-            let price = parseFloat(document.getElementById('itemPrice').value) || 0;
-            let p1 = parseFloat(document.getElementById('pay1').value) || 0;
-            let p2 = parseFloat(document.getElementById('pay2').value) || 0;
-            let p3 = parseFloat(document.getElementById('pay3').value) || 0;
-            
-            let owed = price - (p1 + p2 + p3);
-            if (owed < 0) owed = 0; // عشان لو الدفعات زادت عن السعر
-
-            document.getElementById('owed').value = owed;
-
-            if (owed === 0 && price > 0) {
-                document.getElementById('done').value = 'نعم';
-                document.getElementById('done').style.color = 'var(--primary-green)';
-            } else {
-                document.getElementById('done').value = 'لا';
-                document.getElementById('done').style.color = 'var(--text-dark)';
-            }
-        }
-        
-        // تشغيل الحساب التلقائي عند الكتابة في الفورم
-        document.querySelectorAll('.auto-calc').forEach(input => {
-            input.addEventListener('input', calculateFormDebt);
-        });
-
-        // -----------------------------------------------------
-        // تحميل وعرض البيانات
+        // تحميل البيانات
         // -----------------------------------------------------
         function loadData(forceReload = false) {
             const tableBody = document.getElementById('tableBody');
             const today = new Date().toDateString();
-            const cachedData = localStorage.getItem('clinic_suppliers_cache');
-            const cacheDate = localStorage.getItem('clinic_suppliers_date');
+            const cachedData = localStorage.getItem('clinic_suppliers_basic_cache');
+            const cacheDate = localStorage.getItem('clinic_suppliers_basic_date');
 
             if (!forceReload && cachedData && cacheDate === today) {
                 suppliersData = JSON.parse(cachedData);
                 renderTable();
                 showSyncStatus('تزامن سحابي...', true); 
             } else if (!cachedData) {
-                tableBody.innerHTML = '<tr><td colspan="11" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات لأول مرة...</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="7" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات لأول مرة...</td></tr>';
             }
 
             fetch(SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
                     if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
+                        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
                         hideSyncStatus();
                         return;
                     }
@@ -310,23 +228,15 @@
                         itemCount: item['عدد الصنف'] || '',
                         itemPrice: item['سعر الصنف'] || '',
                         dateIn: formatDate(item['تاريخ وارد']),
-                        dateOut: formatDate(item['تاريخ صادر']),
-                        owed: item['علينا'] || 0,
-                        pay1: item['دفعة 1'] || '',
-                        collect1: formatDate(item['تاريخ تحصيل 1']),
-                        pay2: item['دفعة 2'] || '',
-                        collect2: formatDate(item['تاريخ تحصيل 2']),
-                        pay3: item['دفعة 3'] || '',
-                        collect3: formatDate(item['تاريخ تحصيل 3']),
-                        done: item['خالص'] || 'لا'
+                        dateOut: formatDate(item['تاريخ صادر'])
                     }));
 
                     const newDataString = JSON.stringify(newDataFormatted);
                     
                     if (newDataString !== cachedData || cacheDate !== today || forceReload) {
                         suppliersData = newDataFormatted;
-                        localStorage.setItem('clinic_suppliers_cache', newDataString);
-                        localStorage.setItem('clinic_suppliers_date', today);
+                        localStorage.setItem('clinic_suppliers_basic_cache', newDataString);
+                        localStorage.setItem('clinic_suppliers_basic_date', today);
                         renderTable();
                         if (cachedData && cacheDate === today && !forceReload) {
                             showSyncStatus('تم تحديث بيانات جديدة', false);
@@ -335,57 +245,24 @@
                     } else { hideSyncStatus(); }
                 })
                 .catch(error => {
-                    if (!cachedData) tableBody.innerHTML = '<tr><td colspan="11" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
+                    if (!cachedData) tableBody.innerHTML = '<tr><td colspan="7" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
                     hideSyncStatus();
                 });
         }
 
-        // -----------------------------------------------------
-        // رسم الجدول بالحسابات الآلية الداخلية
-        // -----------------------------------------------------
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
             
             suppliersData.forEach((row, index) => {
-                const isDoneClass = row.done === 'نعم' ? 'done-yes' : '';
-                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><input type="text" class="inline-input" value="${row.supplierName}" onchange="saveRow(${index}, 'supplierName', this.value)"></td>
                     <td><input type="text" class="inline-input" value="${row.itemName}" onchange="saveRow(${index}, 'itemName', this.value)"></td>
                     <td><input type="text" class="inline-input count-input" value="${row.itemCount}" onchange="saveRow(${index}, 'itemCount', this.value)"></td>
-                    
-                    <td><input type="number" class="inline-input price-input" value="${row.itemPrice}" 
-                        oninput="calcRowDebt(${index}, 'itemPrice', this.value)" 
-                        onchange="saveRow(${index})"></td>
-                        
-                    <td>
-                        <input type="text" class="inline-input table-date" placeholder="وارد" value="${row.dateIn}" onchange="saveRow(${index}, 'dateIn', this.value)">
-                        <input type="text" class="inline-input table-date" placeholder="صادر" value="${row.dateOut}" onchange="saveRow(${index}, 'dateOut', this.value)">
-                    </td>
-                    
-                    <td>
-                        <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay1}" 
-                            oninput="calcRowDebt(${index}, 'pay1', this.value)" onchange="saveRow(${index})">
-                        <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect1}" onchange="saveRow(${index}, 'collect1', this.value)">
-                    </td>
-                    
-                    <td>
-                        <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay2}" 
-                            oninput="calcRowDebt(${index}, 'pay2', this.value)" onchange="saveRow(${index})">
-                        <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect2}" onchange="saveRow(${index}, 'collect2', this.value)">
-                    </td>
-
-                    <td>
-                        <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay3}" 
-                            oninput="calcRowDebt(${index}, 'pay3', this.value)" onchange="saveRow(${index})">
-                        <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect3}" onchange="saveRow(${index}, 'collect3', this.value)">
-                    </td>
-
-                    <td><input type="number" id="rowOwed_${index}" class="inline-input debt-input readonly-field" value="${row.owed}" readonly></td>
-                    <td><input type="text" id="rowDone_${index}" class="inline-input readonly-field ${isDoneClass}" value="${row.done}" readonly></td>
-                    
+                    <td><input type="number" class="inline-input price-input" value="${row.itemPrice}" onchange="saveRow(${index}, 'itemPrice', this.value)"></td>
+                    <td><input type="text" class="inline-input table-date" value="${row.dateIn}" onchange="saveRow(${index}, 'dateIn', this.value)"></td>
+                    <td><input type="text" class="inline-input table-date" value="${row.dateOut}" onchange="saveRow(${index}, 'dateOut', this.value)"></td>
                     <td>
                         <button class="delete-btn" onclick="deleteRow(${index})" title="حذف">
                             <i class="fa-solid fa-trash"></i>
@@ -400,41 +277,11 @@
         loadData();
 
         // -----------------------------------------------------
-        // الحساب التلقائي داخل الجدول وقت الكتابة
-        // -----------------------------------------------------
-        function calcRowDebt(index, field, value) {
-            suppliersData[index][field] = value; 
-            
-            let price = parseFloat(suppliersData[index].itemPrice) || 0;
-            let p1 = parseFloat(suppliersData[index].pay1) || 0;
-            let p2 = parseFloat(suppliersData[index].pay2) || 0;
-            let p3 = parseFloat(suppliersData[index].pay3) || 0;
-            
-            let owed = price - (p1 + p2 + p3);
-            if (owed < 0) owed = 0;
-            
-            suppliersData[index].owed = owed;
-            document.getElementById(`rowOwed_${index}`).value = owed;
-
-            const doneField = document.getElementById(`rowDone_${index}`);
-            if (owed === 0 && price > 0) {
-                suppliersData[index].done = 'نعم';
-                doneField.value = 'نعم';
-                doneField.classList.add('done-yes');
-            } else {
-                suppliersData[index].done = 'لا';
-                doneField.value = 'لا';
-                doneField.classList.remove('done-yes');
-            }
-        }
-
-        // -----------------------------------------------------
         // حفظ التعديلات للسيرفر
         // -----------------------------------------------------
         function saveRow(index, field, value) {
-            if (field) suppliersData[index][field] = value; 
-            
-            localStorage.setItem('clinic_suppliers_cache', JSON.stringify(suppliersData));
+            suppliersData[index][field] = value; 
+            localStorage.setItem('clinic_suppliers_basic_cache', JSON.stringify(suppliersData));
             
             let payload = { action: 'update', ...suppliersData[index] };
             showSyncStatus('جاري حفظ التعديل...', true);
@@ -460,7 +307,7 @@
 
             const rowNumToDelete = suppliersData[index].rowNumber;
             suppliersData.splice(index, 1);
-            localStorage.setItem('clinic_suppliers_cache', JSON.stringify(suppliersData));
+            localStorage.setItem('clinic_suppliers_basic_cache', JSON.stringify(suppliersData));
             renderTable();
             showSyncStatus('جاري الحذف...', true);
 
@@ -495,27 +342,17 @@
                 itemCount: document.getElementById('itemCount').value,
                 itemPrice: document.getElementById('itemPrice').value,
                 dateIn: document.getElementById('dateIn').value,
-                dateOut: document.getElementById('dateOut').value,
-                pay1: document.getElementById('pay1').value,
-                collect1: document.getElementById('collect1').value,
-                pay2: document.getElementById('pay2').value,
-                collect2: document.getElementById('collect2').value,
-                pay3: document.getElementById('pay3').value,
-                collect3: document.getElementById('collect3').value,
-                owed: document.getElementById('owed').value,
-                done: document.getElementById('done').value
+                dateOut: document.getElementById('dateOut').value
             };
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(result => {
                 addForm.reset();
-                calculateFormDebt(); 
                 loadData(true); 
             })
             .catch(error => {
                 addForm.reset();
-                calculateFormDebt();
                 setTimeout(() => loadData(true), 1500);
             })
             .finally(() => {
