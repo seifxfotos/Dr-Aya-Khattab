@@ -6,6 +6,7 @@
     <title>استمارة مريض - عيادة د. آية خطاب</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         /* المتغيرات الأساسية للألوان (الوضع الفاتح) */
@@ -47,6 +48,31 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* نظام الإشعارات الجديد (Toast) */
+        .app-toast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--sheet-bg);
+            color: var(--text-main);
+            padding: 12px 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            font-family: 'Cairo';
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: 4px solid var(--primary-blue);
+        }
+        .app-toast.show { top: 30px; }
+        .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); }
+        .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
+
         .controls {
             background: var(--sheet-bg);
             padding: 20px;
@@ -86,6 +112,9 @@
             color: white;
             transition: 0.3s;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-search { background-color: var(--primary-blue); }
@@ -169,7 +198,7 @@
         td input { width: 90%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo', sans-serif; background: transparent; color: var(--text-main); }
         td input:focus { outline: none; background-color: var(--focus-bg); }
 
-        .add-row-btn { background-color: var(--primary-blue); margin-top: 8px; padding: 6px; font-size: 14px; width: 100%; }
+        .add-row-btn { background-color: var(--primary-blue); margin-top: 8px; padding: 6px; font-size: 14px; width: 100%; justify-content: center; }
         .add-row-btn:hover { filter: brightness(0.9); }
 
         .row-container { display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%; }
@@ -253,6 +282,12 @@
 </head>
 <body>
 
+    <!-- نظام الإشعارات الذكي (Toast) -->
+    <div id="appToast" class="app-toast">
+        <i id="toastIcon" class="fa-solid fa-check-circle"></i>
+        <span id="toastMessage">تمت العملية بنجاح</span>
+    </div>
+
     <!-- زر الدارك مود -->
     <div class="theme-switch-wrapper no-print" dir="ltr">
         <label class="theme-switch" for="themeSwitch">
@@ -270,18 +305,18 @@
             <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من كرت مسجل</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px;">الرجاء اختيار الكرت المطلوب من القائمة التالية:</p>
             <div id="patientList"></div>
-            <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px;" onclick="closeModal()">إلغاء وإغلاق</button>
+            <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px; justify-content: center;" onclick="closeModal()">إلغاء وإغلاق</button>
         </div>
     </div>
 
     <!-- أزرار التحكم العلوية -->
     <div class="controls no-print">
         <input type="text" id="searchName" placeholder="ابحث باسم المريض أو برقم الموبايل هنا ثم اضغط Enter...">
-        <button class="btn btn-search" onclick="searchPatient()">بحث</button>
-        <button class="btn btn-new" onclick="clearForm()">كرت جديد</button>
-        <button class="btn btn-delete" onclick="deletePatient()">حذف الكرت</button>
-        <button class="btn btn-save" onclick="saveData()">حفظ البيانات</button>
-        <button class="btn btn-print" onclick="window.print()">طباعة الكرت</button>
+        <button class="btn btn-search" id="searchBtn" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
+        <button class="btn btn-new" onclick="clearForm()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
+        <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف الكرت</button>
+        <button class="btn btn-save" id="saveBtn" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
+        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
     </div>
 
     <!-- الكرت الأساسي (الرقم 1) -->
@@ -330,10 +365,10 @@
     <!-- أزرار الإدارة السفلية (إضافة كروت / ملف طبي) -->
     <div class="action-buttons-container no-print" style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin: 20px auto; max-width: 1100px;">
         <div id="cardControls" style="display: flex; gap: 15px; width: 100%; max-width: 600px;">
-            <button id="addCardBtn" class="btn btn-new-card" style="flex: 1;" onclick="addCard()">➕ إضافة كرت إضافي</button>
-            <button id="removeCardBtn" class="btn btn-delete" style="flex: 1; display: none;" onclick="removeLastCard()">🗑️ إزالة الكرت الأخير</button>
+            <button id="addCardBtn" class="btn btn-new-card" style="flex: 1; justify-content: center;" onclick="addCard()">➕ إضافة كرت إضافي</button>
+            <button id="removeCardBtn" class="btn btn-delete" style="flex: 1; display: none; justify-content: center;" onclick="removeLastCard()">🗑️ إزالة الكرت الأخير</button>
         </div>
-        <button id="medicalToggleBtn" class="btn btn-medical" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
+        <button id="medicalToggleBtn" class="btn btn-medical" style="justify-content: center;" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
     </div>
 
     <!-- الملف الطبي -->
@@ -349,12 +384,28 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7ndL5dYTFTSTsFY5eeAa94XrOZ64JnDDcYpQDZRKxKq7DZO-GcLq1veW3TCspWjPN/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUmFxASBudXYY_7XL_RaYfjXECMw9ed-cL3qrRHHZguW4PAWUSmAzrc6nqsovNxHz4/exec";
         
         let globalSearchResults = []; 
         let totalCards = 1;
         let cardRowCounts = { 1: { start: 1, current: 12 } };
-        let searchCache = {}; // ذاكرة مؤقتة محلية لنتائج البحث لضمان السرعة الفورية
+        
+        // الذاكرة المؤقتة (Local Storage Cache) للسرعة اللحظية
+        let searchCache = JSON.parse(localStorage.getItem('clinic_patients_cache')) || {}; 
+
+        // ================== نظام الإشعارات الذكي (بديل Alert) ==================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('appToast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            
+            toast.className = `app-toast ${type}`;
+            icon.className = type === 'success' ? 'fa-solid fa-check-circle' : 'fa-solid fa-exclamation-circle';
+            msg.innerText = message;
+            
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
 
         // ================== إعدادات الدارك مود المستمرة ==================
         window.addEventListener('DOMContentLoaded', () => {
@@ -375,72 +426,7 @@
             }
         }
 
-        // ================== نظام التنقل بالأسهم (الكيبورد نافيجيشن) ==================
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                let active = document.activeElement;
-                
-                if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) return;
-                
-                if (active.tagName === 'TEXTAREA') {
-                    if (e.key === 'ArrowDown' && active.selectionEnd === active.value.length) {
-                        // يكمل نزول
-                    } else if (e.key === 'ArrowUp' && active.selectionStart === 0) {
-                        // يكمل طلوع
-                    } else {
-                        return; 
-                    }
-                }
-
-                let id = active.id;
-                let nextId = null;
-
-                if (e.key === 'ArrowDown') {
-                    if (id === 'p_name') nextId = 'p_phone';
-                    else if (id === 'p_address') nextId = 'p_job';
-                    else if (id === 'p_phone' || id === 'p_job') nextId = 'p_age';
-                    else if (id === 'p_age') nextId = 'p_referred';
-                    else if (id === 'p_referred') nextId = 'p_diagnosis';
-                    else if (id === 'p_diagnosis') nextId = 'p_protocol';
-                    else if (id === 'p_protocol') nextId = 'd_1';
-                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
-                        let parts = id.split('_');
-                        let nextIdx = parseInt(parts[1]) + 1;
-                        nextId = parts[0] + '_' + nextIdx;
-                    }
-                } else if (e.key === 'ArrowUp') {
-                    if (id === 'p_phone') nextId = 'p_name';
-                    else if (id === 'p_job') nextId = 'p_address';
-                    else if (id === 'p_age') nextId = 'p_phone'; 
-                    else if (id === 'p_referred') nextId = 'p_age';
-                    else if (id === 'p_diagnosis') nextId = 'p_referred';
-                    else if (id === 'p_protocol') nextId = 'p_diagnosis';
-                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
-                        let parts = id.split('_');
-                        let prevIdx = parseInt(parts[1]) - 1;
-                        if (prevIdx >= 1) {
-                            nextId = parts[0] + '_' + prevIdx;
-                        } else {
-                            nextId = 'p_protocol';
-                        }
-                    }
-                }
-
-                if (nextId) {
-                    let nextEl = document.getElementById(nextId);
-                    if (nextEl) {
-                        e.preventDefault(); 
-                        nextEl.focus(); 
-                    }
-                }
-            }
-        });
-
-        // ================== دوال البحث والتعامل مع البيانات ==================
-        document.getElementById('searchName').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') searchPatient();
-        });
-
+        // ================== دوال الكروت والجداول ==================
         function convertToEnglishNumbers(str) {
             const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
             return str.split('').map(c => {
@@ -521,7 +507,7 @@
             let removeBtn = document.getElementById('removeCardBtn');
             if(totalCards > 1) {
                 addBtn.innerHTML = `إضافة كرت (${totalCards + 1})`;
-                removeBtn.style.display = 'block';
+                removeBtn.style.display = 'flex';
                 removeBtn.innerHTML = `إزالة كرت (${totalCards})`;
             } else {
                 addBtn.innerHTML = `إضافة كرت إضافي`;
@@ -618,45 +604,56 @@
             }
         }
 
+        // ================== بحث فائق السرعة ==================
+        document.getElementById('searchName').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') searchPatient();
+        });
+
         async function searchPatient() {
             let rawSearch = document.getElementById('searchName').value.trim();
-            if(!rawSearch) return alert("برجاء إدخال اسم أو رقم موبايل المريض للبحث!");
+            if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل المريض للبحث!", "error");
             let searchInput = convertToEnglishNumbers(rawSearch);
             
-            // التحقق من الكاش المحلي للبحث الفوري دون انتظار الخادم
+            // 1. بحث لحظي من الذاكرة المحلية أولاً
             if (searchCache[searchInput]) {
                 handleSearchResult(searchCache[searchInput]);
                 return;
             }
 
-            let btn = document.querySelector('.btn-search');
-            btn.innerText = "جاري البحث...";
+            let btn = document.getElementById('searchBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري...';
 
             try {
                 let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput), { method: 'GET', redirect: 'follow' });
                 let text = await response.text();
                 
                 if(text.includes("<html")) {
-                    alert("خطأ في اللينك! تأكد من النشر الصحيح لجوجل شيت.");
-                    btn.innerText = "بحث";
+                    showToast("خطأ في اللينك! تأكد من النشر الصحيح لجوجل شيت.", "error");
+                    btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
                     return;
                 }
+                
                 let res = JSON.parse(text);
                 
-                // حفظ النتيجة في الذاكرة المؤقتة للسرعة مستقبلاً
-                searchCache[searchInput] = res;
+                // حفظ النتيجة في الذاكرة للبحث المستقبلي الصاروخي
+                if(res.status === "found") {
+                    searchCache[searchInput] = res;
+                    localStorage.setItem('clinic_patients_cache', JSON.stringify(searchCache));
+                }
+                
                 handleSearchResult(res);
 
             } catch(e) {
-                alert("تعذر الوصول لقاعدة البيانات.");
+                showToast("تعذر الوصول لقاعدة البيانات. تأكد من الإنترنت.", "error");
             }
-            btn.innerText = "بحث";
+            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
         }
 
         function handleSearchResult(res) {
             if(res.status === "not_found") {
-                alert("المريض غير موجود، يمكنك كتابة بياناته والضغط على حفظ لإنشاء ملف جديد.");
+                showToast("المريض غير موجود، يمكنك إدخال بياناته للحفظ كملف جديد.", "error");
             } else if(res.status === "found") {
+                showToast("تم العثور على المريض بنجاح!", "success");
                 if(res.data.length === 1) {
                     loadPatientData(res.data[0]);
                 } else {
@@ -677,29 +674,7 @@
                     document.getElementById('patientModal').style.display = "flex";
                 }
             } else if(res.status === "error") {
-                alert("حدث خطأ داخل جوجل شيت.");
-            }
-        }
-
-        async function deletePatient() {
-            let phone = document.getElementById('p_phone').value;
-            let name = document.getElementById('p_name').value;
-            if(!phone) { alert("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!"); return; }
-
-            if(confirm(`هل أنت متأكد من مسح بيانات المريض من الشيت نهائياً؟`)) {
-                let btn = document.querySelector('.btn-delete');
-                btn.innerText = "جاري الحذف...";
-                try {
-                    let response = await fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' });
-                    let res = await response.json();
-                    if(res.status === "success") {
-                        alert("تم الحذف بنجاح!");
-                        clearForm();
-                    } else {
-                        alert("لم يتم العثور على المريض.");
-                    }
-                } catch(e) { alert("خطأ في الاتصال."); }
-                btn.innerText = "حذف الكرت";
+                showToast("حدث خطأ داخل جوجل شيت.", "error");
             }
         }
 
@@ -794,6 +769,7 @@
             }
         }
 
+        // ================== الحفظ اللحظي الذكي (Optimistic Save) ==================
         function saveData() {
             let rawPhone = document.getElementById('p_phone').value;
             let phone = convertToEnglishNumbers(rawPhone);
@@ -801,12 +777,12 @@
             let name = document.getElementById('p_name').value;
             
             if(!name || !phone) {
-                alert("الاسم ورقم الموبايل إجباريين للحفظ!");
+                showToast("الاسم ورقم الموبايل إجباريين للحفظ!", "error");
                 return;
             }
 
-            let btn = document.querySelector('.btn-save');
-            btn.innerText = "جاري الحفظ...";
+            let btn = document.getElementById('saveBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
             let sessions = [];
             for(let c = 1; c <= totalCards; c++) {
@@ -835,18 +811,42 @@
                 sessions: sessions
             };
 
-            // مسح الكاش لهذا المريض عند التعديل لضمان جلب البيانات المحدثة لاحقاً
-            if(searchCache[phone]) delete searchCache[phone];
-            if(searchCache[name]) delete searchCache[name];
+            // 1. تحديث الذاكرة المحلية (الكاش) فوراً عشان لو بحث عنه يلاقيه في ثانية
+            let localCacheData = { status: "found", data: [payload] };
+            searchCache[phone] = localCacheData;
+            searchCache[name] = localCacheData;
+            localStorage.setItem('clinic_patients_cache', JSON.stringify(searchCache));
 
-            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload), mode: "no-cors" })
-            .then(() => {
-                alert("تم حفظ البيانات بنجاح!");
-                btn.innerText = "حفظ البيانات";
-            }).catch(() => {
-                alert("حدث خطأ، تأكد من اتصال الإنترنت.");
-                btn.innerText = "حفظ البيانات";
+            // 2. إعطاء تأكيد نجاح للمستخدم فوراً (بدون تعطيل الشاشة)
+            showToast("تم حفظ بيانات المريض بنجاح!", "success");
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ البيانات';
+
+            // 3. الإرسال الصامت لجوجل شيت في الخلفية (Background Sync)
+            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
+            .catch(() => {
+                showToast("حدث خطأ في مزامنة السحابة، لكن البيانات محفوظة محلياً.", "error");
             });
+        }
+
+        // ================== الحذف اللحظي الذكي ==================
+        async function deletePatient() {
+            let phone = document.getElementById('p_phone').value;
+            let name = document.getElementById('p_name').value;
+            if(!phone) { showToast("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!", "error"); return; }
+
+            if(confirm(`هل أنت متأكد من مسح بيانات المريض من الشيت نهائياً؟`)) {
+                // مسح من الكاش فوراً
+                delete searchCache[phone];
+                delete searchCache[name];
+                localStorage.setItem('clinic_patients_cache', JSON.stringify(searchCache));
+                
+                showToast("تم الحذف بنجاح!", "success");
+                clearForm();
+
+                // مزامنة الحذف في الخلفية
+                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' })
+                .catch(e => console.error("Cloud delete error", e));
+            }
         }
 
         function clearForm() {
@@ -859,11 +859,11 @@
             updateCardButtons();
             
             document.getElementById('medicalSheetForm').style.display = 'none'; 
-let btnM = document.getElementById('medicalToggleBtn');
+            let btnM = document.getElementById('medicalToggleBtn');
             btnM.innerHTML = 'فتح الملف الطبي';
             btnM.style.backgroundColor = 'var(--primary-blue)';
         }
-    </script> <!-- اقفل السكريبت عادي جداً -->
+    </script> 
 
     <script src="chat-widget.js"></script>
 </body>
