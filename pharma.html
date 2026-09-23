@@ -77,7 +77,6 @@
         .discount-input { color: var(--warning); font-weight: 800; }
         .pay-amount { color: #8e44ad; font-weight: 800; border-bottom: 1px dashed var(--border) !important;}
         
-        /* إزالة ستايل القراءة فقط من الديون لتمييز إمكانية التعديل */
         .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 15px; border: 1px dashed var(--danger) !important;}
         .debt-input:focus { border: 1px solid var(--danger) !important; box-shadow: 0 0 5px rgba(231, 76, 60, 0.3) !important; }
         
@@ -180,7 +179,7 @@
                         <input type="text" id="done" class="readonly-field" readonly value="لا">
                     </div>
 
-                    <button type="submit" class="btn-add" id="submitBtn"><i class="fa-solid fa-plus"></i> حفظ</button>
+                    <button type="submit" class="btn-add" id="submitBtn"><i class="fa-solid fa-plus"></i> حفظ الطلبية</button>
                 </div>
             </form>
         </div>
@@ -277,7 +276,7 @@
         }
 
         // ==========================================
-        // منطق الحسابات الذكية
+        // منطق الحسابات الذكية للواجهة
         // ==========================================
         function calcFormFromBasics() {
             let price = parseFloat(document.getElementById('publicPrice').value) || 0;
@@ -318,7 +317,10 @@
         document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
 
-        function loadData(forceReload = false) {
+        // ==========================================
+        // تحميل البيانات من الشيت
+        // ==========================================
+        function loadData(forceReload = false, silent = false) {
             const tableBody = document.getElementById('tableBody');
             const today = new Date().toDateString();
             const cachedData = localStorage.getItem('clinic_pharma_cache');
@@ -327,17 +329,19 @@
             if (!forceReload && cachedData && cacheDate === today) {
                 pharmaData = JSON.parse(cachedData);
                 renderTable();
-                showSyncStatus('تزامن سحابي...', true); 
-            } else if (!cachedData) {
-                tableBody.innerHTML = '<tr><td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات لأول مرة...</td></tr>';
+                if(!silent) showSyncStatus('تزامن سحابي...', true); 
+            } else if (!cachedData && !silent) {
+                tableBody.innerHTML = '<tr><td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات...</td></tr>';
             }
 
             fetch(SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
                     if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="12" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
-                        hideSyncStatus();
+                        if (!silent) {
+                            tableBody.innerHTML = '<tr><td colspan="12" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
+                            hideSyncStatus();
+                        }
                         return;
                     }
 
@@ -374,18 +378,21 @@
                         localStorage.setItem('clinic_pharma_cache', newDataString);
                         localStorage.setItem('clinic_pharma_date', today);
                         renderTable();
-                        if (cachedData && cacheDate === today && !forceReload) {
+                        if (cachedData && cacheDate === today && !forceReload && !silent) {
                             showSyncStatus('تم التحديث', false);
                             setTimeout(hideSyncStatus, 2000);
-                        } else { hideSyncStatus(); }
-                    } else { hideSyncStatus(); }
+                        } else if (!silent) { hideSyncStatus(); }
+                    } else if (!silent) { hideSyncStatus(); }
                 })
                 .catch(error => {
-                    if (!cachedData) tableBody.innerHTML = '<tr><td colspan="12" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
-                    hideSyncStatus();
+                    if (!cachedData && !silent) tableBody.innerHTML = '<tr><td colspan="12" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
+                    if (!silent) hideSyncStatus();
                 });
         }
 
+        // ==========================================
+        // رسم الجدول
+        // ==========================================
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -474,6 +481,9 @@
             else doneField.classList.remove('done-yes');
         }
 
+        // ==========================================
+        // التعديل والحذف اللحظي
+        // ==========================================
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
@@ -492,7 +502,7 @@
 
             const rowNumToDelete = pharmaData[index].rowNumber;
             
-            // حذف فوري من الواجهة بدون انتظار السيرفر (Optimistic UI)
+            // مسح فوري من قدامك (Optimistic)
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
             renderTable();
@@ -502,7 +512,7 @@
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNumber: rowNumToDelete }) })
             .then(res => res.json())
             .then(result => { 
-                showSyncStatus('تم الحذف بنجاح', false); 
+                showSyncStatus('تم الحذف', false); 
                 setTimeout(hideSyncStatus, 1500); 
             })
             .catch(err => { 
@@ -511,7 +521,11 @@
             });
         }
 
+        // ==========================================
+        // إضافة لحظية (بدون تجميد الصفحة)
+        // ==========================================
         const addForm = document.getElementById('addForm');
+
         addForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
             
@@ -533,20 +547,56 @@
                 done: document.getElementById('done').value
             };
 
-            // تفريغ الفورم فوراً ليتمكن المستخدم من استكمال شغله بدون انتظار (Optimistic UI)
+            // حساب التكلفة للمنتج الوهمي عشان يترسم صح
+            let pr = parseFloat(payload.publicPrice) || 0;
+            let c = extractNumber(payload.productCount);
+            let disc = parseFloat(payload.discount) || 0;
+            let baseC = (pr - (pr * (disc / 100))) * c;
+            
+            let manualOwed = parseFloat(payload.owed) || 0;
+            let tp1 = parseFloat(payload.pay1) || 0;
+            let tp2 = parseFloat(payload.pay2) || 0;
+            let tp3 = parseFloat(payload.pay3) || 0;
+            if (manualOwed > 0 || tp1>0 || tp2>0 || tp3>0) {
+                baseC = manualOwed + tp1 + tp2 + tp3;
+            }
+
+            const tempRow = {
+                rowNumber: 'temp_' + Date.now(),
+                companyName: payload.companyName,
+                productName: payload.productName,
+                productCount: payload.productCount,
+                publicPrice: payload.publicPrice,
+                discount: payload.discount,
+                dateIn: payload.dateIn,
+                pay1: payload.pay1,
+                collect1: payload.collect1,
+                pay2: payload.pay2,
+                collect2: payload.collect2,
+                pay3: payload.pay3,
+                collect3: payload.collect3,
+                owed: manualOwed > 0 ? manualOwed : (baseC - (tp1+tp2+tp3)),
+                baseCost: baseC,
+                done: payload.done
+            };
+
+            // رسم الجدول فوراً وتفريغ الفورم للمستخدم
+            pharmaData.push(tempRow);
+            renderTable();
             addForm.reset(); 
             formBaseCost = 0; 
             document.getElementById('done').value = 'لا'; 
             document.getElementById('done').style.color = 'var(--text-dark)';
             
-            showSyncStatus('جاري إضافة الطلبية...', true);
+            showSyncStatus('جاري الحفظ سحابياً...', true);
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(result => { 
-                showSyncStatus('تمت الإضافة بنجاح', false); 
+                showSyncStatus('تمت الإضافة', false); 
                 setTimeout(hideSyncStatus, 2000); 
-                loadData(true); 
+                // تحميل صامت في الخلفية لجلب رقم الصف الحقيقي من الشيت
+                loadData(true, true); 
             })
             .catch(error => { 
                 showSyncStatus('حدث خطأ', false); 
