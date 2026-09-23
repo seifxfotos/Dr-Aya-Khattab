@@ -63,11 +63,9 @@
 
         .table-responsive { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .schedule-table { width: 100%; border-collapse: collapse; min-width: 1400px; }
-        /* إزالة white-space: nowrap لمنع التداخل */
         .schedule-table th, .schedule-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 13px; padding: 12px 6px;}
         
-        /* إضافة بلوك جديد لمنع التداخل */
         .dual-input-wrapper { display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; }
 
         .inline-input { display: block; width: 100%; min-width: 70px; padding: 8px 4px; border: 1px solid transparent; border-radius: 6px; background-color: transparent; color: var(--text-dark); font-family: 'Cairo'; font-size: 13px; font-weight: 700; text-align: center; transition: 0.3s; box-sizing: border-box; }
@@ -78,7 +76,11 @@
         .price-input { color: var(--primary-blue); font-weight: 800; }
         .discount-input { color: var(--warning); font-weight: 800; }
         .pay-amount { color: #8e44ad; font-weight: 800; border-bottom: 1px dashed var(--border) !important;}
-        .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 14px;}
+        
+        /* إزالة ستايل القراءة فقط من الديون لتمييز إمكانية التعديل */
+        .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 15px; border: 1px dashed var(--danger) !important;}
+        .debt-input:focus { border: 1px solid var(--danger) !important; box-shadow: 0 0 5px rgba(231, 76, 60, 0.3) !important; }
+        
         .done-yes { color: var(--primary-green) !important; font-weight: 900; }
         
         .delete-btn { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; transition: 0.2s; padding: 5px; opacity: 0.8; }
@@ -127,15 +129,15 @@
                     </div>
                     <div class="input-group">
                         <label>الكمية / العدد <span class="req">*</span></label>
-                        <input type="text" id="productCount" class="auto-calc" placeholder="مثال: 10 علب" required>
+                        <input type="text" id="productCount" class="calc-basic" placeholder="مثال: 10 علب" required>
                     </div>
                     <div class="input-group">
                         <label>سعر الجمهور <span class="req">*</span></label>
-                        <input type="number" id="publicPrice" class="auto-calc" placeholder="0.00" required>
+                        <input type="number" id="publicPrice" class="calc-basic" placeholder="0.00" required>
                     </div>
                     <div class="input-group">
                         <label>الخصم (%) <span class="req">*</span></label>
-                        <input type="number" id="discount" class="auto-calc" placeholder="مثال: 20" required>
+                        <input type="number" id="discount" class="calc-basic" placeholder="مثال: 20" required>
                     </div>
                     <div class="input-group">
                         <label>تاريخ وارد</label>
@@ -144,7 +146,7 @@
 
                     <div class="input-group">
                         <label>دفعة 1</label>
-                        <input type="number" id="pay1" class="auto-calc" placeholder="المبلغ">
+                        <input type="number" id="pay1" class="calc-pay" placeholder="المبلغ">
                     </div>
                     <div class="input-group">
                         <label>تاريخ تحصيل 1</label>
@@ -153,7 +155,7 @@
 
                     <div class="input-group">
                         <label>دفعة 2</label>
-                        <input type="number" id="pay2" class="auto-calc" placeholder="المبلغ">
+                        <input type="number" id="pay2" class="calc-pay" placeholder="المبلغ">
                     </div>
                     <div class="input-group">
                         <label>تاريخ تحصيل 2</label>
@@ -162,7 +164,7 @@
 
                     <div class="input-group">
                         <label>دفعة 3</label>
-                        <input type="number" id="pay3" class="auto-calc" placeholder="المبلغ">
+                        <input type="number" id="pay3" class="calc-pay" placeholder="المبلغ">
                     </div>
                     <div class="input-group">
                         <label>تاريخ تحصيل 3</label>
@@ -171,7 +173,8 @@
 
                     <div class="input-group">
                         <label>علينا (المتبقي)</label>
-                        <input type="number" id="owed" class="readonly-field debt-input" readonly>
+                        <!-- أصبحت قابلة للتعديل -->
+                        <input type="number" id="owed" class="debt-input calc-manual">
                     </div>
                     <div class="input-group">
                         <label>خالص ؟</label>
@@ -216,6 +219,7 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwayuyjy1UpSsIa5ajUYXBm4LuQmNhMsJqFWIyrWxpM83HSqoGcP6PdtCYApQePoxo/exec';
         let pharmaData = []; 
+        let formBaseCost = 0; // لحفظ التكلفة الأساسية في الفورم
 
         flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
 
@@ -251,51 +255,60 @@
             return matches ? parseFloat(matches[0]) : 1;
         }
 
-        function calculateDebtCore(price, countStr, discount, p1, p2, p3) {
-            let pr = parseFloat(price) || 0;
-            let c = extractNumber(countStr); 
-            let disc = parseFloat(discount) || 0;
+        // ==========================================
+        // منطق الحسابات الذكية (للفورم)
+        // ==========================================
+        
+        // 1. لو عدلت في السعر أو الخصم أو العدد
+        function calcFormFromBasics() {
+            let price = parseFloat(document.getElementById('publicPrice').value) || 0;
+            let count = extractNumber(document.getElementById('productCount').value);
+            let discount = parseFloat(document.getElementById('discount').value) || 0;
             
-            let pay1 = parseFloat(p1) || 0;
-            let pay2 = parseFloat(p2) || 0;
-            let pay3 = parseFloat(p3) || 0;
-
-            let unitCost = pr - (pr * (disc / 100));
-            let totalCost = unitCost * c;
-            
-            let owed = totalCost - (pay1 + pay2 + pay3);
-            if (owed < 0) owed = 0; 
-            
-            let isDone = (owed === 0 && totalCost > 0) ? 'نعم' : 'لا';
-            
-            return { owed: owed.toFixed(2).replace(/\.00$/, ''), isDone: isDone };
+            formBaseCost = (price - (price * (discount / 100))) * count;
+            applyFormPayments();
         }
 
-        function calculateFormDebt() {
-            let price = document.getElementById('publicPrice').value;
-            let count = document.getElementById('productCount').value;
-            let discount = document.getElementById('discount').value;
-            let p1 = document.getElementById('pay1').value;
-            let p2 = document.getElementById('pay2').value;
-            let p3 = document.getElementById('pay3').value;
+        // 2. لو كتبت رقم المديونية "علينا" بإيدك! السستم هيعتبره هو الأساس
+        function manualFormOwedUpdate() {
+            let typedOwed = parseFloat(document.getElementById('owed').value) || 0;
+            let p1 = parseFloat(document.getElementById('pay1').value) || 0;
+            let p2 = parseFloat(document.getElementById('pay2').value) || 0;
+            let p3 = parseFloat(document.getElementById('pay3').value) || 0;
+            
+            formBaseCost = typedOwed + p1 + p2 + p3;
+            applyFormPayments(); // عشان يتأكد إن "خالص" بتشتغل صح
+        }
 
-            let result = calculateDebtCore(price, count, discount, p1, p2, p3);
-            
-            document.getElementById('owed').value = result.owed;
+        // 3. خصم الدفعات من التكلفة الأساسية (سواء كانت محسوبة أو مكتوبة يدوي)
+        function applyFormPayments() {
+            let p1 = parseFloat(document.getElementById('pay1').value) || 0;
+            let p2 = parseFloat(document.getElementById('pay2').value) || 0;
+            let p3 = parseFloat(document.getElementById('pay3').value) || 0;
+
+            let owed = formBaseCost - (p1 + p2 + p3);
+            if (owed < 0) owed = 0;
+
+            document.getElementById('owed').value = owed.toFixed(2).replace(/\.00$/, '');
             const doneField = document.getElementById('done');
-            doneField.value = result.isDone;
             
-            if (result.isDone === 'نعم') {
+            if (owed === 0 && formBaseCost > 0) {
+                doneField.value = 'نعم';
                 doneField.style.color = 'var(--primary-green)';
             } else {
+                doneField.value = 'لا';
                 doneField.style.color = 'var(--text-dark)';
             }
         }
-        
-        document.querySelectorAll('.auto-calc').forEach(input => {
-            input.addEventListener('input', calculateFormDebt);
-        });
 
+        document.querySelectorAll('.calc-basic').forEach(input => input.addEventListener('input', calcFormFromBasics));
+        document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
+        document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
+
+
+        // ==========================================
+        // تحميل البيانات
+        // ==========================================
         function loadData(forceReload = false) {
             const tableBody = document.getElementById('tableBody');
             const today = new Date().toDateString();
@@ -319,23 +332,34 @@
                         return;
                     }
 
-                    const newDataFormatted = data.map(item => ({
-                        rowNumber: item.rowNumber,
-                        companyName: item['أسم الشركة'] || '',
-                        productName: item['أسم المنتج'] || '',
-                        productCount: item['عدد المنتج'] || '',
-                        publicPrice: item['سعر المنتج الجمهور'] || '',
-                        discount: item['نسبة الخصم'] || '',
-                        dateIn: formatDate(item['تاريخ وارد']),
-                        pay1: item['دفعة 1'] || '',
-                        collect1: formatDate(item['تاريخ تحصيل 1']),
-                        pay2: item['دفعة 2'] || '',
-                        collect2: formatDate(item['تاريخ تحصيل 2']),
-                        pay3: item['دفعة 3'] || '',
-                        collect3: formatDate(item['تاريخ تحصيل 3']),
-                        owed: item['علينا'] || 0,
-                        done: item['خالص'] || 'لا'
-                    }));
+                    const newDataFormatted = data.map(item => {
+                        let parsedOwed = parseFloat(item['علينا']) || 0;
+                        let p1 = parseFloat(item['دفعة 1']) || 0;
+                        let p2 = parseFloat(item['دفعة 2']) || 0;
+                        let p3 = parseFloat(item['دفعة 3']) || 0;
+                        
+                        // بنجهز التكلفة الأساسية المخفية للجدول
+                        let baseCost = parsedOwed + p1 + p2 + p3;
+
+                        return {
+                            rowNumber: item.rowNumber,
+                            companyName: item['أسم الشركة'] || '',
+                            productName: item['أسم المنتج'] || '',
+                            productCount: item['عدد المنتج'] || '',
+                            publicPrice: item['سعر المنتج الجمهور'] || '',
+                            discount: item['نسبة الخصم'] || '',
+                            dateIn: formatDate(item['تاريخ وارد']),
+                            pay1: item['دفعة 1'] || '',
+                            collect1: formatDate(item['تاريخ تحصيل 1']),
+                            pay2: item['دفعة 2'] || '',
+                            collect2: formatDate(item['تاريخ تحصيل 2']),
+                            pay3: item['دفعة 3'] || '',
+                            collect3: formatDate(item['تاريخ تحصيل 3']),
+                            owed: parsedOwed,
+                            baseCost: baseCost,
+                            done: item['خالص'] || 'لا'
+                        };
+                    });
 
                     const newDataString = JSON.stringify(newDataFormatted);
                     
@@ -356,6 +380,9 @@
                 });
         }
 
+        // ==========================================
+        // رسم الجدول
+        // ==========================================
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -367,33 +394,33 @@
                 tr.innerHTML = `
                     <td><input type="text" class="inline-input" value="${row.companyName}" onchange="saveRow(${index}, 'companyName', this.value)"></td>
                     <td><input type="text" class="inline-input" value="${row.productName}" onchange="saveRow(${index}, 'productName', this.value)"></td>
-                    <td><input type="text" class="inline-input count-input" value="${row.productCount}" oninput="calcRowDebt(${index}, 'productCount', this.value)" onchange="saveRow(${index})"></td>
-                    <td><input type="number" class="inline-input price-input" value="${row.publicPrice}" oninput="calcRowDebt(${index}, 'publicPrice', this.value)" onchange="saveRow(${index})"></td>
-                    <td><input type="number" class="inline-input discount-input" value="${row.discount}" oninput="calcRowDebt(${index}, 'discount', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="text" class="inline-input count-input" value="${row.productCount}" oninput="calcRowBasics(${index}, 'productCount', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="number" class="inline-input price-input" value="${row.publicPrice}" oninput="calcRowBasics(${index}, 'publicPrice', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="number" class="inline-input discount-input" value="${row.discount}" oninput="calcRowBasics(${index}, 'discount', this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="text" class="inline-input table-date" placeholder="وارد" value="${row.dateIn}" onchange="saveRow(${index}, 'dateIn', this.value)"></td>
                     
                     <td>
                         <div class="dual-input-wrapper">
-                            <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay1}" oninput="calcRowDebt(${index}, 'pay1', this.value)" onchange="saveRow(${index})">
+                            <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay1}" oninput="applyRowPayments(${index}, 'pay1', this.value)" onchange="saveRow(${index})">
                             <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect1}" onchange="saveRow(${index}, 'collect1', this.value)">
                         </div>
                     </td>
                     
                     <td>
                         <div class="dual-input-wrapper">
-                            <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay2}" oninput="calcRowDebt(${index}, 'pay2', this.value)" onchange="saveRow(${index})">
+                            <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay2}" oninput="applyRowPayments(${index}, 'pay2', this.value)" onchange="saveRow(${index})">
                             <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect2}" onchange="saveRow(${index}, 'collect2', this.value)">
                         </div>
                     </td>
 
                     <td>
                         <div class="dual-input-wrapper">
-                            <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay3}" oninput="calcRowDebt(${index}, 'pay3', this.value)" onchange="saveRow(${index})">
+                            <input type="number" class="inline-input pay-amount" placeholder="المبلغ" value="${row.pay3}" oninput="applyRowPayments(${index}, 'pay3', this.value)" onchange="saveRow(${index})">
                             <input type="text" class="inline-input table-date" placeholder="التاريخ" value="${row.collect3}" onchange="saveRow(${index}, 'collect3', this.value)">
                         </div>
                     </td>
 
-                    <td><input type="text" id="rowOwed_${index}" class="inline-input debt-input readonly-field" value="${row.owed}" readonly></td>
+                    <td><input type="number" id="rowOwed_${index}" class="inline-input debt-input" value="${row.owed}" oninput="manualRowOwed(${index}, this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="text" id="rowDone_${index}" class="inline-input readonly-field ${isDoneClass}" value="${row.done}" readonly></td>
                     
                     <td>
@@ -409,29 +436,59 @@
 
         loadData();
 
-        function calcRowDebt(index, field, value) {
-            pharmaData[index][field] = value; 
+        // ==========================================
+        // التعديل اللحظي جوه الجدول (3 حالات)
+        // ==========================================
+        
+        // حالة 1: عدل السعر أو الخصم أو العدد
+        function calcRowBasics(index, field, value) {
+            pharmaData[index][field] = value;
+            let pr = parseFloat(pharmaData[index].publicPrice) || 0;
+            let c = extractNumber(pharmaData[index].productCount);
+            let disc = parseFloat(pharmaData[index].discount) || 0;
             
-            let result = calculateDebtCore(
-                pharmaData[index].publicPrice, 
-                pharmaData[index].productCount, 
-                pharmaData[index].discount, 
-                pharmaData[index].pay1, 
-                pharmaData[index].pay2, 
-                pharmaData[index].pay3
-            );
-            
-            pharmaData[index].owed = result.owed;
-            pharmaData[index].done = result.isDone;
+            pharmaData[index].baseCost = (pr - (pr * (disc / 100))) * c;
+            applyRowPaymentsLogic(index);
+        }
 
-            document.getElementById(`rowOwed_${index}`).value = result.owed;
-            const doneField = document.getElementById(`rowDone_${index}`);
-            doneField.value = result.isDone;
+        // حالة 2: كتب مبلغ المديونية "علينا" بإيده
+        function manualRowOwed(index, value) {
+            let typedOwed = parseFloat(value) || 0;
+            let p1 = parseFloat(pharmaData[index].pay1) || 0;
+            let p2 = parseFloat(pharmaData[index].pay2) || 0;
+            let p3 = parseFloat(pharmaData[index].pay3) || 0;
             
-            if(result.isDone === 'نعم') doneField.classList.add('done-yes');
+            pharmaData[index].baseCost = typedOwed + p1 + p2 + p3;
+            pharmaData[index].owed = typedOwed; 
+            applyRowPaymentsLogic(index);
+        }
+
+        // حالة 3: ضاف دفعة في الجدول
+        function applyRowPayments(index, field, value) {
+            pharmaData[index][field] = value;
+            applyRowPaymentsLogic(index);
+        }
+
+        // دالة التنفيذ المشتركة في الجدول
+        function applyRowPaymentsLogic(index) {
+            let p1 = parseFloat(pharmaData[index].pay1) || 0;
+            let p2 = parseFloat(pharmaData[index].pay2) || 0;
+            let p3 = parseFloat(pharmaData[index].pay3) || 0;
+
+            let owed = pharmaData[index].baseCost - (p1 + p2 + p3);
+            if (owed < 0) owed = 0;
+
+            pharmaData[index].owed = owed.toFixed(2).replace(/\.00$/, '');
+            pharmaData[index].done = (owed === 0 && pharmaData[index].baseCost > 0) ? 'نعم' : 'لا';
+
+            document.getElementById(`rowOwed_${index}`).value = pharmaData[index].owed;
+            const doneField = document.getElementById(`rowDone_${index}`);
+            doneField.value = pharmaData[index].done;
+            if(pharmaData[index].done === 'نعم') doneField.classList.add('done-yes');
             else doneField.classList.remove('done-yes');
         }
 
+        // حفظ التغييرات 
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             
@@ -445,6 +502,7 @@
             .catch(err => { showSyncStatus('تم الحفظ', false); setTimeout(hideSyncStatus, 1500); });
         }
 
+        // الحذف
         function deleteRow(index) {
             if (!confirm('هل أنت متأكد من حذف هذا البيان نهائياً؟')) return;
 
@@ -460,6 +518,7 @@
             .catch(err => { showSyncStatus('تم الحذف', false); setTimeout(() => loadData(true), 1500); });
         }
 
+        // حفظ الفورم
         const addForm = document.getElementById('addForm');
         const submitBtn = document.getElementById('submitBtn');
 
@@ -488,8 +547,8 @@
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
-            .then(result => { addForm.reset(); calculateFormDebt(); loadData(true); })
-            .catch(error => { addForm.reset(); calculateFormDebt(); setTimeout(() => loadData(true), 1500); })
+            .then(result => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; loadData(true); })
+            .catch(error => { addForm.reset(); formBaseCost=0; document.getElementById('done').value='لا'; document.getElementById('done').style.color='var(--text-dark)'; setTimeout(() => loadData(true), 1500); })
             .finally(() => { submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> حفظ'; submitBtn.disabled = false; });
         });
     </script>
