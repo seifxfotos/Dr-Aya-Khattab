@@ -33,10 +33,9 @@
         .camera-btn input { display: none; }
         
         .crop-container { display: none; margin-top: 10px; }
-        .img-container { width: 100%; max-height: 280px; background: #000; margin-bottom: 10px; border-radius: 6px; overflow: hidden;}
+        .img-container { width: 100%; height: 400px; background: #000; margin-bottom: 10px; border-radius: 6px; overflow: hidden;}
         .img-container img { max-width: 100%; display: block; }
         
-        /* أزرار السحب الموجهة (نظام القناص) */
         .sniper-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .btn-snipe { background: #8e44ad; color: white; border: none; padding: 8px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-snipe.phone { background: #d35400; }
@@ -83,14 +82,13 @@
         </label>
         
         <div class="crop-container" id="cropContainer">
-            <p style="font-size: 11px; color: var(--warning); margin: 0 0 8px 0;">حدد الكلمة بالظبط واضغط على الخانة المناسبة لها</p>
+            <p style="font-size: 11px; color: var(--warning); margin: 0 0 8px 0;">يمكنك التقريب لتحديد الكلمة بدقة</p>
             <div class="img-container">
                 <img id="imageToCrop" src="">
             </div>
             
             <div id="ocrStatus"></div>
 
-            <!-- أزرار القناص (Targeted Extraction) -->
             <div class="sniper-actions">
                 <button class="btn-snipe" onclick="extractTargeted('p_name', 'ara')"><i class="fa-solid fa-user"></i> سحب كـ (اسم)</button>
                 <button class="btn-snipe phone" onclick="extractTargeted('p_phone', 'eng')"><i class="fa-solid fa-phone"></i> سحب كـ (موبايل/أرقام)</button>
@@ -174,19 +172,20 @@
                     if (cropper) cropper.destroy();
                     
                     cropper = new Cropper(image, {
-                        viewMode: 1,
-                        dragMode: 'crop',
-                        autoCropArea: 0.3, // مربع صغير لسهولة التحديد
+                        viewMode: 2, // يسمح بالتكبير
+                        dragMode: 'move', // تحريك الصورة
+                        autoCropArea: 0.3,
                         responsive: true,
                         guides: true,
+                        zoomable: true, // تفعيل التكبير
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
                     });
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // دالة السحب الموجهة (Sniper Extraction)
-        // بياخد id الخانة اللي هيرمي فيها، ولغة القراءة (عربي للاسم، انجليزي للأرقام عشان الدقة)
         async function extractTargeted(targetInputId, lang) {
             if (!cropper) return;
             
@@ -195,15 +194,13 @@
             statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج (${targetName})...`;
             
             try {
-                // تحسين جودة الصورة المقصوصة (فلتر تباين)
                 const canvas = cropper.getCroppedCanvas();
                 const ctx = canvas.getContext('2d');
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
-                // تحويل لأسود وأبيض لتقليل الشوشرة
                 for (let i = 0; i < data.length; i += 4) {
                     const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    const color = avg > 110 ? 255 : 0; // عتبة التباين
+                    const color = avg > 110 ? 255 : 0; 
                     data[i] = data[i + 1] = data[i + 2] = color;
                 }
                 ctx.putImageData(imageData, 0, 0);
@@ -213,19 +210,17 @@
                 const result = await Tesseract.recognize(base64Image, lang);
                 let text = result.data.text.trim();
                 
-                // لو السحب كان للأرقام (موبايل/سن) ننضف أي حروف جات بالغلط
                 if(targetInputId === 'p_phone') {
                     text = text.replace(/[^0-9]/g, ''); 
                 }
 
                 if(text === "") {
-                    statusDiv.innerHTML = `<span style="color:#e74c3c">لم يتعرف على ${targetName}. (خط متداخل جداً)</span>`;
+                    statusDiv.innerHTML = `<span style="color:#e74c3c">لم يتعرف على ${targetName}. (خط غير واضح)</span>`;
                     return;
                 }
 
-                // وضع النص في الخانة المطلوبة مباشرة
                 document.getElementById(targetInputId).value = text;
-                statusDiv.innerHTML = `<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم وضع ${targetName}. اسحب الباقي أو اكتبه.</span>`;
+                statusDiv.innerHTML = `<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم استخراج ${targetName}.</span>`;
                 
             } catch (err) {
                 statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ. حاول تحديد مساحة أصغر.</span>';
