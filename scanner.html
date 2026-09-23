@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة أرشفة الكروت الورقية - د. آية خطاب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- مكتبة الذكاء الاصطناعي لقراءة الصور (Tesseract.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+    <style>
+        :root { --primary-blue: #0093D0; --primary-green: #8CC63F; --bg: #f4f7f6; --card: #fff; --text: #333; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
+        .header { text-align: center; margin-bottom: 20px; }
+        
+        .split-container { display: flex; gap: 20px; height: calc(100vh - 120px); }
+        .panel { flex: 1; background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow-y: auto; }
+        
+        /* قسم الصورة */
+        .image-section { border: 2px dashed #ccc; border-radius: 8px; text-align: center; padding: 20px; position: relative; height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #fafafa; }
+        .image-section img { max-width: 100%; max-height: 100%; object-fit: contain; display: none; border-radius: 8px; }
+        .upload-btn { background: var(--primary-blue); color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .upload-btn input { display: none; }
+
+        /* قسم الذكاء الاصطناعي */
+        .ocr-controls { margin-top: 15px; display: flex; gap: 10px; flex-direction: column; }
+        .btn-ocr { background: #9b59b6; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn-ocr:hover { filter: brightness(0.9); }
+        .ocr-result { background: #fdfdfd; border: 1px solid #eee; padding: 10px; border-radius: 6px; min-height: 80px; font-size: 14px; color: #555; white-space: pre-wrap; direction: rtl; }
+
+        /* الفورم */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--primary-blue); font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Cairo'; box-sizing: border-box; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-green); outline: none; }
+        
+        .btn-save { background: var(--primary-green); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 18px; margin-top: 10px; transition: 0.3s; }
+        .btn-save:hover { filter: brightness(0.9); }
+
+        @media (max-width: 800px) { .split-container { flex-direction: column; height: auto; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="color: var(--primary-blue); margin: 0;"><i class="fa-solid fa-scanner"></i> أداة الأرشفة السريعة (تحويل الورق لإلكتروني)</h2>
+        <p style="color: #666; margin: 5px 0;">قم بتصوير الكرت واستخرج البيانات آلياً، أو انقلها بعينك بسرعة وحفظها في الأرشيف.</p>
+    </div>
+
+    <div class="split-container">
+        <!-- النص اليمين: الكاميرا والذكاء الاصطناعي -->
+        <div class="panel">
+            <div class="image-section" id="dropZone">
+                <label class="upload-btn" id="uploadLabel">
+                    <i class="fa-solid fa-camera"></i> افتح الكاميرا أو اختر صورة
+                    <!-- الكود ده بيفتح كاميرا الموبايل مباشرة أو المعرض -->
+                    <input type="file" accept="image/*" capture="environment" id="cardImage">
+                </label>
+                <img id="previewImg" src="" alt="Card Preview">
+            </div>
+
+            <div class="ocr-controls">
+                <button class="btn-ocr" id="scanBtn" onclick="extractText()"><i class="fa-solid fa-wand-magic-sparkles"></i> استخراج النص آلياً (OCR)</button>
+                <label style="font-size: 12px; color: #888;">* قد يخطئ الذكاء الاصطناعي في قراءة خط اليد للطبيب، ولكنه ممتاز في الأرقام.</label>
+                <div class="ocr-result" id="ocrText" placeholder="سيظهر النص المستخرج هنا لتتمكن من نسخه..."></div>
+            </div>
+        </div>
+
+        <!-- النص الشمال: نموذج الإدخال السريع -->
+        <div class="panel">
+            <h3 style="margin-top: 0; color: var(--primary-blue); border-bottom: 2px dashed #ccc; padding-bottom: 10px;">بيانات الكرت الجديد</h3>
+            <form id="archiveForm">
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;"><label>الاسم</label><input type="text" id="p_name" required></div>
+                    <div class="form-group" style="flex: 1;"><label>رقم الموبايل</label><input type="text" id="p_phone"></div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;"><label>السن</label><input type="text" id="p_age"></div>
+                    <div class="form-group" style="flex: 1;"><label>التشخيص</label><input type="text" id="p_diagnosis"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>البروتوكول العلاجي</label>
+                    <input type="text" id="p_protocol">
+                </div>
+
+                <div class="form-group">
+                    <label>الجلسات / ملاحظات طبية</label>
+                    <textarea id="p_notes" rows="6" placeholder="اكتب ملخص الجلسات القديمة أو الملاحظات..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-save" id="saveBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ في الأرشيف (Enter)</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 🚨 ضع رابط الشيت "المؤقت" الجديد هنا 🚨
+        const SCRIPT_URL_TEMP = "https://script.google.com/macros/s/AKfycbzpVd7GaaRKeg9j8Xw_QCm_hLi32Cjqs17BK-dmYJDM9qkJc9ibBfrTNJkVCLr5AEabYQ/exec";
+        
+        const cardImage = document.getElementById('cardImage');
+        const previewImg = document.getElementById('previewImg');
+        const uploadLabel = document.getElementById('uploadLabel');
+        let currentImageFile = null;
+
+        // 1. عرض الصورة بمجرد التقاطها
+        cardImage.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                currentImageFile = file;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImg.src = event.target.result;
+                    previewImg.style.display = 'block';
+                    uploadLabel.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 2. الذكاء الاصطناعي (Tesseract OCR)
+        async function extractText() {
+            if (!currentImageFile) return alert("برجاء التقاط صورة للكرت أولاً!");
+            
+            const scanBtn = document.getElementById('scanBtn');
+            const ocrText = document.getElementById('ocrText');
+            
+            scanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري قراءة الكرت... (قد يستغرق ثواني)';
+            scanBtn.disabled = true;
+            ocrText.innerText = "جاري تحليل الصورة...";
+
+            try {
+                // يدعم الإنجليزية والعربية
+                const worker = await Tesseract.createWorker('ara+eng');
+                const ret = await worker.recognize(currentImageFile);
+                const text = ret.data.text;
+                await worker.terminate();
+
+                ocrText.innerText = text;
+                smartFill(text); // محاولة التعبئة التلقائية
+
+            } catch (error) {
+                ocrText.innerText = "فشل في قراءة الصورة. يمكنك النقل يدوياً.";
+            } finally {
+                scanBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> إعادة الاستخراج';
+                scanBtn.disabled = false;
+            }
+        }
+
+        // 3. محاولة استخراج رقم الموبايل والاسم من النص المبعثر
+        function smartFill(text) {
+            // البحث عن أي رقم موبايل مكون من 10 أو 11 رقم
+            const phoneMatch = text.match(/01[0-2,5]{1}[0-9]{8}/);
+            if (phoneMatch) {
+                document.getElementById('p_phone').value = phoneMatch[0];
+            }
+            
+            // افتراض أن أول سطر به نصوص عربية هو الاسم
+            const lines = text.split('\n');
+            for(let line of lines) {
+                if(line.trim().length > 3 && /[أ-ي]/.test(line) && !line.includes("موبايل") && !line.includes("رقم")) {
+                    document.getElementById('p_name').value = line.trim();
+                    break;
+                }
+            }
+        }
+
+        // 4. الحفظ في الشيت المؤقت (Optimistic Save)
+        document.getElementById('archiveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('saveBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الأرشفة...';
+            btn.disabled = true;
+
+            const payload = {
+                name: document.getElementById('p_name').value,
+                phone: document.getElementById('p_phone').value,
+                age: document.getElementById('p_age').value,
+                diagnosis: document.getElementById('p_diagnosis').value,
+                protocol: document.getElementById('p_protocol').value,
+                medical_notes: document.getElementById('p_notes').value
+            };
+
+            fetch(SCRIPT_URL_TEMP, { method: "POST", body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(data => {
+                // تصفير الصفحة للكرت اللي بعده
+                document.getElementById('archiveForm').reset();
+                previewImg.src = '';
+                previewImg.style.display = 'none';
+                uploadLabel.style.display = 'block';
+                currentImageFile = null;
+                document.getElementById('ocrText').innerText = '';
+                
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> تم الحفظ! صور اللي بعده';
+                setTimeout(() => { 
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ في الأرشيف (Enter)'; 
+                    btn.disabled = false; 
+                    document.getElementById('p_name').focus();
+                }, 2000);
+            })
+            .catch(err => {
+                alert("حدث خطأ في الاتصال بالإنترنت.");
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> إرسال مجدداً';
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
