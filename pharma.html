@@ -245,33 +245,36 @@
         }
 
         // ==========================================
-        // الدوال الذكية الجديدة لسحب البيانات وتصحيح التواريخ
+        // الدوال الذكية (تم تحديثها بالكامل لتجاهل أي مسافات وتصحيح فرق التوقيت)
         // ==========================================
 
-        // 1. الدالة دي وظيفتها تتجاهل أي مسافات مخفية في عناوين جوجل شيت
         function getSafeValue(item, key) {
-            if (item[key] !== undefined) return item[key];
+            if (item[key] !== undefined && item[key] !== null) return item[key];
+            // تحويل المفتاح لنسخة بدون أي مسافات تماماً للمقارنة السليمة 100%
+            let cleanKey = key.replace(/\s+/g, '');
             for (let k in item) {
-                if (k.trim() === key.trim()) return item[k];
+                if (k.replace(/\s+/g, '') === cleanKey) {
+                    return item[k] !== null ? item[k] : '';
+                }
             }
             return '';
         }
 
-        // 2. الدالة دي وظيفتها تفهم التاريخ سواء كان ISO أو صيغة عادية زي 9/23/2026
         const formatDate = (dateStr) => {
-            if(!dateStr) return '';
+            if(!dateStr || String(dateStr).trim() === '') return '';
             try { 
                 let str = String(dateStr).trim();
-                // لو جوجل شيت بعته بصيغة T
-                if (str.includes('T')) return str.split('T')[0]; 
-                
-                // لو جوجل شيت بعته بصيغة تاريخ مقروء
                 let d = new Date(str);
+                // تأكد إن التاريخ صحيح
                 if (!isNaN(d.getTime())) {
-                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    // نأخذ التاريخ المحلي للمتصفح عشان نعالج فرق التوقيت اللي بيأخر يوم
+                    let year = d.getFullYear();
+                    let month = String(d.getMonth() + 1).padStart(2, '0');
+                    let day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
                 }
                 return str;
-            } catch(e) { return String(dateStr); }
+            } catch(e) { return String(dateStr).trim(); }
         };
 
         function extractNumber(str) {
@@ -284,7 +287,6 @@
         // منطق الحسابات الذكية (للفورم)
         // ==========================================
         
-        // 1. لو عدلت في السعر أو الخصم أو العدد
         function calcFormFromBasics() {
             let price = parseFloat(document.getElementById('publicPrice').value) || 0;
             let count = extractNumber(document.getElementById('productCount').value);
@@ -294,7 +296,6 @@
             applyFormPayments();
         }
 
-        // 2. لو كتبت رقم المديونية "علينا" بإيدك! السستم هيعتبره هو الأساس
         function manualFormOwedUpdate() {
             let typedOwed = parseFloat(document.getElementById('owed').value) || 0;
             let p1 = parseFloat(document.getElementById('pay1').value) || 0;
@@ -302,10 +303,9 @@
             let p3 = parseFloat(document.getElementById('pay3').value) || 0;
             
             formBaseCost = typedOwed + p1 + p2 + p3;
-            applyFormPayments(); // عشان يتأكد إن "خالص" بتشتغل صح
+            applyFormPayments();
         }
 
-        // 3. خصم الدفعات من التكلفة الأساسية (سواء كانت محسوبة أو مكتوبة يدوي)
         function applyFormPayments() {
             let p1 = parseFloat(document.getElementById('pay1').value) || 0;
             let p2 = parseFloat(document.getElementById('pay2').value) || 0;
@@ -463,7 +463,6 @@
         // التعديل اللحظي جوه الجدول (3 حالات)
         // ==========================================
         
-        // حالة 1: عدل السعر أو الخصم أو العدد
         function calcRowBasics(index, field, value) {
             pharmaData[index][field] = value;
             let pr = parseFloat(pharmaData[index].publicPrice) || 0;
@@ -474,7 +473,6 @@
             applyRowPaymentsLogic(index);
         }
 
-        // حالة 2: كتب مبلغ المديونية "علينا" بإيده
         function manualRowOwed(index, value) {
             let typedOwed = parseFloat(value) || 0;
             let p1 = parseFloat(pharmaData[index].pay1) || 0;
@@ -486,13 +484,11 @@
             applyRowPaymentsLogic(index);
         }
 
-        // حالة 3: ضاف دفعة في الجدول
         function applyRowPayments(index, field, value) {
             pharmaData[index][field] = value;
             applyRowPaymentsLogic(index);
         }
 
-        // دالة التنفيذ المشتركة في الجدول
         function applyRowPaymentsLogic(index) {
             let p1 = parseFloat(pharmaData[index].pay1) || 0;
             let p2 = parseFloat(pharmaData[index].pay2) || 0;
