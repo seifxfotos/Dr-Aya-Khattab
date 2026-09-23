@@ -183,7 +183,7 @@
         input:checked + .slider { background-color: rgba(255,255,255,0.1); }
         input:checked + .slider:before { transform: translateX(28px); background-color: var(--text-dark);}
 
-        /* تصميم الشات الحي السحابي مع شارة التنبيه الحمراء */
+        /* تصميم الشات الحي السحابي */
         .chat-toggle-btn {
             position: fixed; bottom: 25px; right: 25px; z-index: 1000;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
@@ -201,15 +201,11 @@
             border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             animation: pulseBadge 1.5s infinite;
         }
-        @keyframes pulseBadge {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
         .chat-box-wrapper {
             position: fixed; bottom: 95px; right: 25px; width: 350px; max-width: 90vw;
-            height: 450px; background: var(--card-bg); backdrop-filter: blur(15px);
+            height: 480px; background: var(--card-bg); backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             z-index: 1000; display: none; flex-direction: column; overflow: hidden; animation: popIn 0.3s ease;
         }
@@ -230,35 +226,63 @@
         }
         
         .message {
-            max-width: 80%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; word-break: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            max-width: 82%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; word-break: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
         }
         .message.doctor { 
             background-color: var(--primary-blue); color: white; 
-            align-self: flex-start; border-bottom-right-radius: 4px; 
-            border-right: 4px solid #005f8d;
+            align-self: flex-start; border-bottom-right-radius: 4px; border-right: 4px solid #005f8d;
         }
         .message.reception { 
             background-color: var(--primary-green); color: white; 
-            align-self: flex-end; border-bottom-left-radius: 4px; 
-            border-left: 4px solid #5d8e20;
+            align-self: flex-end; border-bottom-left-radius: 4px; border-left: 4px solid #5d8e20;
         }
+
         .message .sender-header {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; margin-bottom: 4px;
         }
         .message .sender-name { font-size: 11px; font-weight: 700; opacity: 0.9; }
-        .message .msg-time { font-size: 9px; opacity: 0.8; direction: ltr; }
+        .message .msg-time { font-size: 10px; opacity: 0.8; direction: ltr; display: flex; align-items: center; gap: 4px;}
+        
+        /* مؤشر السين والإرسال */
+        .msg-status { font-size: 12px; margin-left: 4px; opacity: 0.8; }
+        .msg-status.seen { color: #f1c40f; opacity: 1; text-shadow: 0 0 2px rgba(0,0,0,0.3); }
+
+        .msg-text-content { display: inline; }
+        .msg-edited-tag { font-size: 10px; opacity: 0.6; margin-right: 5px; font-style: italic; }
+
+        /* أزرار التعديل والحذف اللي بتظهر عند الوقوف على الرسالة */
+        .msg-actions {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            display: none; gap: 5px; flex-direction: column;
+        }
+        .message.doctor .msg-actions { left: -35px; }
+        .message.reception .msg-actions { right: -35px; }
+        .message:hover .msg-actions { display: flex; }
+        
+        .msg-actions button {
+            background: var(--card-bg); color: var(--text-dark); border: 1px solid var(--glass-border);
+            width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;
+        }
+        .msg-actions button:hover { background: var(--primary-blue); color: white; }
+        .msg-actions button.delete-btn:hover { background: var(--danger); color: white; }
 
         .chat-input-area {
-            padding: 10px; background: rgba(0,0,0,0.03); display: flex; gap: 8px; border-top: 1px solid var(--glass-border);
+            padding: 10px; background: rgba(0,0,0,0.03); display: flex; gap: 8px; border-top: 1px solid var(--glass-border); align-items: center;
+            position: relative;
         }
         .chat-input-area input {
-            flex: 1; padding: 8px 12px; border: 1px solid var(--glass-border); border-radius: 8px;
+            flex: 1; padding: 10px 12px; border: 1px solid var(--glass-border); border-radius: 8px;
             font-family: 'Cairo'; font-size: 14px; outline: none; background: var(--card-bg); color: var(--text-dark);
         }
         .chat-input-area button {
-            background: var(--primary-blue); color: white; border: none; padding: 0 15px;
-            border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;
+            background: var(--primary-blue); color: white; border: none; padding: 0 15px; height: 40px;
+            border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; transition: 0.3s;
+        }
+        .cancel-edit-btn {
+            position: absolute; top: -30px; right: 10px; background: var(--danger); color: white; border: none; border-radius: 10px; padding: 4px 10px; font-family: 'Cairo'; font-size: 11px; cursor: pointer; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         @media (max-width: 600px) {
@@ -285,7 +309,6 @@
     </div>
 
     <div class="main-container">
-        
         <div class="clinic-header">
             <div class="clinic-logo">
                 <img src="Logo_Dr_Aya.webp" alt="لوجو عيادة د. آية خطاب">
@@ -299,28 +322,22 @@
                 <h3 class="gate-title">جدول الحجوزات اليومي</h3>
                 <p class="gate-desc">إدارة كشوفات اليوم، المتابعات والجلسات، وتسجيل حضور المرضى وحالة الدفع.</p>
             </a>
-
             <a href="https://drayakhattab.com/cards" target="_blank" class="gate-card">
                 <i class="fa-solid fa-address-card gate-icon"></i>
                 <h3 class="gate-title">سجل استمارات المرضى</h3>
                 <p class="gate-desc">البحث عن كروت المرضى، تسجيل البيانات الطبية، إضافة جلسات، وتاريخ الحالات.</p>
             </a>
-
-            <!-- الإضافة الجديدة: الموردين -->
             <a href="https://drayakhattab.com/suppliers.html" target="_blank" class="gate-card">
                 <i class="fa-solid fa-boxes-packing gate-icon"></i>
                 <h3 class="gate-title">المستهلكات والموردين</h3>
                 <p class="gate-desc">تنظيم وتتبع توريدات العيادة الأساسية وفواتير الموردين.</p>
             </a>
-
-            <!-- الإضافة الجديدة: الشركات -->
             <a href="https://drayakhattab.com/pharma.html" target="_blank" class="gate-card">
                 <i class="fa-solid fa-pills gate-icon"></i>
                 <h3 class="gate-title">شركات الدواء</h3>
                 <p class="gate-desc">تنظيم وتتبع طلبيات الأدوية، الخصومات، والمديونيات الخاصة بالشركات.</p>
             </a>
         </div>
-
     </div>
 
     <!-- زر فتح الشات مع شارة التنبيه -->
@@ -329,7 +346,7 @@
         <span class="chat-badge" id="chatBadge">0</span>
     </button>
 
-    <!-- صندوق الشات الحي السحابي -->
+    <!-- صندوق الشات -->
     <div class="chat-box-wrapper" id="chatBox">
         <div class="chat-header">
             <span>محادثة العيادة</span>
@@ -339,17 +356,43 @@
             </select>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <div style="text-align:center; opacity:0.5; margin-top:80px;">جاري تحميل الرسائل...</div>
+            <div style="text-align:center; opacity:0.5; margin-top:80px;">جاري الاتصال...</div>
         </div>
         <div class="chat-input-area">
+            <button class="cancel-edit-btn" id="cancelEditBtn" onclick="cancelEdit()">إلغاء التعديل</button>
             <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">إرسال</button>
+            <button id="sendBtn" onclick="sendMessage()">إرسال</button>
         </div>
     </div>
 
-    <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhhXMi7_XP-Gf7yoQaHqgJbm0EJtKYite4MBi05dl_B7qccrPO0n1UhzW9BD77j0DwmQ/exec';
+    <!-- مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+    <script>
+        // ==========================================
+        // 1. كود الـ Firebase الخاص بك
+        // ==========================================
+        const firebaseConfig = {
+            // حط الكود بتاعك هنا
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const chatRef = database.ref('clinic_chat');
+
+        // ==========================================
+        // 2. إعدادات المتغيرات والأدوات
+        // ==========================================
+        let chatMessagesData = [];
+        let editingMsgId = null; // بيحتفظ بـ ID الرسالة اللي بتتعدل
+        let isWindowFocused = document.hasFocus();
+
+        // تتبع إذا كان المستخدم فاتح الصفحة ولا لأ (عشان السين الذكي)
+        window.addEventListener('focus', () => { isWindowFocused = true; checkAndMarkSeen(); });
+        window.addEventListener('blur', () => { isWindowFocused = false; });
+
+        // الدارك مود
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme) {
@@ -357,75 +400,81 @@
             if (currentTheme === 'dark') toggleSwitch.checked = true;
         }
         toggleSwitch.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-            }
+            if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); } 
+            else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); }
         });
 
+        // ==========================================
+        // 3. وظائف الشات والسين والتعديل
+        // ==========================================
         function toggleChat() {
             const box = document.getElementById('chatBox');
             const isHidden = box.style.display !== 'flex';
             box.style.display = isHidden ? 'flex' : 'none';
             
             if(isHidden) {
-                // عند فتح الشات يتم تصفير التنبيهات
                 document.getElementById('chatBadge').style.display = 'none';
-                localStorage.setItem('last_seen_msg_count', window.totalMessagesCount || 0);
-                loadCloudMessages();
+                localStorage.setItem('last_seen_msg_count', chatMessagesData.length);
                 scrollToBottom();
+                checkAndMarkSeen(); // بمجرد ما يفتح الشات، يدي للطرف التاني سين
             }
         }
 
         function changeUserRole() {
-            const role = document.getElementById('userRole').value;
-            localStorage.setItem('chat_current_role', role);
-        }
-
-        function getTodayDateStr() {
-            const d = new Date();
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            localStorage.setItem('chat_current_role', document.getElementById('userRole').value);
+            renderMessages(chatMessagesData); // إعادة رسم الشات عشان الألوان تتظبط
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             let savedRole = localStorage.getItem('chat_current_role') || 'reception';
             document.getElementById('userRole').value = savedRole;
-            loadCloudMessages();
-            setInterval(loadCloudMessages, 3000); // تحديث هادي كل 3 ثواني لراحة السيرفر
+            
+            // الاستماع اللحظي للرسايل
+            chatRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                chatMessagesData = [];
+                for (let key in data) {
+                    chatMessagesData.push({ id: key, ...data[key] });
+                }
+                renderMessages(chatMessagesData);
+                checkAndMarkSeen(); // لو استلم رسالة وهو فاتح الشات والصفحة بيفعل السين فوراً
+            });
         });
 
-        async function loadCloudMessages() {
-            const dateStr = getTodayDateStr();
-            try {
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'GET_CHAT', date: dateStr })
-                });
-                let result = await response.json();
+        // --- دالة السين الذكي ---
+        function checkAndMarkSeen() {
+            const isBoxOpen = document.getElementById('chatBox').style.display === 'flex';
+            const currentRole = document.getElementById('userRole').value;
+            
+            // السين مبيتحسبش غير لو الشات مفتوح والماوس في الصفحة (Active)
+            if (isBoxOpen && isWindowFocused && chatMessagesData.length > 0) {
+                let updates = {};
+                let hasUpdates = false;
                 
-                if (result.status === 'success') {
-                    renderMessages(result.data);
+                chatMessagesData.forEach(msg => {
+                    // لو الرسالة مبعوتة من الطرف التاني ولسه مش Seen
+                    if (msg.role !== currentRole && msg.status !== 'seen') {
+                        updates[`${msg.id}/status`] = 'seen';
+                        hasUpdates = true;
+                    }
+                });
+
+                if (hasUpdates) {
+                    chatRef.update(updates);
                 }
-            } catch (e) {
-                console.error("فشل جلب الرسائل", e);
             }
         }
 
+        // --- دالة رسم الشات ---
         function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
             let isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
             const currentRole = document.getElementById('userRole').value;
-            const box = document.getElementById('chatBox');
-            const isBoxOpen = box.style.display === 'flex';
-
-            window.totalMessagesCount = messages ? messages.length : 0;
+            const isBoxOpen = document.getElementById('chatBox').style.display === 'flex';
 
             container.innerHTML = '';
-            if(!messages || messages.length === 0) {
-                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px;">رسايل النهارده هتبدأ هنا.. صباح الخير!</div>';
+            if(messages.length === 0) {
+                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:80px;">رسايل العيادة هتبدأ هنا.. صباح الخير!</div>';
                 return;
             }
 
@@ -433,22 +482,42 @@
                 let div = document.createElement('div');
                 div.className = `message ${msg.role}`;
                 let senderTitle = msg.role === 'doctor' ? 'د. آية خطاب' : 'الريسبشن';
+                
+                // تحديد شكل علامة الصح (واحدة رمادي لو اتبعتت، 2 أصفر/أزرق لو اتشافت)
+                let statusIcon = msg.status === 'seen' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-check"></i>';
+                let statusClass = msg.status === 'seen' ? 'seen' : '';
+                
+                // أزرار التعديل والحذف (بتظهر بس لصاحب الرسالة)
+                let actionsHtml = '';
+                let statusHtml = '';
+                if (msg.role === currentRole) {
+                    actionsHtml = `
+                        <div class="msg-actions">
+                            <button onclick="startEdit('${msg.id}', '${msg.text.replace(/'/g, "\\'")}')" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                            <button class="delete-btn" onclick="deleteMessage('${msg.id}')" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    statusHtml = `<span class="msg-status ${statusClass}">${statusIcon}</span>`;
+                }
+
+                let editedTag = msg.edited ? '<span class="msg-edited-tag">(معدلة)</span>' : '';
+
                 div.innerHTML = `
+                    ${actionsHtml}
                     <div class="sender-header">
                         <span class="sender-name">${senderTitle}</span>
-                        <span class="msg-time">${msg.time || ''}</span>
+                        <span class="msg-time">${msg.time || ''} ${statusHtml}</span>
                     </div>
-                    ${msg.text}
+                    <div class="msg-text-content">${msg.text}</div> ${editedTag}
                 `;
                 container.appendChild(div);
             });
 
-            // منطق شارة التنبيه الحمراء الذكية
+            // التنبيهات
             let lastSeenCount = parseInt(localStorage.getItem('last_seen_msg_count') || '0');
             const badge = document.getElementById('chatBadge');
 
             if (!isBoxOpen && messages.length > lastSeenCount) {
-                // التحقق هل آخر رسالة جاية من الطرف التاني مش مني
                 let lastMsg = messages[messages.length - 1];
                 if (lastMsg.role !== currentRole) {
                     let newUnreadCount = messages.length - lastSeenCount;
@@ -460,43 +529,72 @@
                 localStorage.setItem('last_seen_msg_count', messages.length);
             }
 
-            if (isAtBottom) {
-                scrollToBottom();
-            }
+            if (isAtBottom) scrollToBottom();
         }
 
-        async function sendMessage() {
+        // --- إرسال أو تعديل الرسالة ---
+        function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if(!text) return;
 
             const role = document.getElementById('userRole').value;
-            const dateStr = getTodayDateStr();
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             input.value = '';
 
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        action: 'SEND_CHAT', 
-                        date: dateStr, 
-                        time: timeStr, 
-                        role: role, 
-                        text: text 
-                    })
+            if (editingMsgId) {
+                // لو بنعدل رسالة قديمة
+                chatRef.child(editingMsgId).update({
+                    text: text,
+                    edited: true
                 });
-                loadCloudMessages();
-            } catch (e) {
-                console.error("فشل إرسال الرسالة", e);
+                cancelEdit(); // إرجاع الزرار لشكله الطبيعي
+            } else {
+                // لو بنبعت رسالة جديدة (الستاتس الافتراضي sent)
+                const newMsgRef = chatRef.push();
+                newMsgRef.set({
+                    role: role,
+                    time: timeStr,
+                    text: text,
+                    status: 'sent',
+                    edited: false,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            scrollToBottom();
+        }
+
+        // --- تفعيل التعديل ---
+        function startEdit(id, oldText) {
+            editingMsgId = id;
+            const input = document.getElementById('chatInput');
+            input.value = oldText;
+            input.focus();
+            
+            document.getElementById('sendBtn').innerText = 'تعديل';
+            document.getElementById('sendBtn').style.backgroundColor = 'var(--warning)';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+        }
+
+        // --- إلغاء التعديل ---
+        function cancelEdit() {
+            editingMsgId = null;
+            document.getElementById('chatInput').value = '';
+            document.getElementById('sendBtn').innerText = 'إرسال';
+            document.getElementById('sendBtn').style.backgroundColor = 'var(--primary-blue)';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        // --- حذف الرسالة ---
+        function deleteMessage(id) {
+            if (confirm('هل أنت متأكد من مسح هذه الرسالة للطرفين؟')) {
+                chatRef.child(id).remove();
             }
         }
 
         function handleKeyPress(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') sendMessage();
         }
 
         function scrollToBottom() {
