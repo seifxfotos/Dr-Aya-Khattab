@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- مكتبات الذكاء الاصطناعي والقص -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -34,12 +33,14 @@
         .camera-btn input { display: none; }
         
         .crop-container { display: none; margin-top: 10px; }
-        .img-container { width: 100%; max-height: 300px; background: #000; margin-bottom: 10px; border-radius: 6px; overflow: hidden;}
+        .img-container { width: 100%; max-height: 280px; background: #000; margin-bottom: 10px; border-radius: 6px; overflow: hidden;}
         .img-container img { max-width: 100%; display: block; }
         
-        .ocr-actions { display: flex; gap: 8px; margin-bottom: 10px; }
-        .btn-extract { flex: 1; background: #8e44ad; color: white; border: none; padding: 10px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-retake { background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
+        /* أزرار السحب الموجهة (نظام القناص) */
+        .sniper-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .btn-snipe { background: #8e44ad; color: white; border: none; padding: 8px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-snipe.phone { background: #d35400; }
+        .btn-retake { background: #e74c3c; color: white; border: none; padding: 8px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; grid-column: span 2; }
         
         #ocrStatus { font-size: 12px; color: var(--green-accent); font-weight: bold; margin-bottom: 10px; display: block;}
 
@@ -49,6 +50,7 @@
         .input-row { display: flex; gap: 10px; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; }
         .input-row label { color: var(--cyan-label); font-size: 13px; font-weight: 700; white-space: nowrap; }
         .input-row input { background: transparent; border: none; color: var(--text-light); font-family: 'Cairo'; font-size: 15px; font-weight: 600; width: 100%; outline: none; }
+        .input-row input:focus { border-bottom: 1px solid var(--green-accent); }
         .input-row input::placeholder { color: #555; font-size: 12px; }
         .multi-col { display: flex; gap: 15px; }
         .multi-col .input-row { flex: 1; border-bottom: 1px dashed var(--border-color); }
@@ -72,31 +74,31 @@
 </head>
 <body>
 
-    <div id="appToast" class="toast">تم الإجراء بنجاح ⚡</div>
+    <div id="appToast" class="toast">تم الإجراء ⚡</div>
 
-    <!-- نظام الكاميرا واختيار الصور -->
     <div class="camera-box">
         <label class="camera-btn" id="uploadLabel">
-            <i class="fa-solid fa-camera"></i> تصوير أو اختيار صورة الكرت
+            <i class="fa-solid fa-camera"></i> تصوير أو اختيار صورة
             <input type="file" accept="image/*" id="cardImage">
         </label>
         
         <div class="crop-container" id="cropContainer">
-            <p style="font-size: 12px; color: var(--warning); margin: 0 0 10px 0;">حدد الجزء المطلوب بدقة للحصول على نتيجة أفضل</p>
+            <p style="font-size: 11px; color: var(--warning); margin: 0 0 8px 0;">حدد الكلمة بالظبط واضغط على الخانة المناسبة لها</p>
             <div class="img-container">
                 <img id="imageToCrop" src="">
             </div>
             
             <div id="ocrStatus"></div>
 
-            <div class="ocr-actions">
-                <button class="btn-extract" onclick="extractText()"><i class="fa-solid fa-wand-magic-sparkles"></i> سحب البيانات</button>
-                <button class="btn-retake" onclick="document.getElementById('cardImage').click()"><i class="fa-solid fa-rotate"></i></button>
+            <!-- أزرار القناص (Targeted Extraction) -->
+            <div class="sniper-actions">
+                <button class="btn-snipe" onclick="extractTargeted('p_name', 'ara')"><i class="fa-solid fa-user"></i> سحب كـ (اسم)</button>
+                <button class="btn-snipe phone" onclick="extractTargeted('p_phone', 'eng')"><i class="fa-solid fa-phone"></i> سحب كـ (موبايل/أرقام)</button>
+                <button class="btn-retake" onclick="document.getElementById('cardImage').click()"><i class="fa-solid fa-rotate"></i> تغيير الصورة</button>
             </div>
         </div>
     </div>
 
-    <!-- الكارت الورقي الديجيتال -->
     <div class="medical-card-sheet">
         <form id="archiveForm">
             <div class="form-grid">
@@ -112,7 +114,6 @@
                 <div class="input-row"><label>Treatment Protocol:</label><input type="text" id="p_protocol"></div>
             </div>
 
-            <!-- النصف السفلي: جدول الجلسات -->
             <div class="table-wrapper">
                 <table id="sessionsTable">
                     <thead>
@@ -175,7 +176,7 @@
                     cropper = new Cropper(image, {
                         viewMode: 1,
                         dragMode: 'crop',
-                        autoCropArea: 0.5,
+                        autoCropArea: 0.3, // مربع صغير لسهولة التحديد
                         responsive: true,
                         guides: true,
                     });
@@ -184,49 +185,50 @@
             }
         });
 
-        // دالة الـ OCR المعدلة لتجنب الإيرور على المتصفحات
-        async function extractText() {
+        // دالة السحب الموجهة (Sniper Extraction)
+        // بياخد id الخانة اللي هيرمي فيها، ولغة القراءة (عربي للاسم، انجليزي للأرقام عشان الدقة)
+        async function extractTargeted(targetInputId, lang) {
             if (!cropper) return;
             
             const statusDiv = document.getElementById('ocrStatus');
-            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تحليل الجزء المحدد...';
+            const targetName = targetInputId === 'p_name' ? 'الاسم' : 'الموبايل';
+            statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج (${targetName})...`;
             
             try {
-                // استخدام Base64 بدلاً من Blob لمنع إيرور الذاكرة في المتصفحات
-                const canvas = cropper.getCroppedCanvas({
-                    maxWidth: 1200, 
-                    maxHeight: 1200 
-                });
-                const base64Image = canvas.toDataURL('image/jpeg', 0.9);
+                // تحسين جودة الصورة المقصوصة (فلتر تباين)
+                const canvas = cropper.getCroppedCanvas();
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                // تحويل لأسود وأبيض لتقليل الشوشرة
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    const color = avg > 110 ? 255 : 0; // عتبة التباين
+                    data[i] = data[i + 1] = data[i + 2] = color;
+                }
+                ctx.putImageData(imageData, 0, 0);
                 
-                // الاعتماد على دالة Recognize المباشرة والمستقرة
-                const result = await Tesseract.recognize(base64Image, 'ara+eng');
-                const text = result.data.text;
+                const base64Image = canvas.toDataURL('image/jpeg', 1.0);
                 
-                if(text.trim() === "") {
-                    statusDiv.innerHTML = '<span style="color:#e74c3c">لم يتم التعرف على نصوص (خط غير مقروء).</span>';
+                const result = await Tesseract.recognize(base64Image, lang);
+                let text = result.data.text.trim();
+                
+                // لو السحب كان للأرقام (موبايل/سن) ننضف أي حروف جات بالغلط
+                if(targetInputId === 'p_phone') {
+                    text = text.replace(/[^0-9]/g, ''); 
+                }
+
+                if(text === "") {
+                    statusDiv.innerHTML = `<span style="color:#e74c3c">لم يتعرف على ${targetName}. (خط متداخل جداً)</span>`;
                     return;
                 }
 
-                statusDiv.innerHTML = '<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم السحب. يرجى مراجعة الخانات.</span>';
+                // وضع النص في الخانة المطلوبة مباشرة
+                document.getElementById(targetInputId).value = text;
+                statusDiv.innerHTML = `<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم وضع ${targetName}. اسحب الباقي أو اكتبه.</span>`;
                 
-                const phoneMatch = text.match(/01[0-2,5]{1}[0-9]{8}/);
-                if (phoneMatch) document.getElementById('p_phone').value = phoneMatch[0];
-                
-                const ageMatch = text.match(/(عمر|سن)\s*[:\-]?\s*(\d{1,2})/);
-                if (ageMatch) document.getElementById('p_age').value = ageMatch[2];
-                
-                const lines = text.split('\n');
-                for(let line of lines) {
-                    let c = line.trim();
-                    if(c.length > 3 && /[أ-ي]/.test(c) && !c.includes("تاريخ") && !c.includes("موبايل")) {
-                        document.getElementById('p_name').value = c;
-                        break;
-                    }
-                }
             } catch (err) {
-                console.error("Tesseract Error:", err);
-                statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ. حاول تصغير مربع التحديد.</span>';
+                statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ. حاول تحديد مساحة أصغر.</span>';
             }
         }
 
@@ -242,7 +244,7 @@
                     tableData += `جـ${index + 1} [D:${d} | WS:${ws} | N:${n}]\n`;
                 }
             });
-            return tableData || "لا يوجد جلسات";
+            return tableData || "لا يوجد جلسات مسجلة";
         }
 
         function saveAndNewCard() {
@@ -273,7 +275,7 @@
             document.getElementById('ocrStatus').innerText = '';
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast("تم الحفظ ⚡ ارفع الكرت اللي بعده");
+            showToast("تم الحفظ ⚡ الكرت اللي بعده");
 
             fetch(SCRIPT_URL_TEMP, { method: "POST", body: JSON.stringify(payload) })
             .catch(err => console.log("Background save error"));
