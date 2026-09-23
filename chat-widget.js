@@ -193,7 +193,6 @@
             if(isHidden) {
                 const badge = document.getElementById('chatBadge');
                 if(badge) badge.style.display = 'none';
-                localStorage.setItem('last_seen_msg_count', window.chatMessagesData.length);
                 scrollToBottom();
                 checkAndMarkSeen();
             }
@@ -288,19 +287,21 @@
                 container.appendChild(div);
             });
 
-            let lastSeenCount = parseInt(localStorage.getItem('last_seen_msg_count') || '0');
+            // الحل الجذري لمشكلة الإشعارات عبر فايربيس بدلاً من LocalStorage
             const badge = document.getElementById('chatBadge');
-
-            if (badge && !isBoxOpen && messages.length > lastSeenCount) {
-                let lastMsg = messages[messages.length - 1];
-                if (lastMsg && lastMsg.role !== currentRole) {
-                    let newUnreadCount = messages.length - lastSeenCount;
-                    badge.innerText = newUnreadCount > 9 ? '9+' : newUnreadCount;
-                    badge.style.display = 'flex';
+            if (badge) {
+                if (isBoxOpen) {
+                    badge.style.display = 'none';
+                } else {
+                    // عد الرسايل اللي مبعوتة من الطرف التاني وحالتها مش seen
+                    let unreadCount = messages.filter(msg => msg.role !== currentRole && msg.status !== 'seen').length;
+                    if (unreadCount > 0) {
+                        badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
                 }
-            } else if (badge && isBoxOpen) {
-                badge.style.display = 'none';
-                localStorage.setItem('last_seen_msg_count', messages.length);
             }
 
             if (isAtBottom) scrollToBottom();
@@ -339,7 +340,7 @@
             if(cancelBtn) cancelBtn.style.display = 'block';
         };
 
-        window.cancelEditor = function() { // alias or standard
+        window.cancelEditor = function() {
             window.editingMsgId = null; 
             const input = document.getElementById('chatInput');
             if(input) input.value = '';
