@@ -19,16 +19,27 @@
             --table-border: #00b0ff; --warning: #f39c12;
         }
         
-        body { font-family: 'Cairo', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px 10px 85px 10px; color: var(--text-light); }
+        /* إضافة ضوء أزرق خفيف من ناحية الشمال في الخلفية */
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg-dark); 
+            background-image: radial-gradient(circle at left center, rgba(0, 176, 255, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+            margin: 0; 
+            padding: 10px 10px 85px 10px; 
+            color: var(--text-light); 
+        }
 
         /* منطقة التصوير والقص */
         .camera-box { background: var(--card-bg); border: 1px dashed var(--cyan-label); border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: center; }
         .camera-btn { background: var(--cyan-label); color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-family: 'Cairo'; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+        
+        /* إخفاء زرار الرفع الأساسي */
         .camera-btn input { display: none; }
         
         /* حاوية القص */
         .crop-container { display: none; margin-top: 10px; }
-        .img-container { width: 100%; max-height: 300px; background: #000; margin-bottom: 10px; }
+        .img-container { width: 100%; max-height: 300px; background: #000; margin-bottom: 10px; border-radius: 6px; overflow: hidden;}
         .img-container img { max-width: 100%; display: block; }
         
         .ocr-actions { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -37,8 +48,18 @@
         
         #ocrStatus { font-size: 12px; color: var(--green-accent); font-weight: bold; margin-bottom: 10px; }
 
-        /* الكارت الرئيسي */
-        .medical-card-sheet { background: var(--card-bg); border-top: 4px solid var(--green-accent); border-radius: 8px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+        /* الكارت الرئيسي مع تأثير الإضاءة الزرقاء من اليسار */
+        .medical-card-sheet { 
+            background: var(--card-bg); 
+            border-top: 4px solid var(--green-accent); 
+            border-radius: 8px; 
+            padding: 15px; 
+            /* إضافة توهج أزرق خفيف يسار الكارت */
+            box-shadow: -8px 0 25px rgba(0, 176, 255, 0.05), 0 4px 15px rgba(0,0,0,0.5); 
+            border-left: 2px solid rgba(0, 176, 255, 0.3); 
+            border-right: 1px solid var(--border-color); 
+            border-bottom: 1px solid var(--border-color); 
+        }
 
         /* حقول الإدخال */
         .form-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
@@ -57,6 +78,7 @@
         td { border-bottom: 1px solid var(--table-border); border-left: 1px solid var(--table-border); padding: 0; }
         td:last-child { border-left: none; }
         td input { width: 100%; background: transparent; border: none; color: var(--text-light); text-align: center; font-family: 'Cairo'; font-size: 14px; padding: 8px 2px; outline: none; box-sizing: border-box; }
+        td input:focus { background: rgba(0, 176, 255, 0.1); }
         
         .btn-add-row { background: var(--cyan-label); color: #000; border: none; width: 100%; padding: 8px; font-family: 'Cairo'; font-weight: 800; cursor: pointer; }
 
@@ -73,11 +95,12 @@
 
     <div id="appToast" class="toast">تم الإجراء بنجاح ⚡</div>
 
-    <!-- نظام الكاميرا والقص الذكي -->
+    <!-- نظام الكاميرا واختيار الصور -->
     <div class="camera-box">
         <label class="camera-btn" id="uploadLabel">
-            <i class="fa-solid fa-camera"></i> تصوير الكرت للتحليل
-            <input type="file" accept="image/*" capture="environment" id="cardImage">
+            <i class="fa-solid fa-camera"></i> تصوير أو اختيار صورة الكرت
+            <!-- تم إزالة capture="environment" للسماح باختيار صورة من المعرض -->
+            <input type="file" accept="image/*" id="cardImage">
         </label>
         
         <div class="crop-container" id="cropContainer">
@@ -90,7 +113,6 @@
 
             <div class="ocr-actions">
                 <button class="btn-extract" onclick="extractText('info')"><i class="fa-solid fa-user-pen"></i> سحب البيانات</button>
-                <!-- زر سحب الجدول تم إخفاءه برمجيا لانه معقد علي Tesseract، الجدول يفضل نقله بالعين -->
                 <button class="btn-retake" onclick="document.getElementById('cardImage').click()"><i class="fa-solid fa-rotate"></i></button>
             </div>
         </div>
@@ -127,7 +149,7 @@
 
     <div class="sticky-footer">
         <button type="button" class="btn-new-card" onclick="saveAndNewCard()">
-            <i class="fa-solid fa-bolt"></i> حفظ وتصوير التالي
+            <i class="fa-solid fa-bolt"></i> حفظ ورفع التالي
         </button>
     </div>
 
@@ -191,7 +213,6 @@
             const statusDiv = document.getElementById('ocrStatus');
             statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تحليل الجزء المحدد بتركيز عالي...';
             
-            // سحب الجزء المقصوص كصورة مصغرة عالية الجودة
             cropper.getCroppedCanvas().toBlob(async (blob) => {
                 try {
                     const worker = await Tesseract.createWorker('ara+eng');
@@ -206,7 +227,6 @@
 
                     statusDiv.innerHTML = '<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم استخراج البيانات.</span>';
                     
-                    // تحليل ذكي للنص المقصوص
                     const phoneMatch = text.match(/01[0-2,5]{1}[0-9]{8}/);
                     if (phoneMatch) document.getElementById('p_phone').value = phoneMatch[0];
                     
@@ -271,7 +291,7 @@
             document.getElementById('ocrStatus').innerText = '';
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast("تم الحفظ ⚡ صور الكرت اللي بعده");
+            showToast("تم الحفظ ⚡ ارفع الكرت اللي بعده");
 
             fetch(SCRIPT_URL_TEMP, { method: "POST", body: JSON.stringify(payload) })
             .catch(err => console.log("Background save error"));
