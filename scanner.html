@@ -82,7 +82,7 @@
         </label>
         
         <div class="crop-container" id="cropContainer">
-            <p style="font-size: 11px; color: var(--warning); margin: 0 0 8px 0;">يمكنك التقريب لتحديد الكلمة بدقة</p>
+            <p style="font-size: 11px; color: var(--warning); margin: 0 0 8px 0;">يمكنك التقريب بإصبعين لتحديد الكلمة بدقة</p>
             <div class="img-container">
                 <img id="imageToCrop" src="">
             </div>
@@ -91,7 +91,8 @@
 
             <div class="sniper-actions">
                 <button class="btn-snipe" onclick="extractTargeted('p_name', 'ara')"><i class="fa-solid fa-user"></i> سحب كـ (اسم)</button>
-                <button class="btn-snipe phone" onclick="extractTargeted('p_phone', 'eng')"><i class="fa-solid fa-phone"></i> سحب كـ (موبايل/أرقام)</button>
+                <!-- تم تغيير اللغة لـ ara+eng ليدعم الأرقام العربية والإنجليزية -->
+                <button class="btn-snipe phone" onclick="extractTargeted('p_phone', 'ara+eng')"><i class="fa-solid fa-phone"></i> سحب كـ (موبايل/أرقام)</button>
                 <button class="btn-retake" onclick="document.getElementById('cardImage').click()"><i class="fa-solid fa-rotate"></i> تغيير الصورة</button>
             </div>
         </div>
@@ -172,12 +173,12 @@
                     if (cropper) cropper.destroy();
                     
                     cropper = new Cropper(image, {
-                        viewMode: 2, // يسمح بالتكبير
-                        dragMode: 'move', // تحريك الصورة
+                        viewMode: 2, 
+                        dragMode: 'move', 
                         autoCropArea: 0.3,
                         responsive: true,
                         guides: true,
-                        zoomable: true, // تفعيل التكبير
+                        zoomable: true,
                         cropBoxMovable: true,
                         cropBoxResizable: true,
                     });
@@ -194,36 +195,34 @@
             statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج (${targetName})...`;
             
             try {
+                // إزالة الفلتر الذي كان يدمر جودة الحبر
                 const canvas = cropper.getCroppedCanvas();
-                const ctx = canvas.getContext('2d');
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    const color = avg > 110 ? 255 : 0; 
-                    data[i] = data[i + 1] = data[i + 2] = color;
-                }
-                ctx.putImageData(imageData, 0, 0);
-                
                 const base64Image = canvas.toDataURL('image/jpeg', 1.0);
                 
                 const result = await Tesseract.recognize(base64Image, lang);
                 let text = result.data.text.trim();
                 
+                // معالجة خاصة لخانة الموبايل والأرقام
                 if(targetInputId === 'p_phone') {
+                    // 1. تحويل الأرقام العربية (٠١٢) إلى أرقام إنجليزية (012)
+                    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                    for(let i=0; i<10; i++) {
+                        text = text.split(arabicNumbers[i]).join(i);
+                    }
+                    // 2. إزالة أي حروف، والإبقاء فقط على الأرقام
                     text = text.replace(/[^0-9]/g, ''); 
                 }
 
                 if(text === "") {
-                    statusDiv.innerHTML = `<span style="color:#e74c3c">لم يتعرف على ${targetName}. (خط غير واضح)</span>`;
+                    statusDiv.innerHTML = `<span style="color:#e74c3c">لم يتعرف على ${targetName}. (يرجى النقل يدوياً)</span>`;
                     return;
                 }
 
                 document.getElementById(targetInputId).value = text;
-                statusDiv.innerHTML = `<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم استخراج ${targetName}.</span>`;
+                statusDiv.innerHTML = `<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم استخراج ${targetName} بنجاح.</span>`;
                 
             } catch (err) {
-                statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ. حاول تحديد مساحة أصغر.</span>';
+                statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ. حاول التحديد مرة أخرى.</span>';
             }
         }
 
