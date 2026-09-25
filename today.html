@@ -28,10 +28,14 @@
         .sync-indicator.show { opacity: 1; visibility: visible; }
         .sync-indicator i { animation: spin 1s linear infinite; }
 
-        .header-section { background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header-section { background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 15px;}
         .header-section h1 { margin: 0; font-size: 24px; }
         .date-picker { font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; outline: none; font-family: 'Cairo'; cursor: pointer; text-align: center; }
         .date-picker::-webkit-calendar-picker-indicator { display: none; }
+        
+        /* تصميم عداد الإحصائيات الجديد */
+        .stats-counter { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; font-size: 15px; font-weight: 700; display: flex; gap: 15px; border: 1px solid rgba(255,255,255,0.4); }
+        .stats-counter span { display: flex; align-items: center; gap: 5px; }
 
         .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 100; background: var(--card-bg); padding: 8px 12px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; align-items: center; transition: 0.3s; }
         .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
@@ -136,7 +140,18 @@
 
     <div class="container">
         <div class="header-section">
-            <div><h1>إدارة العيادة اليومية</h1><span style="font-size: 14px; opacity: 0.9;">تنظيم الحجوزات، الماليات، وبرامج العلاج <i class="fa-solid fa-cloud"></i></span></div>
+            <div>
+                <h1>إدارة العيادة اليومية</h1>
+                <span style="font-size: 14px; opacity: 0.9;">تنظيم الحجوزات، الماليات، وبرامج العلاج <i class="fa-solid fa-cloud"></i></span>
+            </div>
+            
+            <!-- عداد الإحصائيات الجديد -->
+            <div class="stats-counter">
+                <span title="إجمالي الحجوزات بالجدول"><i class="fa-solid fa-users"></i> إجمالي: <span id="statTotal">0</span></span>
+                <span title="إجمالي الكشوفات الجديدة"><i class="fa-solid fa-stethoscope"></i> كشف: <span id="statKashf">0</span></span>
+                <span title="إجمالي الجلسات"><i class="fa-solid fa-bed-pulse"></i> جلسة: <span id="statGalsa">0</span></span>
+            </div>
+
             <div class="header-controls"><input type="text" id="todayDate" class="date-picker"></div>
         </div>
 
@@ -247,7 +262,7 @@
         let financialsQueue = [];
 
         // 🚨 هام جداً: حط الرابط بتاعك هنا 🚨
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7WIzhvSyn47UKyyfvhcQysnoSDlTyLESSOY8i6aZ4WmkEDpbXx7WYn27lBIWL4k3y/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx77Y7M4TpwlAwk7xh5E9duD_VwFqPMbHEnqezOER_-2KGZWT7moTPvjWN5tCpncfA/exec';
 
         // --- دوال إظهار حالة الحفظ ---
         function showSyncStatus(text) {
@@ -508,7 +523,7 @@
                     patientsQueue = fetchedSchedule.map(p => {
                         let s = p.slot ? String(p.slot).trim() : 'عام';
                         if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { ...p, slot: s, name: p.name || 'بدون اسم', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '' };
+                        return { ...p, slot: s, name: p.name || 'بدون اسم', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', doctor: p.doctor || '' };
                     });
                     
                     glpQueue = result.data.glp || [];
@@ -555,7 +570,7 @@
         function addPatient() {
             const name = document.getElementById('patientName').value.trim(); const dept = document.getElementById('department').value; const type = document.getElementById('visitType').value; const payment = document.getElementById('paymentStatus').value; const method = document.getElementById('paymentMethod').value; const amount = document.getElementById('paidAmount').value; let manualSlot = document.getElementById('manualSlot').value;
             if(!name) return; let targetSlot = manualSlot || getSlotsForDay()[0]; 
-            patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', finished: false });
+            patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', doctor: '', finished: false });
             patientsQueue.sort((a,b) => getSlotsForDay().indexOf(a.slot) - getSlotsForDay().indexOf(b.slot));
             document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
         }
@@ -569,7 +584,7 @@
             renderUI(); scheduleSync();
         }
 
-        // --- دالة حجز المتابعة والجلسة (تم إرجاعها تعمل بنجاح تام) ---
+        // --- دالة حجز المتابعة والجلسة ---
         function bookFutureAppt(idx, visitType) {
             let patient = patientsQueue[idx];
             showModal({
@@ -579,7 +594,7 @@
                 inputValue: getNextWeekDate(), 
                 showPayment: true, 
                 showSlot: true,
-                defaultSlot: patient.slot, // استرجاع فترة المريض التلقائية
+                defaultSlot: patient.slot,
                 onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => {
                     if(cDate) {
                         showSyncStatus('جاري تسجيل الموعد السحابي...');
@@ -598,6 +613,7 @@
                                     method: cMethod, 
                                     amount: amtVal, 
                                     debt: '', 
+                                    doctor: '',
                                     finished: false 
                                 });
                                 patientsQueue.sort((a,b) => getSlotsForDay().indexOf(a.slot) - getSlotsForDay().indexOf(b.slot));
@@ -646,6 +662,14 @@
 
         // --- دالة رسم الواجهة ---
         function renderUI() {
+            // تحديث عداد الإحصائيات الجديد
+            let totalPatients = patientsQueue.length;
+            let totalKashf = patientsQueue.filter(p => p.type === 'كشف').length;
+            let totalGalsa = patientsQueue.filter(p => p.type === 'جلسة').length;
+            document.getElementById('statTotal').innerText = totalPatients;
+            document.getElementById('statKashf').innerText = totalKashf;
+            document.getElementById('statGalsa').innerText = totalGalsa;
+
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${g.name}</td><td><span class="badge badge-glp">${g.dose}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             
             let medsHtml = ''; let expsHtml = '';
@@ -661,9 +685,10 @@
 
             validSlots.forEach(slot => {
                 let sPats = patientsQueue.filter(p => p.slot === slot || (slot === validSlots[0] && !validSlots.includes(p.slot)));
-                let html = `<div class="slot-title">${slot}</div><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>إجراءات</th></tr></thead><tbody>`;
+                // تمت زيادة colspan إلى 8 واستيعاب حقل الطبيب المعالج
+                let html = `<div class="slot-title">${slot}</div><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
                 
-                if (sPats.length===0) html += `<tr><td colspan="7" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
+                if (sPats.length===0) html += `<tr><td colspan="8" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
                 
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
@@ -677,6 +702,7 @@
                         </td>
                         <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
                         <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
+                        <td><input type="text" class="inline-amount-input" style="width: 90px; text-align: right;" value="${p.doctor||''}" placeholder="اسم الطبيب..." onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
                         <td>
                             <div class="action-btns">
                                 <button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button>
