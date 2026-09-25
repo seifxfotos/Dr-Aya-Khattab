@@ -66,7 +66,10 @@
         .schedule-table tr:last-child td { border-bottom: none; }
         
         .slot-title { background-color: var(--primary-green); color: white; font-weight: 700; padding: 10px 15px; font-size: 16px; border-radius: 8px 8px 0 0; margin-top: 20px; }
+        
+        /* التعديل لضمان شطب الخانات المعدلة (Input / Select) */
         .row-finished { opacity: 0.5; text-decoration: line-through; background-color: rgba(0,0,0,0.02); }
+        .row-finished input, .row-finished select { text-decoration: line-through; opacity: 0.8; }
         :root[data-theme="dark"] .row-finished { background-color: rgba(255,255,255,0.02); }
 
         .action-btns { display: flex; gap: 4px; align-items: center; flex-wrap: wrap;}
@@ -86,7 +89,7 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
         
-        /* تعديلات الـ Inline Select و Input لتلائم تعديل الاسم والقسم */
+        /* تعديلات الـ Inline Select و Input */
         .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
@@ -705,7 +708,6 @@
                 
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
-                    // تم تعديل المحاذاة (justify-content) لتكون flex-start بدلاً من flex-end لتبدأ من اليمين مباشرة
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td style="font-weight:bold">
