@@ -86,7 +86,7 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
         
-        /* تعديلات الـ Inline Select و Input لتلائم تعديل الاسم والقسم */
+        /* تعديلات الـ Inline Select و Input */
         .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
@@ -151,7 +151,6 @@
                 <span style="font-size: 14px; opacity: 0.9;">تنظيم الحجوزات، الماليات، وبرامج العلاج <i class="fa-solid fa-cloud"></i></span>
             </div>
             
-            <!-- تم إزالة إجمالي الحجوزات من هنا -->
             <div class="stats-counter">
                 <span title="إجمالي الكشوفات الجديدة"><i class="fa-solid fa-stethoscope"></i> كشف: <span id="statKashf">0</span></span>
                 <span title="إجمالي الجلسات"><i class="fa-solid fa-bed-pulse"></i> جلسة: <span id="statGalsa">0</span></span>
@@ -583,7 +582,6 @@
         function updateScheduleField(idx, field, val) { 
             patientsQueue[idx][field] = val; 
             if(field==='amount' || field==='method') calculateTotals(); 
-            // تحديث الإحصائيات إذا تم تغيير النوع (كشف/جلسة/متابعة)
             if(field==='type') {
                 document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
                 document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
@@ -677,7 +675,7 @@
 
         // --- دالة رسم الواجهة ---
         function renderUI() {
-            // تحديث العداد (بدون إجمالي)
+            // تحديث العداد
             let totalKashf = patientsQueue.filter(p => p.type === 'كشف').length;
             let totalGalsa = patientsQueue.filter(p => p.type === 'جلسة').length;
             let totalMotab3a = patientsQueue.filter(p => p.type === 'متابعة').length;
@@ -707,13 +705,14 @@
                 
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
+                    // تم تعديل الجزء الخاص بالقسم والنوع ليكونوا بجانب بعض (flex-direction: row)
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td style="font-weight:bold">
                             <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
                         </td>
                         <td>
-                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-end;">
                                 <select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)">
                                     <option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option>
                                     <option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option>
@@ -727,8 +726,10 @@
                             </div>
                         </td>
                         <td>
-                            <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select>
-                            <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select>
+                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-end;">
+                                <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select>
+                                <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select>
+                            </div>
                         </td>
                         <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
                         <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
