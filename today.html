@@ -86,7 +86,7 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
         
-        /* تعديلات الـ Inline Select و Input */
+        /* تعديلات الـ Inline Select و Input لتلائم تعديل الاسم والقسم */
         .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
@@ -675,7 +675,7 @@
 
         // --- دالة رسم الواجهة ---
         function renderUI() {
-            // تحديث العداد
+            // تحديث العداد (بدون إجمالي)
             let totalKashf = patientsQueue.filter(p => p.type === 'كشف').length;
             let totalGalsa = patientsQueue.filter(p => p.type === 'جلسة').length;
             let totalMotab3a = patientsQueue.filter(p => p.type === 'متابعة').length;
@@ -705,14 +705,14 @@
                 
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
-                    // تم تعديل الجزء الخاص بالقسم والنوع ليكونوا بجانب بعض (flex-direction: row)
+                    // تم تعديل المحاذاة (justify-content) لتكون flex-start بدلاً من flex-end لتبدأ من اليمين مباشرة
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td style="font-weight:bold">
                             <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
                         </td>
                         <td>
-                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-end;">
+                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
                                 <select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)">
                                     <option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option>
                                     <option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option>
@@ -726,7 +726,7 @@
                             </div>
                         </td>
                         <td>
-                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-end;">
+                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
                                 <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select>
                                 <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select>
                             </div>
