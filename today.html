@@ -86,9 +86,16 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
         
-        .inline-pay-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
+        /* تعديلات الـ Inline Select و Input لتلائم تعديل الاسم والقسم */
+        .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
+        
+        .inline-dept-select { max-width: 85px; }
+        .inline-type-select { max-width: 75px; }
+        .inline-name-input { width: 120px; padding: 4px; border: 1px solid transparent; border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: right; outline: none; background-color: transparent; color: var(--text-dark); transition: 0.2s;}
+        .inline-name-input:hover, .inline-name-input:focus { border-color: var(--border); background-color: var(--input-bg); }
+
         .inline-amount-input { width: 50px; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: center; outline: none; background-color: var(--input-bg); color: var(--text-dark); }
         .debt-input { color: var(--danger); border-color: var(--danger); }
 
@@ -144,9 +151,8 @@
                 <span style="font-size: 14px; opacity: 0.9;">تنظيم الحجوزات، الماليات، وبرامج العلاج <i class="fa-solid fa-cloud"></i></span>
             </div>
             
-            <!-- عداد الإحصائيات -->
+            <!-- تم إزالة إجمالي الحجوزات من هنا -->
             <div class="stats-counter">
-                <span title="إجمالي الحجوزات بالجدول"><i class="fa-solid fa-users"></i> إجمالي: <span id="statTotal">0</span></span>
                 <span title="إجمالي الكشوفات الجديدة"><i class="fa-solid fa-stethoscope"></i> كشف: <span id="statKashf">0</span></span>
                 <span title="إجمالي الجلسات"><i class="fa-solid fa-bed-pulse"></i> جلسة: <span id="statGalsa">0</span></span>
                 <span title="إجمالي المتابعات"><i class="fa-solid fa-calendar-check"></i> متابعة: <span id="statMotab3a">0</span></span>
@@ -522,7 +528,7 @@
                     patientsQueue = fetchedSchedule.map(p => {
                         let s = p.slot ? String(p.slot).trim() : 'عام';
                         if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { ...p, slot: s, name: p.name || 'بدون اسم', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', doctor: p.doctor || '' };
+                        return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', doctor: p.doctor || '' };
                     });
                     
                     glpQueue = result.data.glp || [];
@@ -574,7 +580,17 @@
             document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
         }
 
-        function updateScheduleField(idx, field, val) { patientsQueue[idx][field] = val; if(field==='amount' || field==='method') calculateTotals(); scheduleSync(); }
+        function updateScheduleField(idx, field, val) { 
+            patientsQueue[idx][field] = val; 
+            if(field==='amount' || field==='method') calculateTotals(); 
+            // تحديث الإحصائيات إذا تم تغيير النوع (كشف/جلسة/متابعة)
+            if(field==='type') {
+                document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
+                document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
+                document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length;
+            }
+            scheduleSync(); 
+        }
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         function removePatient(idx) { patientsQueue.splice(idx, 1); renderUI(); scheduleSync(); }
         function moveRow(idx, dir) { 
@@ -661,13 +677,11 @@
 
         // --- دالة رسم الواجهة ---
         function renderUI() {
-            // تحديث العداد بإضافة المتابعات
-            let totalPatients = patientsQueue.length;
+            // تحديث العداد (بدون إجمالي)
             let totalKashf = patientsQueue.filter(p => p.type === 'كشف').length;
             let totalGalsa = patientsQueue.filter(p => p.type === 'جلسة').length;
             let totalMotab3a = patientsQueue.filter(p => p.type === 'متابعة').length;
 
-            document.getElementById('statTotal').innerText = totalPatients;
             document.getElementById('statKashf').innerText = totalKashf;
             document.getElementById('statGalsa').innerText = totalGalsa;
             document.getElementById('statMotab3a').innerText = totalMotab3a;
@@ -695,15 +709,30 @@
                     let gIdx = patientsQueue.indexOf(p);
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
-                        <td style="font-weight:bold">${p.name}</td>
-                        <td><span class="badge ${p.dept==='علاج طبيعي'?'badge-dept-physio':'badge-dept-nutrition'}">${p.dept}</span> <span class="badge badge-kashf">${p.type}</span></td>
+                        <td style="font-weight:bold">
+                            <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                                <select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)">
+                                    <option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option>
+                                    <option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option>
+                                </select>
+                                <select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)">
+                                    <option ${p.type==='كشف'?'selected':''}>كشف</option>
+                                    <option ${p.type==='متابعة'?'selected':''}>متابعة</option>
+                                    <option ${p.type==='جلسة'?'selected':''}>جلسة</option>
+                                    <option ${p.type==='مقدم'?'selected':''}>مقدم</option>
+                                </select>
+                            </div>
+                        </td>
                         <td>
                             <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select>
                             <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select>
                         </td>
                         <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
                         <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
-                        <td><input type="text" class="inline-amount-input" style="width: 140px; text-align: right;" value="${p.doctor||''}" placeholder="مثال: د. أحمد، د. محمد" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)" title="${p.doctor||'يمكنك كتابة أكثر من اسم هنا'}"></td>
+                        <td><input type="text" class="inline-amount-input" style="width: 140px; text-align: right;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
                         <td>
                             <div class="action-btns">
                                 <button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button>
