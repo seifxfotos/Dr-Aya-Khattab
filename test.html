@@ -22,6 +22,7 @@
         .welcome-box { background: rgba(255,255,255,0.1); padding: 30px 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 550px; width: 100%;}
         
         /* تنسيق كروت المعلومات في شاشة البداية */
+        .parts-title { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.95); margin-top: 20px; margin-bottom: -10px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
         .info-card { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.3s; }
         .info-card:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px); }
@@ -92,13 +93,15 @@
 </head>
 <body>
 
-    <!-- شاشة الترحيب المعدلة -->
+    <!-- شاشة الترحيب -->
     <div id="welcomeScreen">
         <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-file-contract"></i> السجل</button>
 
         <div class="welcome-box">
             <h1 style="margin-top: 0;"><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
             <p style="font-size: 15px; opacity: 0.9;">أهلاً بك. هذا تقييم عملي لمهاراتك في الدقة والسرعة على نظام العيادة.</p>
+            
+            <div class="parts-title"><i class="fa-solid fa-layer-group"></i> يتكون الاختبار من جزأين أساسيين:</div>
             
             <div class="info-grid">
                 <div class="info-card">
@@ -116,7 +119,7 @@
                 </div>
             </div>
 
-            <input type="text" id="candidateNameInput" class="welcome-input" placeholder="اكتب اسمك الثلاثي هنا لتفعيل الاختبار...">
+            <input type="text" id="candidateNameInput" class="welcome-input" placeholder="اكتب اسمك الثلاثي هنا لبدء الاختبار...">
             <button class="start-btn" onclick="startTest()">بدء الاختبار الآن</button>
         </div>
     </div>
@@ -248,7 +251,7 @@
     </div>
 
     <script>
-        // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا 🚨
+        // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا بعد عمل New Deployment 🚨
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec";
 
         let candidateName = "";
@@ -261,7 +264,6 @@
         let fetchedLogs = [];
         let isLogsFetched = false;
 
-        // دالة تنظيف النصوص من الهمزات والتاء المربوطة لتجنب ظلم المتقدم
         function cleanText(text) {
             if(!text) return "";
             return text.toString().trim().replace(/أ|إ|آ/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
@@ -499,7 +501,7 @@
             document.getElementById('reportDetails').innerHTML = report;
             document.getElementById('resultModal').style.display = 'flex';
 
-            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec") {
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
