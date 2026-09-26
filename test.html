@@ -15,11 +15,9 @@
         }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-dark); overflow-x: hidden;}
         
-        /* زر السجل (Log) في شاشة البداية */
         .log-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 14px; backdrop-filter: blur(5px); transition: 0.3s; z-index: 2001; display: flex; align-items: center; gap: 8px;}
         .log-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.05); }
 
-        /* شاشة الترحيب */
         #welcomeScreen { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; padding: 20px; text-align: center;}
         .welcome-box { background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 500px; width: 100%;}
         .welcome-input { width: 90%; padding: 15px; border-radius: 10px; border: none; font-family: 'Cairo'; font-size: 16px; margin: 20px 0; outline: none; text-align: center;}
@@ -31,16 +29,19 @@
         .header { background: var(--text-dark); color: white; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
         .timer-badge { background: var(--danger); padding: 8px 20px; border-radius: 8px; font-size: 20px; font-weight: 800; font-family: monospace; display: flex; align-items: center; gap: 10px; }
         
-        /* السيناريو العائم */
-        .scenario-widget { position: fixed; right: 20px; top: 100px; width: 320px; background: white; border: 2px solid var(--primary-blue); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1500; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+        .scenario-widget { position: fixed; right: 20px; top: 100px; width: 340px; background: white; border: 2px solid var(--primary-blue); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1500; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
         .scenario-widget.collapsed { width: 45px; height: 45px; border-radius: 50%; border-color: transparent; }
         .scenario-header { background: var(--primary-blue); color: white; padding: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
         .scenario-header:hover { background: #007bb5; }
-        .scenario-content { padding: 15px; font-size: 14px; line-height: 1.8; max-height: 400px; overflow-y: auto;}
+        .scenario-content { padding: 15px; font-size: 13px; line-height: 1.8; max-height: 450px; overflow-y: auto;}
         .scenario-content ul { padding-right: 20px; margin: 0; }
-        .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px;}
+        .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px; transition: 0.3s;}
+        
+        /* ألوان التقييم اللحظي للمهام */
+        .task-success { color: var(--primary-green); font-weight: bold; }
+        .task-error { color: var(--danger); }
+        .task-success i, .task-error i { margin-left: 5px; }
 
-        /* التبويبات Tabs */
         .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { background: #e1e8ed; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; color: #555;}
         .tab-btn.active { background: var(--primary-blue); color: white; }
@@ -67,18 +68,14 @@
         .schedule-table th, .schedule-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border); }
         .schedule-table th { background: #f8f9fa; font-weight: 700; }
 
-        /* شاشات التحميل والنتيجة والسجل */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px);}
         .modal-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; }
         .score-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; margin: 20px auto; border: 5px solid #e8f4f8; flex-shrink: 0;}
         .report-list { text-align: right; font-size: 15px; font-weight: 600; line-height: 2; margin-bottom: 20px; overflow-y: auto;}
-        .success-text { color: var(--primary-green); }
-        .error-text { color: var(--danger); }
         
         .loader { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-blue); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* أزرار السجل */
         .log-actions { display: flex; gap: 10px; margin-top: 15px; flex-shrink: 0;}
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
     </style>
@@ -87,18 +84,17 @@
 
     <!-- شاشة الترحيب -->
     <div id="welcomeScreen">
-        <!-- زر السجل يظهر في الشاشة الرئيسية -->
-        <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-cloud-arrow-down"></i> السجل السحابي (Log)</button>
+        <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-file-contract"></i> السجل</button>
 
         <div class="welcome-box">
             <h1><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
-            <p style="font-size: 16px; opacity: 0.9;">أهلاً بك. هذا اختبار عملي بسيط لتقييم السرعة والدقة في استخدام نظام العيادة. يتكون الاختبار من جزأين (حجوزات، وكروت مرضى). لديك 15 دقيقة.</p>
+            <p style="font-size: 16px; opacity: 0.9;">أهلاً بك. هذا اختبار عملي لتقييم السرعة والدقة في استخدام نظام العيادة. يتكون الاختبار من جزأين (حجوزات، وكروت مرضى). لديك 20 دقيقة.</p>
             <input type="text" id="candidateNameInput" class="welcome-input" placeholder="اكتب اسمك الثلاثي هنا...">
             <button class="start-btn" onclick="startTest()">بدء الاختبار الآن</button>
         </div>
     </div>
 
-    <!-- نافذة السيناريو العائمة -->
+    <!-- نافذة السيناريو العائمة وتقييم المهام اللحظي -->
     <div class="scenario-widget" id="scenarioWidget">
         <div class="scenario-header" onclick="toggleScenario()">
             <span><i class="fa-solid fa-list-check"></i> تفاصيل المهمة</span>
@@ -106,12 +102,12 @@
         </div>
         <div class="scenario-content" id="scenarioContent">
             <ul>
-                <li><strong>1.</strong> المريضة <strong>سارة محمد</strong> حجزت <strong>(جلسة علاج طبيعي)</strong> ودفعت <strong>300 جنيه (كاش)</strong>.</li>
-                <li><strong>2.</strong> المريض <strong>أحمد علي</strong> حجز <strong>(كشف تغذية علاجية)</strong> ودفع <strong>400 جنيه (أنستا باي)</strong>.</li>
-                <li><strong>3.</strong> تم بيع دواء <strong>كريم مساج</strong> للمشتري <strong>عمر</strong> بمبلغ <strong>150 جنيه (فودافون كاش)</strong>.</li>
-                <li><strong>4.</strong> تم سحب مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
-                <li><strong>5.</strong> المريضة <strong>هدى سعيد</strong> في <strong>(متابعة تغذية علاجية)</strong>، ولم تدفع أي مبلغ (0 ج.م).</li>
-                <li><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>01012345678</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
+                <li id="task1"><strong>1.</strong> المريضة <strong>سارة محمد</strong> حجزت <strong>(جلسة علاج طبيعي)</strong> ودفعت <strong>300 جنيه (كاش)</strong>.</li>
+                <li id="task2"><strong>2.</strong> المريض <strong>أحمد علي</strong> حجز <strong>(كشف تغذية علاجية)</strong> ودفع <strong>400 جنيه (أنستا باي)</strong>.</li>
+                <li id="task3"><strong>3.</strong> تم بيع دواء <strong>فيتامين د</strong> للمشتري <strong>عمر</strong> بمبلغ <strong>150 جنيه (فودافون كاش)</strong>.</li>
+                <li id="task4"><strong>4.</strong> تم سحب مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
+                <li id="task5"><strong>5.</strong> المريضة <strong>هدى سعيد</strong> حجزت <strong>(متابعة تغذية علاجية)</strong> ودفع <strong>(مقدم)</strong> 0 ج.م.</li>
+                <li id="task6"><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>01012345678</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
             </ul>
         </div>
     </div>
@@ -121,7 +117,7 @@
             <div>
                 <h1 style="margin:0;"><i class="fa-regular fa-id-badge"></i> المتقدم: <span id="displayCandidateName"></span></h1>
             </div>
-            <div class="timer-badge"><i class="fa-solid fa-stopwatch"></i> <span id="timerDisplay">15:00</span></div>
+            <div class="timer-badge"><i class="fa-solid fa-stopwatch"></i> <span id="timerDisplay">20:00</span></div>
         </div>
 
         <div class="tabs-header">
@@ -136,7 +132,8 @@
                 <div class="grid-inputs">
                     <div class="input-group"><label>اسم المريض</label><input type="text" id="pName" placeholder="الاسم..."></div>
                     <div class="input-group"><label>القسم</label><select id="pDept"><option value="علاج طبيعي">علاج طبيعي</option><option value="تغذية علاجية">تغذية علاجية</option></select></div>
-                    <div class="input-group"><label>نوع الزيارة</label><select id="pType"><option value="كشف">كشف</option><option value="متابعة">متابعة</option><option value="جلسة">جلسة</option></select></div>
+                    <div class="input-group"><label>نوع الزيارة</label><select id="pType"><option value="كشف">كشف</option><option value="متابعة">متابعة</option><option value="جلسة">جلسة</option><option value="مقدم">مقدم حجز</option></select></div>
+                    <div class="input-group"><label>حالة الدفع</label><select id="paymentStatus" required><option value="تم الدفع">تم الدفع</option><option value="مدفوع مسبقاً">مدفوع مسبقاً</option></select></div>
                     <div class="input-group"><label>الوسيلة</label><select id="pMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فودافون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
                     <div class="input-group"><label>المبلغ المدفوع</label><input type="number" id="pAmount" placeholder="0"></div>
                     <button class="btn-add" onclick="addPatient()">إضافة</button>
@@ -150,10 +147,11 @@
                     <div class="grid-inputs" style="grid-template-columns: 1fr 1fr;">
                         <div class="input-group"><label>اسم الدواء</label><input type="text" id="mName"></div>
                         <div class="input-group"><label>المشتري</label><input type="text" id="mBuyer"></div>
-                        <div class="input-group"><label>الوسيلة</label><select id="mMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
+                        <div class="input-group"><label>الوسيلة</label><select id="mMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فودافون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
                         <div class="input-group"><label>المبلغ</label><input type="number" id="mAmount"></div>
                         <button class="btn-add" style="grid-column: span 2; background: var(--primary-green);" onclick="addMed()">إضافة دواء</button>
                     </div>
+                    <table class="schedule-table" style="margin-top: 15px;"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th></tr></thead><tbody id="medsTableBody"></tbody></table>
                 </div>
 
                 <div class="card-panel">
@@ -204,15 +202,15 @@
         </div>
     </div>
 
-    <!-- نافذة السجل السحابي (Log) -->
+    <!-- نافذة السجل -->
     <div id="logModal" class="modal-overlay" style="z-index: 4000;">
         <div class="modal-box">
-            <h2 style="color: var(--primary-blue); margin-bottom: 15px;"><i class="fa-solid fa-cloud-arrow-down"></i> سجل المتقدمين (من السحابة)</h2>
+            <h2 style="color: var(--primary-blue); margin-bottom: 15px;"><i class="fa-solid fa-file-contract"></i> سجل المتقدمين</h2>
             <div class="report-list" style="padding-right: 5px;">
                 <table class="schedule-table" style="margin-top: 0;">
                     <thead><tr><th>المتقدم</th><th>النتيجة</th><th>الوقت</th><th>التاريخ</th></tr></thead>
                     <tbody id="logTableBody">
-                        <tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل من جوجل...</td></tr>
+                        <tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -224,24 +222,28 @@
 
     <script>
         // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا بعد عمل New Deployment 🚨
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyigNWgoTxp4XKAuTges1Kl5x1y6JjmfPk9T1Gdgn8hmx0jRo1rjTePdHkNB8ySohZymA/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec";
 
         let candidateName = "";
         let testPatients = [];
         let testFinancials = [];
         let patientCards = [];
-        let timeLeft = 900; // 15 دقائق
+        let timeLeft = 1200; // 20 دقيقة
         let timerInterval;
         
-        // مصفوفة لتخزين اللوج السحابي في الخلفية
         let fetchedLogs = [];
         let isLogsFetched = false;
 
-        // جلب السجل في الخلفية بمجرد تحميل الصفحة
+        // دالة تنظيف النصوص من الهمزات والتاء المربوطة
+        function cleanText(text) {
+            if(!text) return "";
+            return text.toString().trim().replace(/أ|إ|آ/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
+        }
+
         window.addEventListener('DOMContentLoaded', fetchLogsBackground);
 
         function fetchLogsBackground() {
-            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_هنا") {
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -267,9 +269,9 @@
         function renderLogTable() {
             let tbody = document.getElementById('logTableBody');
             if(!isLogsFetched) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل من جوجل...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
             } else if(fetchedLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;">لا توجد أي نتائج مسجلة حتى الآن في شيت جوجل.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;">لا توجد أي نتائج مسجلة حتى الآن.</td></tr>';
             } else {
                 tbody.innerHTML = fetchedLogs.map(l => {
                     let scoreNum = parseInt(l.score);
@@ -326,6 +328,33 @@
             }
         }
 
+        // دالة لتحديث لون المهام في السيناريو العائم بناءً على تقدم الموظف
+        function checkRealTimeTasks() {
+            // Task 1: سارة محمد - جلسة علاج طبيعي 300 كاش
+            let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
+            document.getElementById('task1').className = t1 ? 'task-success' : 'task-error';
+            
+            // Task 2: أحمد علي - كشف تغذية 400 انستا باي
+            let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
+            document.getElementById('task2').className = t2 ? 'task-success' : 'task-error';
+            
+            // Task 3: فيتامين د - 150 فودافون كاش
+            let t3 = testFinancials.find(f => f.cat === 'دواء' && cleanText(f.name).includes("فيتامين د") && f.amount === 150 && f.method === 'فودافون كاش');
+            document.getElementById('task3').className = t3 ? 'task-success' : 'task-error';
+            
+            // Task 4: أدوات نظافة - 50 كاش
+            let t4 = testFinancials.find(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه") && f.amount === 50);
+            document.getElementById('task4').className = t4 ? 'task-success' : 'task-error';
+            
+            // Task 5: هدى سعيد - متابعة مقدم تغذية 0 ج
+            let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
+            document.getElementById('task5').className = t5 ? 'task-success' : 'task-error';
+            
+            // Task 6: كارت أحمد علي
+            let t6 = patientCards.find(c => cleanText(c.name).includes("احمد علي") && c.phone === "01012345678");
+            document.getElementById('task6').className = t6 ? 'task-success' : 'task-error';
+        }
+
         function addPatient() {
             let n = document.getElementById('pName').value.trim();
             let d = document.getElementById('pDept').value;
@@ -340,19 +369,22 @@
 
         function addMed() {
             let n = document.getElementById('mName').value.trim();
+            let b = document.getElementById('mBuyer').value.trim();
             let m = document.getElementById('mMethod').value;
             let a = parseFloat(document.getElementById('mAmount').value) || 0;
             if(!n || !a) return;
-            testFinancials.push({cat: 'دواء', method: m, amount: a});
+            testFinancials.push({cat: 'دواء', name: n, buyer: b, method: m, amount: a});
             document.getElementById('mName').value = ''; document.getElementById('mBuyer').value = ''; document.getElementById('mAmount').value = '';
+            renderUI();
         }
 
         function addExpense() {
             let n = document.getElementById('eDesc').value.trim();
             let a = parseFloat(document.getElementById('eAmount').value) || 0;
             if(!n || !a) return;
-            testFinancials.push({cat: 'مصروف', method: 'كاش', amount: a});
+            testFinancials.push({cat: 'مصروف', desc: n, method: 'كاش', amount: a});
             document.getElementById('eDesc').value = ''; document.getElementById('eAmount').value = '';
+            renderUI();
         }
 
         function addCard() {
@@ -369,7 +401,14 @@
 
         function renderUI() {
             document.getElementById('patientsBody').innerHTML = testPatients.map(p => `<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.type}</td><td>${p.amount}</td><td>${p.method}</td></tr>`).join('');
+            
+            // فلترة الأدوية فقط لجدول الأدوية
+            let medsOnly = testFinancials.filter(f => f.cat === 'دواء');
+            document.getElementById('medsTableBody').innerHTML = medsOnly.map(m => `<tr><td>${m.name} (${m.buyer})</td><td>${m.method}</td><td>${m.amount}</td></tr>`).join('');
+            
             document.getElementById('cardsBody').innerHTML = patientCards.map(c => `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.age}</td><td>${c.gender}</td><td>${c.notes}</td></tr>`).join('');
+            
+            checkRealTimeTasks(); // تحديث ألوان السيناريو
         }
 
         function triggerSubmit() {
@@ -383,64 +422,51 @@
             let report = "";
             let plainTextReport = ""; 
 
-            let calcCash = 0; let calcElec = 0;
-            testPatients.forEach(p => { if(p.method==='كاش') calcCash += p.amount; else calcElec += p.amount; });
-            testFinancials.forEach(f => {
-                if(f.cat === 'دواء') { if(f.method==='كاش') calcCash += f.amount; else calcElec += f.amount; }
-                if(f.cat === 'مصروف') { calcCash -= f.amount; }
-            });
+            // الاعتماد على التقييم المنظف (cleanText)
+            let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
+            let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
+            let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
+            
+            if (t1 && t2 && t5) {
+                score += 40; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تسجيل جميع زيارات المرضى صحيح (40%)</div>`;
+                plainTextReport += "المرضى: صحيح | ";
+            } else {
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في إدخال بيانات أو نوع زيارات المرضى</div>`;
+                plainTextReport += "المرضى: خطأ | ";
+            }
 
-            let hasKashf = testPatients.some(p => p.type === 'كشف');
-            let hasGalsa = testPatients.some(p => p.type === 'جلسة');
-            let hasMotab3a = testPatients.some(p => p.type === 'متابعة');
-            if (testPatients.length === 3 && hasKashf && hasGalsa && hasMotab3a) {
+            let t3 = testFinancials.find(f => f.cat === 'دواء' && cleanText(f.name).includes("فيتامين د") && f.amount === 150 && f.method === 'فودافون كاش');
+            if (t3) {
                 score += 20; 
-                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تسجيل الزيارات مكتمل (20%)</div>`;
-                plainTextReport += "الزيارات: صحيح | ";
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تسجيل مبيعات الأدوية دقيق (20%)</div>`;
+                plainTextReport += "الأدوية: صحيح | ";
             } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في عدد أو نوع الحجوزات</div>`;
-                plainTextReport += "الزيارات: خطأ | ";
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في إضافة الدواء أو وسيلة الدفع</div>`;
+                plainTextReport += "الأدوية: خطأ | ";
             }
 
-            let nutCount = testPatients.filter(p => p.dept === 'تغذية علاجية').length;
-            if (nutCount === 2) {
-                score += 15; 
-                report += `<div class="success-text"><i class="fa-solid fa-check"></i> توزيع الأقسام صحيح (15%)</div>`;
-                plainTextReport += "الأقسام: صحيح | ";
+            let t4 = testFinancials.find(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه") && f.amount === 50);
+            if (t4) {
+                score += 20; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تسجيل المصروفات صحيح (20%)</div>`;
+                plainTextReport += "المصروفات: صحيح | ";
             } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في توجيه التغذية والعلاج الطبيعي</div>`;
-                plainTextReport += "الأقسام: خطأ | ";
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في إضافة أو قيمة المصروفات</div>`;
+                plainTextReport += "المصروفات: خطأ | ";
             }
 
-            if (calcCash === 250) {
-                score += 25; 
-                report += `<div class="success-text"><i class="fa-solid fa-check"></i> حساب درج الكاش دقيق 250ج (25%)</div>`;
-                plainTextReport += "الكاش: صحيح | ";
-            } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> عجز/زيادة في الدرج (مسجل ${calcCash} والمطلوب 250)</div>`;
-                plainTextReport += `الكاش: خطأ (${calcCash}) | `;
-            }
-
-            if (calcElec === 550) {
-                score += 15; 
-                report += `<div class="success-text"><i class="fa-solid fa-check"></i> الدفع الإلكتروني صحيح 550ج (15%)</div>`;
-                plainTextReport += "الإلكتروني: صحيح | ";
-            } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في حساب المحافظ الإلكترونية</div>`;
-                plainTextReport += "الإلكتروني: خطأ | ";
-            }
-
-            let ahmedCard = patientCards.find(c => c.name.includes("أحمد") && c.phone === "01012345678");
-            if (ahmedCard) {
-                score += 25; 
-                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تم إنشاء كارت المريض بدقة (25%)</div>`;
+            let t6 = patientCards.find(c => cleanText(c.name).includes("احمد علي") && c.phone === "01012345678");
+            if (t6) {
+                score += 20; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> إنشاء كارت المريض سليم (20%)</div>`;
                 plainTextReport += "كارت المريض: صحيح";
             } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> لم يتم إنشاء كارت المريض بشكل صحيح</div>`;
-                plainTextReport += "كارت المريض: خطأ أو مفقود";
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ أو نقص في بيانات كارت المريض</div>`;
+                plainTextReport += "كارت المريض: خطأ";
             }
 
-            let timeTaken = 900 - timeLeft;
+            let timeTaken = 1200 - timeLeft; // 20 دقيقة
             let minTaken = Math.floor(timeTaken / 60);
             let secTaken = timeTaken % 60;
             let timeStr = `${minTaken}:${secTaken < 10 ? '0' : ''}${secTaken} دقيقة`;
@@ -455,9 +481,11 @@
             document.getElementById('reportDetails').innerHTML = report;
             document.getElementById('resultModal').style.display = 'flex';
 
-            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_هنا") {
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
+                // إرسال عبر no-cors لحل مشكلة الحفظ
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
                         action: 'SUBMIT_TEST',
@@ -466,7 +494,7 @@
                         timeTaken: timeStr,
                         reportText: plainTextReport
                     })
-                }).catch(e => console.log("Error saving to sheet"));
+                }).catch(e => console.log("Sent"));
             }
         }
     </script>
