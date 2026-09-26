@@ -148,7 +148,7 @@
                 <li id="task2"><strong>2.</strong> المريض <strong>أحمد علي</strong> حجز <strong>(كشف تغذية علاجية)</strong> ودفع <strong>400 جنيه (أنستا باي)</strong>.</li>
                 <li id="task3"><strong>3.</strong> تم بيع دواء <strong>فيتامين د</strong> للمشتري <strong>عمر</strong> بمبلغ <strong>150 جنيه (فودافون كاش)</strong>.</li>
                 <li id="task4"><strong>4.</strong> تم إضافة مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
-                <li id="task5"><strong>5.</strong> المريضة <strong>هدى سعيد</strong> حجزت <strong>(متابعة تغذية علاجية)</strong> ودفع <strong>(مقدم)</strong> 0 ج.م.</li>
+                <li id="task5"><strong>5.</strong> المريضة <strong>هدى سعيد</strong> حجزت <strong>(متابعة تغذية علاجية)</strong> والدفع <strong>(مدفوع مسبقاً)</strong>.</li>
                 <li id="task6"><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>01012345678</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
             </ul>
         </div>
@@ -281,7 +281,7 @@
 
     <script>
         // 🚨 رابط السكريبت السحابي المحدث 🚨
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwzutB5tfTvgsz34Z3rFW0HIDXH8mFLoMKJdYA_Beszebv6e32nq2DHfXjn709LGBx0A/exec";
 
         let candidateName = "";
         let testPatients = [];
@@ -294,9 +294,15 @@
         let fetchedLogs = [];
         let isLogsFetched = false;
 
+        // دالة تنظيف النصوص لتجنب ظلم المتقدم (تزيل الهمزات وتعالج التاء والياء)
         function cleanText(text) {
             if(!text) return "";
-            return text.toString().trim().replace(/أ|إ|آ/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
+            return text.toString().trim()
+                       .replace(/[أإآ]/g, "ا")
+                       .replace(/ة/g, "ه")
+                       .replace(/ى/g, "ي") // حل مشكلة هدى وهدي
+                       .replace(/\s+/g, " ")
+                       .toLowerCase();
         }
 
         window.addEventListener('DOMContentLoaded', fetchLogsBackground);
@@ -333,10 +339,18 @@
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;">لا توجد أي نتائج مسجلة حتى الآن.</td></tr>';
             } else {
                 tbody.innerHTML = fetchedLogs.map(l => {
-                    let scoreNum = parseInt(l.score);
+                    // معالجة رقم 0.6 لـ 60% لو حصل خطأ في القراءة
+                    let rawScore = l.score.toString().replace('%', '');
+                    let scoreNum = parseFloat(rawScore);
+                    if(scoreNum <= 1 && scoreNum > 0 && !l.score.toString().includes('%')) {
+                        scoreNum = scoreNum * 100;
+                    }
+                    scoreNum = Math.round(scoreNum);
+                    
                     let badgeColor = scoreNum >= 80 ? 'var(--primary-green)' : (scoreNum >= 50 ? '#f39c12' : 'var(--danger)');
                     let cleanDate = new Date(l.date).toLocaleString('ar-EG', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
-                    return `<tr><td style="font-weight:bold;">${l.name}</td><td><span class="badge" style="background:${badgeColor}">${l.score}</span></td><td>${l.time}</td><td style="font-size:11px;">${cleanDate}</td></tr>`;
+                    
+                    return `<tr><td style="font-weight:bold;">${l.name}</td><td><span class="badge" style="background:${badgeColor}">${scoreNum}%</span></td><td>${l.time}</td><td style="font-size:11px;">${cleanDate}</td></tr>`;
                 }).join('');
             }
         }
@@ -388,7 +402,7 @@
             }
         }
 
-        // تلوين المهام اللحظي (أخضر لو صح، أحمر لو غلط، فارغ لو لسه متكتبش)
+        // تلوين المهام اللحظي (أخضر لو صح، أحمر لو المريض مضاف بس غلط)
         function checkRealTimeTasks() {
             let t1_correct = testPatients.some(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             let t1_exists = testPatients.some(p => cleanText(p.name).includes("ساره محمد"));
@@ -406,7 +420,8 @@
             let t4_exists = testFinancials.some(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه"));
             document.getElementById('task4').className = t4_correct ? 'task-success' : (t4_exists ? 'task-error' : '');
             
-            let t5_correct = testPatients.some(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
+            // تصحيح هدى سعيد
+            let t5_correct = testPatients.some(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'متابعة' && p.payment === 'مدفوع مسبقاً' && p.amount === 0);
             let t5_exists = testPatients.some(p => cleanText(p.name).includes("هدي سعيد"));
             document.getElementById('task5').className = t5_correct ? 'task-success' : (t5_exists ? 'task-error' : '');
             
@@ -414,6 +429,7 @@
             let t6_exists = patientCards.some(c => cleanText(c.name).includes("احمد علي"));
             document.getElementById('task6').className = t6_correct ? 'task-success' : (t6_exists ? 'task-error' : '');
 
+            // التنبيه الذكي
             if (t1_correct && t2_correct && t3_correct && t4_correct && t5_correct && !t6_correct && !alertedCards) {
                 showToast();
                 alertedCards = true; 
@@ -430,10 +446,11 @@
             let n = document.getElementById('pName').value.trim();
             let d = document.getElementById('pDept').value;
             let t = document.getElementById('pType').value;
+            let pay = document.getElementById('paymentStatus').value;
             let m = document.getElementById('pMethod').value;
             let a = parseFloat(document.getElementById('pAmount').value) || 0;
             if(!n) return;
-            testPatients.push({id: Date.now(), name: n, dept: d, type: t, method: m, amount: a});
+            testPatients.push({id: Date.now(), name: n, dept: d, type: t, payment: pay, method: m, amount: a});
             document.getElementById('pName').value = ''; document.getElementById('pAmount').value = '';
             renderUI();
         }
@@ -514,7 +531,9 @@
             closeConfirmModal();
             clearInterval(timerInterval);
             document.getElementById('loadingModal').style.display = 'flex';
-            setTimeout(() => { evaluateAndSend(); }, 2000);
+            
+            // إرسال البيانات لجوجل وانتظار الرد (لضمان الحفظ)
+            evaluateAndSend();
         }
 
         function evaluateAndSend() {
@@ -522,9 +541,11 @@
             let report = "";
             let plainTextReport = ""; 
 
+            // التقييم يعتمد على الـ cleanText
             let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
-            let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
+            // تقييم هدى سعيد المعدل
+            let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'متابعة' && p.payment === 'مدفوع مسبقاً' && p.amount === 0);
             
             if (t1 && t2 && t5) {
                 score += 40; 
@@ -571,6 +592,34 @@
             let timeStr = `${minTaken}:${secTaken < 10 ? '0' : ''}${secTaken} دقيقة`;
             report += `<div style="color:#555; margin-top:15px; border-top:1px solid #eee; padding-top:10px;"><i class="fa-solid fa-clock"></i> وقت التنفيذ: ${timeStr}</div>`;
 
+            // إرسال البيانات لجوجل وانتظار النتيجة لضمان الحفظ
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // إرسال عادي يضمن وصول البيانات للشيت
+                    body: JSON.stringify({
+                        action: 'SUBMIT_TEST',
+                        candidateName: candidateName,
+                        score: score,
+                        timeTaken: timeStr,
+                        reportText: plainTextReport
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    showFinalResult(score, report);
+                    fetchLogsBackground(); // تحديث السجل في الخلفية
+                })
+                .catch(e => {
+                    // في حالة وجود خطأ إنترنت يعرض النتيجة للمستخدم برضه
+                    showFinalResult(score, report);
+                });
+            } else {
+                showFinalResult(score, report);
+            }
+        }
+
+        function showFinalResult(score, report) {
             document.getElementById('loadingModal').style.display = 'none';
             document.getElementById('finalScore').innerText = score + '%';
             if(score < 50) document.getElementById('finalScore').style.backgroundColor = 'var(--danger)';
@@ -579,21 +628,6 @@
 
             document.getElementById('reportDetails').innerHTML = report;
             document.getElementById('resultModal').style.display = 'flex';
-
-            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'SUBMIT_TEST',
-                        candidateName: candidateName,
-                        score: score,
-                        timeTaken: timeStr,
-                        reportText: plainTextReport
-                    })
-                }).catch(e => console.log("تم الإرسال"));
-            }
         }
     </script>
 </body>
