@@ -47,7 +47,6 @@
         .scenario-widget.collapsed .scenario-content { display: none; }
         .scenario-header { background: var(--primary-blue); color: white; padding: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
         .scenario-header:hover { background: #007bb5; }
-        /* تظبيط ايقونة السيناريو في السنتر لما تصغر */
         .scenario-widget.collapsed .scenario-header { justify-content: center; height: 100%; padding: 0; border-radius: 50%; }
         .scenario-widget.collapsed .scenario-header span { display: none; }
         .scenario-widget.collapsed .scenario-header i { font-size: 20px; margin: 0; }
@@ -56,7 +55,6 @@
         .scenario-content ul { padding-right: 20px; margin: 0; }
         .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px; transition: 0.3s;}
         
-        /* تلوين المهام اللحظي */
         .task-success { color: var(--primary-green); font-weight: bold; }
         .task-error { color: var(--danger); font-weight: bold; }
         .task-success i, .task-error i { margin-left: 5px; }
@@ -83,7 +81,6 @@
         .submit-test-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary-green); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 5px 20px rgba(140, 198, 63, 0.4); z-index: 100;}
         .submit-test-btn:hover { background: #7ab033; transform: translateX(-50%) scale(1.05); }
 
-        /* تعديل الجداول (اللون الرمادي وإضافة المسح) */
         .schedule-table { width: 100%; background: var(--table-bg); border-collapse: collapse; margin-top: 15px; font-size: 13px; border-radius: 8px; overflow: hidden;}
         .schedule-table th, .schedule-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid white; }
         .schedule-table th { background: #e2e8f0; font-weight: 700; color: var(--text-dark);}
@@ -102,7 +99,6 @@
         .log-actions { display: flex; gap: 10px; margin-top: 15px; flex-shrink: 0;}
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         
-        /* إشعار ذكي */
         .toast-notify { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary-blue); color: white; padding: 12px 25px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; opacity: 0;}
         .toast-notify.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
@@ -131,7 +127,7 @@
                 <div class="info-card time-card">
                     <i class="fa-solid fa-stopwatch"></i>
                     <span>مدة الاختبار:</span>
-                    <strong>20 دقيقة</strong>
+                    <strong>15 دقيقة</strong>
                 </div>
             </div>
 
@@ -163,7 +159,7 @@
             <div>
                 <h1 style="margin:0;"><i class="fa-regular fa-id-badge"></i> المتقدم: <span id="displayCandidateName"></span></h1>
             </div>
-            <div class="timer-badge"><i class="fa-solid fa-stopwatch"></i> <span id="timerDisplay">20:00</span></div>
+            <div class="timer-badge"><i class="fa-solid fa-stopwatch"></i> <span id="timerDisplay">15:00</span></div>
         </div>
 
         <div class="tabs-header">
@@ -197,7 +193,7 @@
                         <div class="input-group"><label>المبلغ</label><input type="number" id="mAmount"></div>
                         <button class="btn-add" style="grid-column: span 2; background: var(--primary-green);" onclick="addMed()">إضافة دواء</button>
                     </div>
-                    <table class="schedule-table"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medsTableBody"></tbody></table>
+                    <table class="schedule-table" style="margin-top: 15px;"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medsTableBody"></tbody></table>
                 </div>
 
                 <div class="card-panel">
@@ -207,7 +203,7 @@
                         <div class="input-group"><label>المبلغ (كاش)</label><input type="number" id="eAmount"></div>
                         <button class="btn-add" style="background: var(--danger);" onclick="addExpense()">إضافة مصروف</button>
                     </div>
-                    <table class="schedule-table"><thead><tr><th>سبب الصرف</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
+                    <table class="schedule-table" style="margin-top: 15px;"><thead><tr><th>سبب الصرف</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
                 </div>
             </div>
         </div>
@@ -284,21 +280,20 @@
     <div id="toastNotify" class="toast-notify"><i class="fa-solid fa-bell"></i> عاش! خلصت الجزء الأول، متنساش تدخل على (كروت المرضى) عشان تكمل التقييم وتضمن درجتك!</div>
 
     <script>
-        // 🚨 السكريبت الجديد 🚨
+        // 🚨 رابط السكريبت السحابي المحدث 🚨
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec";
 
         let candidateName = "";
         let testPatients = [];
         let testFinancials = [];
         let patientCards = [];
-        let timeLeft = 1200; // 20 دقيقة
+        let timeLeft = 900; // 15 دقيقة
         let timerInterval;
-        let alertedCards = false; // لمنع تكرار الإشعار
+        let alertedCards = false; 
         
         let fetchedLogs = [];
         let isLogsFetched = false;
 
-        // دالة تنظيف النصوص لتجنب الظلم (إزالة مسافات، همزات، تاء مربوطة)
         function cleanText(text) {
             if(!text) return "";
             return text.toString().trim().replace(/أ|إ|آ/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
@@ -353,7 +348,7 @@
             document.getElementById('displayCandidateName').innerText = candidateName;
             document.getElementById('welcomeScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('scenarioWidget').style.display = 'block'; // إظهار السيناريو
+            document.getElementById('scenarioWidget').style.display = 'block'; 
             
             timerInterval = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -393,7 +388,7 @@
             }
         }
 
-        // تلوين المهام اللحظي (أخضر لو صح، أحمر لو المريض مضاف بس غلط)
+        // تلوين المهام اللحظي (أخضر لو صح، أحمر لو غلط، فارغ لو لسه متكتبش)
         function checkRealTimeTasks() {
             let t1_correct = testPatients.some(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             let t1_exists = testPatients.some(p => cleanText(p.name).includes("ساره محمد"));
@@ -419,10 +414,9 @@
             let t6_exists = patientCards.some(c => cleanText(c.name).includes("احمد علي"));
             document.getElementById('task6').className = t6_correct ? 'task-success' : (t6_exists ? 'task-error' : '');
 
-            // لو خلص الحجوزات ومعملش الكارت، نطلعله إشعار التنبيه
             if (t1_correct && t2_correct && t3_correct && t4_correct && t5_correct && !t6_correct && !alertedCards) {
                 showToast();
-                alertedCards = true; // عشان ميطلعش كل شوية
+                alertedCards = true; 
             }
         }
 
@@ -506,7 +500,6 @@
         }
 
         function checkBeforeSubmit() {
-            // التأكد إذا كان نفذ التقييم بشكل كامل أو شبه كامل
             let doneTasks = document.querySelectorAll('.task-success').length;
             if (doneTasks < 5) {
                 document.getElementById('confirmSubmitModal').style.display = 'flex';
@@ -529,7 +522,6 @@
             let report = "";
             let plainTextReport = ""; 
 
-            // التقييم يعتمد على الـ cleanText
             let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
             let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
@@ -573,7 +565,7 @@
                 plainTextReport += "كارت المريض: خطأ";
             }
 
-            let timeTaken = 1200 - timeLeft; 
+            let timeTaken = 900 - timeLeft; 
             let minTaken = Math.floor(timeTaken / 60);
             let secTaken = timeTaken % 60;
             let timeStr = `${minTaken}:${secTaken < 10 ? '0' : ''}${secTaken} دقيقة`;
@@ -589,7 +581,6 @@
             document.getElementById('resultModal').style.display = 'flex';
 
             if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
-                // إرسال عبر no-cors
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
