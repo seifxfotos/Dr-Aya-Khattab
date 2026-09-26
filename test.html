@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>اختبار موظف الاستقبال</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,30 +13,30 @@
             --bg-color: #f4f7f6; --card-bg: #ffffff; --text-dark: #2c3e50;
             --border: #e1e8ed; --input-bg: #ffffff; --table-bg: #f0f4f8;
         }
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-dark); overflow-x: hidden;}
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-dark); overflow-x: hidden; -webkit-tap-highlight-color: transparent;}
         
+        /* أزرار السجل والبداية */
         .log-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 14px; backdrop-filter: blur(5px); transition: 0.3s; z-index: 2001; display: flex; align-items: center; gap: 8px;}
         .log-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.05); }
 
-        #welcomeScreen { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; padding: 20px; text-align: center;}
-        .welcome-box { background: rgba(255,255,255,0.1); padding: 30px 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 550px; width: 100%;}
+        #welcomeScreen { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; padding: 20px; text-align: center; overflow-y: auto;}
+        .welcome-box { background: rgba(255,255,255,0.1); padding: 30px 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 550px; width: 100%; box-sizing: border-box; margin: auto;}
         
         .parts-title { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.95); margin-top: 20px; margin-bottom: -10px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
         .info-card { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.3s; }
-        .info-card:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px); }
         .info-card i { font-size: 30px; margin-bottom: 5px; }
         .info-card span { font-size: 15px; font-weight: 700; }
         .time-card { grid-column: span 2; background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); flex-direction: row; justify-content: center; gap: 15px;}
         .time-card i { font-size: 28px; margin: 0;}
         .time-card strong { font-size: 22px; font-weight: 800; background: rgba(255,255,255,0.2); padding: 2px 15px; border-radius: 8px;}
 
-        .welcome-input { width: 90%; padding: 15px; border-radius: 10px; border: none; font-family: 'Cairo'; font-size: 16px; margin-bottom: 20px; outline: none; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
-        .start-btn { background: white; color: var(--primary-blue); border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
-        .start-btn:hover { background: #f8f9fa; transform: scale(1.05); }
+        .welcome-input { width: 100%; box-sizing: border-box; padding: 15px; border-radius: 10px; border: none; font-family: 'Cairo'; font-size: 16px; margin-bottom: 20px; outline: none; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+        .start-btn { background: white; color: var(--primary-blue); border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%;}
+        .start-btn:hover { background: #f8f9fa; transform: scale(1.02); }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; padding-right: 360px; display: none; padding-bottom: 100px; transition: 0.3s; }
-        @media (max-width: 1000px) { .container { padding-right: 20px; } }
+        /* الحاوية والشبكات */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; padding-right: 360px; display: none; padding-bottom: 100px; transition: 0.3s; box-sizing: border-box;}
         
         .header { background: var(--text-dark); color: white; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
         .timer-badge { background: var(--danger); padding: 8px 20px; border-radius: 8px; font-size: 20px; font-weight: 800; font-family: monospace; display: flex; align-items: center; gap: 10px; }
@@ -46,11 +46,9 @@
         .scenario-widget.collapsed { width: 45px; height: 45px; border-radius: 50%; border-color: transparent; top: 100px;}
         .scenario-widget.collapsed .scenario-content { display: none; }
         .scenario-header { background: var(--primary-blue); color: white; padding: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
-        .scenario-header:hover { background: #007bb5; }
         .scenario-widget.collapsed .scenario-header { justify-content: center; height: 100%; padding: 0; border-radius: 50%; }
         .scenario-widget.collapsed .scenario-header span { display: none; }
         .scenario-widget.collapsed .scenario-header i { font-size: 20px; margin: 0; }
-        
         .scenario-content { padding: 15px; font-size: 13px; line-height: 1.8; max-height: calc(100vh - 100px); overflow-y: auto;}
         .scenario-content ul { padding-right: 20px; margin: 0; }
         .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px; transition: 0.3s;}
@@ -59,8 +57,8 @@
         .task-error { color: var(--danger); font-weight: bold; }
         .task-success i, .task-error i { margin-left: 5px; }
 
-        .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { background: #e1e8ed; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; color: #555;}
+        .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;}
+        .tab-btn { flex: 1; background: #e1e8ed; border: none; padding: 12px 15px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; color: #555;}
         .tab-btn.active { background: var(--primary-blue); color: white; }
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
@@ -69,38 +67,60 @@
         .card-panel { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .card-panel h2 { margin-top: 0; font-size: 17px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
         
+        /* تنظيم الشبكات للتجاوب */
         .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end;}
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .input-group { display: flex; flex-direction: column; }
         .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 13px; }
-        .input-group input, .input-group select, .input-group textarea { padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 13px; outline: none; background: var(--input-bg); }
+        .input-group input, .input-group select, .input-group textarea { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 14px; outline: none; background: var(--input-bg); width: 100%; box-sizing: border-box;}
         .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary-blue); }
         
-        .btn-add { background: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: 'Cairo';}
-        .btn-add:hover { opacity: 0.9; }
+        .btn-add { background: var(--primary-blue); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; width: 100%; box-sizing: border-box;}
+        .col-span-2 { grid-column: span 2; }
+        .col-span-3 { grid-column: span 3; }
         
-        .submit-test-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary-green); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 5px 20px rgba(140, 198, 63, 0.4); z-index: 100;}
-        .submit-test-btn:hover { background: #7ab033; transform: translateX(-50%) scale(1.05); }
-
-        .schedule-table { width: 100%; background: var(--table-bg); border-collapse: collapse; margin-top: 15px; font-size: 13px; border-radius: 8px; overflow: hidden;}
-        .schedule-table th, .schedule-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid white; }
+        .submit-test-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary-green); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: 800; font-size: 16px; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 5px 20px rgba(140, 198, 63, 0.4); z-index: 100; width: 90%; max-width: 400px; text-align: center;}
+        
+        /* التجاوب مع الجداول (للموبايل) */
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; margin-top: 15px;}
+        .schedule-table { width: 100%; background: var(--table-bg); border-collapse: collapse; font-size: 13px; min-width: 600px;}
+        .schedule-table th, .schedule-table td { padding: 12px 8px; text-align: right; border-bottom: 1px solid white; white-space: nowrap;}
         .schedule-table th { background: #e2e8f0; font-weight: 700; color: var(--text-dark);}
         
-        .btn-delete-row { background: transparent; color: var(--danger); border: none; cursor: pointer; font-size: 14px; transition: 0.2s;}
-        .btn-delete-row:hover { transform: scale(1.2); }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px);}
-        .modal-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; }
-        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; margin: 20px auto; border: 5px solid #e8f4f8; flex-shrink: 0;}
-        .report-list { text-align: right; font-size: 15px; font-weight: 600; line-height: 2; margin-bottom: 20px; overflow-y: auto;}
+        .btn-delete-row { background: transparent; color: var(--danger); border: none; cursor: pointer; font-size: 16px; transition: 0.2s; padding: 5px;}
         
-        .loader { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-blue); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px); padding: 15px;}
+        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; box-sizing: border-box;}
+        .score-circle { width: 100px; height: 100px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: 900; margin: 15px auto; border: 5px solid #e8f4f8; flex-shrink: 0;}
+        .report-list { text-align: right; font-size: 14px; font-weight: 600; line-height: 2; margin-bottom: 20px; overflow-y: auto;}
+        
+        .loader { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-blue); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .log-actions { display: flex; gap: 10px; margin-top: 15px; flex-shrink: 0;}
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         
-        .toast-notify { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary-blue); color: white; padding: 12px 25px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; opacity: 0;}
+        .toast-notify { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary-blue); color: white; padding: 12px 20px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 3500; opacity: 0; width: 90%; max-width: 400px; text-align: center; font-size: 14px;}
         .toast-notify.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Media Queries للموبايل */
+        @media (max-width: 768px) {
+            .container { padding-right: 15px; padding-left: 15px; padding-bottom: 120px; }
+            .grid-2col { grid-template-columns: 1fr !important; gap: 15px; }
+            .grid-inputs { grid-template-columns: 1fr; }
+            .col-span-2, .col-span-3 { grid-column: span 1 !important; }
+            
+            .info-grid { grid-template-columns: 1fr; }
+            .time-card { grid-column: span 1; }
+            .welcome-box { padding: 25px 20px; }
+            
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            
+            /* تظبيط السيناريو العائم للموبايل */
+            .scenario-widget { top: auto !important; bottom: 85px; left: 15px; right: 15px; width: calc(100% - 30px); max-height: 55vh; z-index: 2000;}
+            .scenario-widget.collapsed { bottom: 85px; right: 15px; left: auto; top: auto !important; width: 50px; height: 50px;}
+            .scenario-content { max-height: calc(55vh - 50px); }
+        }
     </style>
 </head>
 <body>
@@ -110,7 +130,7 @@
         <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-list-ul"></i> السجل</button>
 
         <div class="welcome-box">
-            <h1 style="margin-top: 0;"><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
+            <h1 style="margin-top: 0; font-size: 24px;"><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
             <p style="font-size: 15px; opacity: 0.9;">أهلاً بك. هذا تقييم عملي لمهاراتك في الدقة والسرعة على نظام العيادة.</p>
             
             <div class="parts-title"><i class="fa-solid fa-layer-group"></i> يتكون الاختبار من جزأين أساسيين:</div>
@@ -157,7 +177,7 @@
     <div class="container" id="mainApp">
         <div class="header">
             <div>
-                <h1 style="margin:0;"><i class="fa-regular fa-id-badge"></i> المتقدم: <span id="displayCandidateName"></span></h1>
+                <h1 style="margin:0; font-size: 20px;"><i class="fa-regular fa-id-badge"></i> المتقدم: <span id="displayCandidateName"></span></h1>
             </div>
             <div class="timer-badge"><i class="fa-solid fa-stopwatch"></i> <span id="timerDisplay">15:00</span></div>
         </div>
@@ -178,12 +198,15 @@
                     <div class="input-group"><label>حالة الدفع</label><select id="paymentStatus" required><option value="تم الدفع">تم الدفع</option><option value="مدفوع مسبقاً">مدفوع مسبقاً</option></select></div>
                     <div class="input-group"><label>الوسيلة</label><select id="pMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فودافون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
                     <div class="input-group"><label>المبلغ المدفوع</label><input type="number" id="pAmount" placeholder="0"></div>
-                    <button class="btn-add" onclick="addPatient()">إضافة</button>
+                    <button class="btn-add" onclick="addPatient()">إضافة للحجز</button>
                 </div>
-                <table class="schedule-table"><thead><tr><th>الاسم</th><th>القسم</th><th>النوع</th><th>المبلغ</th><th>الوسيلة</th><th>حذف</th></tr></thead><tbody id="patientsBody"></tbody></table>
+                
+                <div class="table-wrapper">
+                    <table class="schedule-table"><thead><tr><th>الاسم</th><th>القسم</th><th>النوع</th><th>المبلغ</th><th>الوسيلة</th><th>حذف</th></tr></thead><tbody id="patientsBody"></tbody></table>
+                </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="grid-2col">
                 <div class="card-panel">
                     <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
                     <div class="grid-inputs" style="grid-template-columns: 1fr 1fr;">
@@ -191,9 +214,12 @@
                         <div class="input-group"><label>المشتري</label><input type="text" id="mBuyer"></div>
                         <div class="input-group"><label>الوسيلة</label><select id="mMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فودافون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
                         <div class="input-group"><label>المبلغ</label><input type="number" id="mAmount"></div>
-                        <button class="btn-add" style="grid-column: span 2; background: var(--primary-green);" onclick="addMed()">إضافة دواء</button>
+                        <button class="btn-add col-span-2" style="background: var(--primary-green);" onclick="addMed()">إضافة مبيعات دواء</button>
                     </div>
-                    <table class="schedule-table" style="margin-top: 15px;"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medsTableBody"></tbody></table>
+                    
+                    <div class="table-wrapper">
+                        <table class="schedule-table"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medsTableBody"></tbody></table>
+                    </div>
                 </div>
 
                 <div class="card-panel">
@@ -203,7 +229,10 @@
                         <div class="input-group"><label>المبلغ (كاش)</label><input type="number" id="eAmount"></div>
                         <button class="btn-add" style="background: var(--danger);" onclick="addExpense()">إضافة مصروف</button>
                     </div>
-                    <table class="schedule-table" style="margin-top: 15px;"><thead><tr><th>سبب الصرف</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
+                    
+                    <div class="table-wrapper">
+                        <table class="schedule-table"><thead><tr><th>سبب الصرف</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -217,10 +246,13 @@
                     <div class="input-group"><label>رقم الهاتف</label><input type="text" id="cPhone" placeholder="01X..."></div>
                     <div class="input-group"><label>العمر</label><input type="number" id="cAge" placeholder="سنة"></div>
                     <div class="input-group"><label>النوع</label><select id="cGender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
-                    <div class="input-group" style="grid-column: span 2;"><label>ملاحظات (تاريخ مرضي/حساسية)</label><textarea id="cNotes" rows="1"></textarea></div>
-                    <button class="btn-add" style="grid-column: span 3; background: #9b59b6;" onclick="addCard()">حفظ الكارت</button>
+                    <div class="input-group col-span-2"><label>ملاحظات (تاريخ مرضي/حساسية)</label><textarea id="cNotes" rows="1"></textarea></div>
+                    <button class="btn-add col-span-3" style="background: #9b59b6;" onclick="addCard()">حفظ الكارت</button>
                 </div>
-                <table class="schedule-table" style="margin-top: 20px;"><thead><tr><th>الاسم</th><th>الهاتف</th><th>العمر</th><th>النوع</th><th>الملاحظات</th><th>حذف</th></tr></thead><tbody id="cardsBody"></tbody></table>
+                
+                <div class="table-wrapper">
+                    <table class="schedule-table"><thead><tr><th>الاسم</th><th>الهاتف</th><th>العمر</th><th>النوع</th><th>الملاحظات</th><th>حذف</th></tr></thead><tbody id="cardsBody"></tbody></table>
+                </div>
             </div>
         </div>
 
@@ -230,12 +262,12 @@
     <!-- نافذة تأكيد الإنهاء المبكر -->
     <div id="confirmSubmitModal" class="modal-overlay">
         <div class="modal-box">
-            <h2 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام!</h2>
-            <p style="font-size: 16px; font-weight: 600;">أنت لم تكمل جميع المهام المطلوبة (مثل كارت المريض أو بعض الحجوزات).</p>
-            <p style="font-size: 15px;">هل أنت متأكد من تسليم الإجابة الآن؟ ستفقد الكثير من النقاط!</p>
-            <div class="log-actions" style="margin-top: 25px;">
-                <button class="btn-add" style="background: #95a5a6; flex: 1;" onclick="closeConfirmModal()">تراجع وإكمال الاختبار</button>
-                <button class="btn-add" style="background: var(--danger); flex: 1;" onclick="triggerSubmit()">تأكيد التسليم والمغادرة</button>
+            <h2 style="color: var(--danger); margin-top: 0;"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام!</h2>
+            <p style="font-size: 15px; font-weight: 600;">أنت لم تكمل جميع المهام المطلوبة (مثل كارت المريض أو بعض الحجوزات).</p>
+            <p style="font-size: 14px;">هل أنت متأكد من تسليم الإجابة الآن؟ ستفقد الكثير من النقاط!</p>
+            <div class="log-actions" style="margin-top: 20px;">
+                <button class="btn-add" style="background: #95a5a6; flex: 1;" onclick="closeConfirmModal()">تراجع</button>
+                <button class="btn-add" style="background: var(--danger); flex: 1;" onclick="triggerSubmit()">تأكيد التسليم</button>
             </div>
         </div>
     </div>
@@ -251,24 +283,26 @@
     <!-- نافذة النتيجة للمتقدم -->
     <div id="resultModal" class="modal-overlay">
         <div class="modal-box">
-            <h2><i class="fa-solid fa-medal" style="color: #f1c40f;"></i> التقييم النهائي</h2>
+            <h2 style="margin-top:0;"><i class="fa-solid fa-medal" style="color: #f1c40f;"></i> التقييم النهائي</h2>
             <div class="score-circle" id="finalScore">0%</div>
             <div class="report-list" id="reportDetails"></div>
-            <button class="btn-add" style="width: 100%; margin-top: 15px; flex-shrink: 0;" onclick="location.reload()">إنهاء وبدء متقدم جديد</button>
+            <button class="btn-add" style="width: 100%; margin-top: 10px; flex-shrink: 0;" onclick="location.reload()">إنهاء وبدء متقدم جديد</button>
         </div>
     </div>
 
-    <!-- نافذة السجل السحابي/المحلي -->
+    <!-- نافذة السجل -->
     <div id="logModal" class="modal-overlay" style="z-index: 4000;">
         <div class="modal-box">
-            <h2 style="color: var(--primary-blue); margin-bottom: 15px;"><i class="fa-solid fa-list-ul"></i> سجل المتقدمين</h2>
-            <div class="report-list" style="padding-right: 5px;">
-                <table class="schedule-table" style="margin-top: 0; background: white;">
-                    <thead><tr><th>المتقدم</th><th>النتيجة</th><th>الوقت</th><th>التاريخ</th></tr></thead>
-                    <tbody id="logTableBody">
-                        <tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
+            <h2 style="color: var(--primary-blue); margin-top: 0; margin-bottom: 15px;"><i class="fa-solid fa-list-ul"></i> سجل المتقدمين</h2>
+            <div class="report-list" style="padding-right: 0;">
+                <div class="table-wrapper" style="margin-top: 0;">
+                    <table class="schedule-table" style="background: white; min-width: 450px;">
+                        <thead><tr><th>المتقدم</th><th>النتيجة</th><th>الوقت</th><th>التاريخ</th></tr></thead>
+                        <tbody id="logTableBody">
+                            <tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="log-actions">
                 <button class="btn-add" style="width: 100%;" onclick="closeLogModal()">إغلاق السجل</button>
@@ -305,16 +339,14 @@
                        .toLowerCase();
         }
 
-        // 1. تحميل السجل في الخلفية من الشيت واللوكال ستورج مع بعض عشان السرعة
+        // تحميل السجل في الخلفية من الشيت واللوكال ستورج مع بعض
         window.addEventListener('DOMContentLoaded', () => {
-            // اقرأ من اللوكال ستورج فوراً عشان لو فتح السجل يلاقيه جاهز
             let localLogs = localStorage.getItem('clinic_fast_logs');
             if (localLogs) {
                 fetchedLogs = JSON.parse(localLogs);
                 isLogsFetched = true;
             }
 
-            // ابعت طلب لجوجل شيت يحدّث اللوكال ستورج في الخلفية (عشان لو فتح من جهاز تاني)
             if(GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -347,7 +379,6 @@
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;">لا توجد أي نتائج مسجلة حتى الآن.</td></tr>';
             } else {
                 tbody.innerHTML = fetchedLogs.map(l => {
-                    // حل مشكلة (0.6) لو ظهرت، بيحولها لـ 60%
                     let rawScore = l.score.toString().replace('%', '');
                     let scoreNum = parseFloat(rawScore);
                     if(scoreNum <= 1 && scoreNum > 0 && !l.score.toString().includes('%')) {
@@ -356,8 +387,14 @@
                     scoreNum = Math.round(scoreNum);
                     
                     let badgeColor = scoreNum >= 80 ? 'var(--primary-green)' : (scoreNum >= 50 ? '#f39c12' : 'var(--danger)');
-                    let cleanDate = new Date(l.date).toLocaleString('ar-EG', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
                     
+                    // تنظيف صيغة التاريخ
+                    let cleanDate = l.date;
+                    try {
+                        let d = new Date(l.date);
+                        if (!isNaN(d)) cleanDate = d.toLocaleString('ar-EG', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+                    } catch(e){}
+
                     return `<tr><td style="font-weight:bold;">${l.name}</td><td><span class="badge" style="background:${badgeColor}">${scoreNum}%</span></td><td>${l.time}</td><td style="font-size:11px;">${cleanDate}</td></tr>`;
                 }).join('');
             }
@@ -370,7 +407,15 @@
             document.getElementById('displayCandidateName').innerText = candidateName;
             document.getElementById('welcomeScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('scenarioWidget').style.display = 'block'; 
+            
+            // تفعيل السيناريو وغلقه تلقائيا على الموبايل
+            let widget = document.getElementById('scenarioWidget');
+            let icon = document.getElementById('scenarioIcon');
+            widget.style.display = 'block';
+            if(window.innerWidth <= 768) {
+                widget.classList.add('collapsed');
+                icon.className = "fa-solid fa-chevron-up";
+            }
             
             timerInterval = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -428,7 +473,6 @@
             let t4_exists = testFinancials.some(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه"));
             document.getElementById('task4').className = t4_correct ? 'task-success' : (t4_exists ? 'task-error' : '');
             
-            // إصلاح هدى سعيد (الاسم، القسم، النوع متابعة، مدفوع مسبقا، كاش، المبلغ صفر)
             let t5_correct = testPatients.some(p => cleanText(p.name).includes("هدي") && p.dept === 'تغذية علاجية' && p.type === 'متابعة' && p.payment === 'مدفوع مسبقاً' && p.method === 'كاش' && p.amount === 0);
             let t5_exists = testPatients.some(p => cleanText(p.name).includes("هدي"));
             document.getElementById('task5').className = t5_correct ? 'task-success' : (t5_exists ? 'task-error' : '');
@@ -595,10 +639,10 @@
             let timeStr = `${minTaken}:${secTaken < 10 ? '0' : ''}${secTaken} دقيقة`;
             report += `<div style="color:#555; margin-top:15px; border-top:1px solid #eee; padding-top:10px;"><i class="fa-solid fa-clock"></i> وقت التنفيذ: ${timeStr}</div>`;
 
-            // تسجيل النتيجة في السجل المحلي فوراً للمتقدم الحالي عشان لو فتح السجل يلاقي اسمه
+            // إضافة نتيجة المتقدم فوراً في اللوكال ستورج عشان يلاقيها متسجلة لو فتح السجل بعد الاختبار مباشرة
             let newLog = {
                 name: candidateName,
-                score: score,
+                score: score + "%",
                 time: timeStr,
                 date: new Date().toISOString()
             };
@@ -607,7 +651,7 @@
 
             showFinalResult(score, report);
 
-            // إرسال البيانات لجوجل شيت في الخلفية (بدون انتظار أو تعطيل للمستخدم)
+            // الإرسال لجوجل شيت بدون تعطيل المستخدم
             if(GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
