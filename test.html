@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار موظف الاستقبال</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0093D0; --primary-green: #8CC63F; --danger: #e74c3c; 
+            --bg-color: #f4f7f6; --card-bg: #ffffff; --text-dark: #2c3e50;
+            --border: #e1e8ed; --input-bg: #ffffff;
+        }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-dark); overflow-x: hidden;}
+        
+        /* زر السجل (Log) في شاشة البداية */
+        .log-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 14px; backdrop-filter: blur(5px); transition: 0.3s; z-index: 2001; display: flex; align-items: center; gap: 8px;}
+        .log-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.05); }
+
+        /* شاشة الترحيب */
+        #welcomeScreen { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; padding: 20px; text-align: center;}
+        .welcome-box { background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 500px; width: 100%;}
+        .welcome-input { width: 90%; padding: 15px; border-radius: 10px; border: none; font-family: 'Cairo'; font-size: 16px; margin: 20px 0; outline: none; text-align: center;}
+        .start-btn { background: white; color: var(--primary-blue); border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s;}
+        .start-btn:hover { background: #f0f0f0; transform: scale(1.05); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; padding-bottom: 100px; }
+        
+        .header { background: var(--text-dark); color: white; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+        .timer-badge { background: var(--danger); padding: 8px 20px; border-radius: 8px; font-size: 20px; font-weight: 800; font-family: monospace; display: flex; align-items: center; gap: 10px; }
+        
+        /* السيناريو العائم */
+        .scenario-widget { position: fixed; right: 20px; top: 100px; width: 320px; background: white; border: 2px solid var(--primary-blue); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1500; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+        .scenario-widget.collapsed { width: 45px; height: 45px; border-radius: 50%; border-color: transparent; }
+        .scenario-header { background: var(--primary-blue); color: white; padding: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+        .scenario-header:hover { background: #007bb5; }
+        .scenario-content { padding: 15px; font-size: 14px; line-height: 1.8; max-height: 400px; overflow-y: auto;}
+        .scenario-content ul { padding-right: 20px; margin: 0; }
+        .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px;}
+
+        /* التبويبات Tabs */
+        .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #e1e8ed; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; color: #555;}
+        .tab-btn.active { background: var(--primary-blue); color: white; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+
+        .card-panel { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-panel h2 { margin-top: 0; font-size: 17px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+        
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end;}
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 600; margin-bottom: 5px; font-size: 13px; }
+        .input-group input, .input-group select, .input-group textarea { padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 13px; outline: none; background: var(--input-bg); }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary-blue); }
+        
+        .btn-add { background: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: 'Cairo';}
+        .btn-add:hover { opacity: 0.9; }
+        
+        .submit-test-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary-green); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 5px 20px rgba(140, 198, 63, 0.4); z-index: 100;}
+        .submit-test-btn:hover { background: #7ab033; transform: translateX(-50%) scale(1.05); }
+
+        .schedule-table { width: 100%; background: var(--card-bg); border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .schedule-table th, .schedule-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border); }
+        .schedule-table th { background: #f8f9fa; font-weight: 700; }
+
+        /* شاشات التحميل والنتيجة والسجل */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px);}
+        .modal-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; margin: 20px auto; border: 5px solid #e8f4f8; flex-shrink: 0;}
+        .report-list { text-align: right; font-size: 15px; font-weight: 600; line-height: 2; margin-bottom: 20px; overflow-y: auto;}
+        .success-text { color: var(--primary-green); }
+        .error-text { color: var(--danger); }
+        
+        .loader { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-blue); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* أزرار السجل */
+        .log-actions { display: flex; gap: 10px; margin-top: 15px; flex-shrink: 0;}
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
+    </style>
+</head>
+<body>
+
+    <!-- شاشة الترحيب -->
+    <div id="welcomeScreen">
+        <!-- زر السجل يظهر في الشاشة الرئيسية -->
+        <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-cloud-arrow-down"></i> السجل السحابي (Log)</button>
+
+        <div class="welcome-box">
+            <h1><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
+            <p style="font-size: 16px; opacity: 0.9;">أهلاً بك. هذا اختبار عملي بسيط لتقييم السرعة والدقة في استخدام نظام العيادة. يتكون الاختبار من جزأين (حجوزات، وكروت مرضى). لديك 15 دقيقة.</p>
+            <input type="text" id="candidateNameInput" class="welcome-input" placeholder="اكتب اسمك الثلاثي هنا...">
+            <button class="start-btn" onclick="startTest()">بدء الاختبار الآن</button>
+        </div>
+    </div>
+
+    <!-- نافذة السيناريو العائمة -->
+    <div class="scenario-widget" id="scenarioWidget">
+        <div class="scenario-header" onclick="toggleScenario()">
+            <span><i class="fa-solid fa-list-check"></i> تفاصيل المهمة</span>
+            <i class="fa-solid fa-chevron-down" id="scenarioIcon"></i>
+        </div>
+        <div class="scenario-content" id="scenarioContent">
+            <ul>
+                <li><strong>1.</strong> المريضة <strong>سارة محمد</strong> حجزت <strong>(جلسة علاج طبيعي)</strong> ودفعت <strong>300 جنيه (كاش)</strong>.</li>
+                <li><strong>2.</strong> المريض <strong>أحمد علي</strong> حجز <strong>(كشف تغذية علاجية)</strong> ودفع <strong>400 جنيه (أنستا باي)</strong>.</li>
+                <li><strong>3.</strong> تم بيع دواء <strong>كريم مساج</strong> للمشتري <strong>عمر</strong> بمبلغ <strong>150 جنيه (فودافون كاش)</strong>.</li>
+                <li><strong>4.</strong> تم سحب مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
+                <li><strong>5.</strong> المريضة <strong>هدى سعيد</strong> في <strong>(متابعة تغذية علاجية)</strong>، ولم تدفع أي مبلغ (0 ج.م).</li>
+                <li><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>01012345678</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp">
+        <div class="header">
+            <div>
+                <h1 style="margin:0;"><i class="fa-regular fa-id-badge"></i> المتقدم: <span id="displayCandidateName"></span></h1>
+            </div>
+            <div class="timer-badge"><i class="fa-solid fa-stopwatch"></i> <span id="timerDisplay">15:00</span></div>
+        </div>
+
+        <div class="tabs-header">
+            <button class="tab-btn active" id="tabBtnBooking" onclick="switchTab('booking')"><i class="fa-solid fa-calendar-check"></i> إدارة الحجوزات</button>
+            <button class="tab-btn" id="tabBtnCards" onclick="switchTab('cards')"><i class="fa-solid fa-address-card"></i> كروت المرضى</button>
+        </div>
+
+        <!-- تبويب الحجوزات -->
+        <div id="tabBooking" class="tab-content active">
+            <div class="card-panel">
+                <h2 style="color: var(--primary-blue);"><i class="fa-solid fa-user-plus"></i> إضافة حجز</h2>
+                <div class="grid-inputs">
+                    <div class="input-group"><label>اسم المريض</label><input type="text" id="pName" placeholder="الاسم..."></div>
+                    <div class="input-group"><label>القسم</label><select id="pDept"><option value="علاج طبيعي">علاج طبيعي</option><option value="تغذية علاجية">تغذية علاجية</option></select></div>
+                    <div class="input-group"><label>نوع الزيارة</label><select id="pType"><option value="كشف">كشف</option><option value="متابعة">متابعة</option><option value="جلسة">جلسة</option></select></div>
+                    <div class="input-group"><label>الوسيلة</label><select id="pMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فودافون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
+                    <div class="input-group"><label>المبلغ المدفوع</label><input type="number" id="pAmount" placeholder="0"></div>
+                    <button class="btn-add" onclick="addPatient()">إضافة</button>
+                </div>
+                <table class="schedule-table"><thead><tr><th>الاسم</th><th>القسم</th><th>النوع</th><th>المبلغ</th><th>الوسيلة</th></tr></thead><tbody id="patientsBody"></tbody></table>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card-panel">
+                    <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
+                    <div class="grid-inputs" style="grid-template-columns: 1fr 1fr;">
+                        <div class="input-group"><label>اسم الدواء</label><input type="text" id="mName"></div>
+                        <div class="input-group"><label>المشتري</label><input type="text" id="mBuyer"></div>
+                        <div class="input-group"><label>الوسيلة</label><select id="mMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
+                        <div class="input-group"><label>المبلغ</label><input type="number" id="mAmount"></div>
+                        <button class="btn-add" style="grid-column: span 2; background: var(--primary-green);" onclick="addMed()">إضافة دواء</button>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <h2 style="color: var(--danger);"><i class="fa-solid fa-receipt"></i> المصروفات</h2>
+                    <div class="grid-inputs" style="grid-template-columns: 1fr;">
+                        <div class="input-group"><label>البيان</label><input type="text" id="eDesc"></div>
+                        <div class="input-group"><label>المبلغ (كاش)</label><input type="number" id="eAmount"></div>
+                        <button class="btn-add" style="background: var(--danger);" onclick="addExpense()">سحب مصروف</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تبويب كروت المرضى -->
+        <div id="tabCards" class="tab-content">
+            <div class="card-panel">
+                <h2 style="color: #9b59b6;"><i class="fa-solid fa-id-card-clip"></i> إنشاء كارت مريض جديد</h2>
+                <div class="grid-inputs" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="input-group"><label>اسم المريض</label><input type="text" id="cName" placeholder="الاسم ثلاثي..."></div>
+                    <div class="input-group"><label>رقم الهاتف</label><input type="text" id="cPhone" placeholder="01X..."></div>
+                    <div class="input-group"><label>العمر</label><input type="number" id="cAge" placeholder="سنة"></div>
+                    <div class="input-group"><label>النوع</label><select id="cGender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
+                    <div class="input-group" style="grid-column: span 2;"><label>ملاحظات (تاريخ مرضي/حساسية)</label><textarea id="cNotes" rows="1"></textarea></div>
+                    <button class="btn-add" style="grid-column: span 3; background: #9b59b6;" onclick="addCard()">حفظ الكارت</button>
+                </div>
+                <table class="schedule-table" style="margin-top: 20px;"><thead><tr><th>الاسم</th><th>الهاتف</th><th>العمر</th><th>النوع</th><th>الملاحظات</th></tr></thead><tbody id="cardsBody"></tbody></table>
+            </div>
+        </div>
+
+        <button class="submit-test-btn" onclick="triggerSubmit()"><i class="fa-solid fa-paper-plane"></i> إنهاء الاختبار وتسليم الإجابة</button>
+    </div>
+
+    <!-- شاشة التحميل -->
+    <div id="loadingModal" class="modal-overlay">
+        <div class="modal-box" style="background: transparent; color: white; border: none; box-shadow: none;">
+            <div class="loader"></div>
+            <h3>جاري مراجعة الإجابات وإرسال التقييم...</h3>
+        </div>
+    </div>
+
+    <!-- نافذة النتيجة للمتقدم -->
+    <div id="resultModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2><i class="fa-solid fa-medal" style="color: #f1c40f;"></i> التقييم النهائي</h2>
+            <div class="score-circle" id="finalScore">0%</div>
+            <div class="report-list" id="reportDetails"></div>
+            <button class="btn-add" style="width: 100%; margin-top: 15px; flex-shrink: 0;" onclick="location.reload()">إنهاء وبدء متقدم جديد</button>
+        </div>
+    </div>
+
+    <!-- نافذة السجل السحابي (Log) -->
+    <div id="logModal" class="modal-overlay" style="z-index: 4000;">
+        <div class="modal-box">
+            <h2 style="color: var(--primary-blue); margin-bottom: 15px;"><i class="fa-solid fa-cloud-arrow-down"></i> سجل المتقدمين (من السحابة)</h2>
+            <div class="report-list" style="padding-right: 5px;">
+                <table class="schedule-table" style="margin-top: 0;">
+                    <thead><tr><th>المتقدم</th><th>النتيجة</th><th>الوقت</th><th>التاريخ</th></tr></thead>
+                    <tbody id="logTableBody">
+                        <tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل من جوجل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="log-actions">
+                <button class="btn-add" style="width: 100%;" onclick="closeLogModal()">إغلاق السجل</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا بعد عمل New Deployment 🚨
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyigNWgoTxp4XKAuTges1Kl5x1y6JjmfPk9T1Gdgn8hmx0jRo1rjTePdHkNB8ySohZymA/exec";
+
+        let candidateName = "";
+        let testPatients = [];
+        let testFinancials = [];
+        let patientCards = [];
+        let timeLeft = 900; // 15 دقائق
+        let timerInterval;
+        
+        // مصفوفة لتخزين اللوج السحابي في الخلفية
+        let fetchedLogs = [];
+        let isLogsFetched = false;
+
+        // جلب السجل في الخلفية بمجرد تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', fetchLogsBackground);
+
+        function fetchLogsBackground() {
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_هنا") {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'GET_LOGS' })
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if(result.status === 'success' && result.data) {
+                        fetchedLogs = result.data;
+                        isLogsFetched = true;
+                    }
+                }).catch(e => console.log("خطأ في جلب السجل:", e));
+            }
+        }
+
+        function openLogModal() {
+            document.getElementById('logModal').style.display = 'flex';
+            renderLogTable();
+        }
+
+        function closeLogModal() { document.getElementById('logModal').style.display = 'none'; }
+
+        function renderLogTable() {
+            let tbody = document.getElementById('logTableBody');
+            if(!isLogsFetched) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل من جوجل...</td></tr>';
+            } else if(fetchedLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;">لا توجد أي نتائج مسجلة حتى الآن في شيت جوجل.</td></tr>';
+            } else {
+                tbody.innerHTML = fetchedLogs.map(l => {
+                    let scoreNum = parseInt(l.score);
+                    let badgeColor = scoreNum >= 80 ? 'var(--primary-green)' : (scoreNum >= 50 ? '#f39c12' : 'var(--danger)');
+                    let cleanDate = new Date(l.date).toLocaleString('ar-EG', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+                    return `<tr><td style="font-weight:bold;">${l.name}</td><td><span class="badge" style="background:${badgeColor}">${l.score}</span></td><td>${l.time}</td><td style="font-size:11px;">${cleanDate}</td></tr>`;
+                }).join('');
+            }
+        }
+
+        function startTest() {
+            let nameInput = document.getElementById('candidateNameInput').value.trim();
+            if(!nameInput) return alert('برجاء إدخال اسمك للبدء');
+            candidateName = nameInput;
+            document.getElementById('displayCandidateName').innerText = candidateName;
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    triggerSubmit(); 
+                } else {
+                    timeLeft--;
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    document.getElementById('timerDisplay').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    if(timeLeft < 60) document.getElementById('timerDisplay').style.color = '#ffcccc';
+                }
+            }, 1000);
+        }
+
+        function toggleScenario() {
+            let widget = document.getElementById('scenarioWidget');
+            let icon = document.getElementById('scenarioIcon');
+            if (widget.classList.contains('collapsed')) {
+                widget.classList.remove('collapsed');
+                icon.className = "fa-solid fa-chevron-down";
+            } else {
+                widget.classList.add('collapsed');
+                icon.className = "fa-solid fa-chevron-up";
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            if(tabId === 'booking') {
+                document.getElementById('tabBooking').classList.add('active');
+                document.getElementById('tabBtnBooking').classList.add('active');
+            } else {
+                document.getElementById('tabCards').classList.add('active');
+                document.getElementById('tabBtnCards').classList.add('active');
+            }
+        }
+
+        function addPatient() {
+            let n = document.getElementById('pName').value.trim();
+            let d = document.getElementById('pDept').value;
+            let t = document.getElementById('pType').value;
+            let m = document.getElementById('pMethod').value;
+            let a = parseFloat(document.getElementById('pAmount').value) || 0;
+            if(!n) return;
+            testPatients.push({name: n, dept: d, type: t, method: m, amount: a});
+            document.getElementById('pName').value = ''; document.getElementById('pAmount').value = '';
+            renderUI();
+        }
+
+        function addMed() {
+            let n = document.getElementById('mName').value.trim();
+            let m = document.getElementById('mMethod').value;
+            let a = parseFloat(document.getElementById('mAmount').value) || 0;
+            if(!n || !a) return;
+            testFinancials.push({cat: 'دواء', method: m, amount: a});
+            document.getElementById('mName').value = ''; document.getElementById('mBuyer').value = ''; document.getElementById('mAmount').value = '';
+        }
+
+        function addExpense() {
+            let n = document.getElementById('eDesc').value.trim();
+            let a = parseFloat(document.getElementById('eAmount').value) || 0;
+            if(!n || !a) return;
+            testFinancials.push({cat: 'مصروف', method: 'كاش', amount: a});
+            document.getElementById('eDesc').value = ''; document.getElementById('eAmount').value = '';
+        }
+
+        function addCard() {
+            let n = document.getElementById('cName').value.trim();
+            let p = document.getElementById('cPhone').value.trim();
+            let a = document.getElementById('cAge').value;
+            let g = document.getElementById('cGender').value;
+            let notes = document.getElementById('cNotes').value.trim();
+            if(!n) return;
+            patientCards.push({name: n, phone: p, age: a, gender: g, notes: notes});
+            document.getElementById('cName').value = ''; document.getElementById('cPhone').value = ''; document.getElementById('cAge').value = ''; document.getElementById('cNotes').value = '';
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('patientsBody').innerHTML = testPatients.map(p => `<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.type}</td><td>${p.amount}</td><td>${p.method}</td></tr>`).join('');
+            document.getElementById('cardsBody').innerHTML = patientCards.map(c => `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.age}</td><td>${c.gender}</td><td>${c.notes}</td></tr>`).join('');
+        }
+
+        function triggerSubmit() {
+            clearInterval(timerInterval);
+            document.getElementById('loadingModal').style.display = 'flex';
+            setTimeout(() => { evaluateAndSend(); }, 2000);
+        }
+
+        function evaluateAndSend() {
+            let score = 0;
+            let report = "";
+            let plainTextReport = ""; 
+
+            let calcCash = 0; let calcElec = 0;
+            testPatients.forEach(p => { if(p.method==='كاش') calcCash += p.amount; else calcElec += p.amount; });
+            testFinancials.forEach(f => {
+                if(f.cat === 'دواء') { if(f.method==='كاش') calcCash += f.amount; else calcElec += f.amount; }
+                if(f.cat === 'مصروف') { calcCash -= f.amount; }
+            });
+
+            let hasKashf = testPatients.some(p => p.type === 'كشف');
+            let hasGalsa = testPatients.some(p => p.type === 'جلسة');
+            let hasMotab3a = testPatients.some(p => p.type === 'متابعة');
+            if (testPatients.length === 3 && hasKashf && hasGalsa && hasMotab3a) {
+                score += 20; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تسجيل الزيارات مكتمل (20%)</div>`;
+                plainTextReport += "الزيارات: صحيح | ";
+            } else {
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في عدد أو نوع الحجوزات</div>`;
+                plainTextReport += "الزيارات: خطأ | ";
+            }
+
+            let nutCount = testPatients.filter(p => p.dept === 'تغذية علاجية').length;
+            if (nutCount === 2) {
+                score += 15; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> توزيع الأقسام صحيح (15%)</div>`;
+                plainTextReport += "الأقسام: صحيح | ";
+            } else {
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في توجيه التغذية والعلاج الطبيعي</div>`;
+                plainTextReport += "الأقسام: خطأ | ";
+            }
+
+            if (calcCash === 250) {
+                score += 25; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> حساب درج الكاش دقيق 250ج (25%)</div>`;
+                plainTextReport += "الكاش: صحيح | ";
+            } else {
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> عجز/زيادة في الدرج (مسجل ${calcCash} والمطلوب 250)</div>`;
+                plainTextReport += `الكاش: خطأ (${calcCash}) | `;
+            }
+
+            if (calcElec === 550) {
+                score += 15; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> الدفع الإلكتروني صحيح 550ج (15%)</div>`;
+                plainTextReport += "الإلكتروني: صحيح | ";
+            } else {
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في حساب المحافظ الإلكترونية</div>`;
+                plainTextReport += "الإلكتروني: خطأ | ";
+            }
+
+            let ahmedCard = patientCards.find(c => c.name.includes("أحمد") && c.phone === "01012345678");
+            if (ahmedCard) {
+                score += 25; 
+                report += `<div class="success-text"><i class="fa-solid fa-check"></i> تم إنشاء كارت المريض بدقة (25%)</div>`;
+                plainTextReport += "كارت المريض: صحيح";
+            } else {
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> لم يتم إنشاء كارت المريض بشكل صحيح</div>`;
+                plainTextReport += "كارت المريض: خطأ أو مفقود";
+            }
+
+            let timeTaken = 900 - timeLeft;
+            let minTaken = Math.floor(timeTaken / 60);
+            let secTaken = timeTaken % 60;
+            let timeStr = `${minTaken}:${secTaken < 10 ? '0' : ''}${secTaken} دقيقة`;
+            report += `<div style="color:#555; margin-top:15px; border-top:1px solid #eee; padding-top:10px;"><i class="fa-solid fa-clock"></i> وقت التنفيذ: ${timeStr}</div>`;
+
+            document.getElementById('loadingModal').style.display = 'none';
+            document.getElementById('finalScore').innerText = score + '%';
+            if(score < 50) document.getElementById('finalScore').style.backgroundColor = 'var(--danger)';
+            else if(score < 80) document.getElementById('finalScore').style.backgroundColor = '#f39c12';
+            else document.getElementById('finalScore').style.backgroundColor = 'var(--primary-green)';
+
+            document.getElementById('reportDetails').innerHTML = report;
+            document.getElementById('resultModal').style.display = 'flex';
+
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_هنا") {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'SUBMIT_TEST',
+                        candidateName: candidateName,
+                        score: score,
+                        timeTaken: timeStr,
+                        reportText: plainTextReport
+                    })
+                }).catch(e => console.log("Error saving to sheet"));
+            }
+        }
+    </script>
+</body>
+</html>
