@@ -66,8 +66,8 @@
         .schedule-table tr:last-child td { border-bottom: none; }
         
         .slot-title { background-color: var(--primary-green); color: white; font-weight: 700; padding: 10px 15px; font-size: 16px; border-radius: 8px 8px 0 0; margin-top: 20px; }
+        .deposit-title { background-color: #e67e22; }
         
-        /* التعديل لضمان شطب الخانات المعدلة (Input / Select) */
         .row-finished { opacity: 0.5; text-decoration: line-through; background-color: rgba(0,0,0,0.02); }
         .row-finished input, .row-finished select { text-decoration: line-through; opacity: 0.8; }
         :root[data-theme="dark"] .row-finished { background-color: rgba(255,255,255,0.02); }
@@ -89,7 +89,6 @@
         .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
         
-        /* تعديلات الـ Inline Select و Input */
         .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
@@ -158,6 +157,7 @@
                 <span title="إجمالي الكشوفات الجديدة"><i class="fa-solid fa-stethoscope"></i> كشف: <span id="statKashf">0</span></span>
                 <span title="إجمالي الجلسات"><i class="fa-solid fa-bed-pulse"></i> جلسة: <span id="statGalsa">0</span></span>
                 <span title="إجمالي المتابعات"><i class="fa-solid fa-calendar-check"></i> متابعة: <span id="statMotab3a">0</span></span>
+                <span title="إجمالي المقدمات المدفوعة اليوم"><i class="fa-solid fa-hand-holding-dollar"></i> مقدم: <span id="statMokadam">0</span></span>
             </div>
 
             <div class="header-controls"><input type="text" id="todayDate" class="date-picker"></div>
@@ -168,7 +168,7 @@
             <div class="add-patient-grid">
                 <div class="input-group"><label>اسم المريض</label><input type="text" id="patientName" placeholder="أدخل اسم المريض..."></div>
                 <div class="input-group"><label>القسم</label><select id="department" required><option value="تغذية علاجية">تغذية علاجية</option><option value="علاج طبيعي">علاج طبيعي</option></select></div>
-                <div class="input-group"><label>نوع الزيارة</label><select id="visitType" required><option value="كشف">كشف جديد</option><option value="متابعة">متابعة</option><option value="جلسة">جلسة</option></select></div>
+                <div class="input-group"><label>نوع الزيارة</label><select id="visitType" required><option value="كشف">كشف جديد</option><option value="متابعة">متابعة</option><option value="جلسة">جلسة</option><option value="مقدم">مقدم حجز</option></select></div>
                 <div class="input-group"><label>حالة الدفع</label><select id="paymentStatus" required><option value="تم الدفع">تم الدفع</option><option value="لم يدفع">لم يدفع</option><option value="مدفوع مسبقاً">مدفوع مسبقاً</option></select></div>
                 <div class="input-group"><label>الوسيلة</label><select id="paymentMethod"><option value="كاش">كاش</option><option value="فودافون كاش">فودافون كاش</option><option value="أنستا باي">أنستا باي</option></select></div>
                 <div class="input-group"><label>المبلغ (ج.م)</label><input type="number" id="paidAmount" placeholder="0" min="0"></div>
@@ -269,10 +269,9 @@
         let glpQueue = [];
         let financialsQueue = [];
 
-        // 🚨 هام جداً: حط الرابط بتاعك هنا 🚨
+        // 🚨 الرابط المطلوب المحدث 🚨
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx77Y7M4TpwlAwk7xh5E9duD_VwFqPMbHEnqezOER_-2KGZWT7moTPvjWN5tCpncfA/exec';
 
-        // --- دوال إظهار حالة الحفظ ---
         function showSyncStatus(text) {
             const indicator = document.getElementById('syncIndicator');
             document.getElementById('syncIndicatorText').innerText = text;
@@ -284,7 +283,6 @@
             indicator.classList.remove('show');
         }
 
-        // --- دوال النافذة المنبثقة (Modal) ---
         function showModal(opts) {
             const modal = document.getElementById('customModal');
             document.getElementById('modalTitle').innerHTML = opts.title;
@@ -341,7 +339,6 @@
             document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none';
         }
 
-        // --- دوال التايمر الذكي ---
         let timerInterval;
         function updateTimerDisplay(secondsLeft) {
             let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60;
@@ -399,7 +396,6 @@
             } catch (e) {}
         }
 
-        // --- دوال إعدادات التاريخ ---
         function getNextWeekDate() {
             let nextWeek = new Date(); 
             nextWeek.setDate(nextWeek.getDate() + 7);
@@ -484,7 +480,6 @@
             document.getElementById('totalRevenueValue').innerText = (cash + elec + meds);
         }
 
-        // --- دوال الاتصال بجوجل شيت ---
         async function fetchFromGoogle(payload) {
             let res = await fetch(SCRIPT_URL, { 
                 method: 'POST', 
@@ -567,7 +562,6 @@
             }, 2000); 
         }
 
-        // --- دوال الإضافة والحذف ---
         function addGLP() { let n = document.getElementById('glpName').value.trim(); let d = document.getElementById('glpDose').value; if(!n) return; glpQueue.push({name: n, dose: d}); document.getElementById('glpName').value = ''; renderUI(); scheduleSync(); }
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         function addMedication() { let name = document.getElementById('medName').value.trim(); let buyer = document.getElementById('medBuyer').value.trim(); let amt = document.getElementById('medAmount').value; let method = document.getElementById('medMethod').value; if(!name || !amt) return; let desc = buyer ? `${name} (للمريض: ${buyer})` : name; financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); document.getElementById('medName').value = ''; document.getElementById('medBuyer').value = ''; document.getElementById('medAmount').value = ''; renderUI(); scheduleSync(); }
@@ -576,31 +570,70 @@
 
         function addPatient() {
             const name = document.getElementById('patientName').value.trim(); const dept = document.getElementById('department').value; const type = document.getElementById('visitType').value; const payment = document.getElementById('paymentStatus').value; const method = document.getElementById('paymentMethod').value; const amount = document.getElementById('paidAmount').value; let manualSlot = document.getElementById('manualSlot').value;
-            if(!name) return; let targetSlot = manualSlot || getSlotsForDay()[0]; 
+            if(!name) return; 
+            let targetSlot = type === 'مقدم' ? 'عام' : (manualSlot || getSlotsForDay()[0]); 
             patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', doctor: '', finished: false });
-            patientsQueue.sort((a,b) => getSlotsForDay().indexOf(a.slot) - getSlotsForDay().indexOf(b.slot));
+            
+            sortPatientsArray();
             document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
+        }
+
+        function sortPatientsArray() {
+            let sorted = [];
+            let validSlots = getSlotsForDay();
+            validSlots.forEach(s => { sorted = sorted.concat(patientsQueue.filter(p => p.slot === s)); });
+            sorted = sorted.concat(patientsQueue.filter(p => !validSlots.includes(p.slot)));
+            patientsQueue = sorted;
         }
 
         function updateScheduleField(idx, field, val) { 
             patientsQueue[idx][field] = val; 
-            if(field==='amount' || field==='method') calculateTotals(); 
-            if(field==='type') {
-                document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
-                document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
-                document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length;
+            
+            if (field === 'type') {
+                if (val === 'مقدم') patientsQueue[idx].slot = 'عام'; 
+                sortPatientsArray();
+                updateStatsCounters();
             }
+            if(field==='amount' || field==='method') calculateTotals(); 
+            
+            renderUI(); 
             scheduleSync(); 
         }
+
+        function updateStatsCounters() {
+            document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
+            document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
+            document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length;
+            document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length;
+        }
+
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         function removePatient(idx) { patientsQueue.splice(idx, 1); renderUI(); scheduleSync(); }
+
         function moveRow(idx, dir) { 
-            if(dir==='up' && idx>0) { let t=patientsQueue[idx]; patientsQueue[idx]=patientsQueue[idx-1]; patientsQueue[idx-1]=t; }
-            if(dir==='down' && idx<patientsQueue.length-1) { let t=patientsQueue[idx]; patientsQueue[idx]=patientsQueue[idx+1]; patientsQueue[idx+1]=t; }
+            let p1 = patientsQueue[idx];
+            let p1Slot = p1.slot;
+            let slotArray = [];
+            let slotIndices = [];
+            
+            patientsQueue.forEach((p, i) => {
+                if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }
+            });
+            
+            let localIdx = slotArray.indexOf(p1);
+            if (dir === 'up' && localIdx > 0) {
+                let temp = patientsQueue[slotIndices[localIdx]];
+                patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]];
+                patientsQueue[slotIndices[localIdx - 1]] = temp;
+            }
+            if (dir === 'down' && localIdx < slotArray.length - 1) {
+                let temp = patientsQueue[slotIndices[localIdx]];
+                patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]];
+                patientsQueue[slotIndices[localIdx + 1]] = temp;
+            }
             renderUI(); scheduleSync();
         }
 
-        // --- دالة حجز المتابعة والجلسة ---
         function bookFutureAppt(idx, visitType) {
             let patient = patientsQueue[idx];
             showModal({
@@ -618,10 +651,9 @@
                             let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0];
                             let amtVal = parseFloat(cAmt);
                             
-                            // لو دفع مقدم، ضيفه كحجز جديد النهارده عشان الفلوس تدخل الحساب
                             if (!isNaN(amtVal) && amtVal > 0) {
                                 patientsQueue.push({ 
-                                    slot: patient.slot || 'عام', 
+                                    slot: 'عام', 
                                     name: patient.name + ` (مقدم ${visitType})`, 
                                     dept: patient.dept, 
                                     type: 'مقدم', 
@@ -632,7 +664,7 @@
                                     doctor: '',
                                     finished: false 
                                 });
-                                patientsQueue.sort((a,b) => getSlotsForDay().indexOf(a.slot) - getSlotsForDay().indexOf(b.slot));
+                                sortPatientsArray();
                                 renderUI(); 
                                 scheduleSync(); 
                                 
@@ -666,26 +698,20 @@
             });
         }
 
-        // --- Drag & Drop ---
         function handleDragStart(e, idx) { draggedItemIndex = idx; e.dataTransfer.setData('text/plain', idx); }
         function handleDragOver(e) { e.preventDefault(); }
         function handleDrop(e, tSlot) {
             e.preventDefault(); let idx = e.dataTransfer.getData('text/plain'); if(!idx) return;
-            let p = patientsQueue[idx]; p.slot = tSlot; patientsQueue.splice(idx, 1); patientsQueue.push(p);
-            patientsQueue.sort((a,b) => getSlotsForDay().indexOf(a.slot) - getSlotsForDay().indexOf(b.slot));
+            let p = patientsQueue[idx]; 
+            p.slot = tSlot; 
+            if (p.type === 'مقدم' && tSlot !== 'عام') p.type = 'كشف'; 
+            patientsQueue.splice(idx, 1); patientsQueue.push(p);
+            sortPatientsArray();
             renderUI(); scheduleSync();
         }
 
-        // --- دالة رسم الواجهة ---
         function renderUI() {
-            // تحديث العداد (بدون إجمالي)
-            let totalKashf = patientsQueue.filter(p => p.type === 'كشف').length;
-            let totalGalsa = patientsQueue.filter(p => p.type === 'جلسة').length;
-            let totalMotab3a = patientsQueue.filter(p => p.type === 'متابعة').length;
-
-            document.getElementById('statKashf').innerText = totalKashf;
-            document.getElementById('statGalsa').innerText = totalGalsa;
-            document.getElementById('statMotab3a').innerText = totalMotab3a;
+            updateStatsCounters();
 
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${g.name}</td><td><span class="badge badge-glp">${g.dose}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             
@@ -697,15 +723,15 @@
             document.getElementById('medTableBody').innerHTML = medsHtml; document.getElementById('expTableBody').innerHTML = expsHtml;
 
             const cont = document.getElementById('tablesContainer'); cont.innerHTML = '';
-            let sCount = 0;
             let validSlots = getSlotsForDay();
 
             validSlots.forEach(slot => {
-                let sPats = patientsQueue.filter(p => p.slot === slot || (slot === validSlots[0] && !validSlots.includes(p.slot)));
+                let sPats = patientsQueue.filter(p => p.slot === slot);
                 let html = `<div class="slot-title">${slot}</div><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
                 
                 if (sPats.length===0) html += `<tr><td colspan="8" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
                 
+                let sCount = 0;
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
@@ -739,8 +765,8 @@
                         <td>
                             <div class="action-btns">
                                 <button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button>
-                                <button title="رفع" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button>
-                                <button title="تنزيل" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button>
                                 <button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button>
                                 <button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button>
                                 <button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
@@ -750,6 +776,52 @@
                 });
                 html += `</tbody></table>`; cont.innerHTML += html;
             });
+
+            let depositPats = patientsQueue.filter(p => !validSlots.includes(p.slot));
+            if(depositPats.length > 0) {
+                let dHtml = `<div class="slot-title deposit-title">حجوزات المقدم (بدون موعد اليوم)</div><table class="schedule-table" style="opacity: 0.9;" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'عام')"><thead><tr><th>-</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
+                
+                depositPats.forEach((p) => {
+                    let gIdx = patientsQueue.indexOf(p);
+                    dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
+                        <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
+                        <td style="font-weight:bold">
+                            <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
+                                <select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)">
+                                    <option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option>
+                                    <option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option>
+                                </select>
+                                <select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)">
+                                    <option ${p.type==='كشف'?'selected':''}>كشف</option>
+                                    <option ${p.type==='متابعة'?'selected':''}>متابعة</option>
+                                    <option ${p.type==='جلسة'?'selected':''}>جلسة</option>
+                                    <option ${p.type==='مقدم'?'selected':''}>مقدم</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
+                                <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select>
+                                <select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select>
+                            </div>
+                        </td>
+                        <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
+                        <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
+                        <td><input type="text" class="inline-amount-input" style="width: 140px; text-align: right;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
+                        <td>
+                            <div class="action-btns">
+                                <button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button>
+                                <button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                dHtml += `</tbody></table>`; cont.innerHTML += dHtml;
+            }
+            
             calculateTotals();
         }
 
