@@ -40,7 +40,7 @@
         .header { background: var(--text-dark); color: white; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
         .timer-badge { background: var(--danger); padding: 8px 20px; border-radius: 8px; font-size: 20px; font-weight: 800; font-family: monospace; display: flex; align-items: center; gap: 10px; }
         
-        /* السيناريو العائم */
+        /* السيناريو العائم الأساسي (كمبيوتر) */
         .scenario-widget { position: fixed; right: 20px; top: 20px; width: 320px; background: white; border: 2px solid var(--primary-blue); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1500; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; display: none;}
         .scenario-widget.collapsed { width: auto; border-radius: 30px; top: 100px;}
         .scenario-widget.collapsed .scenario-content { display: none; }
@@ -77,7 +77,6 @@
         .card-panel h2 { margin-top: 0; font-size: 17px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
         
         .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; align-items: end;}
-        
         .grid-2col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; width: 100%; box-sizing: border-box; align-items: start;}
         
         .input-group { display: flex; flex-direction: column; }
@@ -85,9 +84,12 @@
         .input-group input, .input-group select, .input-group textarea { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 14px; outline: none; background: var(--input-bg); width: 100%; box-sizing: border-box;}
         .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary-blue); }
         
-        .btn-add { background: var(--primary-blue); color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; width: 100%; box-sizing: border-box;}
+        /* أزرار الإضافة - حماية من التحديد العشوائي في الأندرويد */
+        .btn-add { background: var(--primary-blue); color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; width: 100%; box-sizing: border-box; touch-action: manipulation; -webkit-user-select: none; user-select: none;}
+        .col-span-2 { grid-column: span 2; }
+        .col-span-3 { grid-column: span 3; }
         
-        /* 🚨 حل مشكلة زر الإنهاء على الأندرويد 🚨 */
+        /* زر التسليم */
         .submit-test-btn { 
             position: fixed; 
             bottom: 25px; 
@@ -109,14 +111,9 @@
             text-align: center;
             touch-action: manipulation;
             transition: background 0.2s, transform 0.1s;
-            /* منع تحديد النص نهائياً عشان ضغطة الأندرويد تقرأ صح */
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
-        .submit-test-btn:hover { background: #7ab033; }
         .submit-test-btn:active { transform: translateX(-50%) scale(0.97); }
         
         .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; margin-top: 15px;}
@@ -124,9 +121,9 @@
         .schedule-table th, .schedule-table td { padding: 12px 8px; text-align: right; border-bottom: 1px solid white; white-space: nowrap;}
         .schedule-table th { background: #e2e8f0; font-weight: 700; color: var(--text-dark);}
         
-        .btn-delete-row { background: transparent; color: var(--danger); border: none; cursor: pointer; font-size: 16px; transition: 0.2s; padding: 5px;}
+        .btn-delete-row { background: transparent; color: var(--danger); border: none; cursor: pointer; font-size: 16px; transition: 0.2s; padding: 5px; touch-action: manipulation;}
         
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px); padding: 15px;}
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(5px); padding: 15px;}
         .modal-box { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; box-sizing: border-box;}
         .score-circle { width: 100px; height: 100px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: 900; margin: 15px auto; border: 5px solid #e8f4f8; flex-shrink: 0;}
         .report-list { text-align: right; font-size: 14px; font-weight: 600; line-height: 2; margin-bottom: 20px; overflow-y: auto;}
@@ -140,7 +137,9 @@
         .toast-notify { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary-blue); color: white; padding: 12px 20px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 3500; opacity: 0; width: 90%; max-width: 400px; text-align: center; font-size: 14px;}
         .toast-notify.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
+        /* Media Queries للموبايل 🚨 هنا حل مشكلة السيناريو بالمسطرة 🚨 */
         @media (max-width: 768px) {
+            .container { padding-right: 15px; padding-left: 15px; padding-bottom: 120px; }
             .grid-2col { grid-template-columns: 1fr !important; gap: 15px; }
             .grid-inputs { grid-template-columns: 1fr; }
             .col-span-2, .col-span-3 { grid-column: span 1 !important; }
@@ -149,14 +148,34 @@
             .welcome-box { padding: 25px 20px; }
             .header { flex-direction: column; gap: 10px; text-align: center; }
             
-            .scenario-widget { top: auto !important; bottom: 85px; left: 15px; right: 15px; width: calc(100% - 30px); max-height: 55vh; z-index: 2000;}
-            .scenario-widget.collapsed { bottom: 85px; right: 15px; left: auto; top: auto !important; width: auto; border-radius: 30px; padding: 0;}
+            /* تظبيط السيناريو في الموبايل */
+            .scenario-widget { 
+                top: auto !important; 
+                bottom: 85px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                width: calc(100% - 40px); 
+                max-width: 320px; 
+                max-height: 55vh; 
+                z-index: 2000;
+                right: auto;
+            }
+            .scenario-widget.collapsed { 
+                bottom: 85px; 
+                left: 20px; 
+                right: auto; 
+                transform: none; 
+                width: auto; 
+                border-radius: 30px; 
+                padding: 0;
+            }
             .scenario-content { max-height: calc(55vh - 50px); }
         }
     </style>
 </head>
 <body>
 
+    <!-- شاشة الترحيب -->
     <div id="welcomeScreen">
         <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-list-ul"></i> السجل</button>
 
@@ -187,6 +206,7 @@
         </div>
     </div>
 
+    <!-- نافذة السيناريو العائمة -->
     <div class="scenario-widget" id="scenarioWidget">
         <div class="scenario-header" onclick="toggleScenario()">
             <span class="header-title"><i class="fa-solid fa-list-check"></i> تفاصيل المهمة</span>
@@ -226,6 +246,7 @@
             </button>
         </div>
 
+        <!-- تبويب الحجوزات -->
         <div id="tabBooking" class="tab-content active">
             <div class="card-panel">
                 <h2 style="color: var(--primary-blue);"><i class="fa-solid fa-user-plus"></i> إضافة حجز</h2>
@@ -275,6 +296,7 @@
             </div>
         </div>
 
+        <!-- تبويب كروت المرضى -->
         <div id="tabCards" class="tab-content">
             <div class="card-panel">
                 <h2 style="color: #9b59b6;"><i class="fa-solid fa-id-card-clip"></i> إنشاء كارت مريض جديد</h2>
@@ -296,6 +318,7 @@
         <button class="submit-test-btn" onclick="checkBeforeSubmit()"><i class="fa-solid fa-paper-plane"></i> إنهاء الاختبار وتسليم الإجابة</button>
     </div>
 
+    <!-- نافذة تأكيد الإنهاء المبكر -->
     <div id="confirmSubmitModal" class="modal-overlay">
         <div class="modal-box">
             <h2 style="color: var(--danger); margin-top: 0;"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام!</h2>
@@ -308,6 +331,7 @@
         </div>
     </div>
 
+    <!-- شاشة التحميل -->
     <div id="loadingModal" class="modal-overlay">
         <div class="modal-box" style="background: transparent; color: white; border: none; box-shadow: none;">
             <div class="loader"></div>
@@ -315,6 +339,7 @@
         </div>
     </div>
 
+    <!-- نافذة النتيجة للمتقدم -->
     <div id="resultModal" class="modal-overlay">
         <div class="modal-box">
             <h2 style="margin-top:0;"><i class="fa-solid fa-medal" style="color: #f1c40f;"></i> التقييم النهائي</h2>
@@ -324,6 +349,7 @@
         </div>
     </div>
 
+    <!-- نافذة السجل -->
     <div id="logModal" class="modal-overlay" style="z-index: 4000;">
         <div class="modal-box">
             <h2 style="color: var(--primary-blue); margin-top: 0; margin-bottom: 15px;"><i class="fa-solid fa-list-ul"></i> سجل المتقدمين</h2>
@@ -343,6 +369,7 @@
         </div>
     </div>
 
+    <!-- التنبيه الذكي -->
     <div id="toastNotify" class="toast-notify"><i class="fa-solid fa-bell"></i> عاش! خلصت الجزء الأول، متنساش تدخل على (كروت المرضى) عشان تكمل التقييم وتضمن درجتك!</div>
 
     <script>
@@ -440,9 +467,11 @@
             let icon = document.getElementById('scenarioIcon');
             widget.style.display = 'block';
             
-            // قفل النافذة تلقائيا عشان تلفت انتباهه 
-            widget.classList.add('collapsed');
-            icon.className = "fa-solid fa-chevron-up";
+            // قفل النافذة تلقائيا للموبايل
+            if(window.innerWidth <= 768) {
+                widget.classList.add('collapsed');
+                icon.className = "fa-solid fa-chevron-up";
+            }
             
             timerInterval = setInterval(() => {
                 if (timeLeft <= 0) {
