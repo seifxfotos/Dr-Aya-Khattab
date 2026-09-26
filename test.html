@@ -19,10 +19,21 @@
         .log-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.05); }
 
         #welcomeScreen { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; padding: 20px; text-align: center;}
-        .welcome-box { background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 500px; width: 100%;}
-        .welcome-input { width: 90%; padding: 15px; border-radius: 10px; border: none; font-family: 'Cairo'; font-size: 16px; margin: 20px 0; outline: none; text-align: center;}
-        .start-btn { background: white; color: var(--primary-blue); border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s;}
-        .start-btn:hover { background: #f0f0f0; transform: scale(1.05); }
+        .welcome-box { background: rgba(255,255,255,0.1); padding: 30px 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 550px; width: 100%;}
+        
+        /* تنسيق كروت المعلومات في شاشة البداية */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
+        .info-card { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.3s; }
+        .info-card:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px); }
+        .info-card i { font-size: 30px; margin-bottom: 5px; }
+        .info-card span { font-size: 15px; font-weight: 700; }
+        .time-card { grid-column: span 2; background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); flex-direction: row; justify-content: center; gap: 15px;}
+        .time-card i { font-size: 28px; margin: 0;}
+        .time-card strong { font-size: 22px; font-weight: 800; background: rgba(255,255,255,0.2); padding: 2px 15px; border-radius: 8px;}
+
+        .welcome-input { width: 90%; padding: 15px; border-radius: 10px; border: none; font-family: 'Cairo'; font-size: 16px; margin-bottom: 20px; outline: none; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+        .start-btn { background: white; color: var(--primary-blue); border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+        .start-btn:hover { background: #f8f9fa; transform: scale(1.05); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; padding-bottom: 100px; }
         
@@ -37,7 +48,6 @@
         .scenario-content ul { padding-right: 20px; margin: 0; }
         .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px; transition: 0.3s;}
         
-        /* ألوان التقييم اللحظي للمهام */
         .task-success { color: var(--primary-green); font-weight: bold; }
         .task-error { color: var(--danger); }
         .task-success i, .task-error i { margin-left: 5px; }
@@ -82,14 +92,31 @@
 </head>
 <body>
 
-    <!-- شاشة الترحيب -->
+    <!-- شاشة الترحيب المعدلة -->
     <div id="welcomeScreen">
         <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-file-contract"></i> السجل</button>
 
         <div class="welcome-box">
-            <h1><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
-            <p style="font-size: 16px; opacity: 0.9;">أهلاً بك. هذا اختبار عملي لتقييم السرعة والدقة في استخدام نظام العيادة. يتكون الاختبار من جزأين (حجوزات، وكروت مرضى). لديك 20 دقيقة.</p>
-            <input type="text" id="candidateNameInput" class="welcome-input" placeholder="اكتب اسمك الثلاثي هنا...">
+            <h1 style="margin-top: 0;"><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
+            <p style="font-size: 15px; opacity: 0.9;">أهلاً بك. هذا تقييم عملي لمهاراتك في الدقة والسرعة على نظام العيادة.</p>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>إدارة الحجوزات والماليات</span>
+                </div>
+                <div class="info-card">
+                    <i class="fa-solid fa-address-card"></i>
+                    <span>إنشاء كروت المرضى</span>
+                </div>
+                <div class="info-card time-card">
+                    <i class="fa-solid fa-stopwatch"></i>
+                    <span>مدة الاختبار:</span>
+                    <strong>20 دقيقة</strong>
+                </div>
+            </div>
+
+            <input type="text" id="candidateNameInput" class="welcome-input" placeholder="اكتب اسمك الثلاثي هنا لتفعيل الاختبار...">
             <button class="start-btn" onclick="startTest()">بدء الاختبار الآن</button>
         </div>
     </div>
@@ -221,7 +248,7 @@
     </div>
 
     <script>
-        // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا بعد عمل New Deployment 🚨
+        // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا 🚨
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec";
 
         let candidateName = "";
@@ -234,7 +261,7 @@
         let fetchedLogs = [];
         let isLogsFetched = false;
 
-        // دالة تنظيف النصوص من الهمزات والتاء المربوطة
+        // دالة تنظيف النصوص من الهمزات والتاء المربوطة لتجنب ظلم المتقدم
         function cleanText(text) {
             if(!text) return "";
             return text.toString().trim().replace(/أ|إ|آ/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
@@ -328,29 +355,22 @@
             }
         }
 
-        // دالة لتحديث لون المهام في السيناريو العائم بناءً على تقدم الموظف
         function checkRealTimeTasks() {
-            // Task 1: سارة محمد - جلسة علاج طبيعي 300 كاش
             let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             document.getElementById('task1').className = t1 ? 'task-success' : 'task-error';
             
-            // Task 2: أحمد علي - كشف تغذية 400 انستا باي
             let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
             document.getElementById('task2').className = t2 ? 'task-success' : 'task-error';
             
-            // Task 3: فيتامين د - 150 فودافون كاش
             let t3 = testFinancials.find(f => f.cat === 'دواء' && cleanText(f.name).includes("فيتامين د") && f.amount === 150 && f.method === 'فودافون كاش');
             document.getElementById('task3').className = t3 ? 'task-success' : 'task-error';
             
-            // Task 4: أدوات نظافة - 50 كاش
             let t4 = testFinancials.find(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه") && f.amount === 50);
             document.getElementById('task4').className = t4 ? 'task-success' : 'task-error';
             
-            // Task 5: هدى سعيد - متابعة مقدم تغذية 0 ج
             let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
             document.getElementById('task5').className = t5 ? 'task-success' : 'task-error';
             
-            // Task 6: كارت أحمد علي
             let t6 = patientCards.find(c => cleanText(c.name).includes("احمد علي") && c.phone === "01012345678");
             document.getElementById('task6').className = t6 ? 'task-success' : 'task-error';
         }
@@ -402,13 +422,12 @@
         function renderUI() {
             document.getElementById('patientsBody').innerHTML = testPatients.map(p => `<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.type}</td><td>${p.amount}</td><td>${p.method}</td></tr>`).join('');
             
-            // فلترة الأدوية فقط لجدول الأدوية
             let medsOnly = testFinancials.filter(f => f.cat === 'دواء');
             document.getElementById('medsTableBody').innerHTML = medsOnly.map(m => `<tr><td>${m.name} (${m.buyer})</td><td>${m.method}</td><td>${m.amount}</td></tr>`).join('');
             
             document.getElementById('cardsBody').innerHTML = patientCards.map(c => `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.age}</td><td>${c.gender}</td><td>${c.notes}</td></tr>`).join('');
             
-            checkRealTimeTasks(); // تحديث ألوان السيناريو
+            checkRealTimeTasks(); 
         }
 
         function triggerSubmit() {
@@ -422,7 +441,6 @@
             let report = "";
             let plainTextReport = ""; 
 
-            // الاعتماد على التقييم المنظف (cleanText)
             let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
             let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
@@ -466,7 +484,7 @@
                 plainTextReport += "كارت المريض: خطأ";
             }
 
-            let timeTaken = 1200 - timeLeft; // 20 دقيقة
+            let timeTaken = 1200 - timeLeft; 
             let minTaken = Math.floor(timeTaken / 60);
             let secTaken = timeTaken % 60;
             let timeStr = `${minTaken}:${secTaken < 10 ? '0' : ''}${secTaken} دقيقة`;
@@ -481,8 +499,7 @@
             document.getElementById('reportDetails').innerHTML = report;
             document.getElementById('resultModal').style.display = 'flex';
 
-            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
-                // إرسال عبر no-cors لحل مشكلة الحفظ
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec") {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -494,7 +511,7 @@
                         timeTaken: timeStr,
                         reportText: plainTextReport
                     })
-                }).catch(e => console.log("Sent"));
+                }).catch(e => console.log("Sent via no-cors"));
             }
         }
     </script>
