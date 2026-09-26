@@ -11,7 +11,7 @@
         :root {
             --primary-blue: #0093D0; --primary-green: #8CC63F; --danger: #e74c3c; 
             --bg-color: #f4f7f6; --card-bg: #ffffff; --text-dark: #2c3e50;
-            --border: #e1e8ed; --input-bg: #ffffff;
+            --border: #e1e8ed; --input-bg: #ffffff; --table-bg: #f0f4f8;
         }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-dark); overflow-x: hidden;}
         
@@ -21,7 +21,6 @@
         #welcomeScreen { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; padding: 20px; text-align: center;}
         .welcome-box { background: rgba(255,255,255,0.1); padding: 30px 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); max-width: 550px; width: 100%;}
         
-        /* تنسيق كروت المعلومات في شاشة البداية */
         .parts-title { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.95); margin-top: 20px; margin-bottom: -10px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
         .info-card { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.3s; }
@@ -36,21 +35,30 @@
         .start-btn { background: white; color: var(--primary-blue); border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
         .start-btn:hover { background: #f8f9fa; transform: scale(1.05); }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; padding-bottom: 100px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; padding-right: 360px; display: none; padding-bottom: 100px; transition: 0.3s; }
+        @media (max-width: 1000px) { .container { padding-right: 20px; } }
         
         .header { background: var(--text-dark); color: white; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
         .timer-badge { background: var(--danger); padding: 8px 20px; border-radius: 8px; font-size: 20px; font-weight: 800; font-family: monospace; display: flex; align-items: center; gap: 10px; }
         
-        .scenario-widget { position: fixed; right: 20px; top: 100px; width: 340px; background: white; border: 2px solid var(--primary-blue); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1500; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
-        .scenario-widget.collapsed { width: 45px; height: 45px; border-radius: 50%; border-color: transparent; }
+        /* السيناريو العائم */
+        .scenario-widget { position: fixed; right: 20px; top: 20px; width: 320px; background: white; border: 2px solid var(--primary-blue); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1500; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; display: none;}
+        .scenario-widget.collapsed { width: 45px; height: 45px; border-radius: 50%; border-color: transparent; top: 100px;}
+        .scenario-widget.collapsed .scenario-content { display: none; }
         .scenario-header { background: var(--primary-blue); color: white; padding: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
         .scenario-header:hover { background: #007bb5; }
-        .scenario-content { padding: 15px; font-size: 13px; line-height: 1.8; max-height: 450px; overflow-y: auto;}
+        /* تظبيط ايقونة السيناريو في السنتر لما تصغر */
+        .scenario-widget.collapsed .scenario-header { justify-content: center; height: 100%; padding: 0; border-radius: 50%; }
+        .scenario-widget.collapsed .scenario-header span { display: none; }
+        .scenario-widget.collapsed .scenario-header i { font-size: 20px; margin: 0; }
+        
+        .scenario-content { padding: 15px; font-size: 13px; line-height: 1.8; max-height: calc(100vh - 100px); overflow-y: auto;}
         .scenario-content ul { padding-right: 20px; margin: 0; }
         .scenario-content li { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px; transition: 0.3s;}
         
+        /* تلوين المهام اللحظي */
         .task-success { color: var(--primary-green); font-weight: bold; }
-        .task-error { color: var(--danger); }
+        .task-error { color: var(--danger); font-weight: bold; }
         .task-success i, .task-error i { margin-left: 5px; }
 
         .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -75,9 +83,13 @@
         .submit-test-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary-green); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: 800; font-size: 18px; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 5px 20px rgba(140, 198, 63, 0.4); z-index: 100;}
         .submit-test-btn:hover { background: #7ab033; transform: translateX(-50%) scale(1.05); }
 
-        .schedule-table { width: 100%; background: var(--card-bg); border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        .schedule-table th, .schedule-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border); }
-        .schedule-table th { background: #f8f9fa; font-weight: 700; }
+        /* تعديل الجداول (اللون الرمادي وإضافة المسح) */
+        .schedule-table { width: 100%; background: var(--table-bg); border-collapse: collapse; margin-top: 15px; font-size: 13px; border-radius: 8px; overflow: hidden;}
+        .schedule-table th, .schedule-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid white; }
+        .schedule-table th { background: #e2e8f0; font-weight: 700; color: var(--text-dark);}
+        
+        .btn-delete-row { background: transparent; color: var(--danger); border: none; cursor: pointer; font-size: 14px; transition: 0.2s;}
+        .btn-delete-row:hover { transform: scale(1.2); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px);}
         .modal-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; }
@@ -89,13 +101,17 @@
 
         .log-actions { display: flex; gap: 10px; margin-top: 15px; flex-shrink: 0;}
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
+        
+        /* إشعار ذكي */
+        .toast-notify { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary-blue); color: white; padding: 12px 25px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; opacity: 0;}
+        .toast-notify.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
 
     <!-- شاشة الترحيب -->
     <div id="welcomeScreen">
-        <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-file-contract"></i> السجل</button>
+        <button class="log-btn" onclick="openLogModal()"><i class="fa-solid fa-list-ul"></i> السجل</button>
 
         <div class="welcome-box">
             <h1 style="margin-top: 0;"><i class="fa-solid fa-laptop-medical"></i> اختبار كفاءة الاستقبال</h1>
@@ -124,7 +140,7 @@
         </div>
     </div>
 
-    <!-- نافذة السيناريو العائمة وتقييم المهام اللحظي -->
+    <!-- نافذة السيناريو العائمة -->
     <div class="scenario-widget" id="scenarioWidget">
         <div class="scenario-header" onclick="toggleScenario()">
             <span><i class="fa-solid fa-list-check"></i> تفاصيل المهمة</span>
@@ -135,7 +151,7 @@
                 <li id="task1"><strong>1.</strong> المريضة <strong>سارة محمد</strong> حجزت <strong>(جلسة علاج طبيعي)</strong> ودفعت <strong>300 جنيه (كاش)</strong>.</li>
                 <li id="task2"><strong>2.</strong> المريض <strong>أحمد علي</strong> حجز <strong>(كشف تغذية علاجية)</strong> ودفع <strong>400 جنيه (أنستا باي)</strong>.</li>
                 <li id="task3"><strong>3.</strong> تم بيع دواء <strong>فيتامين د</strong> للمشتري <strong>عمر</strong> بمبلغ <strong>150 جنيه (فودافون كاش)</strong>.</li>
-                <li id="task4"><strong>4.</strong> تم سحب مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
+                <li id="task4"><strong>4.</strong> تم إضافة مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
                 <li id="task5"><strong>5.</strong> المريضة <strong>هدى سعيد</strong> حجزت <strong>(متابعة تغذية علاجية)</strong> ودفع <strong>(مقدم)</strong> 0 ج.م.</li>
                 <li id="task6"><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>01012345678</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
             </ul>
@@ -168,7 +184,7 @@
                     <div class="input-group"><label>المبلغ المدفوع</label><input type="number" id="pAmount" placeholder="0"></div>
                     <button class="btn-add" onclick="addPatient()">إضافة</button>
                 </div>
-                <table class="schedule-table"><thead><tr><th>الاسم</th><th>القسم</th><th>النوع</th><th>المبلغ</th><th>الوسيلة</th></tr></thead><tbody id="patientsBody"></tbody></table>
+                <table class="schedule-table"><thead><tr><th>الاسم</th><th>القسم</th><th>النوع</th><th>المبلغ</th><th>الوسيلة</th><th>حذف</th></tr></thead><tbody id="patientsBody"></tbody></table>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -181,16 +197,17 @@
                         <div class="input-group"><label>المبلغ</label><input type="number" id="mAmount"></div>
                         <button class="btn-add" style="grid-column: span 2; background: var(--primary-green);" onclick="addMed()">إضافة دواء</button>
                     </div>
-                    <table class="schedule-table" style="margin-top: 15px;"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th></tr></thead><tbody id="medsTableBody"></tbody></table>
+                    <table class="schedule-table"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medsTableBody"></tbody></table>
                 </div>
 
                 <div class="card-panel">
                     <h2 style="color: var(--danger);"><i class="fa-solid fa-receipt"></i> المصروفات</h2>
                     <div class="grid-inputs" style="grid-template-columns: 1fr;">
-                        <div class="input-group"><label>البيان</label><input type="text" id="eDesc"></div>
+                        <div class="input-group"><label>سبب الصرف</label><input type="text" id="eDesc"></div>
                         <div class="input-group"><label>المبلغ (كاش)</label><input type="number" id="eAmount"></div>
-                        <button class="btn-add" style="background: var(--danger);" onclick="addExpense()">سحب مصروف</button>
+                        <button class="btn-add" style="background: var(--danger);" onclick="addExpense()">إضافة مصروف</button>
                     </div>
+                    <table class="schedule-table"><thead><tr><th>سبب الصرف</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
                 </div>
             </div>
         </div>
@@ -207,11 +224,24 @@
                     <div class="input-group" style="grid-column: span 2;"><label>ملاحظات (تاريخ مرضي/حساسية)</label><textarea id="cNotes" rows="1"></textarea></div>
                     <button class="btn-add" style="grid-column: span 3; background: #9b59b6;" onclick="addCard()">حفظ الكارت</button>
                 </div>
-                <table class="schedule-table" style="margin-top: 20px;"><thead><tr><th>الاسم</th><th>الهاتف</th><th>العمر</th><th>النوع</th><th>الملاحظات</th></tr></thead><tbody id="cardsBody"></tbody></table>
+                <table class="schedule-table" style="margin-top: 20px;"><thead><tr><th>الاسم</th><th>الهاتف</th><th>العمر</th><th>النوع</th><th>الملاحظات</th><th>حذف</th></tr></thead><tbody id="cardsBody"></tbody></table>
             </div>
         </div>
 
-        <button class="submit-test-btn" onclick="triggerSubmit()"><i class="fa-solid fa-paper-plane"></i> إنهاء الاختبار وتسليم الإجابة</button>
+        <button class="submit-test-btn" onclick="checkBeforeSubmit()"><i class="fa-solid fa-paper-plane"></i> إنهاء الاختبار وتسليم الإجابة</button>
+    </div>
+
+    <!-- نافذة تأكيد الإنهاء المبكر -->
+    <div id="confirmSubmitModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام!</h2>
+            <p style="font-size: 16px; font-weight: 600;">أنت لم تكمل جميع المهام المطلوبة (مثل كارت المريض أو بعض الحجوزات).</p>
+            <p style="font-size: 15px;">هل أنت متأكد من تسليم الإجابة الآن؟ ستفقد الكثير من النقاط!</p>
+            <div class="log-actions" style="margin-top: 25px;">
+                <button class="btn-add" style="background: #95a5a6; flex: 1;" onclick="closeConfirmModal()">تراجع وإكمال الاختبار</button>
+                <button class="btn-add" style="background: var(--danger); flex: 1;" onclick="triggerSubmit()">تأكيد التسليم والمغادرة</button>
+            </div>
+        </div>
     </div>
 
     <!-- شاشة التحميل -->
@@ -235,9 +265,9 @@
     <!-- نافذة السجل -->
     <div id="logModal" class="modal-overlay" style="z-index: 4000;">
         <div class="modal-box">
-            <h2 style="color: var(--primary-blue); margin-bottom: 15px;"><i class="fa-solid fa-file-contract"></i> سجل المتقدمين</h2>
+            <h2 style="color: var(--primary-blue); margin-bottom: 15px;"><i class="fa-solid fa-list-ul"></i> سجل المتقدمين</h2>
             <div class="report-list" style="padding-right: 5px;">
-                <table class="schedule-table" style="margin-top: 0;">
+                <table class="schedule-table" style="margin-top: 0; background: white;">
                     <thead><tr><th>المتقدم</th><th>النتيجة</th><th>الوقت</th><th>التاريخ</th></tr></thead>
                     <tbody id="logTableBody">
                         <tr><td colspan="4" style="text-align:center; padding: 20px; opacity: 0.6;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</td></tr>
@@ -250,8 +280,11 @@
         </div>
     </div>
 
+    <!-- التنبيه الذكي -->
+    <div id="toastNotify" class="toast-notify"><i class="fa-solid fa-bell"></i> عاش! خلصت الجزء الأول، متنساش تدخل على (كروت المرضى) عشان تكمل التقييم وتضمن درجتك!</div>
+
     <script>
-        // 🚨 ضع رابط الـ Google Apps Script الخاص بك هنا بعد عمل New Deployment 🚨
+        // 🚨 السكريبت الجديد 🚨
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLC56M3nQg1XvGc5PWUr-0UrepZ9r64hjayjr6pFIX70Rn-SX7reCZfiwv7fPSV845TA/exec";
 
         let candidateName = "";
@@ -260,10 +293,12 @@
         let patientCards = [];
         let timeLeft = 1200; // 20 دقيقة
         let timerInterval;
+        let alertedCards = false; // لمنع تكرار الإشعار
         
         let fetchedLogs = [];
         let isLogsFetched = false;
 
+        // دالة تنظيف النصوص لتجنب الظلم (إزالة مسافات، همزات، تاء مربوطة)
         function cleanText(text) {
             if(!text) return "";
             return text.toString().trim().replace(/أ|إ|آ/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
@@ -318,6 +353,7 @@
             document.getElementById('displayCandidateName').innerText = candidateName;
             document.getElementById('welcomeScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('scenarioWidget').style.display = 'block'; // إظهار السيناريو
             
             timerInterval = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -357,24 +393,43 @@
             }
         }
 
+        // تلوين المهام اللحظي (أخضر لو صح، أحمر لو المريض مضاف بس غلط)
         function checkRealTimeTasks() {
-            let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
-            document.getElementById('task1').className = t1 ? 'task-success' : 'task-error';
+            let t1_correct = testPatients.some(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
+            let t1_exists = testPatients.some(p => cleanText(p.name).includes("ساره محمد"));
+            document.getElementById('task1').className = t1_correct ? 'task-success' : (t1_exists ? 'task-error' : '');
             
-            let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
-            document.getElementById('task2').className = t2 ? 'task-success' : 'task-error';
+            let t2_correct = testPatients.some(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
+            let t2_exists = testPatients.some(p => cleanText(p.name).includes("احمد علي"));
+            document.getElementById('task2').className = t2_correct ? 'task-success' : (t2_exists ? 'task-error' : '');
             
-            let t3 = testFinancials.find(f => f.cat === 'دواء' && cleanText(f.name).includes("فيتامين د") && f.amount === 150 && f.method === 'فودافون كاش');
-            document.getElementById('task3').className = t3 ? 'task-success' : 'task-error';
+            let t3_correct = testFinancials.some(f => f.cat === 'دواء' && cleanText(f.name).includes("فيتامين د") && f.amount === 150 && f.method === 'فودافون كاش');
+            let t3_exists = testFinancials.some(f => f.cat === 'دواء' && cleanText(f.name).includes("فيتامين"));
+            document.getElementById('task3').className = t3_correct ? 'task-success' : (t3_exists ? 'task-error' : '');
             
-            let t4 = testFinancials.find(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه") && f.amount === 50);
-            document.getElementById('task4').className = t4 ? 'task-success' : 'task-error';
+            let t4_correct = testFinancials.some(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه") && f.amount === 50);
+            let t4_exists = testFinancials.some(f => f.cat === 'مصروف' && cleanText(f.desc).includes("نظافه"));
+            document.getElementById('task4').className = t4_correct ? 'task-success' : (t4_exists ? 'task-error' : '');
             
-            let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
-            document.getElementById('task5').className = t5 ? 'task-success' : 'task-error';
+            let t5_correct = testPatients.some(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
+            let t5_exists = testPatients.some(p => cleanText(p.name).includes("هدي سعيد"));
+            document.getElementById('task5').className = t5_correct ? 'task-success' : (t5_exists ? 'task-error' : '');
             
-            let t6 = patientCards.find(c => cleanText(c.name).includes("احمد علي") && c.phone === "01012345678");
-            document.getElementById('task6').className = t6 ? 'task-success' : 'task-error';
+            let t6_correct = patientCards.some(c => cleanText(c.name).includes("احمد علي") && c.phone === "01012345678" && c.age == 30);
+            let t6_exists = patientCards.some(c => cleanText(c.name).includes("احمد علي"));
+            document.getElementById('task6').className = t6_correct ? 'task-success' : (t6_exists ? 'task-error' : '');
+
+            // لو خلص الحجوزات ومعملش الكارت، نطلعله إشعار التنبيه
+            if (t1_correct && t2_correct && t3_correct && t4_correct && t5_correct && !t6_correct && !alertedCards) {
+                showToast();
+                alertedCards = true; // عشان ميطلعش كل شوية
+            }
+        }
+
+        function showToast() {
+            let toast = document.getElementById('toastNotify');
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 5000);
         }
 
         function addPatient() {
@@ -384,8 +439,13 @@
             let m = document.getElementById('pMethod').value;
             let a = parseFloat(document.getElementById('pAmount').value) || 0;
             if(!n) return;
-            testPatients.push({name: n, dept: d, type: t, method: m, amount: a});
+            testPatients.push({id: Date.now(), name: n, dept: d, type: t, method: m, amount: a});
             document.getElementById('pName').value = ''; document.getElementById('pAmount').value = '';
+            renderUI();
+        }
+
+        function deletePatient(id) {
+            testPatients = testPatients.filter(p => p.id !== id);
             renderUI();
         }
 
@@ -395,7 +455,7 @@
             let m = document.getElementById('mMethod').value;
             let a = parseFloat(document.getElementById('mAmount').value) || 0;
             if(!n || !a) return;
-            testFinancials.push({cat: 'دواء', name: n, buyer: b, method: m, amount: a});
+            testFinancials.push({id: Date.now(), cat: 'دواء', name: n, buyer: b, method: m, amount: a});
             document.getElementById('mName').value = ''; document.getElementById('mBuyer').value = ''; document.getElementById('mAmount').value = '';
             renderUI();
         }
@@ -404,8 +464,13 @@
             let n = document.getElementById('eDesc').value.trim();
             let a = parseFloat(document.getElementById('eAmount').value) || 0;
             if(!n || !a) return;
-            testFinancials.push({cat: 'مصروف', desc: n, method: 'كاش', amount: a});
+            testFinancials.push({id: Date.now(), cat: 'مصروف', desc: n, method: 'كاش', amount: a});
             document.getElementById('eDesc').value = ''; document.getElementById('eAmount').value = '';
+            renderUI();
+        }
+
+        function deleteFin(id) {
+            testFinancials = testFinancials.filter(f => f.id !== id);
             renderUI();
         }
 
@@ -416,23 +481,44 @@
             let g = document.getElementById('cGender').value;
             let notes = document.getElementById('cNotes').value.trim();
             if(!n) return;
-            patientCards.push({name: n, phone: p, age: a, gender: g, notes: notes});
+            patientCards.push({id: Date.now(), name: n, phone: p, age: a, gender: g, notes: notes});
             document.getElementById('cName').value = ''; document.getElementById('cPhone').value = ''; document.getElementById('cAge').value = ''; document.getElementById('cNotes').value = '';
             renderUI();
         }
 
+        function deleteCard(id) {
+            patientCards = patientCards.filter(c => c.id !== id);
+            renderUI();
+        }
+
         function renderUI() {
-            document.getElementById('patientsBody').innerHTML = testPatients.map(p => `<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.type}</td><td>${p.amount}</td><td>${p.method}</td></tr>`).join('');
+            document.getElementById('patientsBody').innerHTML = testPatients.map(p => `<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.type}</td><td>${p.amount}</td><td>${p.method}</td><td><button class="btn-delete-row" onclick="deletePatient(${p.id})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             
             let medsOnly = testFinancials.filter(f => f.cat === 'دواء');
-            document.getElementById('medsTableBody').innerHTML = medsOnly.map(m => `<tr><td>${m.name} (${m.buyer})</td><td>${m.method}</td><td>${m.amount}</td></tr>`).join('');
+            document.getElementById('medsTableBody').innerHTML = medsOnly.map(m => `<tr><td>${m.name} (${m.buyer})</td><td>${m.method}</td><td>${m.amount}</td><td><button class="btn-delete-row" onclick="deleteFin(${m.id})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             
-            document.getElementById('cardsBody').innerHTML = patientCards.map(c => `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.age}</td><td>${c.gender}</td><td>${c.notes}</td></tr>`).join('');
+            let expsOnly = testFinancials.filter(f => f.cat === 'مصروف');
+            document.getElementById('expTableBody').innerHTML = expsOnly.map(e => `<tr><td>${e.desc}</td><td>${e.amount}</td><td><button class="btn-delete-row" onclick="deleteFin(${e.id})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+
+            document.getElementById('cardsBody').innerHTML = patientCards.map(c => `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.age}</td><td>${c.gender}</td><td>${c.notes}</td><td><button class="btn-delete-row" onclick="deleteCard(${c.id})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             
             checkRealTimeTasks(); 
         }
 
+        function checkBeforeSubmit() {
+            // التأكد إذا كان نفذ التقييم بشكل كامل أو شبه كامل
+            let doneTasks = document.querySelectorAll('.task-success').length;
+            if (doneTasks < 5) {
+                document.getElementById('confirmSubmitModal').style.display = 'flex';
+            } else {
+                triggerSubmit();
+            }
+        }
+
+        function closeConfirmModal() { document.getElementById('confirmSubmitModal').style.display = 'none'; }
+
         function triggerSubmit() {
+            closeConfirmModal();
             clearInterval(timerInterval);
             document.getElementById('loadingModal').style.display = 'flex';
             setTimeout(() => { evaluateAndSend(); }, 2000);
@@ -443,6 +529,7 @@
             let report = "";
             let plainTextReport = ""; 
 
+            // التقييم يعتمد على الـ cleanText
             let t1 = testPatients.find(p => cleanText(p.name).includes("ساره محمد") && p.dept === 'علاج طبيعي' && p.type === 'جلسة' && p.amount === 300 && p.method === 'كاش');
             let t2 = testPatients.find(p => cleanText(p.name).includes("احمد علي") && p.dept === 'تغذية علاجية' && p.type === 'كشف' && p.amount === 400 && p.method === 'أنستا باي');
             let t5 = testPatients.find(p => cleanText(p.name).includes("هدي سعيد") && p.dept === 'تغذية علاجية' && p.type === 'مقدم' && p.amount === 0);
@@ -452,7 +539,7 @@
                 report += `<div class="success-text"><i class="fa-solid fa-check"></i> تسجيل جميع زيارات المرضى صحيح (40%)</div>`;
                 plainTextReport += "المرضى: صحيح | ";
             } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ في إدخال بيانات أو نوع زيارات المرضى</div>`;
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ أو نقص في الحجوزات الأساسية</div>`;
                 plainTextReport += "المرضى: خطأ | ";
             }
 
@@ -482,7 +569,7 @@
                 report += `<div class="success-text"><i class="fa-solid fa-check"></i> إنشاء كارت المريض سليم (20%)</div>`;
                 plainTextReport += "كارت المريض: صحيح";
             } else {
-                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ أو نقص في بيانات كارت المريض</div>`;
+                report += `<div class="error-text"><i class="fa-solid fa-xmark"></i> خطأ أو نقص في كارت المريض</div>`;
                 plainTextReport += "كارت المريض: خطأ";
             }
 
@@ -502,6 +589,7 @@
             document.getElementById('resultModal').style.display = 'flex';
 
             if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_رابط_جوجل_الجديد_هنا") {
+                // إرسال عبر no-cors
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -513,7 +601,7 @@
                         timeTaken: timeStr,
                         reportText: plainTextReport
                     })
-                }).catch(e => console.log("Sent via no-cors"));
+                }).catch(e => console.log("تم الإرسال"));
             }
         }
     </script>
