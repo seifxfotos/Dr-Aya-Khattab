@@ -89,9 +89,11 @@
         .patient-link { color: var(--primary-blue); font-weight: 700; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
         .patient-link:hover { color: #006090; transform: scale(1.02); }
 
-        .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
-        .inline-dept-select { max-width: 85px; }
-        .inline-type-select { max-width: 75px; }
+        /* تم توسيع عرض قسم القسم لكي لا يتداخل السهم مع النص */
+        .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; }
+        .inline-dept-select { width: 115px; } 
+        .inline-type-select { width: 75px; }
+        .inline-pay-select { width: 90px; }
 
         .inline-amount-input { width: 50px; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: center; outline: none; background-color: var(--input-bg); color: var(--text-dark); }
         .debt-input { color: var(--danger); border-color: var(--danger); }
@@ -218,13 +220,14 @@
         </div>
     </div>
 
-    <!-- نافذة الحجز والرسائل المنبثقة -->
+    <!-- نافذة الرسائل المنبثقة -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
             <p id="modalMessage">رسالة التنبيه</p>
+            
             <div id="modalInputContainer" style="display: none; flex-direction: column; align-items: center;">
-                <input type="text" id="modalDateInput" class="modal-input" placeholder="اختار التاريخ">
+                <input type="text" id="modalDateInput" class="modal-input" placeholder="اختار التاريخ" style="display: none;">
                 
                 <select id="modalSlotInput" class="modal-input" style="display: none;">
                     <option value="">تلقائي (أول فترة متاحة)</option>
@@ -244,6 +247,7 @@
 
                 <input type="number" id="modalAmountInput" class="modal-input" placeholder="مقدم الحجز (اختياري)" style="display: none;" min="0">
             </div>
+
             <div class="modal-actions">
                 <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
                 <button id="modalCancelBtn" class="btn-cancel" style="display: none;">إلغاء</button>
@@ -280,7 +284,7 @@
             document.getElementById('modalTitle').innerHTML = opts.title;
             document.getElementById('modalMessage').innerHTML = opts.message;
             
-            let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn'];
+            let elementsToHide = ['modalInputContainer','modalDateInput','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn'];
             elementsToHide.forEach(id => {
                 let el = document.getElementById(id);
                 if(el) el.style.display = 'none';
@@ -288,7 +292,12 @@
             
             if (opts.type === 'prompt') {
                 document.getElementById('modalInputContainer').style.display = 'flex';
-                if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || '');
+                
+                if (opts.showDate) {
+                    let dateInput = document.getElementById('modalDateInput');
+                    dateInput.style.display = 'block';
+                    if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || '');
+                }
                 
                 if (opts.showSlot) { 
                     document.getElementById('modalSlotInput').style.display = 'block'; 
@@ -592,13 +601,12 @@
             scheduleSync(); 
         }
 
-        // دالة مخصصة لفتح تفاصيل أو كارت المريض عند الضغط على اسمه
+        // دالة عرض بيانات المريض المختصرة بدون شاشات اختيار تاريخ معقدة
         function openPatientCard(patientName) {
             showModal({
-                type: 'prompt',
+                type: 'alert',
                 title: 'إدارة كارت المريض',
-                message: `المريض المحدد: <strong>${patientName}</strong><br><span style="font-size:12px; color:gray;">يمكنك الانتقال لملف المريض أو تعديل بياناته السريعة</span>`,
-                inputValue: '',
+                message: `ملف المريض: <strong>${patientName}</strong><br><span style="font-size:13px; color:var(--primary-blue);">تم فتح الكارت بنجاح. جاري الربط بقاعدة بيانات العيادة الطبية.</span>`,
                 onConfirm: () => {}
             });
         }
@@ -646,6 +654,7 @@
                 inputValue: getNextWeekDate(), 
                 showPayment: true, 
                 showSlot: true,
+                showDate: true,
                 defaultSlot: patient.slot,
                 onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => {
                     if(cDate) {
