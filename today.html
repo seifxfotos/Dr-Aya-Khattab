@@ -27,7 +27,6 @@
         .sync-indicator { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background-color: var(--primary-blue); color: white; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: 0.3s; }
         .sync-indicator.show { opacity: 1; visibility: visible; }
         .sync-indicator i { animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .header-section { background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 15px;}
         .header-section h1 { margin: 0; font-size: 24px; }
@@ -83,17 +82,21 @@
         .btn-book-session:hover { background-color: #8e44ad !important; }
         
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
+        .badge-kashf { background-color: var(--primary-blue); }
+        .badge-motab3a { background-color: var(--primary-green); }
+        .badge-galsa { background-color: #9b59b6; }
+        .badge-dept-nutrition { background-color: var(--dept-nutrition); }
+        .badge-dept-physio { background-color: var(--dept-physio); }
         .badge-glp { background-color: var(--glp-color); }
         
-        /* زر اسم المريض التفاعلي للانتقال المباشر لصفحة الكروت */
-        .patient-link { color: var(--primary-blue); font-weight: 700; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .patient-link:hover { color: #006090; transform: scale(1.02); }
-
-        /* تم توسيع عرض قسم القسم لكي لا يتداخل السهم مع النص */
-        .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; }
-        .inline-dept-select { width: 115px; } 
-        .inline-type-select { width: 75px; }
-        .inline-pay-select { width: 90px; }
+        .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
+        .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
+        .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
+        
+        .inline-dept-select { max-width: 85px; }
+        .inline-type-select { max-width: 75px; }
+        .inline-name-input { width: 120px; padding: 4px; border: 1px solid transparent; border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: right; outline: none; background-color: transparent; color: var(--text-dark); transition: 0.2s;}
+        .inline-name-input:hover, .inline-name-input:focus { border-color: var(--border); background-color: var(--input-bg); }
 
         .inline-amount-input { width: 50px; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: center; outline: none; background-color: var(--input-bg); color: var(--text-dark); }
         .debt-input { color: var(--danger); border-color: var(--danger); }
@@ -135,6 +138,7 @@
         </label>
     </div>
 
+    <!-- شريط الإجمالي اليومي -->
     <div class="total-revenue-bar" id="totalRevenueBar">
         <div class="revenue-item" title="الكاش بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> الدرج (كاش): <span id="totalCash">0</span></div>
         <div class="revenue-item" title="محافظ وفون كاش"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="totalElec">0</span></div>
@@ -220,14 +224,13 @@
         </div>
     </div>
 
-    <!-- نافذة الرسائل المنبثقة -->
+    <!-- نافذة الحجز المنبثقة -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
             <p id="modalMessage">رسالة التنبيه</p>
-            
             <div id="modalInputContainer" style="display: none; flex-direction: column; align-items: center;">
-                <input type="text" id="modalDateInput" class="modal-input" placeholder="اختار التاريخ" style="display: none;">
+                <input type="text" id="modalDateInput" class="modal-input" placeholder="اختار التاريخ">
                 
                 <select id="modalSlotInput" class="modal-input" style="display: none;">
                     <option value="">تلقائي (أول فترة متاحة)</option>
@@ -247,7 +250,6 @@
 
                 <input type="number" id="modalAmountInput" class="modal-input" placeholder="مقدم الحجز (اختياري)" style="display: none;" min="0">
             </div>
-
             <div class="modal-actions">
                 <button id="modalConfirmBtn" class="btn-confirm">موافق</button>
                 <button id="modalCancelBtn" class="btn-cancel" style="display: none;">إلغاء</button>
@@ -259,6 +261,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
+        // المتغيرات الأساسية
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
         let isLoadingData = false; let syncTimeout = null; let audioCtx = null;
         
@@ -266,6 +269,7 @@
         let glpQueue = [];
         let financialsQueue = [];
 
+        // 🚨 الرابط المطلوب المحدث 🚨
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx77Y7M4TpwlAwk7xh5E9duD_VwFqPMbHEnqezOER_-2KGZWT7moTPvjWN5tCpncfA/exec';
 
         function showSyncStatus(text) {
@@ -284,7 +288,7 @@
             document.getElementById('modalTitle').innerHTML = opts.title;
             document.getElementById('modalMessage').innerHTML = opts.message;
             
-            let elementsToHide = ['modalInputContainer','modalDateInput','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn'];
+            let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn'];
             elementsToHide.forEach(id => {
                 let el = document.getElementById(id);
                 if(el) el.style.display = 'none';
@@ -292,12 +296,7 @@
             
             if (opts.type === 'prompt') {
                 document.getElementById('modalInputContainer').style.display = 'flex';
-                
-                if (opts.showDate) {
-                    let dateInput = document.getElementById('modalDateInput');
-                    dateInput.style.display = 'block';
-                    if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || '');
-                }
+                if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || '');
                 
                 if (opts.showSlot) { 
                     document.getElementById('modalSlotInput').style.display = 'block'; 
@@ -601,11 +600,6 @@
             scheduleSync(); 
         }
 
-        // الانتقال الفوري لصفحة الكروت مع اسم المريض جاهز للبحث
-        function openPatientCard(patientName) {
-            window.location.href = `https://drayakhattab.com/cards?search=${encodeURIComponent(patientName)}`;
-        }
-
         function updateStatsCounters() {
             document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
             document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
@@ -649,7 +643,6 @@
                 inputValue: getNextWeekDate(), 
                 showPayment: true, 
                 showSlot: true,
-                showDate: true,
                 defaultSlot: patient.slot,
                 onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => {
                     if(cDate) {
@@ -744,7 +737,7 @@
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td style="font-weight:bold">
-                            <span class="patient-link" onclick="openPatientCard('${p.name}')" title="اضغط لفتح كارت المريض"><i class="fa-solid fa-id-card" style="font-size:11px;"></i> ${p.name}</span>
+                            <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
                         </td>
                         <td>
                             <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
@@ -793,7 +786,7 @@
                     dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
                         <td style="font-weight:bold">
-                            <span class="patient-link" onclick="openPatientCard('${p.name}')" title="اضغط لفتح كارت المريض"><i class="fa-solid fa-id-card" style="font-size:11px;"></i> ${p.name}</span>
+                            <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
                         </td>
                         <td>
                             <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
@@ -832,7 +825,7 @@
             calculateTotals();
         }
 
-        window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); loadDataFromGoogle(); };
+window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); loadDataFromGoogle(); };
     </script> 
 
     <script src="chat-widget.js"></script>
