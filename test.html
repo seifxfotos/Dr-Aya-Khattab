@@ -542,7 +542,7 @@
             let t5_exists = testPatients.some(p => cleanText(p.name).includes("هدي"));
             document.getElementById('task5').className = t5_correct ? 'task-success' : (t5_exists ? 'task-error' : '');
             
-            let t6_correct = patientCards.some(c => cleanText(c.name).includes("احمد") && c.phone === "01012345678" && c.age == 30);
+            let t6_correct = patientCards.some(c => cleanText(c.name).includes("احمد") && c.phone === "0123456789" && c.age == 30);
             let t6_exists = patientCards.some(c => cleanText(c.name).includes("احمد"));
             document.getElementById('task6').className = t6_correct ? 'task-success' : (t6_exists ? 'task-error' : '');
 
