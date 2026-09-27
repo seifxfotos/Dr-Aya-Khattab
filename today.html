@@ -85,7 +85,7 @@
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-glp { background-color: var(--glp-color); }
         
-        /* زر اسم المريض التفاعلي */
+        /* زر اسم المريض التفاعلي للانتقال المباشر لصفحة الكروت */
         .patient-link { color: var(--primary-blue); font-weight: 700; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
         .patient-link:hover { color: #006090; transform: scale(1.02); }
 
@@ -601,14 +601,9 @@
             scheduleSync(); 
         }
 
-        // دالة عرض بيانات المريض المختصرة بدون شاشات اختيار تاريخ معقدة
+        // الانتقال الفوري لصفحة الكروت مع اسم المريض جاهز للبحث
         function openPatientCard(patientName) {
-            showModal({
-                type: 'alert',
-                title: 'إدارة كارت المريض',
-                message: `ملف المريض: <strong>${patientName}</strong><br><span style="font-size:13px; color:var(--primary-blue);">تم فتح الكارت بنجاح. جاري الربط بقاعدة بيانات العيادة الطبية.</span>`,
-                onConfirm: () => {}
-            });
+            window.location.href = `https://drayakhattab.com/cards?search=${encodeURIComponent(patientName)}`;
         }
 
         function updateStatsCounters() {
