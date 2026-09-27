@@ -233,7 +233,7 @@
                 <li id="task3"><strong>3.</strong> تم بيع دواء <strong>فيتامين د</strong> للمشتري <strong>عمر</strong> بمبلغ <strong>150 جنيه (فودافون كاش)</strong>.</li>
                 <li id="task4"><strong>4.</strong> تم إضافة مصروف <strong>أدوات نظافة</strong> بمبلغ <strong>50 جنيه (كاش)</strong>.</li>
                 <li id="task5"><strong>5.</strong> المريضة <strong>هدى سعيد</strong> حجزت <strong>(متابعة تغذية علاجية)</strong> والدفع <strong>(مدفوع مسبقاً) (كاش)</strong>.</li>
-                <li id="task6"><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>01012345678</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
+                <li id="task6"><strong>6.</strong> قم بإنشاء <strong>(كارت مريض)</strong> جديد للمريض <strong>أحمد علي</strong>، هاتف: <strong>0123456789</strong>، النوع: <strong>ذكر</strong>، العمر: <strong>30</strong>، ملاحظات: <strong>حساسية ألبان</strong>.</li>
             </ul>
         </div>
     </div>
@@ -688,7 +688,7 @@
                 plainTextReport += "المصروفات: خطأ | ";
             }
 
-            let t6 = patientCards.find(c => cleanText(c.name).includes("احمد") && c.phone === "01012345678");
+            let t6 = patientCards.find(c => cleanText(c.name).includes("احمد") && c.phone === "0123456789");
             if (t6) {
                 score += 20; 
                 report += `<div class="success-text"><i class="fa-solid fa-check"></i> إنشاء كارت المريض سليم (20%)</div>`;
