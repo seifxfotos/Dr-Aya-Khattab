@@ -85,11 +85,13 @@
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; display: inline-block;}
         .badge-glp { background-color: var(--glp-color); }
         
+        /* زر اسم المريض التفاعلي */
+        .patient-link { color: var(--primary-blue); font-weight: 700; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
+        .patient-link:hover { color: #006090; transform: scale(1.02); }
+
         .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-dept-select { max-width: 85px; }
         .inline-type-select { max-width: 75px; }
-        .inline-name-input { width: 120px; padding: 4px; border: 1px solid transparent; border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: right; outline: none; background-color: transparent; color: var(--text-dark); transition: 0.2s;}
-        .inline-name-input:hover, .inline-name-input:focus { border-color: var(--border); background-color: var(--input-bg); }
 
         .inline-amount-input { width: 50px; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: center; outline: none; background-color: var(--input-bg); color: var(--text-dark); }
         .debt-input { color: var(--danger); border-color: var(--danger); }
@@ -131,7 +133,6 @@
         </label>
     </div>
 
-    <!-- شريط الإجمالي اليومي -->
     <div class="total-revenue-bar" id="totalRevenueBar">
         <div class="revenue-item" title="الكاش بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> الدرج (كاش): <span id="totalCash">0</span></div>
         <div class="revenue-item" title="محافظ وفون كاش"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="totalElec">0</span></div>
@@ -217,7 +218,7 @@
         </div>
     </div>
 
-    <!-- نافذة الحجز المنبثقة -->
+    <!-- نافذة الحجز والرسائل المنبثقة -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -591,6 +592,17 @@
             scheduleSync(); 
         }
 
+        // دالة مخصصة لفتح تفاصيل أو كارت المريض عند الضغط على اسمه
+        function openPatientCard(patientName) {
+            showModal({
+                type: 'prompt',
+                title: 'إدارة كارت المريض',
+                message: `المريض المحدد: <strong>${patientName}</strong><br><span style="font-size:12px; color:gray;">يمكنك الانتقال لملف المريض أو تعديل بياناته السريعة</span>`,
+                inputValue: '',
+                onConfirm: () => {}
+            });
+        }
+
         function updateStatsCounters() {
             document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
             document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
@@ -728,7 +740,7 @@
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td style="font-weight:bold">
-                            <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
+                            <span class="patient-link" onclick="openPatientCard('${p.name}')" title="اضغط لفتح كارت المريض"><i class="fa-solid fa-id-card" style="font-size:11px;"></i> ${p.name}</span>
                         </td>
                         <td>
                             <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
@@ -777,7 +789,7 @@
                     dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
                         <td style="font-weight:bold">
-                            <input type="text" class="inline-name-input" value="${p.name}" onchange="updateScheduleField(${gIdx}, 'name', this.value)" title="تعديل اسم المريض">
+                            <span class="patient-link" onclick="openPatientCard('${p.name}')" title="اضغط لفتح كارت المريض"><i class="fa-solid fa-id-card" style="font-size:11px;"></i> ${p.name}</span>
                         </td>
                         <td>
                             <div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;">
