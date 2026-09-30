@@ -45,13 +45,15 @@
             margin-bottom: 30px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
         }
-        .header-section h1 { margin: 0; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
-        .logo-circle {
-            background: white; color: var(--primary-blue);
-            width: 50px; height: 50px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        
+        /* تنسيق اللوجو في لوحة الإدارة */
+        .admin-logo {
+            height: 55px; /* حجم مناسب ومريح داخل المربع */
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 8px;
         }
+        
         .header-subtitle { font-size: 16px; font-weight: 600; opacity: 0.9; }
 
         .card-panel { 
@@ -128,9 +130,45 @@
 
         /* ------------------ شاشة العرض (المرضى) ------------------ */
         #display-view { display: none; height: 100vh; background-color: var(--bg-color); padding: 40px; box-sizing: border-box; }
-        .display-header { text-align: center; margin-bottom: 50px; padding-bottom: 20px; border-bottom: 3px solid var(--border); }
-        .display-header h1 { color: var(--primary-blue); font-size: 45px; margin: 0; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 15px;}
-        .display-header p { color: var(--text-dark); font-size: 22px; margin: 10px 0 0 0; font-weight: 600; opacity: 0.7;}
+        
+        /* تنسيق هيدر المرضى الاحترافي */
+        .display-header { 
+            text-align: center; 
+            margin-bottom: 50px; 
+            padding-bottom: 30px; 
+            position: relative;
+        }
+        
+        /* خط متدرج شيك أسفل اللوجو */
+        .display-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(to left, var(--primary-green), var(--primary-blue));
+            border-radius: 10px;
+        }
+
+        /* تنسيق اللوجو في شاشة العرض */
+        .display-logo {
+            height: 110px; /* حجم بارز ومناسب */
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); /* لمسة ظل خفيفة */
+        }
+
+        .display-header p { 
+            color: var(--text-dark); 
+            font-size: 24px; 
+            margin: 5px 0 0 0; 
+            font-weight: 700; 
+            opacity: 0.8;
+            letter-spacing: 0.5px;
+        }
         
         .patient-list-display { display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; position: relative;}
         .patient-card { 
@@ -193,10 +231,8 @@
     <div id="admin-view" class="container">
         <div class="header-section">
             <div>
-                <h1>
-                    <div class="logo-circle"><i class="fa-solid fa-user-doctor"></i></div>
-                    د. آية خطاب
-                </h1>
+                <!-- اللوجو الأبيض الخاص بشاشة الإدارة -->
+                <img src="Logo-Dr-Aya-W.webp" alt="لوجو د. آية خطاب" class="admin-logo">
                 <div class="header-subtitle">لوحة تحكم السكرتارية - ترتيب الكشوفات</div>
             </div>
         </div>
@@ -218,10 +254,8 @@
     <!-- شاشة العرض للمرضى (التي ستظهر في التاب الأخرى) -->
     <div id="display-view">
         <div class="display-header">
-            <h1>
-                <div class="logo-circle"><i class="fa-solid fa-user-doctor"></i></div>
-                د. آية خطاب
-            </h1>
+            <!-- اللوجو الملون الخاص بشاشة العرض -->
+            <img src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo">
             <p>ترتيب الدخول للعيادة</p>
         </div>
         <div class="patient-list-display" id="display-patient-list"></div>
@@ -360,7 +394,6 @@
             const waitingPatients = allPatients.filter(p => !p.entered);
             const patientsToShow = waitingPatients.slice(0, 6);
             
-            // عمل أنيميشن الخروج للمرضى اللي كانوا معروضين واختفوا (دخلوا)
             const disappearedPatients = currentlyDisplayedPatients.filter(
                 oldP => !patientsToShow.find(newP => newP.id === oldP.id)
             );
@@ -369,14 +402,12 @@
                 const el = document.getElementById(`patient-${dp.id}`);
                 if (el) {
                     el.classList.add('exiting');
-                    // إعطاء وقت للأنيميشن قبل إزالته فعلياً
                     setTimeout(() => {
                         if (el.parentNode) el.parentNode.removeChild(el);
                     }, 500); 
                 }
             });
 
-            // تحديث أو إضافة الكروت الجديدة
             setTimeout(() => {
                 listContainer.innerHTML = '';
                 patientsToShow.forEach((p, index) => {
