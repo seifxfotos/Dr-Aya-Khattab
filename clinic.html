@@ -49,7 +49,6 @@
         .header-section h1 { margin: 0; font-size: 24px; font-weight: 800; }
         .header-subtitle { font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 5px; }
         
-        /* إحصائيات الهيدر */
         .stats-counter { 
             background: rgba(255,255,255,0.2); 
             padding: 8px 15px; border-radius: 8px; font-size: 15px; font-weight: 700; 
@@ -95,22 +94,18 @@
         }
         .patient-item-admin:hover { border-right-color: var(--primary-blue); transform: translateX(-2px); }
         .patient-name { font-size: 18px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px; transition: 0.3s;}
-        .patient-name span.num { background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 14px; transition: 0.3s;}
         
-        /* تأثير الشطب للمرضى الذين دخلوا */
-        .patient-item-admin.entered {
-            opacity: 0.6;
-            background: var(--bg-color);
-            border-right-color: #95a5a6;
+        /* ضبط السنتر للأرقام */
+        .patient-name span.num { 
+            background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; 
+            display: inline-flex; justify-content: center; align-items: center; 
+            border-radius: 50%; font-size: 14px; transition: 0.3s;
         }
-        .patient-item-admin.entered .patient-name {
-            text-decoration: line-through;
-            color: #7f8c8d;
-        }
-        .patient-item-admin.entered span.num {
-            background: #e0e0e0;
-            color: #7f8c8d;
-        }
+        .num-fix { transform: translateY(2px); display: inline-block; line-height: 1; }
+        
+        .patient-item-admin.entered { opacity: 0.6; background: var(--bg-color); border-right-color: #95a5a6; }
+        .patient-item-admin.entered .patient-name { text-decoration: line-through; color: #7f8c8d; }
+        .patient-item-admin.entered span.num { background: #e0e0e0; color: #7f8c8d; }
 
         .action-btns { display: flex; gap: 6px; align-items: center; }
         .action-btns button { 
@@ -131,23 +126,41 @@
             background-color: var(--primary-green); color: white; border: none; 
             padding: 16px; border-radius: 8px; font-weight: 700; font-size: 18px; 
             cursor: pointer; transition: 0.3s; font-family: 'Cairo'; width: 100%; 
-            display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 30px;
+            display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;
         }
         .btn-open-display:hover { background-color: #7ab033; }
 
+        /* لوحة التحكم بالزوم */
+        .zoom-controls {
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            margin-top: 15px; padding: 15px; background: var(--card-bg); 
+            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+        .zoom-controls span { font-weight: 700; font-size: 16px; color: var(--text-dark); }
+        .zoom-btn {
+            background: var(--input-bg); border: 2px solid var(--primary-blue);
+            color: var(--primary-blue); border-radius: 5px; cursor: pointer; 
+            padding: 5px 12px; font-size: 16px; transition: 0.2s; font-weight: bold;
+        }
+        .zoom-btn:hover { background: var(--primary-blue); color: white; }
+        .zoom-level-text { min-width: 60px; text-align: center; color: var(--primary-blue) !important; font-size: 18px !important; }
+
         /* ------------------ شاشة العرض (المرضى) ------------------ */
         #display-view { 
-            display: none; 
-            height: 100vh; 
-            width: 100vw;
-            background-color: var(--bg-color); 
-            padding: 40px; 
-            box-sizing: border-box; 
-            overflow: hidden; 
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
+            display: none; height: 100vh; width: 100vw;
+            background-color: var(--bg-color); box-sizing: border-box; 
+            overflow: hidden; user-select: none; -webkit-user-select: none;
+        }
+        
+        /* حاوية الزوم */
+        #zoom-wrapper {
+            transform-origin: top center;
+            transition: transform 0.3s ease;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            box-sizing: border-box;
         }
         
         .display-header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; position: relative;}
@@ -156,12 +169,11 @@
             width: 120px; height: 4px; background: linear-gradient(to left, var(--primary-green), var(--primary-blue));
             border-radius: 10px;
         }
-
         .display-logo { height: 110px; width: auto; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));}
         
-        .patient-list-display { display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; position: relative;}
+        .patient-list-display { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; position: relative;}
         .patient-card { 
-            background: var(--card-bg); padding: 25px 35px; font-size: 38px; font-weight: 800; 
+            background: var(--card-bg); padding: 20px 30px; font-size: 34px; font-weight: 800; 
             border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); 
             display: flex; align-items: center; gap: 30px; 
             border-right: 12px solid var(--primary-green); color: var(--text-dark); 
@@ -173,9 +185,10 @@
         .patient-card.exiting { opacity: 0; transform: translateX(-50px) scale(0.9); }
 
         .patient-card.active-patient { 
-            border-right-color: var(--primary-blue); transform: scale(1.03); 
+            border-right-color: var(--primary-blue); transform: scale(1.02); 
             box-shadow: 0 15px 35px rgba(0, 147, 208, 0.15); 
             background: linear-gradient(to left, #ffffff, #f4faff); 
+            padding: 25px 30px;
         }
         .patient-card.active-patient.exiting { transform: scale(0.9) translateX(-50px); }
         .patient-card.active-patient .patient-number { background: var(--primary-blue); transform: scale(1.1); box-shadow: 0 4px 15px rgba(0, 147, 208, 0.3); }
@@ -187,10 +200,11 @@
         
         .patient-number { 
             background: var(--primary-green); color: white; 
-            min-width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; 
-            border-radius: 50%; font-size: 34px; font-weight: 800; transition: 0.3s; 
+            min-width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; 
+            border-radius: 50%; font-size: 32px; font-weight: 800; transition: 0.3s; 
             line-height: 1;
         }
+        .display-num-fix { transform: translateY(4px); display: inline-block; }
 
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(0, 147, 208, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0); } }
@@ -200,16 +214,15 @@
 
     <!-- شاشة السكرتارية (الإدارة) -->
     <div id="admin-view" class="container">
-        <!-- هيدر الإدارة الاحترافي -->
+        <!-- هيدر الإدارة -->
         <div class="header-section">
             <div>
                 <h1>إدارة العيادة اليومية</h1>
-                <div class="header-subtitle">تنظيم الحجوزات، الماليات، وبرامج العلاج <i class="fa-solid fa-cloud"></i></div>
+                <div class="header-subtitle">تنظيم الحجوزات، الماليات، وبرامج العلاج</div>
             </div>
             
             <div class="stats-counter">
                 <span title="إجمالي الحجوزات الكلية">العدد الكلي: <span id="statKashf">0</span></span>
-                <!-- شيلنا الأنواع التانية لأننا شغالين على الترتيب بس في النسخة دي -->
             </div>
 
             <div class="date-picker-placeholder" id="todayDate">2026-09-30</div>
@@ -227,20 +240,50 @@
         <button class="btn-open-display" onclick="openDisplayWindow()">
             <i class="fa-solid fa-desktop"></i> فتح شاشة عرض المرضى
         </button>
+
+        <!-- لوحة التحكم في الزوم -->
+        <div class="zoom-controls">
+            <span>حجم عرض الشاشة للمرضى:</span>
+            <button class="zoom-btn" onclick="changeZoom(0.1)" title="تكبير العرض"><i class="fa-solid fa-plus"></i></button>
+            <span class="zoom-level-text" id="zoomLevelText">100%</span>
+            <button class="zoom-btn" onclick="changeZoom(-0.1)" title="تصغير العرض"><i class="fa-solid fa-minus"></i></button>
+        </div>
     </div>
 
     <!-- شاشة العرض للمرضى -->
     <div id="display-view">
-        <div class="display-header">
-            <!-- اللوجو الملون الخاص بشاشة العرض -->
-            <img src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo" onerror="this.style.display='none'">
+        <div id="zoom-wrapper">
+            <div class="display-header">
+                <!-- اللوجو الملون الخاص بشاشة العرض -->
+                <img src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="patient-list-display" id="display-patient-list"></div>
         </div>
-        <div class="patient-list-display" id="display-patient-list"></div>
     </div>
 
     <script>
-        // ⚠️ حط الرابط الجديد بتاع جوجل شيت هنا ⚠️
+        // الرابط الجديد لجوجل شيت
         const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwAOrprZZhA3dTM2NB3KN0e9wdof-SHUUUHqPbJV-Cr-ZV6aoYdwNTQAt754s_4wNve/exec";
+
+        // إدارة الزوم (التكبير والتصغير)
+        let currentZoom = parseFloat(localStorage.getItem('clinic_zoom')) || 1.0;
+
+        function changeZoom(amount) {
+            currentZoom += amount;
+            if(currentZoom < 0.5) currentZoom = 0.5; // الحد الأدنى للتصغير
+            if(currentZoom > 1.5) currentZoom = 1.5; // الحد الأقصى للتكبير
+            
+            localStorage.setItem('clinic_zoom', currentZoom);
+            updateZoomUI();
+        }
+
+        function updateZoomUI() {
+            const zText = document.getElementById('zoomLevelText');
+            if(zText) zText.innerText = Math.round(currentZoom * 100) + '%';
+            
+            const zoomWrapper = document.getElementById('zoom-wrapper');
+            if(zoomWrapper) zoomWrapper.style.transform = `scale(${currentZoom})`;
+        }
 
         function updateCurrentDate() {
             const today = new Date();
@@ -271,10 +314,9 @@
         }
 
         function syncToGoogleSheet(patients) {
-            if (!GOOGLE_APP_URL || GOOGLE_APP_URL.includes('AKfycbxH_Iif36kyvEJQ7g')) return; // تأكد إنك غيرت اللينك
+            if (!GOOGLE_APP_URL) return;
             
             const today = new Date().toLocaleDateString('ar-EG').replace(/\//g, '-');
-            // بنبعت الأسماء بس زي ما جوجل شيت متوقع
             const namesOnly = patients.map(p => p.name);
             
             fetch(GOOGLE_APP_URL, {
@@ -361,7 +403,7 @@
                 listContainer.innerHTML += `
                     <div class="${rowClass}">
                         <div class="patient-name">
-                            <span class="num"><span style="transform: translateY(2px); display: inline-block;">${displayIndex}</span></span> 
+                            <span class="num"><span class="num-fix">${displayIndex}</span></span> 
                             ${p.name}
                         </div>
                         <div class="action-btns">
@@ -384,7 +426,8 @@
             const allPatients = getPatients();
             
             const waitingPatients = allPatients.filter(p => !p.entered);
-            const patientsToShow = waitingPatients.slice(0, 6);
+            // تم زيادة العدد ليعرض حتى 10 مرضى بدلاً من 6
+            const patientsToShow = waitingPatients.slice(0, 10);
             
             const disappearedPatients = currentlyDisplayedPatients.filter(
                 oldP => !patientsToShow.find(newP => newP.id === oldP.id)
@@ -409,7 +452,7 @@
                     
                     listContainer.innerHTML += `
                         <div class="patient-card ${activeClass} ${enteringClass}" id="patient-${p.id}">
-                            <div class="patient-number"><span style="transform: translateY(2px); display: inline-block;">${index + 1}</span></div>
+                            <div class="patient-number"><span class="display-num-fix">${index + 1}</span></div>
                             <div>${p.name}</div>
                         </div>
                     `;
@@ -428,6 +471,10 @@
                     updateStats();
                 }
             }
+            if (e.key === 'clinic_zoom') {
+                currentZoom = parseFloat(e.newValue) || 1.0;
+                updateZoomUI();
+            }
         });
 
         function init() {
@@ -439,11 +486,14 @@
                 document.getElementById('admin-view').style.display = 'none';
                 document.getElementById('display-view').style.display = 'block';
                 const patients = getPatients();
-                currentlyDisplayedPatients = patients.filter(p => !p.entered).slice(0, 6).map(p => ({id: p.id}));
+                // تطبيق نفس التعديل هنا عند التهيئة لضمان 10 مرضى
+                currentlyDisplayedPatients = patients.filter(p => !p.entered).slice(0, 10).map(p => ({id: p.id}));
                 renderDisplayView();
+                updateZoomUI(); // تطبيق الزوم المحفوظ
             } else {
                 renderAdminView();
                 updateStats();
+                updateZoomUI(); // إظهار نسبة الزوم في الشاشة الإدارية
             }
         }
 
