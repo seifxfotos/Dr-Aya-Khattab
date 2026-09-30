@@ -42,30 +42,18 @@
             font-family: 'Cairo', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* ------------------ زر تبديل الوضع (Dark/Light) ------------------ */
         .theme-switch-wrapper { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            z-index: 1000; 
-            background: var(--card-bg); 
-            padding: 8px 12px; 
-            border-radius: 30px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            border: 1px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            transition: 0.3s; 
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000; 
+            background: var(--card-bg); padding: 8px 12px; border-radius: 30px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border); 
+            display: flex; align-items: center; transition: 0.3s; 
         }
         
-        body.is-display-view .theme-switch-wrapper {
-            display: none !important;
-        }
+        body.is-display-view .theme-switch-wrapper { display: none !important; }
 
         .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
         .theme-switch input { display: none; }
@@ -76,59 +64,46 @@
         input:checked + .slider { background-color: #34495e; }
         input:checked + .slider:before { transform: translateX(28px); }
 
-        /* ------------------ شاشة الإدارة (السكرتارية) ------------------ */
         .container { max-width: 900px; margin: 30px auto; padding: 20px; }
         
         .header-section { 
-            background: var(--header-gradient); 
-            color: white; 
-            padding: 25px 30px; 
-            border-radius: 12px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 30px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            flex-wrap: wrap; gap: 15px;
-            transition: background 0.3s;
+            background: var(--header-gradient); color: white; padding: 25px 30px; 
+            border-radius: 12px; display: flex; justify-content: space-between; 
+            align-items: center; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            flex-wrap: wrap; gap: 15px; transition: background 0.3s;
         }
         .header-section h1 { margin: 0; font-size: 24px; font-weight: 800; }
         .header-subtitle { font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 5px; }
         
         .stats-counter { 
-            background: rgba(255,255,255,0.2); 
-            padding: 8px 15px; border-radius: 8px; font-size: 15px; font-weight: 700; 
-            display: flex; gap: 15px; border: 1px solid rgba(255,255,255,0.4); flex-wrap: wrap; 
+            background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; 
+            font-size: 15px; font-weight: 700; display: flex; gap: 15px; 
+            border: 1px solid rgba(255,255,255,0.4); flex-wrap: wrap; 
         }
         .stats-counter span { display: flex; align-items: center; gap: 5px; color: white;}
         
         .date-picker-placeholder {
             font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); 
-            padding: 8px 15px; border-radius: 8px; border: 1px solid white; 
-            color: white; text-align: center;
+            padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; text-align: center;
         }
 
         .card-panel { 
-            background: var(--card-bg); padding: 25px; 
-            border-radius: 12px; box-shadow: var(--card-shadow); 
-            margin-bottom: 25px; 
-            transition: background-color 0.3s, box-shadow 0.3s;
+            background: var(--card-bg); padding: 25px; border-radius: 12px; 
+            box-shadow: var(--card-shadow); margin-bottom: 25px; transition: 0.3s;
         }
         
         .input-group { display: flex; gap: 10px; margin-bottom: 30px; }
         .input-group input { 
-            flex: 1; padding: 14px; border: 1px solid var(--border); 
-            border-radius: 8px; font-family: 'Cairo'; font-size: 16px; font-weight: 600;
-            outline: none; background-color: var(--input-bg); color: var(--text-dark); 
-            transition: 0.3s;
+            flex: 1; padding: 14px; border: 1px solid var(--border); border-radius: 8px; 
+            font-family: 'Cairo'; font-size: 16px; font-weight: 600; outline: none; 
+            background-color: var(--input-bg); color: var(--text-dark); transition: 0.3s;
         }
         .input-group input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0,147,208,0.1); }
         
         .btn-add { 
             background-color: var(--primary-blue); color: white; border: none; 
             padding: 14px 25px; border-radius: 8px; font-weight: 700; font-size: 16px; 
-            cursor: pointer; transition: 0.3s; font-family: 'Cairo'; 
-            display: flex; align-items: center; gap: 8px; 
+            cursor: pointer; transition: 0.3s; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; 
         }
         .btn-add:hover { background-color: #007bb5; }
 
@@ -136,22 +111,15 @@
             background: var(--card-bg); padding: 15px 20px; margin-bottom: 12px; 
             border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); 
             display: flex; justify-content: space-between; align-items: center; 
-            border: 1px solid var(--border); border-right: 4px solid var(--primary-green); 
-            transition: 0.2s;
+            border: 1px solid var(--border); border-right: 4px solid var(--primary-green); transition: 0.2s;
         }
         .patient-item-admin:hover { border-right-color: var(--primary-blue); transform: translateX(-2px); }
         .patient-name { font-size: 18px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px; transition: 0.3s;}
         
-        /* ضبط الأرقام في الإدارة */
         .patient-name span.num-circle { 
             background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; 
-            display: flex; justify-content: center; align-items: center; 
-            border-radius: 50%; font-size: 14px; transition: 0.3s;
-        }
-        .admin-num-fix {
-            transform: translateY(-2px); /* تعديل السنتر الدقيق لخط كايرو */
-            display: inline-block;
-            line-height: 1;
+            display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 14px; transition: 0.3s;
+            line-height: 0; padding-top: 2px; box-sizing: border-box;
         }
         
         .patient-item-admin.entered { opacity: 0.6; background: var(--bg-color); border-right-color: #95a5a6; }
@@ -160,10 +128,9 @@
 
         .action-btns { display: flex; gap: 6px; align-items: center; }
         .action-btns button { 
-            background: var(--input-bg); border: 1px solid var(--border); 
-            padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-dark); 
-            transition: 0.2s; font-size: 14px; font-family: 'Cairo'; font-weight: 600;
-            display: flex; align-items: center; gap: 5px;
+            background: var(--input-bg); border: 1px solid var(--border); padding: 8px 12px; 
+            border-radius: 6px; cursor: pointer; color: var(--text-dark); transition: 0.2s; 
+            font-size: 14px; font-family: 'Cairo'; font-weight: 600; display: flex; align-items: center; gap: 5px;
         }
         .action-btns button:hover { background: var(--bg-color); border-color: #ccc; }
         .btn-delete { color: var(--danger) !important; }
@@ -173,116 +140,56 @@
         .btn-undo { color: #f39c12 !important; }
         .btn-undo:hover { background: rgba(243, 156, 18, 0.1) !important; border-color: #f39c12 !important; }
         
+        .buttons-grid { display: flex; gap: 15px; margin-top: 20px; }
         .btn-open-display { 
-            background-color: var(--primary-green); color: white; border: none; 
-            padding: 16px; border-radius: 8px; font-weight: 700; font-size: 18px; 
-            cursor: pointer; transition: 0.3s; font-family: 'Cairo'; width: 100%; 
-            display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;
+            background-color: var(--primary-green); color: white; border: none; padding: 16px; 
+            border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; 
+            font-family: 'Cairo'; flex: 1; display: flex; justify-content: center; align-items: center; gap: 10px; 
         }
         .btn-open-display:hover { background-color: #7ab033; }
+        .btn-open-doctor { background-color: var(--primary-blue); }
+        .btn-open-doctor:hover { background-color: #007bb5; }
 
         .zoom-controls {
             display: flex; justify-content: center; align-items: center; gap: 15px;
-            margin-top: 15px; padding: 15px; background: var(--card-bg); 
-            border-radius: 8px; box-shadow: var(--card-shadow);
-            border: 1px solid var(--border);
-            transition: background-color 0.3s, border-color 0.3s;
+            margin-top: 15px; padding: 15px; background: var(--card-bg); border-radius: 8px; 
+            box-shadow: var(--card-shadow); border: 1px solid var(--border); transition: 0.3s;
         }
         .zoom-controls span { font-weight: 700; font-size: 16px; color: var(--text-dark); }
-        .zoom-btn {
-            background: var(--input-bg); border: 2px solid var(--primary-blue);
-            color: var(--primary-blue); border-radius: 5px; cursor: pointer; 
-            padding: 5px 12px; font-size: 16px; transition: 0.2s; font-weight: bold;
-        }
+        .zoom-btn { background: var(--input-bg); border: 2px solid var(--primary-blue); color: var(--primary-blue); border-radius: 5px; cursor: pointer; padding: 5px 12px; font-size: 16px; transition: 0.2s; font-weight: bold;}
         .zoom-btn:hover { background: var(--primary-blue); color: white; }
-        .zoom-level-text { min-width: 60px; text-align: center; color: var(--primary-blue) !important; font-size: 18px !important; }
 
         /* ------------------ شاشة العرض (المرضى) ------------------ */
-        #display-view { 
-            display: none; height: 100vh; width: 100vw;
-            background-color: var(--bg-color); box-sizing: border-box; 
-            overflow: hidden; user-select: none; -webkit-user-select: none;
-        }
-        
-        #zoom-wrapper {
-            transform-origin: top center; transition: transform 0.3s ease;
-            width: 100%; height: 100%; padding: 40px; box-sizing: border-box;
-        }
-        
+        #display-view { display: none; height: 100vh; width: 100vw; background-color: var(--bg-color); box-sizing: border-box; overflow: hidden; user-select: none; -webkit-user-select: none; }
+        #zoom-wrapper { transform-origin: top center; transition: transform 0.3s ease; width: 100%; height: 100%; padding: 40px; box-sizing: border-box; }
         .display-header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; position: relative;}
-        .display-header::after {
-            content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 4px; background: linear-gradient(to left, var(--primary-green), var(--primary-blue));
-            border-radius: 10px;
-        }
+        .display-header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 4px; background: linear-gradient(to left, var(--primary-green), var(--primary-blue)); border-radius: 10px; }
         
-        :root[data-theme="dark"] .display-logo-wrapper {
-            background: white; 
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 15px;
-        }
-        
-        .display-logo { height: 110px; width: auto; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));}
+        .display-logo { height: 110px; width: auto; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); transition: 0.3s;}
         
         .patient-list-display { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; position: relative;}
-        .patient-card { 
-            background: var(--card-bg); padding: 20px 30px; font-size: 34px; font-weight: 800; 
-            border-radius: 12px; box-shadow: var(--card-shadow); 
-            display: flex; align-items: center; gap: 30px; 
-            border-right: 12px solid var(--primary-green); color: var(--text-dark); 
-            position: relative; overflow: hidden; transition: all 0.5s ease-in-out, background-color 0.3s, color 0.3s;
-            opacity: 1; transform: translateY(0);
-        }
-        
+        .patient-card { background: var(--card-bg); padding: 20px 30px; font-size: 34px; font-weight: 800; border-radius: 12px; box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 30px; border-right: 12px solid var(--primary-green); color: var(--text-dark); position: relative; overflow: hidden; transition: all 0.5s ease-in-out, background-color 0.3s, color 0.3s; opacity: 1; transform: translateY(0); }
         .patient-card.entering { animation: slideIn 0.5s ease-out; }
         .patient-card.exiting { opacity: 0; transform: translateX(-50px) scale(0.9); }
-
-        .patient-card.active-patient { 
-            border-right-color: var(--primary-blue); transform: scale(1.02); 
-            box-shadow: 0 15px 35px rgba(0, 147, 208, 0.2); 
-            background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.05)); 
-            padding: 25px 30px;
-        }
-        
-        :root[data-theme="light"] .patient-card.active-patient {
-            background: linear-gradient(to left, #ffffff, #f4faff); 
-        }
-
+        .patient-card.active-patient { border-right-color: var(--primary-blue); transform: scale(1.02); box-shadow: 0 15px 35px rgba(0, 147, 208, 0.2); background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.05)); padding: 25px 30px; }
+        :root[data-theme="light"] .patient-card.active-patient { background: linear-gradient(to left, #ffffff, #f4faff); }
         .patient-card.active-patient.exiting { transform: scale(0.9) translateX(-50px); }
         .patient-card.active-patient .patient-number { background: var(--primary-blue); transform: scale(1.1); box-shadow: 0 4px 15px rgba(0, 147, 208, 0.3); }
-        .patient-card.active-patient::after { 
-            content: "القادم"; position: absolute; left: 35px; font-size: 20px; 
-            background: var(--primary-blue); color: white; padding: 6px 18px; 
-            border-radius: 30px; font-weight: 700; animation: pulse 2s infinite; 
-        }
+        .patient-card.active-patient::after { content: "القادم"; position: absolute; left: 35px; font-size: 20px; background: var(--primary-blue); color: white; padding: 6px 18px; border-radius: 30px; font-weight: 700; animation: pulse 2s infinite; }
         
-        /* 🚨 الضبط الدقيق لسنترة الأرقام داخل الدوائر 🚨 */
-        .patient-number { 
-            background: var(--primary-green); color: white; 
-            min-width: 65px; height: 65px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            border-radius: 50%; 
-            font-size: 32px; 
-            font-weight: 800; 
-            transition: 0.3s; 
-        }
-        
-        .display-num-fix { 
-            transform: translateY(-4px); /* رفع الرقم لأعلى قليلاً ليتوسط الدائرة بدقة مع خط كايرو */
-            display: inline-block; 
-            line-height: 1;
-        }
+        .patient-number { background: var(--primary-green); color: white; min-width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 32px; font-weight: 800; transition: 0.3s; line-height: 0; padding-top: 4px; box-sizing: border-box; }
+        .display-num-fix { display: block; }
 
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(0, 147, 208, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0); } }
+
+        /* ------------------ شاشة الطبيب الخاصة ------------------ */
+        #doctor-view { display: none; }
+        .doc-status-indicator { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
 
-    <!-- زر تبديل الثيم -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
@@ -292,17 +199,14 @@
 
     <!-- شاشة السكرتارية (الإدارة) -->
     <div id="admin-view" class="container">
-        <!-- هيدر الإدارة -->
         <div class="header-section">
             <div>
                 <h1>إدارة العيادة اليومية</h1>
-                <div class="header-subtitle">تنظيم الحجوزات، الماليات، وبرامج العلاج</div>
+                <div class="header-subtitle">تنظيم الحجوزات، السكرتارية</div>
             </div>
-            
             <div class="stats-counter">
                 <span title="إجمالي الحجوزات الكلية">العدد الكلي: <span id="statKashf">0</span></span>
             </div>
-
             <div class="date-picker-placeholder" id="todayDate">2026-09-30</div>
         </div>
         
@@ -311,15 +215,18 @@
                 <input type="text" id="patientName" placeholder="أدخل اسم المريض هنا..." onkeypress="handleEnter(event)">
                 <button class="btn-add" onclick="addPatient()"><i class="fa-solid fa-plus"></i> إضافة للجدول</button>
             </div>
-
             <div id="admin-patient-list"></div>
         </div>
 
-        <button class="btn-open-display" onclick="openDisplayWindow()">
-            <i class="fa-solid fa-desktop"></i> فتح شاشة عرض المرضى
-        </button>
+        <div class="buttons-grid">
+            <button class="btn-open-display" onclick="openDisplayWindow()">
+                <i class="fa-solid fa-desktop"></i> فتح شاشة المرضى
+            </button>
+            <button class="btn-open-display btn-open-doctor" onclick="openDoctorWindow()">
+                <i class="fa-solid fa-user-doctor"></i> فتح شاشة الطبيب
+            </button>
+        </div>
 
-        <!-- لوحة التحكم في الزوم -->
         <div class="zoom-controls">
             <span>حجم عرض الشاشة للمرضى:</span>
             <button class="zoom-btn" onclick="changeZoom(0.1)" title="تكبير العرض"><i class="fa-solid fa-plus"></i></button>
@@ -332,42 +239,69 @@
     <div id="display-view">
         <div id="zoom-wrapper">
             <div class="display-header">
-                <div class="display-logo-wrapper">
-                    <!-- اللوجو الملون الخاص بشاشة العرض -->
-                    <img src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo" onerror="this.style.display='none'">
-                </div>
+                <!-- اللوجو الذكي (يتغير حسب الثيم) -->
+                <img id="displayModeLogo" src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo" onerror="this.style.display='none'">
             </div>
             <div class="patient-list-display" id="display-patient-list"></div>
         </div>
     </div>
 
+    <!-- شاشة الطبيب (سحابية) -->
+    <div id="doctor-view" class="container">
+        <div class="header-section">
+            <div>
+                <h1><i class="fa-solid fa-user-doctor"></i> شاشة الطبيب</h1>
+                <div class="header-subtitle">متابعة حية لقائمة الانتظار بالخارج (تحديث تلقائي)</div>
+            </div>
+            <div class="doc-status-indicator" id="docSyncIndicator">
+                <i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال...
+            </div>
+        </div>
+        <div class="card-panel">
+            <h3 style="margin-top:0; border-bottom: 2px solid var(--border); padding-bottom:10px; color: var(--primary-blue);">قائمة مرضى اليوم:</h3>
+            <div id="doctor-patient-list">
+                <div style="text-align:center; padding: 20px; opacity:0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات من السيرفر...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ------------------ إدارة الثيم (الدارك مود المنفصل للصفحة) ------------------
+        // ------------------ إدارة تغيير اللوجو الذكي ------------------
+        function applyThemeToLogo(theme) {
+            const logo = document.getElementById('displayModeLogo');
+            if(logo) {
+                // إذا كان الوضع ليلي يعرض اللوجو الأبيض، وإلا الملون
+                logo.src = theme === 'dark' ? 'Logo-Dr-Aya-W.webp' : 'Logo-Dr-Aya.webp';
+            }
+        }
+
+        // ------------------ إدارة الثيم ------------------
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const currentSavedTheme = localStorage.getItem('clinic_queue_theme') || 'light';
         
-        // استخدام متغير خاص بهذه الصفحة فقط (clinic_queue_theme) لمنع التداخل مع باقي الموقع
-        if (localStorage.getItem('clinic_queue_theme') === 'dark') { 
+        if (currentSavedTheme === 'dark') { 
             document.documentElement.setAttribute('data-theme', 'dark'); 
-            toggleSwitch.checked = true; 
+            if(toggleSwitch) toggleSwitch.checked = true; 
         }
         
-        // الاستماع لتغيير الثيم
-        toggleSwitch.addEventListener('change', (e) => { 
-            const newTheme = e.target.checked ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme); 
-            localStorage.setItem('clinic_queue_theme', newTheme); 
-        });
+        if(toggleSwitch) {
+            toggleSwitch.addEventListener('change', (e) => { 
+                const newTheme = e.target.checked ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme); 
+                localStorage.setItem('clinic_queue_theme', newTheme); 
+                applyThemeToLogo(newTheme); // تغيير اللوجو فوراً
+            });
+        }
 
-        // ------------------ المنطق الأساسي للتطبيق ------------------
-        const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwAOrprZZhA3dTM2NB3KN0e9wdof-SHUUUHqPbJV-Cr-ZV6aoYdwNTQAt754s_4wNve/exec";
-
+        // ------------------ المتغيرات الأساسية ------------------
+        const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbxOGST_ECovZViYJcjyEa914dDLOmx4kQdxrF-h_nB0R45J-zxeXrS7SQhon8lwsD5H/exec";
         let currentZoom = parseFloat(localStorage.getItem('clinic_zoom')) || 1.0;
+        let currentlyDisplayedPatients = [];
 
         function changeZoom(amount) {
             currentZoom += amount;
             if(currentZoom < 0.5) currentZoom = 0.5; 
             if(currentZoom > 1.5) currentZoom = 1.5; 
-            
             localStorage.setItem('clinic_zoom', currentZoom);
             updateZoomUI();
         }
@@ -375,7 +309,6 @@
         function updateZoomUI() {
             const zText = document.getElementById('zoomLevelText');
             if(zText) zText.innerText = Math.round(currentZoom * 100) + '%';
-            
             const zoomWrapper = document.getElementById('zoom-wrapper');
             if(zoomWrapper) zoomWrapper.style.transform = `scale(${currentZoom})`;
         }
@@ -385,13 +318,13 @@
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
-            document.getElementById('todayDate').innerText = `${year}-${month}-${day}`;
+            const dateEl = document.getElementById('todayDate');
+            if(dateEl) dateEl.innerText = `${year}-${month}-${day}`;
         }
 
         function checkAndResetDaily() {
             const today = new Date().toLocaleDateString('ar-EG');
             const savedDate = localStorage.getItem('clinic_date');
-            
             if (savedDate !== today) {
                 localStorage.setItem('clinic_patients', JSON.stringify([]));
                 localStorage.setItem('clinic_date', today);
@@ -405,20 +338,20 @@
 
         function updateStats() {
             const patients = getPatients();
-            document.getElementById('statKashf').innerText = patients.length; 
+            const stat = document.getElementById('statKashf');
+            if(stat) stat.innerText = patients.length; 
         }
 
         function syncToGoogleSheet(patients) {
             if (!GOOGLE_APP_URL) return;
-            
             const today = new Date().toLocaleDateString('ar-EG').replace(/\//g, '-');
-            const namesOnly = patients.map(p => p.name);
+            const patientsData = patients.map(p => ({name: p.name, entered: p.entered}));
             
             fetch(GOOGLE_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ date: today, patients: namesOnly })
+                body: JSON.stringify({ date: today, patients: patientsData })
             }).catch(err => console.log("خطأ في المزامنة: ", err));
         }
 
@@ -440,9 +373,7 @@
             }
         }
 
-        function handleEnter(e) {
-            if (e.key === 'Enter') addPatient();
-        }
+        function handleEnter(e) { if (e.key === 'Enter') addPatient(); }
 
         function deletePatient(index) {
             if(confirm("هل أنت متأكد من حذف هذا الاسم؟")) {
@@ -477,15 +408,14 @@
             savePatients(patients);
         }
 
-        function openDisplayWindow() {
-            window.open(window.location.pathname + '?view=display', '_blank');
-        }
+        function openDisplayWindow() { window.open(window.location.pathname + '?view=display', '_blank'); }
+        function openDoctorWindow() { window.open(window.location.pathname + '?view=doctor', '_blank'); }
 
         function renderAdminView() {
             const listContainer = document.getElementById('admin-patient-list');
+            if(!listContainer) return;
             const patients = getPatients();
             listContainer.innerHTML = '';
-
             let displayIndex = 1;
 
             patients.forEach((p, index) => {
@@ -514,10 +444,9 @@
             });
         }
 
-        let currentlyDisplayedPatients = [];
-
         function renderDisplayView() {
             const listContainer = document.getElementById('display-patient-list');
+            if(!listContainer) return;
             const allPatients = getPatients();
             
             const waitingPatients = allPatients.filter(p => !p.entered);
@@ -531,9 +460,7 @@
                 const el = document.getElementById(`patient-${dp.id}`);
                 if (el) {
                     el.classList.add('exiting');
-                    setTimeout(() => {
-                        if (el.parentNode) el.parentNode.removeChild(el);
-                    }, 500); 
+                    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 500); 
                 }
             });
 
@@ -555,12 +482,66 @@
             }, disappearedPatients.length > 0 ? 300 : 0);
         }
 
+        // ------------------ وظائف شاشة الطبيب السحابية ------------------
+        async function fetchDoctorData() {
+            if (!GOOGLE_APP_URL) return;
+            const today = new Date().toLocaleDateString('ar-EG').replace(/\//g, '-');
+            const indicator = document.getElementById('docSyncIndicator');
+            
+            try {
+                const res = await fetch(GOOGLE_APP_URL + "?date=" + today);
+                const data = await res.json();
+                
+                if(data && data.status === "success") {
+                    renderDoctorList(data.patients || []);
+                    indicator.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#ffffff;"></i> متصل ومحدث';
+                    indicator.style.color = "white";
+                }
+            } catch(e) {
+                indicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> جاري إعادة الاتصال...';
+                indicator.style.color = "#ffeb3b";
+            }
+        }
+
+        function renderDoctorList(patients) {
+            const listContainer = document.getElementById('doctor-patient-list');
+            listContainer.innerHTML = '';
+            
+            if(patients.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:bold; opacity:0.5;">لا يوجد مرضى في القائمة اليوم</div>';
+                return;
+            }
+
+            let displayIndex = 1;
+            patients.forEach((p) => {
+                const isEntered = p.entered;
+                const rowClass = isEntered ? 'patient-item-admin entered' : 'patient-item-admin';
+                const iconHTML = isEntered ? 
+                    `<span style="color:var(--primary-green); font-weight:bold;"><i class="fa-solid fa-door-closed"></i> بالداخل/انتهى</span>` : 
+                    `<span style="color:var(--text-dark); opacity:0.8;"><i class="fa-regular fa-clock"></i> في الانتظار</span>`;
+
+                listContainer.innerHTML += `
+                    <div class="${rowClass}" style="padding: 20px;">
+                        <div class="patient-name">
+                            <span class="num-circle"><span class="admin-num-fix">${displayIndex}</span></span> 
+                            ${p.name}
+                        </div>
+                        <div>
+                            ${iconHTML}
+                        </div>
+                    </div>
+                `;
+                displayIndex++;
+            });
+        }
+
+        // ------------------ مستمعات التحديث المحلي ------------------
         window.addEventListener('storage', (e) => {
             if (e.key === 'clinic_patients') {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('view') === 'display') {
                     renderDisplayView();
-                } else {
+                } else if (!urlParams.get('view')) {
                     renderAdminView();
                     updateStats();
                 }
@@ -570,29 +551,44 @@
                 updateZoomUI();
             }
             if (e.key === 'clinic_queue_theme') {
-                // مزامنة الثيم المنفصل بين شاشتي السكرتارية والمرضى فقط
                 const newTheme = e.newValue;
                 document.documentElement.setAttribute('data-theme', newTheme);
-                if (toggleSwitch) {
-                    toggleSwitch.checked = newTheme === 'dark';
-                }
+                if (toggleSwitch) toggleSwitch.checked = newTheme === 'dark';
+                applyThemeToLogo(newTheme); // تبديل اللوجو عبر كل الصفحات المفتوحة
             }
         });
 
+        // ------------------ التهيئة (Init) ------------------
         function init() {
+            applyThemeToLogo(currentSavedTheme); // ضبط اللوجو في البداية حسب الثيم المحفوظ
             updateCurrentDate();
             checkAndResetDaily();
             const urlParams = new URLSearchParams(window.location.search);
+            const view = urlParams.get('view');
             
-            if (urlParams.get('view') === 'display') {
+            if (view === 'display') {
                 document.getElementById('admin-view').style.display = 'none';
+                document.getElementById('doctor-view').style.display = 'none';
                 document.getElementById('display-view').style.display = 'block';
                 document.body.classList.add('is-display-view');
                 const patients = getPatients();
                 currentlyDisplayedPatients = patients.filter(p => !p.entered).slice(0, 10).map(p => ({id: p.id}));
                 renderDisplayView();
                 updateZoomUI(); 
-            } else {
+            } 
+            else if (view === 'doctor') {
+                document.getElementById('admin-view').style.display = 'none';
+                document.getElementById('display-view').style.display = 'none';
+                document.getElementById('doctor-view').style.display = 'block';
+                
+                // تحديث سريع جداً للطبيب (كل ثانيتين)
+                fetchDoctorData();
+                setInterval(fetchDoctorData, 2000); 
+            }
+            else {
+                document.getElementById('display-view').style.display = 'none';
+                document.getElementById('doctor-view').style.display = 'none';
+                document.getElementById('admin-view').style.display = 'block';
                 renderAdminView();
                 updateStats();
                 updateZoomUI(); 
