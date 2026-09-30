@@ -57,7 +57,7 @@
         .clinic-logo img { max-width: 160px; height: auto; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1)); display: block; }
         .clinic-header h2 { margin: 0; font-size: 19px; font-weight: 800; color: var(--primary-green); text-align: center; width: 100%; }
 
-        /* تعديل الـ Grid لتكون متسعة وتستوعب الكروت بشكل منسق */
+        /* تعديل الـ Grid لتوزيع 3 في الصف الأول و 2 في الصف الثاني بالمنتصف تماماً */
         .gates-container { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -66,22 +66,26 @@
             width: 100%; 
         }
 
-        /* جعل الكارت الأخير والسابق يتوسطان الصف الثاني بشكل احترافي */
-        .gates-container .gate-card:nth-child(4),
+        /* الكارت الرابع والخامس يتموضعوا في المنتصف بالصف الثاني */
+        .gates-container .gate-card:nth-child(4) {
+            grid-column: 1 / 2;
+            transform: translateX(53%);
+        }
         .gates-container .gate-card:nth-child(5) {
-            grid-column: span 1.5;
+            grid-column: 2 / 3;
+            transform: translateX(53%);
         }
 
         @media (max-width: 900px) {
             .gates-container { grid-template-columns: repeat(2, 1fr); }
             .gates-container .gate-card:nth-child(4),
-            .gates-container .gate-card:nth-child(5) { grid-column: span 1; }
+            .gates-container .gate-card:nth-child(5) { grid-column: span 1; transform: none; }
         }
 
         @media (max-width: 600px) {
             .gates-container { grid-template-columns: 1fr; }
             .gates-container .gate-card:nth-child(4),
-            .gates-container .gate-card:nth-child(5) { grid-column: span 1; }
+            .gates-container .gate-card:nth-child(5) { grid-column: span 1; transform: none; }
         }
 
         .gate-card {
@@ -153,8 +157,8 @@
             </a>
             <a href="https://drayakhattab.com/clinic" target="_blank" class="gate-card">
                 <i class="fa-solid fa-users gate-icon"></i>
-                <h3 class="gate-title">ترتيب المرضى بالخارج</h3>
-                <p class="gate-desc">شاشة عرض للمرضى في الخارج وإدارة انتظار العيادة والسكرتارية.</p>
+                <h3 class="gate-title">ترتيب المرضى</h3>
+                <p class="gate-desc">شاشة عرض للمرضى وإدارة انتظار العيادة.</p>
             </a>
             <a href="https://drayakhattab.com/cards" target="_blank" class="gate-card">
                 <i class="fa-solid fa-address-card gate-icon"></i>
