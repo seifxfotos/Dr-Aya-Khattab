@@ -420,6 +420,20 @@
             }
             // سحب البيانات بهدوء أول ما الصفحة تفتح
             silentPreFetchAll();
+
+            // 🚀 إضافة البحث الأوتوماتيكي هنا 🚀
+            const autoSearchName = localStorage.getItem('clinic_auto_search_name');
+            if (autoSearchName) {
+                setTimeout(() => {
+                    const searchBox = document.getElementById('searchName');
+                    if (searchBox) {
+                        searchBox.value = autoSearchName;
+                        searchPatient(); // استدعاء دالة البحث مباشرة لتعمل أوتوماتيكياً
+                    }
+                    // مسح الاسم من الذاكرة حتى لا يبحث في المرات القادمة بدون قصد
+                    localStorage.removeItem('clinic_auto_search_name');
+                }, 800); // تأخير بسيط لضمان تهيئة الصفحة
+            }
         });
 
         async function silentPreFetchAll() {
