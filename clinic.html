@@ -81,9 +81,18 @@
         .patient-name span.num-circle { background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 14px; transition: 0.3s; line-height: 0; padding-top: 2px; box-sizing: border-box; }
         .admin-num-fix { transform: translateY(-2px); display: inline-block; line-height: 1; }
         
-        .patient-item-admin.entered { opacity: 0.6; background: var(--bg-color); border-right-color: #95a5a6; }
+        .patient-item-admin.entered { opacity: 0.5; background: var(--bg-color); border-right-color: #95a5a6; }
         .patient-item-admin.entered .patient-name { text-decoration: line-through; color: #7f8c8d; }
         .patient-item-admin.entered span.num-circle { background: var(--border); color: #7f8c8d; }
+
+        /* التنسيق الجديد للمريض الموجود بالداخل حالياً (لشاشة الطبيب) */
+        .patient-item-admin.current-inside {
+            border-right-color: var(--primary-blue);
+            background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.08));
+            opacity: 1;
+        }
+        .patient-item-admin.current-inside .patient-name { color: var(--primary-blue); }
+        .patient-item-admin.current-inside span.num-circle { background: var(--primary-blue); color: white; }
 
         .action-btns { display: flex; gap: 6px; align-items: center; }
         .action-btns button { background: var(--input-bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px; font-family: 'Cairo'; font-weight: 600; display: flex; align-items: center; gap: 5px; }
@@ -214,10 +223,10 @@
     <script>
         // ------------------ إعدادات قواعد البيانات ------------------
         
-        // 1. رابط جوجل شيت (للتخزين النهائي كأرشيف)
+        // 1. رابط جوجل شيت 
         const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbxOGST_ECovZViYJcjyEa914dDLOmx4kQdxrF-h_nB0R45J-zxeXrS7SQhon8lwsD5H/exec";
         
-        // 2. إعدادات Firebase (للاتصال اللحظي السريع جداً بين الأجهزة)
+        // 2. إعدادات Firebase
         const FIREBASE_DB_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/"; 
 
         let firebaseDB = null;
@@ -301,12 +310,9 @@
         }
 
         function syncToCloud(patients) {
-            // 1. الإرسال إلى Firebase للسرعة اللحظية للدكتورة
             if (firebaseDB) {
                 firebaseDB.ref('clinic_live_queue').set(patients);
             }
-
-            // 2. الإرسال إلى Google Sheet للأرشفة فقط 
             if (GOOGLE_APP_URL) {
                 const today = new Date().toLocaleDateString('ar-EG').replace(/\//g, '-');
                 const patientsData = patients.map(p => ({name: p.name, entered: p.entered}));
@@ -446,7 +452,7 @@
             }, disappearedPatients.length > 0 ? 300 : 0);
         }
 
-        // ------------------ وظائف شاشة الطبيب اللحظية (عبر فايربيز) ------------------
+        // ------------------ وظائف شاشة الطبيب الذكية (عبر فايربيز) ------------------
         function listenToDoctorView() {
             const listContainer = document.getElementById('doctor-patient-list');
             const indicator = document.getElementById('docSyncIndicator');
@@ -457,7 +463,6 @@
                 return;
             }
 
-            // الاستماع المباشر للتغييرات من قاعدة البيانات
             firebaseDB.ref('clinic_live_queue').on('value', (snapshot) => {
                 const patients = snapshot.val() || [];
                 listContainer.innerHTML = '';
@@ -467,13 +472,30 @@
                     return;
                 }
 
+                // تحديد اندكس المريض اللي دخل آخر واحد (الموجود بالداخل حالياً)
+                let lastEnteredIndex = -1;
+                patients.forEach((p, i) => { if(p.entered) lastEnteredIndex = i; });
+
                 let displayIndex = 1;
-                patients.forEach((p) => {
+                patients.forEach((p, i) => {
                     const isEntered = p.entered;
-                    const rowClass = isEntered ? 'patient-item-admin entered' : 'patient-item-admin';
-                    const iconHTML = isEntered ? 
-                        `<span style="color:var(--primary-green); font-weight:bold;"><i class="fa-solid fa-door-closed"></i> بالداخل/انتهى</span>` : 
-                        `<span style="color:var(--text-dark); opacity:0.8;"><i class="fa-regular fa-clock"></i> في الانتظار</span>`;
+                    let rowClass = 'patient-item-admin';
+                    let iconHTML = '';
+
+                    if (isEntered) {
+                        if (i === lastEnteredIndex) {
+                            // المريض المتواجد بالداخل الآن (هايلايت أزرق مميز)
+                            rowClass += ' current-inside';
+                            iconHTML = `<span style="color:var(--primary-blue); font-weight:bold;"><i class="fa-solid fa-user-doctor"></i> بالداخل الآن</span>`;
+                        } else {
+                            // مرضى دخلوا قبل كده وخلصوا (أخضر باهت)
+                            rowClass += ' entered';
+                            iconHTML = `<span style="color:var(--primary-green); font-weight:bold; opacity:0.8;"><i class="fa-solid fa-check-double"></i> انتهى</span>`;
+                        }
+                    } else {
+                        // مرضى في الانتظار بالخارج (طبيعي)
+                        iconHTML = `<span style="color:var(--text-dark); opacity:0.8;"><i class="fa-regular fa-clock"></i> في الانتظار</span>`;
+                    }
 
                     listContainer.innerHTML += `
                         <div class="${rowClass}" style="padding: 20px;">
@@ -493,7 +515,7 @@
             });
         }
 
-        // ------------------ مستمعات التحديث المحلي (للشاشات على نفس الجهاز) ------------------
+        // ------------------ مستمعات التحديث المحلي ------------------
         window.addEventListener('storage', (e) => {
             if (e.key === 'clinic_patients') {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -539,7 +561,6 @@
                 document.getElementById('admin-view').style.display = 'none';
                 document.getElementById('display-view').style.display = 'none';
                 document.getElementById('doctor-view').style.display = 'block';
-                
                 listenToDoctorView();
             }
             else {
