@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة انتظار العيادة - د. آية خطاب</title>
     
+    <!-- خط كايرو ومكتبة الأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
+        /* المتغيرات الأساسية للوضع النهاري (Light Mode) */
         :root {
             --primary-blue: #0093D0; 
             --primary-green: #8CC63F; 
@@ -26,6 +29,7 @@
             --modal-overlay: rgba(0,0,0,0.5);
         }
 
+        /* المتغيرات الأساسية للوضع الليلي (Dark Mode) */
         :root[data-theme="dark"] {
             --bg-color: #121212; 
             --card-bg: #1e1e1e; 
@@ -75,7 +79,6 @@
         .patient-item-admin { background: var(--card-bg); padding: 15px 20px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); border-right: 4px solid var(--primary-green); transition: 0.2s; }
         .patient-item-admin:hover { border-right-color: var(--primary-blue); transform: translateX(-2px); }
         
-        /* التنسيق الجديد لاسم المريض ليكون قابل للضغط */
         .patient-name-container { display: flex; align-items: center; gap: 10px; }
         .clickable-name { font-size: 18px; font-weight: 700; color: var(--text-dark); cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .clickable-name:hover { color: var(--primary-blue); text-decoration: underline; }
@@ -119,6 +122,7 @@
         #zoom-wrapper { transform-origin: top center; transition: transform 0.3s ease; width: 100%; height: 100%; padding: 40px; box-sizing: border-box; }
         .display-header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; position: relative;}
         .display-header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 4px; background: linear-gradient(to left, var(--primary-green), var(--primary-blue)); border-radius: 10px; }
+        
         .display-logo { height: 110px; width: auto; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); transition: 0.3s;}
         
         .patient-list-display { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; position: relative;}
@@ -137,6 +141,7 @@
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(0, 147, 208, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0); } }
 
+        /* ------------------ شاشة الطبيب الخاصة ------------------ */
         #doctor-view { display: none; }
         .doc-status-indicator { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(255,255,255,0.4); }
 
@@ -305,13 +310,10 @@
             if (e.key === 'Enter') closeModal(this.value);
         });
 
-        // --- التوجيه التلقائي لصفحة الكروت ---
+        // --- التوجيه لصفحة الكروت ---
         function openPatientCardSearch(patientName) {
-            // حفظ الاسم في اللوكل ستوريدج عشان صفحة الكروت تقرأه
             localStorage.setItem('clinic_auto_search_name', patientName);
-            // افترضنا إن صفحة الكروت موجودة في نفس المسار الرئيسي واسمها index.html
-            // غير الرابط ده حسب اسم صفحة الكروت الفعلي عندك (مثلاً '../cards.html' أو '/')
-            window.open('../cards.html', '_blank'); 
+            window.open('cards.html', '_blank'); 
         }
 
         // --- الثيم واللوجو ---
