@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* الألوان الخاصة بهوية الدكتورة آية خطاب */
+        /* المتغيرات الأساسية للوضع النهاري (Light Mode) */
         :root {
             --primary-blue: #0093D0; 
             --primary-green: #8CC63F; 
@@ -21,6 +21,21 @@
             --danger: #e74c3c; 
             --border: #e1e8ed; 
             --input-bg: #ffffff; 
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            --header-gradient: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+        }
+
+        /* المتغيرات الأساسية للوضع الليلي (Dark Mode) */
+        :root[data-theme="dark"] {
+            --bg-color: #121212; 
+            --card-bg: #1e1e1e; 
+            --text-dark: #e0e0e0;
+            --border: #333333; 
+            --input-bg: #2c2c2c; 
+            --primary-blue: #0082b8; 
+            --primary-green: #7bb530;
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            --header-gradient: linear-gradient(135deg, #005a80, #5c8526);
         }
 
         body {
@@ -29,13 +44,43 @@
             color: var(--text-dark);
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* ------------------ زر تبديل الوضع (Dark/Light) ------------------ */
+        .theme-switch-wrapper { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1000; 
+            background: var(--card-bg); 
+            padding: 8px 12px; 
+            border-radius: 30px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            border: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            transition: 0.3s; 
+        }
+        
+        body.is-display-view .theme-switch-wrapper {
+            display: none !important;
+        }
+
+        .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
+        .theme-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+        .slider .fa-sun { color: #ffeb3b; font-size: 14px; z-index: 1;}
+        .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
+        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2; }
+        input:checked + .slider { background-color: #34495e; }
+        input:checked + .slider:before { transform: translateX(28px); }
 
         /* ------------------ شاشة الإدارة (السكرتارية) ------------------ */
         .container { max-width: 900px; margin: 30px auto; padding: 20px; }
         
         .header-section { 
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); 
+            background: var(--header-gradient); 
             color: white; 
             padding: 25px 30px; 
             border-radius: 12px; 
@@ -45,6 +90,7 @@
             margin-bottom: 30px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
             flex-wrap: wrap; gap: 15px;
+            transition: background 0.3s;
         }
         .header-section h1 { margin: 0; font-size: 24px; font-weight: 800; }
         .header-subtitle { font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 5px; }
@@ -54,7 +100,7 @@
             padding: 8px 15px; border-radius: 8px; font-size: 15px; font-weight: 700; 
             display: flex; gap: 15px; border: 1px solid rgba(255,255,255,0.4); flex-wrap: wrap; 
         }
-        .stats-counter span { display: flex; align-items: center; gap: 5px; }
+        .stats-counter span { display: flex; align-items: center; gap: 5px; color: white;}
         
         .date-picker-placeholder {
             font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); 
@@ -64,8 +110,9 @@
 
         .card-panel { 
             background: var(--card-bg); padding: 25px; 
-            border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            border-radius: 12px; box-shadow: var(--card-shadow); 
             margin-bottom: 25px; 
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
         
         .input-group { display: flex; gap: 10px; margin-bottom: 30px; }
@@ -95,17 +142,21 @@
         .patient-item-admin:hover { border-right-color: var(--primary-blue); transform: translateX(-2px); }
         .patient-name { font-size: 18px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px; transition: 0.3s;}
         
-        /* ضبط السنتر للأرقام */
-        .patient-name span.num { 
+        /* ضبط الأرقام في الإدارة */
+        .patient-name span.num-circle { 
             background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; 
-            display: inline-flex; justify-content: center; align-items: center; 
+            display: flex; justify-content: center; align-items: center; 
             border-radius: 50%; font-size: 14px; transition: 0.3s;
         }
-        .num-fix { transform: translateY(2px); display: inline-block; line-height: 1; }
+        .admin-num-fix {
+            transform: translateY(-2px); /* تعديل السنتر الدقيق لخط كايرو */
+            display: inline-block;
+            line-height: 1;
+        }
         
         .patient-item-admin.entered { opacity: 0.6; background: var(--bg-color); border-right-color: #95a5a6; }
         .patient-item-admin.entered .patient-name { text-decoration: line-through; color: #7f8c8d; }
-        .patient-item-admin.entered span.num { background: #e0e0e0; color: #7f8c8d; }
+        .patient-item-admin.entered span.num-circle { background: var(--border); color: #7f8c8d; }
 
         .action-btns { display: flex; gap: 6px; align-items: center; }
         .action-btns button { 
@@ -116,11 +167,11 @@
         }
         .action-btns button:hover { background: var(--bg-color); border-color: #ccc; }
         .btn-delete { color: var(--danger) !important; }
-        .btn-delete:hover { background: #ffebee !important; border-color: var(--danger) !important; }
+        .btn-delete:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--danger) !important; }
         .btn-enter { color: var(--primary-blue) !important; }
-        .btn-enter:hover { background: #e3f2fd !important; border-color: var(--primary-blue) !important; }
+        .btn-enter:hover { background: rgba(0, 147, 208, 0.1) !important; border-color: var(--primary-blue) !important; }
         .btn-undo { color: #f39c12 !important; }
-        .btn-undo:hover { background: #fdf2e9 !important; border-color: #f39c12 !important; }
+        .btn-undo:hover { background: rgba(243, 156, 18, 0.1) !important; border-color: #f39c12 !important; }
         
         .btn-open-display { 
             background-color: var(--primary-green); color: white; border: none; 
@@ -130,12 +181,12 @@
         }
         .btn-open-display:hover { background-color: #7ab033; }
 
-        /* لوحة التحكم بالزوم */
         .zoom-controls {
             display: flex; justify-content: center; align-items: center; gap: 15px;
             margin-top: 15px; padding: 15px; background: var(--card-bg); 
-            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px; box-shadow: var(--card-shadow);
             border: 1px solid var(--border);
+            transition: background-color 0.3s, border-color 0.3s;
         }
         .zoom-controls span { font-weight: 700; font-size: 16px; color: var(--text-dark); }
         .zoom-btn {
@@ -153,14 +204,9 @@
             overflow: hidden; user-select: none; -webkit-user-select: none;
         }
         
-        /* حاوية الزوم */
         #zoom-wrapper {
-            transform-origin: top center;
-            transition: transform 0.3s ease;
-            width: 100%;
-            height: 100%;
-            padding: 40px;
-            box-sizing: border-box;
+            transform-origin: top center; transition: transform 0.3s ease;
+            width: 100%; height: 100%; padding: 40px; box-sizing: border-box;
         }
         
         .display-header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; position: relative;}
@@ -169,15 +215,23 @@
             width: 120px; height: 4px; background: linear-gradient(to left, var(--primary-green), var(--primary-blue));
             border-radius: 10px;
         }
+        
+        :root[data-theme="dark"] .display-logo-wrapper {
+            background: white; 
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 15px;
+        }
+        
         .display-logo { height: 110px; width: auto; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));}
         
         .patient-list-display { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; position: relative;}
         .patient-card { 
             background: var(--card-bg); padding: 20px 30px; font-size: 34px; font-weight: 800; 
-            border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); 
+            border-radius: 12px; box-shadow: var(--card-shadow); 
             display: flex; align-items: center; gap: 30px; 
             border-right: 12px solid var(--primary-green); color: var(--text-dark); 
-            position: relative; overflow: hidden; transition: all 0.5s ease-in-out;
+            position: relative; overflow: hidden; transition: all 0.5s ease-in-out, background-color 0.3s, color 0.3s;
             opacity: 1; transform: translateY(0);
         }
         
@@ -186,10 +240,15 @@
 
         .patient-card.active-patient { 
             border-right-color: var(--primary-blue); transform: scale(1.02); 
-            box-shadow: 0 15px 35px rgba(0, 147, 208, 0.15); 
-            background: linear-gradient(to left, #ffffff, #f4faff); 
+            box-shadow: 0 15px 35px rgba(0, 147, 208, 0.2); 
+            background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.05)); 
             padding: 25px 30px;
         }
+        
+        :root[data-theme="light"] .patient-card.active-patient {
+            background: linear-gradient(to left, #ffffff, #f4faff); 
+        }
+
         .patient-card.active-patient.exiting { transform: scale(0.9) translateX(-50px); }
         .patient-card.active-patient .patient-number { background: var(--primary-blue); transform: scale(1.1); box-shadow: 0 4px 15px rgba(0, 147, 208, 0.3); }
         .patient-card.active-patient::after { 
@@ -198,19 +257,38 @@
             border-radius: 30px; font-weight: 700; animation: pulse 2s infinite; 
         }
         
+        /* 🚨 الضبط الدقيق لسنترة الأرقام داخل الدوائر 🚨 */
         .patient-number { 
             background: var(--primary-green); color: white; 
-            min-width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; 
-            border-radius: 50%; font-size: 32px; font-weight: 800; transition: 0.3s; 
+            min-width: 65px; height: 65px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            border-radius: 50%; 
+            font-size: 32px; 
+            font-weight: 800; 
+            transition: 0.3s; 
+        }
+        
+        .display-num-fix { 
+            transform: translateY(-4px); /* رفع الرقم لأعلى قليلاً ليتوسط الدائرة بدقة مع خط كايرو */
+            display: inline-block; 
             line-height: 1;
         }
-        .display-num-fix { transform: translateY(4px); display: inline-block; }
 
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(0, 147, 208, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0); } }
     </style>
 </head>
 <body>
+
+    <!-- زر تبديل الثيم -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></div>
+        </label>
+    </div>
 
     <!-- شاشة السكرتارية (الإدارة) -->
     <div id="admin-view" class="container">
@@ -254,24 +332,41 @@
     <div id="display-view">
         <div id="zoom-wrapper">
             <div class="display-header">
-                <!-- اللوجو الملون الخاص بشاشة العرض -->
-                <img src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo" onerror="this.style.display='none'">
+                <div class="display-logo-wrapper">
+                    <!-- اللوجو الملون الخاص بشاشة العرض -->
+                    <img src="Logo-Dr-Aya.webp" alt="لوجو د. آية خطاب" class="display-logo" onerror="this.style.display='none'">
+                </div>
             </div>
             <div class="patient-list-display" id="display-patient-list"></div>
         </div>
     </div>
 
     <script>
-        // الرابط الجديد لجوجل شيت
+        // ------------------ إدارة الثيم (الدارك مود المنفصل للصفحة) ------------------
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        
+        // استخدام متغير خاص بهذه الصفحة فقط (clinic_queue_theme) لمنع التداخل مع باقي الموقع
+        if (localStorage.getItem('clinic_queue_theme') === 'dark') { 
+            document.documentElement.setAttribute('data-theme', 'dark'); 
+            toggleSwitch.checked = true; 
+        }
+        
+        // الاستماع لتغيير الثيم
+        toggleSwitch.addEventListener('change', (e) => { 
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme); 
+            localStorage.setItem('clinic_queue_theme', newTheme); 
+        });
+
+        // ------------------ المنطق الأساسي للتطبيق ------------------
         const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwAOrprZZhA3dTM2NB3KN0e9wdof-SHUUUHqPbJV-Cr-ZV6aoYdwNTQAt754s_4wNve/exec";
 
-        // إدارة الزوم (التكبير والتصغير)
         let currentZoom = parseFloat(localStorage.getItem('clinic_zoom')) || 1.0;
 
         function changeZoom(amount) {
             currentZoom += amount;
-            if(currentZoom < 0.5) currentZoom = 0.5; // الحد الأدنى للتصغير
-            if(currentZoom > 1.5) currentZoom = 1.5; // الحد الأقصى للتكبير
+            if(currentZoom < 0.5) currentZoom = 0.5; 
+            if(currentZoom > 1.5) currentZoom = 1.5; 
             
             localStorage.setItem('clinic_zoom', currentZoom);
             updateZoomUI();
@@ -403,7 +498,7 @@
                 listContainer.innerHTML += `
                     <div class="${rowClass}">
                         <div class="patient-name">
-                            <span class="num"><span class="num-fix">${displayIndex}</span></span> 
+                            <span class="num-circle"><span class="admin-num-fix">${displayIndex}</span></span> 
                             ${p.name}
                         </div>
                         <div class="action-btns">
@@ -426,7 +521,6 @@
             const allPatients = getPatients();
             
             const waitingPatients = allPatients.filter(p => !p.entered);
-            // تم زيادة العدد ليعرض حتى 10 مرضى بدلاً من 6
             const patientsToShow = waitingPatients.slice(0, 10);
             
             const disappearedPatients = currentlyDisplayedPatients.filter(
@@ -475,6 +569,14 @@
                 currentZoom = parseFloat(e.newValue) || 1.0;
                 updateZoomUI();
             }
+            if (e.key === 'clinic_queue_theme') {
+                // مزامنة الثيم المنفصل بين شاشتي السكرتارية والمرضى فقط
+                const newTheme = e.newValue;
+                document.documentElement.setAttribute('data-theme', newTheme);
+                if (toggleSwitch) {
+                    toggleSwitch.checked = newTheme === 'dark';
+                }
+            }
         });
 
         function init() {
@@ -485,15 +587,15 @@
             if (urlParams.get('view') === 'display') {
                 document.getElementById('admin-view').style.display = 'none';
                 document.getElementById('display-view').style.display = 'block';
+                document.body.classList.add('is-display-view');
                 const patients = getPatients();
-                // تطبيق نفس التعديل هنا عند التهيئة لضمان 10 مرضى
                 currentlyDisplayedPatients = patients.filter(p => !p.entered).slice(0, 10).map(p => ({id: p.id}));
                 renderDisplayView();
-                updateZoomUI(); // تطبيق الزوم المحفوظ
+                updateZoomUI(); 
             } else {
                 renderAdminView();
                 updateStats();
-                updateZoomUI(); // إظهار نسبة الزوم في الشاشة الإدارية
+                updateZoomUI(); 
             }
         }
 
