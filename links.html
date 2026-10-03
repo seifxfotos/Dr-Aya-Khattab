@@ -80,7 +80,7 @@
             100% { transform: translateY(-40px) scale(1.08); }
         }
 
-        /* Main Container */
+        /* Main Container - المقاس الوسط */
         .bio-container {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(25px);
@@ -89,14 +89,14 @@
             border-radius: 36px;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 460px; /* مقاس معقول للكمبيوتر والتابلت */
+            max-width: 480px; /* المقاس الوسط للكمبيوتر */
             height: 95dvh; 
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
             justify-content: center; 
             align-items: center;
-            gap: 1.5rem; /* المسافة بين الهيدر (فوق) والزراير (تحت) */
+            gap: 1.2rem; 
             animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
             transform: scale(0.95);
@@ -116,7 +116,7 @@
 
         .logo-link {
             display: inline-block;
-            margin-bottom: 2px; /* تقليل المسافة جداً بين اللوجو والنص */
+            margin-bottom: 0px; /* مسافة معدومة لتقريب اللوجو من النص */
             transition: transform 0.4s ease;
         }
 
@@ -125,7 +125,7 @@
         }
 
         .profile-img {
-            width: 145px; /* تصغير اللوجو سيكا للكمبيوتر */
+            width: 160px; /* الحجم الوسط للوجو */
             height: auto;
             object-fit: contain;
             background: transparent;
@@ -134,27 +134,27 @@
         }
 
         .bio-text {
-            font-size: 0.95rem; /* تصغير النص سيكا */
+            font-size: 1rem; /* الحجم الوسط للنص */
             line-height: 1.5;
             color: var(--text-dark);
             font-weight: 700; 
             padding: 0 5px;
-            margin-bottom: 1.2rem; /* مسافة بين النص وزراير الاتصال */
+            margin-bottom: 1rem; 
         }
 
         /* Contact Badges */
         .contact-actions {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .btn-action {
             text-decoration: none;
-            padding: 8px 22px; 
+            padding: 9px 23px; 
             border-radius: 30px;
             font-weight: 700;
-            font-size: 0.9rem; 
+            font-size: 0.95rem; 
             display: flex;
             align-items: center;
             gap: 8px;
@@ -183,14 +183,14 @@
         .links-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 14px; 
+            gap: 15px; 
             width: 100%;
         }
 
         .link-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 14px 6px; 
+            padding: 16px 6px; 
             display: flex;
             flex-direction: column; 
             align-items: center;
@@ -230,13 +230,13 @@
         }
 
         .icon-box {
-            width: 46px; 
-            height: 46px;
+            width: 50px; 
+            height: 50px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.25rem;
+            font-size: 1.35rem; /* حجم أيقونة وسط */
             margin-bottom: 8px;
             color: white;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
@@ -256,7 +256,7 @@
         .link-title {
             display: block;
             font-weight: 800;
-            font-size: 0.95rem; 
+            font-size: 1rem; 
             font-family: 'Poppins', 'Cairo', sans-serif;
         }
 
@@ -273,23 +273,23 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile specific adjustments - تصغير متناسق للموبايل */
+        /* Mobile specific adjustments - مقاسات الموبايل الوسط */
         @media (max-width: 480px) {
             body {
                 padding: 0.6rem;
             }
             .bio-container { 
-                padding: 1.2rem; 
+                padding: 1.2rem 1rem; 
                 border-radius: 26px;
                 height: 96dvh;
-                gap: 1.2rem; /* تقليل المسافة بين الأقسام */
+                gap: 1rem;
             }
             .logo-link {
-                margin-bottom: 0px; /* اللوجو لازق في النص تقريباً */
+                margin-bottom: 0px; 
             }
-            .profile-img { width: 120px; } /* لوجو أصغر */
+            .profile-img { width: 135px; } /* حجم لوجو وسط للموبايل */
             .bio-text { 
-                font-size: 0.8rem; /* نص أصغر */
+                font-size: 0.85rem; 
                 line-height: 1.5;
                 margin-bottom: 0.8rem;
             }
@@ -297,23 +297,23 @@
                 gap: 10px;
             }
             .btn-action {
-                padding: 8px 18px;
-                font-size: 0.85rem;
+                padding: 9px 19px;
+                font-size: 0.9rem;
             }
             .links-grid {
-                gap: 10px; 
+                gap: 11px; 
             }
             .link-card {
-                padding: 10px 4px; /* كارت أصغر وملموم */
+                padding: 12px 4px;
             }
             .icon-box {
-                width: 40px;
-                height: 40px;
-                font-size: 1.1rem;
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
                 margin-bottom: 6px;
             }
             .link-title {
-                font-size: 0.85rem;
+                font-size: 0.9rem;
             }
         }
     </style>
