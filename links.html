@@ -12,7 +12,7 @@
     </script>
     
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dr. Aya Khattab - Links</title>
     
     <!-- Google Fonts: Cairo (Arabic) & Poppins (English) -->
@@ -35,28 +35,23 @@
             padding: 0;
         }
 
-        /* إخفاء شريط التمرير (الاسكرول بار) بالكامل من المتصفح مع الحفاظ على القدرة على التمرير */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
         body {
             font-family: 'Cairo', sans-serif;
             background-color: #f1f5f9;
             color: var(--text-dark);
-            min-height: 100vh;
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Mobile viewport height */
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2rem 1rem 4rem 1rem; /* مساحة إضافية من الأسفل */
-            overflow-x: hidden;
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            overflow: hidden; /* يمنع السكرول نهائياً */
+            padding: 1rem;
         }
 
         /* Animated Background Orbs */
         .bg-orb {
-            position: fixed; /* تغيير لـ fixed عشان يفضل ثابت في الخلفية */
+            position: fixed;
             border-radius: 50%;
             filter: blur(60px);
             z-index: -1;
@@ -94,9 +89,13 @@
             border-radius: 36px;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 480px;
-            padding: 2rem 1.5rem 3rem 1.5rem; /* مساحة أسفل الكونتينر */
-            text-align: center;
+            max-width: 440px;
+            max-height: 96dvh;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
             transform: scale(0.95);
@@ -106,10 +105,15 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        header {
+            text-align: center;
+            width: 100%;
+        }
+
         /* Profile Logo Clean Style */
         .logo-link {
             display: inline-block;
-            margin-bottom: 0.2rem; /* تم التقليل لرفع النص لأعلى */
+            margin-bottom: 0.3rem;
             transition: transform 0.4s ease;
         }
 
@@ -118,7 +122,7 @@
         }
 
         .profile-img {
-            width: 140px;
+            width: 120px;
             height: auto;
             object-fit: contain;
             background: transparent;
@@ -128,9 +132,9 @@
 
         .bio-text {
             font-size: 0.85rem;
-            line-height: 1.6;
+            line-height: 1.5;
             color: var(--text-dark);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             font-weight: 600;
             padding: 0 5px;
         }
@@ -140,7 +144,7 @@
             display: flex;
             justify-content: center;
             gap: 12px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .btn-action {
@@ -171,22 +175,22 @@
         .btn-action:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 15px rgba(0,0,0,0.05);
-            filter: brightness(0.95);
         }
 
-        /* Links Grid (2 Columns Mapped) */
+        /* Links Grid (2 Columns) */
         .links-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* عمودين متساويين */
-            gap: 15px; /* المسافة بين المربعات */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
         }
 
         .link-card {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 24px;
-            padding: 20px 10px;
+            border-radius: 20px;
+            padding: 12px 5px;
             display: flex;
-            flex-direction: column; /* الأيقونة فوق والنص تحتها */
+            flex-direction: column; 
             align-items: center;
             justify-content: center;
             text-decoration: none;
@@ -217,23 +221,23 @@
         }
 
         .link-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 12px 25px rgba(0, 150, 205, 0.15);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 150, 205, 0.12);
             border-color: rgba(0, 150, 205, 0.3);
             background: #ffffff;
         }
 
         .icon-box {
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.3rem;
-            margin-bottom: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
             color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
 
@@ -247,62 +251,60 @@
         .bg-instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
         .bg-tiktok { background: linear-gradient(135deg, #000000, #333333); }
 
-        .link-content {
-            width: 100%;
-        }
-
         .link-title {
             display: block;
             font-weight: 700;
             font-size: 0.9rem;
             font-family: 'Poppins', 'Cairo', sans-serif;
-            margin-bottom: 4px;
         }
 
-        .link-subtitle {
-            display: block;
-            font-size: 0.65rem;
-            color: var(--text-gray);
-            font-family: 'Poppins', sans-serif;
-            opacity: 0.8;
-            direction: ltr;
-        }
-
-        .link-card:nth-child(1) { animation-delay: 0.2s; }
-        .link-card:nth-child(2) { animation-delay: 0.3s; }
-        .link-card:nth-child(3) { animation-delay: 0.4s; }
-        .link-card:nth-child(4) { animation-delay: 0.5s; }
-        .link-card:nth-child(5) { animation-delay: 0.6s; }
-        .link-card:nth-child(6) { animation-delay: 0.7s; }
+        .link-card:nth-child(1) { animation-delay: 0.1s; }
+        .link-card:nth-child(2) { animation-delay: 0.2s; }
+        .link-card:nth-child(3) { animation-delay: 0.3s; }
+        .link-card:nth-child(4) { animation-delay: 0.4s; }
+        .link-card:nth-child(5) { animation-delay: 0.5s; }
+        .link-card:nth-child(6) { animation-delay: 0.6s; }
 
         @keyframes bouncySlideIn {
-            0% { opacity: 0; transform: translateY(30px); }
-            70% { transform: translateY(-6px); }
+            0% { opacity: 0; transform: translateY(20px); }
+            70% { transform: translateY(-4px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile Adjustments */
+        /* Mobile specific adjustments to ensure everything fits perfectly without scrolling */
         @media (max-width: 480px) {
             body {
-                padding: 1.5rem 0.8rem 3rem 0.8rem;
+                padding: 0.8rem;
             }
             .bio-container { 
-                padding: 1.8rem 1rem 2.5rem 1rem; 
+                padding: 1.2rem; 
                 border-radius: 28px;
             }
-            .profile-img { width: 130px; }
-            .bio-text { font-size: 0.8rem; }
-            
+            .profile-img { width: 105px; } /* صغرنا اللوجو شوية */
+            .bio-text { 
+                font-size: 0.75rem; 
+                line-height: 1.4;
+                margin-bottom: 1rem;
+            }
+            .contact-actions {
+                margin-bottom: 1.2rem;
+                gap: 8px;
+            }
+            .btn-action {
+                padding: 6px 16px;
+                font-size: 0.8rem;
+            }
             .links-grid {
-                gap: 12px; /* تقليل المسافة بين المربعات في الشاشات الصغيرة */
+                gap: 10px; /* مسافة أصغر بين المربعات */
             }
             .link-card {
-                padding: 15px 8px;
+                padding: 10px 4px;
             }
             .icon-box {
-                width: 44px;
-                height: 44px;
-                font-size: 1.1rem;
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+                margin-bottom: 6px;
             }
             .link-title {
                 font-size: 0.8rem;
@@ -340,7 +342,7 @@
             </div>
         </header>
 
-        <!-- Links Grid Section (2 Columns) -->
+        <!-- Links Grid Section (2 Columns - Icons and Title only) -->
         <main class="links-grid">
             
             <!-- 1. الموقع الإلكتروني -->
@@ -348,7 +350,6 @@
                 <div class="icon-box bg-web"><i class="fas fa-globe"></i></div>
                 <div class="link-content">
                     <span class="link-title">Our Website</span>
-                    <span class="link-subtitle">drayakhattab.com</span>
                 </div>
             </a>
 
@@ -357,7 +358,6 @@
                 <div class="icon-box bg-facebook"><i class="fab fa-facebook-f"></i></div>
                 <div class="link-content">
                     <span class="link-title">Facebook</span>
-                    <span class="link-subtitle">facebook.com/dr.ayakhattab</span>
                 </div>
             </a>
 
@@ -366,7 +366,6 @@
                 <div class="icon-box bg-instagram"><i class="fab fa-instagram"></i></div>
                 <div class="link-content">
                     <span class="link-title">Instagram</span>
-                    <span class="link-subtitle">instagram.com/dr.aya</span>
                 </div>
             </a>
 
@@ -375,7 +374,6 @@
                 <div class="icon-box bg-tiktok"><i class="fab fa-tiktok"></i></div>
                 <div class="link-content">
                     <span class="link-title">TikTok</span>
-                    <span class="link-subtitle">tiktok.com/@dr.ayakhattab</span>
                 </div>
             </a>
 
@@ -384,16 +382,14 @@
                 <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
                 <div class="link-content">
                     <span class="link-title">عيادة الإسماعيلية</span>
-                    <span class="link-subtitle">Google Maps</span>
                 </div>
             </a>
 
-            <!-- 6. عنوان عيادة القاهرة (اللينك الجديد) -->
+            <!-- 6. عنوان عيادة القاهرة -->
             <a href="https://maps.app.goo.gl/ZJYWAz9ocaPVqzWr8" target="_blank" class="link-card">
                 <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
                 <div class="link-content">
                     <span class="link-title">عيادة القاهرة</span>
-                    <span class="link-subtitle">Google Maps</span>
                 </div>
             </a>
 
