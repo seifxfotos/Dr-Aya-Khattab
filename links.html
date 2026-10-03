@@ -37,15 +37,19 @@
 
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             color: var(--text-dark);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2rem 1rem;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            overflow-y: auto;
             overflow-x: hidden;
+            padding: 1rem;
         }
 
         /* Animated Background Orbs */
@@ -60,7 +64,7 @@
         .orb-1 {
             width: 300px;
             height: 300px;
-            background: rgba(0, 150, 205, 0.4);
+            background: rgba(0, 150, 205, 0.35);
             top: 5%;
             left: 10%;
         }
@@ -68,7 +72,7 @@
         .orb-2 {
             width: 250px;
             height: 250px;
-            background: rgba(119, 181, 0, 0.3);
+            background: rgba(119, 181, 0, 0.25);
             bottom: 10%;
             right: 10%;
             animation-delay: -5s;
@@ -76,34 +80,46 @@
 
         @keyframes floatOrb {
             0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-50px) scale(1.1); }
+            100% { transform: translateY(-40px) scale(1.08); }
         }
 
-        /* Glassmorphism Container (App Style) */
+        /* Fixed App-like Container with custom scroll for inner content if needed */
         .bio-container {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 36px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 480px;
-            padding: 3rem 2rem;
+            max-width: 440px;
+            max-height: 92vh;
+            overflow-y: auto;
+            padding: 2.2rem 1.5rem;
             text-align: center;
             animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
-            transform: scale(0.9);
+            transform: scale(0.95);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-blue) transparent;
+        }
+
+        .bio-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        .bio-container::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 150, 205, 0.3);
+            border-radius: 10px;
         }
 
         @keyframes containerPop {
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Profile Logo Clean Style (No borders, no background circle) */
+        /* Profile Logo Clean Style */
         .logo-link {
             display: inline-block;
-            margin-bottom: 1.2rem;
+            margin-bottom: 0.8rem;
             transition: transform 0.4s ease;
         }
 
@@ -112,7 +128,7 @@
         }
 
         .profile-img {
-            width: 180px;
+            width: 140px;
             height: auto;
             object-fit: contain;
             background: transparent;
@@ -120,53 +136,32 @@
             box-shadow: none;
         }
 
-        /* Text Gradient Styling */
-        .name {
-            font-family: 'Poppins', 'Cairo', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 0.3rem;
-            background: linear-gradient(45deg, var(--primary-blue), var(--primary-teal));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .location {
-            font-size: 0.9rem;
-            color: var(--text-gray);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
         .bio-text {
-            font-size: 0.9rem;
-            line-height: 1.8;
+            font-size: 0.82rem;
+            line-height: 1.7;
             color: var(--text-dark);
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.2rem;
             font-weight: 600;
-            padding: 0 10px;
+            padding: 0 5px;
         }
 
         /* Contact Badges */
         .contact-actions {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 2.5rem;
+            gap: 10px;
+            margin-bottom: 1.8rem;
         }
 
         .btn-action {
             text-decoration: none;
-            padding: 10px 22px;
+            padding: 8px 18px;
             border-radius: 30px;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Poppins', sans-serif;
         }
@@ -184,34 +179,33 @@
         }
 
         .btn-action:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
             filter: brightness(0.95);
         }
 
-        /* Links Grid (Single Column Pill Design) */
+        /* Links Grid */
         .links-grid {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
 
         .link-card {
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 50px;
-            padding: 12px 20px 12px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 40px;
+            padding: 10px 16px 10px 10px;
             display: flex;
             align-items: center;
             text-decoration: none;
             color: var(--text-dark);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid rgba(255, 255, 255, 1);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
-            
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(20px);
             animation: bouncySlideIn 0.6s forwards;
         }
 
@@ -230,23 +224,23 @@
         }
 
         .link-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(0, 150, 205, 0.15);
+            transform: translateY(-3px) scale(1.015);
+            box-shadow: 0 12px 25px rgba(0, 150, 205, 0.12);
             border-color: rgba(0, 150, 205, 0.3);
             background: #ffffff;
         }
 
         .icon-box {
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
-            margin-left: 15px;
+            font-size: 1.1rem;
+            margin-left: 12px;
             color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
 
@@ -268,14 +262,13 @@
         .link-title {
             display: block;
             font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 0px;
+            font-size: 0.92rem;
             font-family: 'Poppins', 'Cairo', sans-serif;
         }
 
         .link-subtitle {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-gray);
             font-family: 'Poppins', sans-serif;
             direction: ltr;
@@ -285,36 +278,47 @@
 
         .arrow-icon {
             color: #cbd5e1;
-            font-size: 1rem;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .link-card:hover .arrow-icon {
             color: var(--primary-blue);
-            transform: translateX(-5px);
+            transform: translateX(-4px);
         }
 
-        .link-card:nth-child(1) { animation-delay: 0.3s; }
-        .link-card:nth-child(2) { animation-delay: 0.4s; }
-        .link-card:nth-child(3) { animation-delay: 0.5s; }
-        .link-card:nth-child(4) { animation-delay: 0.6s; }
-        .link-card:nth-child(5) { animation-delay: 0.7s; }
-        .link-card:nth-child(6) { animation-delay: 0.8s; }
+        .link-card:nth-child(1) { animation-delay: 0.2s; }
+        .link-card:nth-child(2) { animation-delay: 0.3s; }
+        .link-card:nth-child(3) { animation-delay: 0.4s; }
+        .link-card:nth-child(4) { animation-delay: 0.5s; }
+        .link-card:nth-child(5) { animation-delay: 0.6s; }
+        .link-card:nth-child(6) { animation-delay: 0.7s; }
 
         @keyframes bouncySlideIn {
-            0% { opacity: 0; transform: translateY(40px); }
-            70% { transform: translateY(-10px); }
+            0% { opacity: 0; transform: translateY(30px); }
+            70% { transform: translateY(-6px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        @media (max-width: 600px) {
-            .bio-container { 
-                padding: 2.5rem 1.5rem; 
-                border-radius: 30px;
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .bio-container {
+                max-width: 420px;
+                padding: 2.5rem 1.8rem;
             }
-            .profile-img { width: 140px; }
-            .name { font-size: 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .bio-container { 
+                max-height: 96vh;
+                padding: 1.8rem 1.2rem; 
+                border-radius: 28px;
+            }
+            .profile-img { width: 120px; }
+            .bio-text { font-size: 0.78rem; }
         }
     </style>
 </head>
@@ -327,15 +331,9 @@
     <div class="bio-container">
         <!-- Header Section -->
         <header>
-            <!-- اللوجو بدون أي دوائر أو إطارات، وبمجرد الضغط عليه يوجه للصفحة الرئيسية -->
             <a href="https://drayakhattab.com/" class="logo-link">
                 <img src="Logo_Dr_Aya.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/150'">
             </a>
-                        
-            <p class="location">
-                <i class="fas fa-map-marker-alt" style="color:#ea4335;"></i>
-                الدور الخامس برج العز ميدان عرابي - الإسماعيلية، مصر
-            </p>
             
             <div class="bio-text">
                 دكتوراه العلاج الطبيعي و التغذية العلاجية<br>
@@ -345,7 +343,7 @@
             </div>
 
             <div class="contact-actions">
-                <a href="mailto:info@drayakhattab.com" class="btn-action btn-email">
+                <a href="mailto:contact@drayakhattab.com" class="btn-action btn-email">
                     <i class="fas fa-envelope"></i> Email
                 </a>
                 <a href="tel:01060026072" class="btn-action btn-call">
@@ -357,6 +355,7 @@
         <!-- Links Grid Section -->
         <main class="links-grid">
             
+            <!-- 1. الموقع الإلكتروني -->
             <a href="https://drayakhattab.com/" target="_blank" class="link-card">
                 <div class="icon-box bg-web"><i class="fas fa-globe"></i></div>
                 <div class="link-content">
@@ -366,24 +365,7 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
-            <a href="https://maps.app.goo.gl/5Jjcm7PYvM6SVRaE6" target="_blank" class="link-card">
-                <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
-                <div class="link-content">
-                    <span class="link-title">عنوان عيادة الإسماعيلية</span>
-                    <span class="link-subtitle">Google Maps</span>
-                </div>
-                <i class="fas fa-chevron-left arrow-icon"></i>
-            </a>
-
-            <a href="https://maps.app.goo.gl/sXSQAoaoPnv8VJYBA" target="_blank" class="link-card">
-                <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
-                <div class="link-content">
-                    <span class="link-title">عنوان عيادة القاهرة</span>
-                    <span class="link-subtitle">Google Maps</span>
-                </div>
-                <i class="fas fa-chevron-left arrow-icon"></i>
-            </a>
-
+            <!-- 2. فيسبوك -->
             <a href="https://facebook.com/dr.ayakhattabclinic" target="_blank" class="link-card">
                 <div class="icon-box bg-facebook"><i class="fab fa-facebook-f"></i></div>
                 <div class="link-content">
@@ -393,6 +375,7 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
+            <!-- 3. إنستجرام -->
             <a href="https://instagram.com/dr.ayakhattabclinic" target="_blank" class="link-card">
                 <div class="icon-box bg-instagram"><i class="fab fa-instagram"></i></div>
                 <div class="link-content">
@@ -402,11 +385,32 @@
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
 
+            <!-- 4. تيك توك -->
             <a href="https://tiktok.com/@dr.ayakhattab" target="_blank" class="link-card">
                 <div class="icon-box bg-tiktok"><i class="fab fa-tiktok"></i></div>
                 <div class="link-content">
                     <span class="link-title">TikTok</span>
                     <span class="link-subtitle">tiktok.com/@dr.ayakhattab</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- 5. عنوان عيادة الإسماعيلية -->
+            <a href="https://maps.app.goo.gl/5Jjcm7PYvM6SVRaE6" target="_blank" class="link-card">
+                <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
+                <div class="link-content">
+                    <span class="link-title">عنوان عيادة الإسماعيلية</span>
+                    <span class="link-subtitle">Google Maps</span>
+                </div>
+                <i class="fas fa-chevron-left arrow-icon"></i>
+            </a>
+
+            <!-- 6. عنوان عيادة القاهرة -->
+            <a href="https://maps.app.goo.gl/sXSQAoaoPnv8VJYBA" target="_blank" class="link-card">
+                <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
+                <div class="link-content">
+                    <span class="link-title">عنوان عيادة القاهرة</span>
+                    <span class="link-subtitle">Google Maps</span>
                 </div>
                 <i class="fas fa-chevron-left arrow-icon"></i>
             </a>
