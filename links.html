@@ -39,13 +39,13 @@
             font-family: 'Cairo', sans-serif;
             background-color: #f1f5f9;
             color: var(--text-dark);
-            height: 100vh; /* Fallback */
-            height: 100dvh; /* Mobile viewport height */
+            height: 100vh;
+            height: 100dvh; 
             width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* يمنع السكرول نهائياً */
+            overflow: hidden; 
             padding: 1rem;
         }
 
@@ -80,7 +80,7 @@
             100% { transform: translateY(-40px) scale(1.08); }
         }
 
-        /* Main Container */
+        /* Main Container - تم زيادة الارتفاع وتوزيع المساحات */
         .bio-container {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(25px);
@@ -89,12 +89,12 @@
             border-radius: 36px;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 440px;
-            max-height: 96dvh;
-            padding: 1.5rem;
+            max-width: 500px; /* عرض أكبر للكمبيوتر */
+            height: 96dvh; /* إجبار الكونتينر ياخد طول الشاشة ويوزع العناصر */
+            padding: 2rem 1.5rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-evenly; /* توزيع المسافات الفاضية بالتساوي */
             align-items: center;
             animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
@@ -108,12 +108,14 @@
         header {
             text-align: center;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5vh; /* مسافة متغيرة حسب الشاشة بين عناصر الهيدر */
         }
 
-        /* Profile Logo Clean Style */
         .logo-link {
             display: inline-block;
-            margin-bottom: 0.3rem;
             transition: transform 0.4s ease;
         }
 
@@ -122,7 +124,7 @@
         }
 
         .profile-img {
-            width: 120px;
+            width: 180px; /* تكبير اللوجو */
             height: auto;
             object-fit: contain;
             background: transparent;
@@ -131,11 +133,10 @@
         }
 
         .bio-text {
-            font-size: 0.85rem;
-            line-height: 1.5;
+            font-size: 1.05rem; /* تكبير الخط */
+            line-height: 1.7;
             color: var(--text-dark);
-            margin-bottom: 1.2rem;
-            font-weight: 600;
+            font-weight: 700; /* تغميض الخط شوية ليكون أوضح */
             padding: 0 5px;
         }
 
@@ -143,19 +144,18 @@
         .contact-actions {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 1.5rem;
+            gap: 15px; /* تكبير المسافة بين الزراير */
         }
 
         .btn-action {
             text-decoration: none;
-            padding: 8px 20px;
+            padding: 10px 24px; /* تكبير حجم الزرار */
             border-radius: 30px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 1rem; /* تكبير خط الزرار */
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Poppins', sans-serif;
         }
@@ -177,18 +177,18 @@
             box-shadow: 0 8px 15px rgba(0,0,0,0.05);
         }
 
-        /* Links Grid (2 Columns) */
+        /* Links Grid */
         .links-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 16px; /* تكبير المسافة بين المربعات */
             width: 100%;
         }
 
         .link-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 12px 5px;
+            padding: 18px 8px; /* تطويل المربع */
             display: flex;
             flex-direction: column; 
             align-items: center;
@@ -228,14 +228,14 @@
         }
 
         .icon-box {
-            width: 44px;
-            height: 44px;
+            width: 56px; /* أيقونة أكبر */
+            height: 56px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
-            margin-bottom: 8px;
+            font-size: 1.5rem; /* تكبير الأيقونة */
+            margin-bottom: 10px;
             color: white;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
@@ -253,8 +253,8 @@
 
         .link-title {
             display: block;
-            font-weight: 700;
-            font-size: 0.9rem;
+            font-weight: 800;
+            font-size: 1.05rem; /* تكبير اسم المنصة */
             font-family: 'Poppins', 'Cairo', sans-serif;
         }
 
@@ -271,43 +271,42 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile specific adjustments to ensure everything fits perfectly without scrolling */
+        /* Mobile specific adjustments - نسبة وتناسب عشان تملى الشاشة مرتاح */
         @media (max-width: 480px) {
             body {
-                padding: 0.8rem;
+                padding: 0.5rem;
             }
             .bio-container { 
-                padding: 1.2rem; 
+                padding: 1.5rem 1rem; 
                 border-radius: 28px;
+                height: 97dvh;
             }
-            .profile-img { width: 105px; } /* صغرنا اللوجو شوية */
+            .profile-img { width: 150px; } 
             .bio-text { 
-                font-size: 0.75rem; 
-                line-height: 1.4;
-                margin-bottom: 1rem;
+                font-size: 0.9rem; 
+                line-height: 1.6;
             }
             .contact-actions {
-                margin-bottom: 1.2rem;
-                gap: 8px;
+                gap: 12px;
             }
             .btn-action {
-                padding: 6px 16px;
-                font-size: 0.8rem;
+                padding: 10px 20px;
+                font-size: 0.95rem;
             }
             .links-grid {
-                gap: 10px; /* مسافة أصغر بين المربعات */
+                gap: 12px; 
             }
             .link-card {
-                padding: 10px 4px;
+                padding: 14px 4px;
             }
             .icon-box {
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
-                margin-bottom: 6px;
+                width: 48px;
+                height: 48px;
+                font-size: 1.3rem;
+                margin-bottom: 8px;
             }
             .link-title {
-                font-size: 0.8rem;
+                font-size: 0.95rem;
             }
         }
     </style>
@@ -342,7 +341,7 @@
             </div>
         </header>
 
-        <!-- Links Grid Section (2 Columns - Icons and Title only) -->
+        <!-- Links Grid Section -->
         <main class="links-grid">
             
             <!-- 1. الموقع الإلكتروني -->
