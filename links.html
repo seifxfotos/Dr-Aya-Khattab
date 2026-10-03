@@ -80,7 +80,7 @@
             100% { transform: translateY(-40px) scale(1.08); }
         }
 
-        /* Main Container - تم زيادة الارتفاع وتوزيع المساحات */
+        /* Main Container */
         .bio-container {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(25px);
@@ -89,13 +89,14 @@
             border-radius: 36px;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 500px; /* عرض أكبر للكمبيوتر */
-            height: 96dvh; /* إجبار الكونتينر ياخد طول الشاشة ويوزع العناصر */
-            padding: 2rem 1.5rem;
+            max-width: 460px; /* مقاس معقول للكمبيوتر والتابلت */
+            height: 95dvh; 
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly; /* توزيع المسافات الفاضية بالتساوي */
+            justify-content: center; 
             align-items: center;
+            gap: 1.5rem; /* المسافة بين الهيدر (فوق) والزراير (تحت) */
             animation: containerPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
             transform: scale(0.95);
@@ -111,11 +112,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5vh; /* مسافة متغيرة حسب الشاشة بين عناصر الهيدر */
         }
 
         .logo-link {
             display: inline-block;
+            margin-bottom: 2px; /* تقليل المسافة جداً بين اللوجو والنص */
             transition: transform 0.4s ease;
         }
 
@@ -124,7 +125,7 @@
         }
 
         .profile-img {
-            width: 180px; /* تكبير اللوجو */
+            width: 145px; /* تصغير اللوجو سيكا للكمبيوتر */
             height: auto;
             object-fit: contain;
             background: transparent;
@@ -133,26 +134,27 @@
         }
 
         .bio-text {
-            font-size: 1.05rem; /* تكبير الخط */
-            line-height: 1.7;
+            font-size: 0.95rem; /* تصغير النص سيكا */
+            line-height: 1.5;
             color: var(--text-dark);
-            font-weight: 700; /* تغميض الخط شوية ليكون أوضح */
+            font-weight: 700; 
             padding: 0 5px;
+            margin-bottom: 1.2rem; /* مسافة بين النص وزراير الاتصال */
         }
 
         /* Contact Badges */
         .contact-actions {
             display: flex;
             justify-content: center;
-            gap: 15px; /* تكبير المسافة بين الزراير */
+            gap: 12px;
         }
 
         .btn-action {
             text-decoration: none;
-            padding: 10px 24px; /* تكبير حجم الزرار */
+            padding: 8px 22px; 
             border-radius: 30px;
             font-weight: 700;
-            font-size: 1rem; /* تكبير خط الزرار */
+            font-size: 0.9rem; 
             display: flex;
             align-items: center;
             gap: 8px;
@@ -181,14 +183,14 @@
         .links-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px; /* تكبير المسافة بين المربعات */
+            gap: 14px; 
             width: 100%;
         }
 
         .link-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 18px 8px; /* تطويل المربع */
+            padding: 14px 6px; 
             display: flex;
             flex-direction: column; 
             align-items: center;
@@ -228,14 +230,14 @@
         }
 
         .icon-box {
-            width: 56px; /* أيقونة أكبر */
-            height: 56px;
+            width: 46px; 
+            height: 46px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.5rem; /* تكبير الأيقونة */
-            margin-bottom: 10px;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
             color: white;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
@@ -254,7 +256,7 @@
         .link-title {
             display: block;
             font-weight: 800;
-            font-size: 1.05rem; /* تكبير اسم المنصة */
+            font-size: 0.95rem; 
             font-family: 'Poppins', 'Cairo', sans-serif;
         }
 
@@ -271,42 +273,47 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile specific adjustments - نسبة وتناسب عشان تملى الشاشة مرتاح */
+        /* Mobile specific adjustments - تصغير متناسق للموبايل */
         @media (max-width: 480px) {
             body {
-                padding: 0.5rem;
+                padding: 0.6rem;
             }
             .bio-container { 
-                padding: 1.5rem 1rem; 
-                border-radius: 28px;
-                height: 97dvh;
+                padding: 1.2rem; 
+                border-radius: 26px;
+                height: 96dvh;
+                gap: 1.2rem; /* تقليل المسافة بين الأقسام */
             }
-            .profile-img { width: 150px; } 
+            .logo-link {
+                margin-bottom: 0px; /* اللوجو لازق في النص تقريباً */
+            }
+            .profile-img { width: 120px; } /* لوجو أصغر */
             .bio-text { 
-                font-size: 0.9rem; 
-                line-height: 1.6;
+                font-size: 0.8rem; /* نص أصغر */
+                line-height: 1.5;
+                margin-bottom: 0.8rem;
             }
             .contact-actions {
-                gap: 12px;
+                gap: 10px;
             }
             .btn-action {
-                padding: 10px 20px;
-                font-size: 0.95rem;
+                padding: 8px 18px;
+                font-size: 0.85rem;
             }
             .links-grid {
-                gap: 12px; 
+                gap: 10px; 
             }
             .link-card {
-                padding: 14px 4px;
+                padding: 10px 4px; /* كارت أصغر وملموم */
             }
             .icon-box {
-                width: 48px;
-                height: 48px;
-                font-size: 1.3rem;
-                margin-bottom: 8px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+                margin-bottom: 6px;
             }
             .link-title {
-                font-size: 0.95rem;
+                font-size: 0.85rem;
             }
         }
     </style>
