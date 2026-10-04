@@ -35,6 +35,11 @@
             padding: 0;
         }
 
+        /* إخفاء شريط السكرول تماماً مع السماح به كأمان إضافي للشاشات الصغيرة جداً */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
         body {
             font-family: 'Cairo', sans-serif;
             background-color: #f1f5f9;
@@ -45,7 +50,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; 
+            overflow-y: auto; /* أمان إضافي مخفي */
+            overflow-x: hidden;
+            scrollbar-width: none; /* Firefox */
             padding: 1rem;
         }
 
@@ -82,7 +89,7 @@
 
         /* Main Container */
         .bio-container {
-            background: rgba(255, 255, 255, 0.65); /* تقليل الشفافية قليلاً لزيادة التباين مع الروابط */
+            background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.9);
@@ -142,7 +149,7 @@
             margin-bottom: 1rem; 
         }
 
-        /* Contact Badges - تم إضافة حدود واضحة وظل خفيف لتفصل عن الخلفية */
+        /* Contact Badges */
         .contact-actions {
             display: flex;
             justify-content: center;
@@ -160,19 +167,19 @@
             gap: 8px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Poppins', sans-serif;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03); /* ظل خفيف للزراير */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
         }
 
         .btn-email {
             background-color: #f0f7ff;
             color: var(--primary-blue);
-            border: 1.5px solid #bae6fd; /* إطار أوضح */
+            border: 1.5px solid #bae6fd; 
         }
 
         .btn-call {
             background-color: #f0fdf4;
             color: var(--primary-teal);
-            border: 1.5px solid #bbf7d0; /* إطار أوضح */
+            border: 1.5px solid #bbf7d0; 
         }
 
         .btn-action:hover {
@@ -188,9 +195,8 @@
             width: 100%;
         }
 
-        /* Link Cards - تم تغيير اللون لإبرازها عن الخلفية */
         .link-card {
-            background: #ffffff; /* أبيض صريح للتباين */
+            background: #ffffff; 
             border-radius: 20px;
             padding: 16px 6px; 
             display: flex;
@@ -199,8 +205,8 @@
             justify-content: center;
             text-decoration: none;
             color: var(--text-dark);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* ظل أوضح قليلاً */
-            border: 1px solid #e2e8f0; /* إطار رمادي فاتح يبرز المربع */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #e2e8f0; 
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
@@ -275,47 +281,50 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile specific adjustments - تكبير "سيكا" على الموبايل فقط */
-        @media (max-width: 480px) {
+        /* Responsive Smart Scaling (Mobile) */
+        @media (max-width: 500px) {
             body {
-                padding: 0.6rem;
+                padding: 0.5rem;
             }
             .bio-container { 
-                padding: 1.2rem 1rem; 
+                /* استخدام vh ليتقلص الحجم أوتوماتيكياً مع الشاشات القصيرة */
+                padding: 2.5vh 1rem; 
                 border-radius: 26px;
-                height: 96dvh;
-                gap: 1rem;
+                height: 97dvh;
+                gap: 1.5vh; 
             }
-            .logo-link {
-                margin-bottom: 0px; 
-            }
-            .profile-img { width: 145px; } /* تكبير اللوجو للموبايل */
+            .profile-img { 
+                /* مرونة في حجم اللوجو */
+                width: clamp(100px, 18vh, 145px); 
+            } 
             .bio-text { 
-                font-size: 0.88rem; /* تكبير النص للموبايل */
-                line-height: 1.5;
-                margin-bottom: 0.8rem;
+                /* الخط يصغر سيكا في الشاشات اللي طولها مقصوص */
+                font-size: clamp(0.75rem, 1.8vh, 0.88rem); 
+                line-height: 1.4;
+                margin-bottom: 0.5vh;
             }
             .contact-actions {
-                gap: 12px;
+                gap: 2vw;
             }
             .btn-action {
-                padding: 10px 20px; /* تكبير الزراير للموبايل */
-                font-size: 0.92rem;
+                padding: 1.2vh 4vw; 
+                font-size: clamp(0.8rem, 1.8vh, 0.92rem);
             }
             .links-grid {
-                gap: 12px; 
+                gap: 1.5vh; 
             }
             .link-card {
-                padding: 14px 6px; /* تكبير مساحة المربع للموبايل */
+                padding: 1.5vh 4px; 
             }
             .icon-box {
-                width: 48px; /* تكبير الأيقونات للموبايل */
-                height: 48px;
-                font-size: 1.25rem;
-                margin-bottom: 8px;
+                /* الأيقونات تصغر لو الشاشة قصيرة عشان الباقي يكفي */
+                width: clamp(38px, 6.5vh, 48px); 
+                height: clamp(38px, 6.5vh, 48px);
+                font-size: clamp(1.1rem, 2.5vh, 1.25rem);
+                margin-bottom: 1vh;
             }
             .link-title {
-                font-size: 0.95rem; /* تكبير اسم المنصة للموبايل */
+                font-size: clamp(0.8rem, 1.8vh, 0.95rem); 
             }
         }
     </style>
@@ -329,7 +338,7 @@
     <div class="bio-container">
         <!-- Header Section -->
         <header>
-            <a href="https://drayakhattab.com/" class="logo-link">
+            <a href="https://drayakhattab.com/" target="_blank" rel="noopener noreferrer" class="logo-link">
                 <img src="Logo_Dr_Aya.webp" alt="Dr. Aya Khattab Logo" class="profile-img" onerror="this.src='https://via.placeholder.com/150'">
             </a>
             
@@ -341,10 +350,10 @@
             </div>
 
             <div class="contact-actions">
-                <a href="mailto:contact@drayakhattab.com" class="btn-action btn-email">
+                <a href="mailto:contact@drayakhattab.com" target="_blank" rel="noopener noreferrer" class="btn-action btn-email">
                     <i class="fas fa-envelope"></i> Email
                 </a>
-                <a href="tel:01060026072" class="btn-action btn-call">
+                <a href="tel:01060026072" target="_blank" rel="noopener noreferrer" class="btn-action btn-call">
                     <i class="fas fa-phone-alt"></i> Call
                 </a>
             </div>
@@ -354,7 +363,7 @@
         <main class="links-grid">
             
             <!-- 1. الموقع الإلكتروني -->
-            <a href="https://drayakhattab.com/" target="_blank" class="link-card">
+            <a href="https://drayakhattab.com/" target="_blank" rel="noopener noreferrer" class="link-card">
                 <div class="icon-box bg-web"><i class="fas fa-globe"></i></div>
                 <div class="link-content">
                     <span class="link-title">Our Website</span>
@@ -362,7 +371,7 @@
             </a>
 
             <!-- 2. فيسبوك -->
-            <a href="https://facebook.com/dr.ayakhattabclinic" target="_blank" class="link-card">
+            <a href="https://facebook.com/dr.ayakhattabclinic" target="_blank" rel="noopener noreferrer" class="link-card">
                 <div class="icon-box bg-facebook"><i class="fab fa-facebook-f"></i></div>
                 <div class="link-content">
                     <span class="link-title">Facebook</span>
@@ -370,7 +379,7 @@
             </a>
 
             <!-- 3. إنستجرام -->
-            <a href="https://instagram.com/dr.ayakhattabclinic" target="_blank" class="link-card">
+            <a href="https://instagram.com/dr.ayakhattabclinic" target="_blank" rel="noopener noreferrer" class="link-card">
                 <div class="icon-box bg-instagram"><i class="fab fa-instagram"></i></div>
                 <div class="link-content">
                     <span class="link-title">Instagram</span>
@@ -378,7 +387,7 @@
             </a>
 
             <!-- 4. تيك توك -->
-            <a href="https://tiktok.com/@dr.ayakhattab" target="_blank" class="link-card">
+            <a href="https://tiktok.com/@dr.ayakhattab" target="_blank" rel="noopener noreferrer" class="link-card">
                 <div class="icon-box bg-tiktok"><i class="fab fa-tiktok"></i></div>
                 <div class="link-content">
                     <span class="link-title">TikTok</span>
@@ -386,7 +395,7 @@
             </a>
 
             <!-- 5. عنوان عيادة الإسماعيلية -->
-            <a href="https://maps.app.goo.gl/5Jjcm7PYvM6SVRaE6" target="_blank" class="link-card">
+            <a href="https://maps.app.goo.gl/5Jjcm7PYvM6SVRaE6" target="_blank" rel="noopener noreferrer" class="link-card">
                 <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
                 <div class="link-content">
                     <span class="link-title">عيادة الإسماعيلية</span>
@@ -394,7 +403,7 @@
             </a>
 
             <!-- 6. عنوان عيادة القاهرة -->
-            <a href="https://maps.app.goo.gl/ZJYWAz9ocaPVqzWr8" target="_blank" class="link-card">
+            <a href="https://maps.app.goo.gl/ZJYWAz9ocaPVqzWr8" target="_blank" rel="noopener noreferrer" class="link-card">
                 <div class="icon-box bg-map"><i class="fas fa-map-pin"></i></div>
                 <div class="link-content">
                     <span class="link-title">عيادة القاهرة</span>
