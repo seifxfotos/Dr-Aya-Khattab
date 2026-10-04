@@ -80,16 +80,16 @@
             100% { transform: translateY(-40px) scale(1.08); }
         }
 
-        /* Main Container - المقاس الوسط */
+        /* Main Container */
         .bio-container {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.65); /* تقليل الشفافية قليلاً لزيادة التباين مع الروابط */
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.9);
             border-radius: 36px;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 480px; /* المقاس الوسط للكمبيوتر */
+            max-width: 480px; 
             height: 95dvh; 
             padding: 1.5rem;
             display: flex;
@@ -116,7 +116,7 @@
 
         .logo-link {
             display: inline-block;
-            margin-bottom: 0px; /* مسافة معدومة لتقريب اللوجو من النص */
+            margin-bottom: 0px; 
             transition: transform 0.4s ease;
         }
 
@@ -125,7 +125,7 @@
         }
 
         .profile-img {
-            width: 160px; /* الحجم الوسط للوجو */
+            width: 160px; 
             height: auto;
             object-fit: contain;
             background: transparent;
@@ -134,7 +134,7 @@
         }
 
         .bio-text {
-            font-size: 1rem; /* الحجم الوسط للنص */
+            font-size: 1rem; 
             line-height: 1.5;
             color: var(--text-dark);
             font-weight: 700; 
@@ -142,7 +142,7 @@
             margin-bottom: 1rem; 
         }
 
-        /* Contact Badges */
+        /* Contact Badges - تم إضافة حدود واضحة وظل خفيف لتفصل عن الخلفية */
         .contact-actions {
             display: flex;
             justify-content: center;
@@ -160,23 +160,24 @@
             gap: 8px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Poppins', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); /* ظل خفيف للزراير */
         }
 
         .btn-email {
-            background-color: #eff6ff;
+            background-color: #f0f7ff;
             color: var(--primary-blue);
-            border: 1px solid #dbeafe;
+            border: 1.5px solid #bae6fd; /* إطار أوضح */
         }
 
         .btn-call {
             background-color: #f0fdf4;
             color: var(--primary-teal);
-            border: 1px solid #dcfce3;
+            border: 1.5px solid #bbf7d0; /* إطار أوضح */
         }
 
         .btn-action:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
         }
 
         /* Links Grid */
@@ -187,8 +188,9 @@
             width: 100%;
         }
 
+        /* Link Cards - تم تغيير اللون لإبرازها عن الخلفية */
         .link-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff; /* أبيض صريح للتباين */
             border-radius: 20px;
             padding: 16px 6px; 
             display: flex;
@@ -197,8 +199,8 @@
             justify-content: center;
             text-decoration: none;
             color: var(--text-dark);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* ظل أوضح قليلاً */
+            border: 1px solid #e2e8f0; /* إطار رمادي فاتح يبرز المربع */
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
@@ -236,7 +238,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.35rem; /* حجم أيقونة وسط */
+            font-size: 1.35rem; 
             margin-bottom: 8px;
             color: white;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
@@ -273,7 +275,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile specific adjustments - مقاسات الموبايل الوسط */
+        /* Mobile specific adjustments - تكبير "سيكا" على الموبايل فقط */
         @media (max-width: 480px) {
             body {
                 padding: 0.6rem;
@@ -287,33 +289,33 @@
             .logo-link {
                 margin-bottom: 0px; 
             }
-            .profile-img { width: 135px; } /* حجم لوجو وسط للموبايل */
+            .profile-img { width: 145px; } /* تكبير اللوجو للموبايل */
             .bio-text { 
-                font-size: 0.85rem; 
+                font-size: 0.88rem; /* تكبير النص للموبايل */
                 line-height: 1.5;
                 margin-bottom: 0.8rem;
             }
             .contact-actions {
-                gap: 10px;
+                gap: 12px;
             }
             .btn-action {
-                padding: 9px 19px;
-                font-size: 0.9rem;
+                padding: 10px 20px; /* تكبير الزراير للموبايل */
+                font-size: 0.92rem;
             }
             .links-grid {
-                gap: 11px; 
+                gap: 12px; 
             }
             .link-card {
-                padding: 12px 4px;
+                padding: 14px 6px; /* تكبير مساحة المربع للموبايل */
             }
             .icon-box {
-                width: 44px;
-                height: 44px;
-                font-size: 1.2rem;
-                margin-bottom: 6px;
+                width: 48px; /* تكبير الأيقونات للموبايل */
+                height: 48px;
+                font-size: 1.25rem;
+                margin-bottom: 8px;
             }
             .link-title {
-                font-size: 0.9rem;
+                font-size: 0.95rem; /* تكبير اسم المنصة للموبايل */
             }
         }
     </style>
