@@ -119,7 +119,7 @@
         .time-ended { color: var(--danger) !important; animation: blink 1s infinite; font-size: 15px !important; font-family: 'Cairo' !important; }
         @keyframes blink { 50% { opacity: 0.3; } }
         
-        .total-revenue-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 2px solid var(--primary-green); color: var(--text-dark); padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 100; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; width: 90%; max-width: 650px;}
+        .total-revenue-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 2px solid var(--primary-green); color: var(--text-dark); padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 100; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; width: 95%; max-width: 800px;}
         .revenue-item { display: flex; align-items: center; gap: 5px; }
         .revenue-item i { font-size: 18px; opacity: 0.7;}
         .revenue-total { border-right: 2px solid var(--border); padding-right: 15px; color: var(--primary-blue); font-weight: 800; font-size: 16px;}
@@ -149,12 +149,12 @@
         </label>
     </div>
 
-    <!-- شريط الإجمالي اليومي -->
+    <!-- شريط الإجمالي اليومي الجديد -->
     <div class="total-revenue-bar" id="totalRevenueBar">
-        <div class="revenue-item" title="الكاش بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> الدرج (كاش): <span id="totalCash">0</span></div>
-        <div class="revenue-item" title="محافظ وفون كاش"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="totalElec">0</span></div>
-        <div class="revenue-item" title="مبيعات الأدوية مفصولة للتوضيح"><i class="fa-solid fa-pills"></i> إجمالي أدوية: <span id="totalMeds">0</span></div>
-        <div class="revenue-item revenue-total" title="إجمالي الدخل اليوم كاش والكتروني"><i class="fa-solid fa-wallet"></i> الإجمالي الكلي: <span id="totalRevenueValue">0</span></div>
+        <div class="revenue-item" title="كاش العيادة بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> كاش عيادة: <span id="totalCash">0</span></div>
+        <div class="revenue-item" title="محافظ وفون كاش للعيادة"><i class="fa-solid fa-mobile-screen"></i> إلكتروني عيادة: <span id="totalElec">0</span></div>
+        <div class="revenue-item" title="مبيعات الأدوية مفصولة"><i class="fa-solid fa-pills"></i> أدوية (كاش: <span id="medsCashLabel" style="color:var(--primary-green); font-weight:bold;">0</span> | إلكتروني: <span id="medsElecLabel" style="color:var(--primary-blue); font-weight:bold;">0</span>)</div>
+        <div class="revenue-item revenue-total" title="إجمالي الدخل اليوم كاش والكتروني شامل الأدوية"><i class="fa-solid fa-wallet"></i> الإجمالي الكلي: <span id="totalRevenueValue">0</span></div>
     </div>
 
     <div class="container">
@@ -284,23 +284,15 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        // إعدادات Firebase الخاصة بالـ Realtime Database (قم بنسخها من إعدادات مشروعك)
+        // إعدادات Firebase المباشرة لضمان الاتصال الفوري
         const firebaseConfig = {
-            apiKey: "ضع_مفتاح_API_هنا",
-            authDomain: "project-id.firebaseapp.com",
-            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "project-id",
-            storageBucket: "project-id.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com"
         };
 
         let db = null;
         try {
-            if (firebaseConfig.apiKey !== "ضع_مفتاح_API_هنا") {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database(); // استخدام Realtime Database بدلاً من Firestore
-            }
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
         let unsubscribeFirebase = null;
@@ -502,36 +494,45 @@
             if (d === 1 || d === 3) sel.value = "علاج طبيعي"; else if (d === 2) sel.value = "تغذية علاجية";
         }
 
+        // --- دالة الحسابات المعدلة بالكامل ---
         function calculateTotals() {
-            let cash = 0; let elec = 0; let meds = 0;
+            let clinicCash = 0; let clinicElec = 0; 
+            let medsCash = 0; let medsElec = 0;
+            let expenses = 0;
             
+            // 1. حساب الكشوفات وجلسات العيادة
             patientsQueue.forEach(p => {
                 let amt = parseFloat(p.amount);
                 if (!isNaN(amt)) { 
-                    if (p.method === 'فودافون كاش' || p.method === 'أنستا باي') elec += amt; 
-                    else cash += amt; 
+                    if (p.method === 'فودافون كاش' || p.method === 'أنستا باي') clinicElec += amt; 
+                    else clinicCash += amt; 
                 }
             });
             
+            // 2. حساب الأدوية والمصروفات
             financialsQueue.forEach(f => {
                 let amt = parseFloat(f.amount);
                 if (!isNaN(amt)) {
                     if (f.type === 'دواء') { 
-                        meds += amt; 
-                        if (f.method === 'فودافون كاش' || f.method === 'أنستا باي') elec += amt;
-                        else cash += amt;
+                        if (f.method === 'فودافون كاش' || f.method === 'أنستا باي') medsElec += amt;
+                        else medsCash += amt;
                     } 
                     else if (f.type === 'مصروف') { 
-                        cash -= amt; 
+                        expenses += amt; 
                     }
                 }
             });
             
-            document.getElementById('totalCash').innerText = cash;
-            document.getElementById('totalElec').innerText = elec;
-            document.getElementById('totalMeds').innerText = meds;
+            // 3. تحديث الواجهة (الفصل الدقيق)
+            document.getElementById('totalCash').innerText = (clinicCash - expenses); // كاش العيادة فقط الصافي
+            document.getElementById('totalElec').innerText = clinicElec; // إلكتروني العيادة فقط
             
-            document.getElementById('totalRevenueValue').innerText = (cash + elec);
+            document.getElementById('medsCashLabel').innerText = medsCash; // كاش الأدوية
+            document.getElementById('medsElecLabel').innerText = medsElec; // إلكتروني الأدوية
+            
+            // الإجمالي الكلي (كاش وإلكتروني العيادة + كاش وإلكتروني الأدوية - المصروفات)
+            let finalTotal = (clinicCash + clinicElec + medsCash + medsElec) - expenses;
+            document.getElementById('totalRevenueValue').innerText = finalTotal;
         }
 
         async function fetchFromGoogle(payload) {
