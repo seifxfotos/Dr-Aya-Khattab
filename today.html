@@ -65,7 +65,6 @@
         .btn-glp:hover { background-color: #2980b9; }
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
         .schedule-table { width: 100%; background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 20px; }
         .table-responsive .schedule-table { min-width: 850px; } 
         .grid-3col .table-responsive .schedule-table { min-width: 100%; } 
@@ -101,7 +100,6 @@
         .inline-pay-select, .inline-dept-select, .inline-type-select { border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-family: 'Cairo'; font-weight: 700; font-size: 12px; outline: none; background-color: var(--input-bg); color: var(--text-dark); cursor: pointer; max-width: 90px; }
         .inline-pay-select.status-paid { color: var(--primary-green); border-color: var(--primary-green); }
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
-        
         .inline-dept-select { max-width: 100px; }
         
         .patient-name-cell { font-weight: bold; cursor: pointer; transition: color 0.3s ease; }
@@ -148,11 +146,9 @@
             .grid-3col { grid-template-columns: 1fr; }
             .add-patient-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } 
             .btn-add { grid-column: span 4; } 
-            
             .revenue-wrapper { position: relative; bottom: auto; left: auto; transform: none; width: 100%; margin-top: -10px; margin-bottom: 25px; flex-direction: column; align-items: center; gap: 8px; }
             .revenue-box { width: 100%; justify-content: center; padding: 10px; }
             .revenue-total { border-right: none; border-top: 1px dashed var(--border); padding-top: 5px; padding-right: 0; margin-top: 5px; width: 100%; text-align: center; justify-content: center;}
-            
             .floating-timer { bottom: 15px; left: 15px; transform: scale(0.85); }
             .theme-switch-wrapper { bottom: 15px; right: 15px; transform: scale(0.85); }
             body { padding-bottom: 80px; }
@@ -187,7 +183,6 @@
         </label>
     </div>
 
-    <!-- شريط الإجمالي اليومي -->
     <div class="revenue-wrapper" id="revenueWrapper">
         <div class="revenue-box clinic-box">
             <div class="revenue-item" title="كاش العيادة بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> كاش عيادة: <span id="totalCash">0</span></div>
@@ -322,7 +317,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        // --- 1. إعدادات فايربيس (تم استخراجها من صورتك) ---
+        // إعدادات فايربيس كاملة لضمان الاتصال
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -340,7 +335,6 @@
         } catch(e) { console.error("Firebase init error", e); }
 
         let unsubscribeFirebase = null;
-
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx77Y7M4TpwlAwk7xh5E9duD_VwFqPMbHEnqezOER_-2KGZWT7moTPvjWN5tCpncfA/exec';
 
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
@@ -353,11 +347,9 @@
             document.getElementById('syncIndicatorText').innerText = text;
             indicator.classList.add('show');
         }
-        function hideSyncStatus() {
-            document.getElementById('syncIndicator').classList.remove('show');
-        }
+        function hideSyncStatus() { document.getElementById('syncIndicator').classList.remove('show'); }
 
-        // --- 1. بناء الداتا والتأكد من تحديث الشاشة ---
+        // --- 1. تطبيق البيانات بحرص ---
         function applyData(data) {
             const newScheduleStr = JSON.stringify(data.schedule || []);
             const currentScheduleStr = JSON.stringify(patientsQueue);
@@ -384,10 +376,7 @@
 
         // --- 2. الاستماع اللحظي للفايربيس ---
         function startFirebaseListener(date) {
-            if (!db) {
-                fetchFromGoogleSheets(date);
-                return;
-            }
+            if (!db) { fetchFromGoogleSheets(date); return; }
             
             const dayRef = db.ref('clinic_days/' + date);
             if (unsubscribeFirebase) unsubscribeFirebase.off();
@@ -400,36 +389,41 @@
             unsubscribeFirebase = dayRef;
         }
 
-        // --- 3. سحب الأرشيف من جوجل شيت وتحديث الشاشة ---
+        // --- 3. سحب الأرشيف (تعديل الأمان عشان ميمسحش فايربيس) ---
         async function fetchFromGoogleSheets(date) {
             if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
-            showSyncStatus('جاري سحب بيانات اليوم...');
+            showSyncStatus('جاري سحب الأرشيف...');
             try {
-                let res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'GET_DATA', date: date }) 
-                });
+                let res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'GET_DATA', date: date }) });
                 let result = JSON.parse(await res.text());
                 
                 if(result.status === 'success') {
                     let validSlots = getSlotsForDay();
                     let fetchedSchedule = Array.isArray(result.data) ? result.data : (result.data.schedule || []);
                     
-                    patientsQueue = fetchedSchedule.map(p => {
-                        let s = p.slot ? String(p.slot).trim() : 'عام';
-                        if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', doctor: p.doctor || '' };
-                    });
-                    glpQueue = result.data.glp || [];
-                    financialsQueue = result.data.financials || [];
-                    
-                    localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
-                    let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
-                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
-                    renderUI();
+                    // لو الداتا المحلية لسه فاضية، اعرض داتا الشيت
+                    if(patientsQueue.length === 0 && financialsQueue.length === 0) {
+                        patientsQueue = fetchedSchedule.map(p => {
+                            let s = p.slot ? String(p.slot).trim() : 'عام';
+                            if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
+                            return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', doctor: p.doctor || '' };
+                        });
+                        glpQueue = result.data.glp || [];
+                        financialsQueue = result.data.financials || [];
+                        
+                        localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
+                        let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
+                        patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
+                        renderUI();
 
-                    if(db) {
-                        db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                        // اكتب في فايربيس فقط لو لسه فاضي عشان متمسحش شغل غيرك
+                        if(db) {
+                            db.ref('clinic_days/' + date).once('value').then(snap => {
+                                if (!snap.exists() && (patientsQueue.length > 0 || financialsQueue.length > 0)) {
+                                    db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                                }
+                            });
+                        }
                     }
                 }
             } catch(e) {}
@@ -442,6 +436,7 @@
             startFirebaseListener(date);
         }
 
+        // --- 4. الحفظ والدفع للسيرفر (إضافة رسالة التحذير لو الفايربيس مقفول) ---
         function scheduleSync() {
             const date = document.getElementById('todayDate').value;
             
@@ -450,21 +445,23 @@
             localStorage.setItem('clinic_fin_'+date, JSON.stringify(savedFin));
             
             if (db) {
-                db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                db.ref('clinic_days/' + date).set({ 
+                    schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP 
+                }).catch(error => {
+                    alert("⚠️ فايربيس يرفض الحفظ! برجاء التأكد من تغيير (Rules) إلى true من حسابك.");
+                    console.error("Firebase Rule Error:", error);
+                });
             }
 
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(async () => {
                 if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
-                showSyncStatus('جاري الأرشفة السحابية...');
+                showSyncStatus('جاري الحفظ في الخلفية...');
                 try {
-                    await fetch(SCRIPT_URL, { 
-                        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ action: 'SYNC_DATA', date: date, schedule: patientsQueue, glp: glpQueue, financials: financialsQueue }) 
-                    });
+                    await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'SYNC_DATA', date: date, schedule: patientsQueue, glp: glpQueue, financials: financialsQueue }) });
                     hideSyncStatus();
                 } catch(e) { showSyncStatus('خطأ في الأرشفة'); setTimeout(hideSyncStatus, 2000); }
-            }, 3000); 
+            }, 2000); 
         }
 
         function addGLP() { let n = document.getElementById('glpName').value.trim(); let d = document.getElementById('glpDose').value; if(!n) return; glpQueue.push({name: n, dose: d}); document.getElementById('glpName').value = ''; renderUI(); scheduleSync(); }
@@ -475,77 +472,38 @@
 
         function addPatient() {
             const name = document.getElementById('patientName').value.trim(); const dept = document.getElementById('department').value; const type = document.getElementById('visitType').value; const payment = document.getElementById('paymentStatus').value; const method = document.getElementById('paymentMethod').value; const amount = document.getElementById('paidAmount').value; let manualSlot = document.getElementById('manualSlot').value;
-            if(!name) return; 
-            let targetSlot = type === 'مقدم' ? 'عام' : (manualSlot || getSlotsForDay()[0]); 
+            if(!name) return; let targetSlot = type === 'مقدم' ? 'عام' : (manualSlot || getSlotsForDay()[0]); 
             patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', doctor: '', finished: false });
             sortPatientsArray(); document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
         }
 
-        function sortPatientsArray() {
-            let sorted = []; let validSlots = getSlotsForDay();
-            validSlots.forEach(s => { sorted = sorted.concat(patientsQueue.filter(p => p.slot === s)); });
-            sorted = sorted.concat(patientsQueue.filter(p => !validSlots.includes(p.slot)));
-            patientsQueue = sorted;
-        }
-
-        function updateScheduleField(idx, field, val) { 
-            patientsQueue[idx][field] = val; 
-            if (field === 'type') { if (val === 'مقدم') patientsQueue[idx].slot = 'عام'; sortPatientsArray(); updateStatsCounters(); }
-            if(field==='amount' || field==='method') calculateTotals(); 
-            renderUI(); scheduleSync(); 
-        }
-
-        function updateStatsCounters() {
-            document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length;
-            document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length;
-            document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length;
-            document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length;
-        }
-
+        function sortPatientsArray() { let sorted = []; let validSlots = getSlotsForDay(); validSlots.forEach(s => { sorted = sorted.concat(patientsQueue.filter(p => p.slot === s)); }); sorted = sorted.concat(patientsQueue.filter(p => !validSlots.includes(p.slot))); patientsQueue = sorted; }
+        function updateScheduleField(idx, field, val) { patientsQueue[idx][field] = val; if (field === 'type') { if (val === 'مقدم') patientsQueue[idx].slot = 'عام'; sortPatientsArray(); updateStatsCounters(); } if(field==='amount' || field==='method') calculateTotals(); renderUI(); scheduleSync(); }
+        function updateStatsCounters() { document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length; document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length; document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length; document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length; }
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         function removePatient(idx) { patientsQueue.splice(idx, 1); renderUI(); scheduleSync(); }
-
-        function moveRow(idx, dir) { 
-            let p1 = patientsQueue[idx]; let p1Slot = p1.slot; let slotArray = []; let slotIndices = [];
-            patientsQueue.forEach((p, i) => { if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }});
-            let localIdx = slotArray.indexOf(p1);
-            if (dir === 'up' && localIdx > 0) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]]; patientsQueue[slotIndices[localIdx - 1]] = temp; }
-            if (dir === 'down' && localIdx < slotArray.length - 1) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]]; patientsQueue[slotIndices[localIdx + 1]] = temp; }
-            renderUI(); scheduleSync();
-        }
+        function moveRow(idx, dir) { let p1 = patientsQueue[idx]; let p1Slot = p1.slot; let slotArray = []; let slotIndices = []; patientsQueue.forEach((p, i) => { if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }}); let localIdx = slotArray.indexOf(p1); if (dir === 'up' && localIdx > 0) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]]; patientsQueue[slotIndices[localIdx - 1]] = temp; } if (dir === 'down' && localIdx < slotArray.length - 1) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]]; patientsQueue[slotIndices[localIdx + 1]] = temp; } renderUI(); scheduleSync(); }
 
         function calculateTotals() {
             let clinicCash = 0; let clinicElec = 0; let medsCash = 0; let medsElec = 0; let expenses = 0;
             patientsQueue.forEach(p => { let amt = parseFloat(p.amount); if (!isNaN(amt)) { if (p.method === 'فودافون كاش' || p.method === 'أنستا باي') clinicElec += amt; else clinicCash += amt; } });
             financialsQueue.forEach(f => { let amt = parseFloat(f.amount); if (!isNaN(amt)) { if (f.type === 'دواء') { if (f.method === 'فودافون كاش' || f.method === 'أنستا باي') medsElec += amt; else medsCash += amt; } else if (f.type === 'مصروف') { expenses += amt; } } });
-            
             let finalClinicCash = clinicCash - expenses; let totalClinic = finalClinicCash + clinicElec; let totalMeds = medsCash + medsElec; let grandTotal = totalClinic + totalMeds;
-
             document.getElementById('totalCash').innerText = finalClinicCash; document.getElementById('totalElec').innerText = clinicElec; document.getElementById('totalClinicValue').innerText = totalClinic;
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
         function renderUI() {
             updateStatsCounters();
-
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${g.name}</td><td><span class="badge badge-glp">${g.dose}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
-            
             let medsHtml = ''; let expsHtml = '';
-            financialsQueue.forEach((f, i) => {
-                if (f.type === 'دواء') medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-                else if (f.type === 'مصروف') expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-            });
+            financialsQueue.forEach((f, i) => { if (f.type === 'دواء') medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`; else if (f.type === 'مصروف') expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
             document.getElementById('medTableBody').innerHTML = medsHtml; document.getElementById('expTableBody').innerHTML = expsHtml;
-
-            const cont = document.getElementById('tablesContainer'); cont.innerHTML = '';
-            let validSlots = getSlotsForDay();
-
+            const cont = document.getElementById('tablesContainer'); cont.innerHTML = ''; let validSlots = getSlotsForDay();
             validSlots.forEach(slot => {
                 let sPats = patientsQueue.filter(p => p.slot === slot);
                 let html = `<div class="slot-title">${slot}</div><div class="table-responsive"><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
-                
                 if (sPats.length===0) html += `<tr><td colspan="8" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
-                
                 let sCount = 0;
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
@@ -586,7 +544,7 @@
 
         // --- باقي دوال التايمر ونوافذ الحجز ---
         function showModal(opts) { const modal = document.getElementById('customModal'); document.getElementById('modalTitle').innerHTML = opts.title; document.getElementById('modalMessage').innerHTML = opts.message; let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn']; elementsToHide.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; }); if (opts.type === 'prompt') { document.getElementById('modalInputContainer').style.display = 'flex'; if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || ''); if (opts.showSlot) { document.getElementById('modalSlotInput').style.display = 'block'; updateModalSlotDropdown(opts.inputValue); if(opts.defaultSlot) document.getElementById('modalSlotInput').value = opts.defaultSlot; } if (opts.showPayment) { document.getElementById('modalPaymentInput').style.display = 'block'; document.getElementById('modalPaymentMethodInput').style.display = 'block'; document.getElementById('modalAmountInput').style.display = 'block'; document.getElementById('modalPaymentInput').value = 'تم الدفع'; document.getElementById('modalPaymentMethodInput').value = 'كاش'; document.getElementById('modalAmountInput').value = ''; document.getElementById('modalPaymentInput').style.borderColor = 'var(--border)'; } document.getElementById('modalCancelBtn').style.display = 'inline-block'; } modal.style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { if (opts.type === 'prompt' && opts.showPayment && !document.getElementById('modalPaymentInput').value) { document.getElementById('modalPaymentInput').style.borderColor = 'var(--danger)'; return; } modal.style.display = 'none'; if (opts.type === 'prompt' && opts.onConfirm) { opts.onConfirm(document.getElementById('modalDateInput').value, document.getElementById('modalPaymentInput').value, document.getElementById('modalSlotInput').value, document.getElementById('modalAmountInput').value, document.getElementById('modalPaymentMethodInput').value); } }; document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none'; }
-        function bookFutureAppt(idx, visitType) { let patient = patientsQueue[idx]; showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { if(cDate) { showSyncStatus('جاري تسجيل الموعد السحابي...'); try { let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; let amtVal = parseFloat(cAmt); if (!isNaN(amtVal) && amtVal > 0) { patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', doctor: '', finished: false }); sortPatientsArray(); renderUI(); scheduleSync(); cPay = "مدفوع مسبقاً"; cAmt = ""; } await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } hideSyncStatus(); } } }); }
+        function bookFutureAppt(idx, visitType) { let patient = patientsQueue[idx]; showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { if(cDate) { showSyncStatus('جاري تسجيل الموعد...'); try { let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; let amtVal = parseFloat(cAmt); if (!isNaN(amtVal) && amtVal > 0) { patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', doctor: '', finished: false }); sortPatientsArray(); renderUI(); scheduleSync(); cPay = "مدفوع مسبقاً"; cAmt = ""; } await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } hideSyncStatus(); } } }); }
         let timerInterval; function updateTimerDisplay(secondsLeft) { let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60; let display = document.getElementById('globalTimerDisplay'); if (secondsLeft > 0) { display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`; display.classList.remove('time-ended'); } else { display.innerText = 'انتهى الوقت'; display.classList.add('time-ended'); } } function checkAndStartTimer() { let endTime = localStorage.getItem('clinicTimerEnd'); if (endTime && endTime > Date.now()) { document.getElementById('btnTimerPlay').innerText = 'إيقاف'; document.getElementById('btnTimerPlay').style.background = 'var(--warning)'; timerInterval = setInterval(() => { let left = Math.floor((localStorage.getItem('clinicTimerEnd') - Date.now()) / 1000); if (left <= 0) { clearInterval(timerInterval); updateTimerDisplay(0); document.getElementById('btnTimerPlay').style.display = 'none'; playTimerEndSound(); localStorage.removeItem('clinicTimerEnd'); } else { updateTimerDisplay(left); } }, 1000); } else { let mins = document.getElementById('timerDuration').value; updateTimerDisplay(mins * 60); } } function toggleTimer() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} let btn = document.getElementById('btnTimerPlay'); if (localStorage.getItem('clinicTimerEnd')) { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); btn.innerText = 'تشغيل'; btn.style.background = 'var(--primary-blue)'; } else { let mins = document.getElementById('timerDuration').value; localStorage.setItem('clinicTimerEnd', Date.now() + (mins * 60 * 1000)); checkAndStartTimer(); } } function resetTimer() { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); document.getElementById('btnTimerPlay').style.display = 'block'; document.getElementById('btnTimerPlay').innerText = 'تشغيل'; document.getElementById('btnTimerPlay').style.background = 'var(--primary-blue)'; updateTimerDisplay(document.getElementById('timerDuration').value * 60); } function setTimer() { if(!localStorage.getItem('clinicTimerEnd')) resetTimer(); } function playTimerEndSound() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let playTone = (freq, time, duration) => { let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.3, audioCtx.currentTime + time); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + time + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(audioCtx.currentTime + time); osc.stop(audioCtx.currentTime + time + duration); }; playTone(523.25, 0, 0.5); playTone(659.25, 0.2, 0.6); } catch (e) {} }
         function getNextWeekDate() { let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); const year = nextWeek.getFullYear(); const month = String(nextWeek.getMonth() + 1).padStart(2, '0'); const day = String(nextWeek.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; } function getSlotsForDay() { const d = new Date(document.getElementById('todayDate').value).getDay(); if (d === 6) return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function updateModalSlotDropdown(dateStr) { const slotSelect = document.getElementById('modalSlotInput'); if(!slotSelect) return; slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>'; const slots = getSlotsForSpecificDate(dateStr); if (slots) { slots.forEach(slot => { let opt = document.createElement('option'); opt.value = slot; opt.innerText = slot; slotSelect.appendChild(opt); }); } } function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); if(!s) return; s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => { let opt = document.createElement('option'); opt.value = x; opt.innerText = x; s.appendChild(opt); }); }
         function initDatePickers() { headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); initDay(); } }); modalDatePicker = flatpickr("#modalDateInput", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true", onChange: (d, s) => { updateModalSlotDropdown(s); } }); }
