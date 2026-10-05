@@ -37,6 +37,10 @@
         .date-picker { font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; outline: none; font-family: 'Cairo'; cursor: pointer; text-align: center; }
         .date-picker::-webkit-calendar-picker-indicator { display: none; }
         
+        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .btn-refresh { background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); color: white; cursor: pointer; outline: none; transition: 0.3s; font-size: 16px; }
+        .btn-refresh:hover { background: rgba(255,255,255,0.3); }
+
         .stats-counter { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; font-size: 15px; font-weight: 700; display: flex; gap: 15px; border: 1px solid rgba(255,255,255,0.4); flex-wrap: wrap; }
         .stats-counter span { display: flex; align-items: center; gap: 5px; }
 
@@ -214,7 +218,10 @@
                 <span title="إجمالي المقدمات المدفوعة اليوم"><i class="fa-solid fa-hand-holding-dollar"></i> مقدم: <span id="statMokadam">0</span></span>
             </div>
 
-            <div class="header-controls"><input type="text" id="todayDate" class="date-picker"></div>
+            <div class="header-controls">
+                <button class="btn-refresh" onclick="forceRefreshFromSheet()" title="تحديث إجباري من الشيت لإصلاح أي أخطاء"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <input type="text" id="todayDate" class="date-picker">
+            </div>
         </div>
 
         <div class="card-panel">
@@ -368,19 +375,22 @@
         }
         function hideSyncStatus() { document.getElementById('syncIndicator').classList.remove('show'); }
 
+        // تم إضافة معالجة قوية للمصفوفات عشان ميحصلش Crash بسبب Firebase
         function applyData(data) {
-            const newScheduleStr = JSON.stringify(data.schedule || []);
+            let nSched = Array.isArray(data.schedule) ? data.schedule : (data.schedule ? Object.values(data.schedule) : []);
+            let nFin = Array.isArray(data.financials) ? data.financials : (data.financials ? Object.values(data.financials) : []);
+            let nGlp = Array.isArray(data.glp) ? data.glp : (data.glp ? Object.values(data.glp) : []);
+
+            const newScheduleStr = JSON.stringify(nSched);
             const currentScheduleStr = JSON.stringify(patientsQueue);
-            const newFinStr = JSON.stringify(data.financials || []);
+            const newFinStr = JSON.stringify(nFin);
             const currentFinStr = JSON.stringify(financialsQueue);
-            const newGlpStr = JSON.stringify(data.glp || []);
+            const newGlpStr = JSON.stringify(nGlp);
             const currentGlpStr = JSON.stringify(glpQueue);
 
             if (newScheduleStr === currentScheduleStr && newFinStr === currentFinStr && newGlpStr === currentGlpStr) return;
 
-            patientsQueue = data.schedule || [];
-            glpQueue = data.glp || [];
-            financialsQueue = data.financials || [];
+            patientsQueue = nSched; glpQueue = nGlp; financialsQueue = nFin;
             
             const date = document.getElementById('todayDate').value;
             localStorage.setItem('clinic_cache_' + date, JSON.stringify(data));
@@ -394,16 +404,46 @@
 
         function startFirebaseListener(date) {
             if (!db) { fetchFromGoogleSheets(date); return; }
-            
             const dayRef = db.ref('clinic_days/' + date);
             if (unsubscribeFirebase) unsubscribeFirebase.off();
             
             dayRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) { applyData(data); } 
+                // التعديل هنا: لو الداتا فاضية تماماً من الحجوزات، هيسحب من الشيت عشان يتأكد
+                if (data && (data.schedule || data.glp || data.financials)) { applyData(data); } 
                 else { fetchFromGoogleSheets(date); }
             });
             unsubscribeFirebase = dayRef;
+        }
+
+        // الزرار السحري عشان لو حصل أي لخبطة تجيب من الشيت طوالي
+        async function forceRefreshFromSheet() {
+            const date = document.getElementById('todayDate').value;
+            showSyncStatus('جاري التحديث من الشيت...');
+            if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
+            try {
+                let res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'GET_DATA', date: date }) });
+                let result = JSON.parse(await res.text());
+                if(result.status === 'success') {
+                    let validSlots = getSlotsForDay();
+                    let fetchedSchedule = Array.isArray(result.data) ? result.data : (result.data.schedule || []);
+                    patientsQueue = fetchedSchedule.map(p => {
+                        let s = p.slot ? String(p.slot).trim() : 'عام';
+                        if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
+                        return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
+                    });
+                    glpQueue = result.data.glp || [];
+                    financialsQueue = result.data.financials || [];
+                    
+                    localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
+                    renderUI();
+                    
+                    if(db) {
+                        db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                    }
+                }
+            } catch(e) {}
+            hideSyncStatus();
         }
 
         async function fetchFromGoogleSheets(date) {
@@ -419,25 +459,27 @@
                     let validSlots = getSlotsForDay();
                     let fetchedSchedule = Array.isArray(result.data) ? result.data : (result.data.schedule || []);
                     
-                    patientsQueue = fetchedSchedule.map(p => {
-                        let s = p.slot ? String(p.slot).trim() : 'عام';
-                        if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
-                    });
-                    glpQueue = result.data.glp || [];
-                    financialsQueue = result.data.financials || [];
-                    
-                    localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
-                    let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
-                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
-                    renderUI();
-
-                    if(db) {
-                        db.ref('clinic_days/' + date).once('value').then(snap => {
-                            if (!snap.exists() && (patientsQueue.length > 0 || financialsQueue.length > 0)) {
-                                db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
-                            }
+                    if(patientsQueue.length === 0 && financialsQueue.length === 0) {
+                        patientsQueue = fetchedSchedule.map(p => {
+                            let s = p.slot ? String(p.slot).trim() : 'عام';
+                            if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
+                            return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
                         });
+                        glpQueue = result.data.glp || [];
+                        financialsQueue = result.data.financials || [];
+                        
+                        localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
+                        let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
+                        patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
+                        renderUI();
+
+                        if(db) {
+                            db.ref('clinic_days/' + date).once('value').then(snap => {
+                                if (!snap.exists() && (patientsQueue.length > 0 || financialsQueue.length > 0)) {
+                                    db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                                }
+                            });
+                        }
                     }
                 }
             } catch(e) {}
@@ -473,18 +515,13 @@
         function initDay() {
             const date = document.getElementById('todayDate').value;
             let cachedData = null;
-
             try { 
                 let cacheStr = localStorage.getItem('clinic_cache_' + date); 
                 if (cacheStr) cachedData = JSON.parse(cacheStr);
             } catch(e) {}
 
-            if (cachedData) {
-                applyData(cachedData);
-            } else {
-                patientsQueue = []; glpQueue = []; financialsQueue = []; renderUI();
-                showSyncStatus('جاري التحميل...');
-            }
+            if (cachedData) { applyData(cachedData); } 
+            else { patientsQueue = []; glpQueue = []; financialsQueue = []; renderUI(); showSyncStatus('جاري التحميل...'); }
 
             startFirebaseListener(date);
             
@@ -602,10 +639,8 @@
 
                 // صف الإجمالي الذكي في نهاية الجدول
                 tbody.innerHTML += `
-                <tr style="background-color: var(--border);">
-                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 800; font-size: 15px; color: var(--text-dark);">
-                        <i class="fa-solid fa-calculator"></i> الإجمالي الكلي للمريض:
-                    </td>
+                <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
+                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">الإجمالي الكلي للمريض:</td>
                     <td style="color:var(--primary-green); font-weight:900; font-size: 16px;">${totalPaid}</td>
                     <td style="color:var(--danger); font-weight:900; font-size: 16px;">${totalDebt}</td>
                     <td style="color:var(--primary-blue); font-weight:900; font-size: 16px;">${totalCredit}</td>
@@ -682,11 +717,46 @@
         }
 
         function showModal(opts) { const modal = document.getElementById('customModal'); document.getElementById('modalTitle').innerHTML = opts.title; document.getElementById('modalMessage').innerHTML = opts.message; let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn']; elementsToHide.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; }); if (opts.type === 'prompt') { document.getElementById('modalInputContainer').style.display = 'flex'; if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || ''); if (opts.showSlot) { document.getElementById('modalSlotInput').style.display = 'block'; updateModalSlotDropdown(opts.inputValue); if(opts.defaultSlot) document.getElementById('modalSlotInput').value = opts.defaultSlot; } if (opts.showPayment) { document.getElementById('modalPaymentInput').style.display = 'block'; document.getElementById('modalPaymentMethodInput').style.display = 'block'; document.getElementById('modalAmountInput').style.display = 'block'; document.getElementById('modalPaymentInput').value = 'تم الدفع'; document.getElementById('modalPaymentMethodInput').value = 'كاش'; document.getElementById('modalAmountInput').value = ''; document.getElementById('modalPaymentInput').style.borderColor = 'var(--border)'; } document.getElementById('modalCancelBtn').style.display = 'inline-block'; } modal.style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { if (opts.type === 'prompt' && opts.showPayment && !document.getElementById('modalPaymentInput').value) { document.getElementById('modalPaymentInput').style.borderColor = 'var(--danger)'; return; } modal.style.display = 'none'; if (opts.type === 'prompt' && opts.onConfirm) { opts.onConfirm(document.getElementById('modalDateInput').value, document.getElementById('modalPaymentInput').value, document.getElementById('modalSlotInput').value, document.getElementById('modalAmountInput').value, document.getElementById('modalPaymentMethodInput').value); } }; document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none'; }
-        function bookFutureAppt(idx, visitType) { let patient = patientsQueue[idx]; showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { if(cDate) { showSyncStatus('جاري تسجيل الموعد...'); try { let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; let amtVal = parseFloat(cAmt); if (!isNaN(amtVal) && amtVal > 0) { patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', credit: '', doctor: '', finished: false }); sortPatientsArray(); renderUI(); scheduleSync(); cPay = "مدفوع مسبقاً"; cAmt = ""; } 
-        let newPatient = { slot: fSlot, name: patient.name, dept: patient.dept, type: visitType, payment: cPay, method: cMethod, amount: cAmt, debt: '', credit: '', doctor: '', finished: false };
-        if(db) { db.ref('clinic_days/' + cDate).once('value').then(snap => { let dayData = snap.val() || { schedule: [], glp: [], financials: [] }; if (!dayData.schedule) dayData.schedule = []; dayData.schedule.push(newPatient); dayData.timestamp = firebase.database.ServerValue.TIMESTAMP; db.ref('clinic_days/' + cDate).set(dayData); }); }
-        localStorage.removeItem('clinic_cache_' + cDate);
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } hideSyncStatus(); } } }); }
+        
+        // --- تعديل مشكلة حجز المتابعات هنا ---
+        function bookFutureAppt(idx, visitType) { 
+            let patient = patientsQueue[idx]; 
+            showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { 
+                if(cDate) { 
+                    showSyncStatus('جاري تسجيل الموعد...'); 
+                    try { 
+                        let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; 
+                        let amtVal = parseFloat(cAmt); 
+                        if (!isNaN(amtVal) && amtVal > 0) { 
+                            patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', credit: '', doctor: '', finished: false }); 
+                            sortPatientsArray(); renderUI(); scheduleSync(); 
+                            cPay = "مدفوع مسبقاً"; cAmt = ""; 
+                        } 
+                        
+                        let newPatient = { slot: fSlot, name: patient.name, dept: patient.dept, type: visitType, payment: cPay, method: cMethod, amount: cAmt, debt: '', credit: '', doctor: '', finished: false };
+                        
+                        // هنا الحل: تحويل أي Object يرجع من Firebase لـ Array سليم قبل إضافة المريض المستقبلي
+                        if(db) { 
+                            db.ref('clinic_days/' + cDate).once('value').then(snap => { 
+                                let dayData = snap.val() || { schedule: [], glp: [], financials: [] }; 
+                                let sched = Array.isArray(dayData.schedule) ? dayData.schedule : (dayData.schedule ? Object.values(dayData.schedule) : []);
+                                sched.push(newPatient);
+                                dayData.schedule = sched; 
+                                dayData.timestamp = firebase.database.ServerValue.TIMESTAMP; 
+                                db.ref('clinic_days/' + cDate).set(dayData); 
+                            }); 
+                        }
+                        
+                        localStorage.removeItem('clinic_cache_' + cDate);
+                        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); 
+                        
+                        showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); 
+                    } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } 
+                    hideSyncStatus(); 
+                } 
+            } }); 
+        }
+
         let timerInterval; function updateTimerDisplay(secondsLeft) { let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60; let display = document.getElementById('globalTimerDisplay'); if (secondsLeft > 0) { display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`; display.classList.remove('time-ended'); } else { display.innerText = 'انتهى الوقت'; display.classList.add('time-ended'); } } function checkAndStartTimer() { let endTime = localStorage.getItem('clinicTimerEnd'); if (endTime && endTime > Date.now()) { document.getElementById('btnTimerPlay').innerText = 'إيقاف'; document.getElementById('btnTimerPlay').style.background = 'var(--warning)'; timerInterval = setInterval(() => { let left = Math.floor((localStorage.getItem('clinicTimerEnd') - Date.now()) / 1000); if (left <= 0) { clearInterval(timerInterval); updateTimerDisplay(0); document.getElementById('btnTimerPlay').style.display = 'none'; playTimerEndSound(); localStorage.removeItem('clinicTimerEnd'); } else { updateTimerDisplay(left); } }, 1000); } else { let mins = document.getElementById('timerDuration').value; updateTimerDisplay(mins * 60); } } function toggleTimer() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} let btn = document.getElementById('btnTimerPlay'); if (localStorage.getItem('clinicTimerEnd')) { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); btn.innerText = 'تشغيل'; btn.style.background = 'var(--primary-blue)'; } else { let mins = document.getElementById('timerDuration').value; localStorage.setItem('clinicTimerEnd', Date.now() + (mins * 60 * 1000)); checkAndStartTimer(); } } function resetTimer() { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); document.getElementById('btnTimerPlay').style.display = 'block'; document.getElementById('btnTimerPlay').innerText = 'تشغيل'; document.getElementById('btnTimerPlay').style.background = 'var(--primary-blue)'; updateTimerDisplay(document.getElementById('timerDuration').value * 60); } function setTimer() { if(!localStorage.getItem('clinicTimerEnd')) resetTimer(); } function playTimerEndSound() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let playTone = (freq, time, duration) => { let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.3, audioCtx.currentTime + time); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + time + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(audioCtx.currentTime + time); osc.stop(audioCtx.currentTime + time + duration); }; playTone(523.25, 0, 0.5); playTone(659.25, 0.2, 0.6); } catch (e) {} }
         function getNextWeekDate() { let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); const year = nextWeek.getFullYear(); const month = String(nextWeek.getMonth() + 1).padStart(2, '0'); const day = String(nextWeek.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; } function getSlotsForDay() { const d = new Date(document.getElementById('todayDate').value).getDay(); if (d === 6) return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function updateModalSlotDropdown(dateStr) { const slotSelect = document.getElementById('modalSlotInput'); if(!slotSelect) return; slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>'; const slots = getSlotsForSpecificDate(dateStr); if (slots) { slots.forEach(slot => { let opt = document.createElement('option'); opt.value = slot; opt.innerText = slot; slotSelect.appendChild(opt); }); } } function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); if(!s) return; s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => { let opt = document.createElement('option'); opt.value = x; opt.innerText = x; s.appendChild(opt); }); }
         function initDatePickers() { headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); initDay(); } }); modalDatePicker = flatpickr("#modalDateInput", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true", onChange: (d, s) => { updateModalSlotDropdown(s); } }); }
