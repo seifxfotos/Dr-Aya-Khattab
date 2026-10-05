@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
+    <!-- مكاتب Firebase للـ Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    
     <style>
         :root {
             --primary-blue: #0093D0; --primary-green: #8CC63F; --dept-nutrition: #e67e22; 
@@ -95,7 +99,6 @@
         
         .inline-dept-select { max-width: 100px; }
         
-        /* CSS الخاص باسم المريض */
         .patient-name-cell {
             font-weight: bold;
             cursor: pointer;
@@ -150,8 +153,8 @@
     <div class="total-revenue-bar" id="totalRevenueBar">
         <div class="revenue-item" title="الكاش بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> الدرج (كاش): <span id="totalCash">0</span></div>
         <div class="revenue-item" title="محافظ وفون كاش"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="totalElec">0</span></div>
-        <div class="revenue-item" title="مبيعات الأدوية مفصولة"><i class="fa-solid fa-pills"></i> أدوية: <span id="totalMeds">0</span></div>
-        <div class="revenue-item revenue-total" title="إجمالي الدخل اليوم"><i class="fa-solid fa-wallet"></i> الإجمالي: <span id="totalRevenueValue">0</span></div>
+        <div class="revenue-item" title="مبيعات الأدوية مفصولة للتوضيح"><i class="fa-solid fa-pills"></i> إجمالي أدوية: <span id="totalMeds">0</span></div>
+        <div class="revenue-item revenue-total" title="إجمالي الدخل اليوم كاش والكتروني"><i class="fa-solid fa-wallet"></i> الإجمالي الكلي: <span id="totalRevenueValue">0</span></div>
     </div>
 
     <div class="container">
@@ -281,6 +284,27 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
+        // إعدادات Firebase الخاصة بالـ Realtime Database (قم بنسخها من إعدادات مشروعك)
+        const firebaseConfig = {
+            apiKey: "ضع_مفتاح_API_هنا",
+            authDomain: "project-id.firebaseapp.com",
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
+            projectId: "project-id",
+            storageBucket: "project-id.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        let db = null;
+        try {
+            if (firebaseConfig.apiKey !== "ضع_مفتاح_API_هنا") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database(); // استخدام Realtime Database بدلاً من Firestore
+            }
+        } catch(e) { console.error("Firebase init error", e); }
+
+        let unsubscribeFirebase = null;
+
         // المتغيرات الأساسية
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
         let isLoadingData = false; let syncTimeout = null; let audioCtx = null;
@@ -289,7 +313,7 @@
         let glpQueue = [];
         let financialsQueue = [];
 
-        // 🚨 الرابط المطلوب المحدث 🚨
+        // 🚨 الرابط الخاص بـ Google Apps Script 🚨
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx77Y7M4TpwlAwk7xh5E9duD_VwFqPMbHEnqezOER_-2KGZWT7moTPvjWN5tCpncfA/exec';
 
         function showSyncStatus(text) {
@@ -483,21 +507,31 @@
             
             patientsQueue.forEach(p => {
                 let amt = parseFloat(p.amount);
-                if (!isNaN(amt)) { if (p.method === 'فودافون كاش' || p.method === 'أنستا باي') elec += amt; else cash += amt; }
+                if (!isNaN(amt)) { 
+                    if (p.method === 'فودافون كاش' || p.method === 'أنستا باي') elec += amt; 
+                    else cash += amt; 
+                }
             });
             
             financialsQueue.forEach(f => {
                 let amt = parseFloat(f.amount);
                 if (!isNaN(amt)) {
-                    if (f.type === 'دواء') { meds += amt; } 
-                    else if (f.type === 'مصروف') { cash -= amt; }
+                    if (f.type === 'دواء') { 
+                        meds += amt; 
+                        if (f.method === 'فودافون كاش' || f.method === 'أنستا باي') elec += amt;
+                        else cash += amt;
+                    } 
+                    else if (f.type === 'مصروف') { 
+                        cash -= amt; 
+                    }
                 }
             });
             
             document.getElementById('totalCash').innerText = cash;
             document.getElementById('totalElec').innerText = elec;
             document.getElementById('totalMeds').innerText = meds;
-            document.getElementById('totalRevenueValue').innerText = (cash + elec + meds);
+            
+            document.getElementById('totalRevenueValue').innerText = (cash + elec);
         }
 
         async function fetchFromGoogle(payload) {
@@ -508,6 +542,57 @@
             });
             if (!res.ok) throw new Error("فشل الاتصال بالسيرفر");
             return JSON.parse(await res.text());
+        }
+
+        // الاستماع للتغييرات اللحظية من Realtime Database 
+        function listenToFirebase(date) {
+            if (!db) return;
+            
+            const dayRef = db.ref('clinic_days/' + date);
+            
+            if (unsubscribeFirebase) {
+                unsubscribeFirebase.off();
+            }
+            
+            dayRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const newScheduleStr = JSON.stringify(data.schedule || []);
+                    const currentScheduleStr = JSON.stringify(patientsQueue);
+                    const newFinStr = JSON.stringify(data.financials || []);
+                    const currentFinStr = JSON.stringify(financialsQueue);
+                    const newGlpStr = JSON.stringify(data.glp || []);
+                    const currentGlpStr = JSON.stringify(glpQueue);
+
+                    if (newScheduleStr === currentScheduleStr && newFinStr === currentFinStr && newGlpStr === currentGlpStr) {
+                        return;
+                    }
+
+                    patientsQueue = data.schedule || [];
+                    glpQueue = data.glp || [];
+                    financialsQueue = data.financials || [];
+                    
+                    localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
+                    let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
+                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
+
+                    renderUI();
+                }
+            });
+            
+            unsubscribeFirebase = dayRef;
+        }
+
+        // الإرسال الفوري للـ Realtime Database
+        function pushToFirebase() {
+            if (!db) return;
+            const date = document.getElementById('todayDate').value;
+            db.ref('clinic_days/' + date).set({
+                schedule: patientsQueue,
+                glp: glpQueue,
+                financials: financialsQueue,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).catch(err => console.error("Firebase Sync Error", err));
         }
 
         async function loadDataFromGoogle() {
@@ -524,17 +609,20 @@
                         glpQueue = parsed.glp || [];
                         financialsQueue = parsed.financials || [];
                     }
+                    
+                    let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
+                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
+
                     renderUI(); 
                 }
             } catch(e) {}
 
-            if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) {
-                showModal({ type: 'error', title: 'تنبيه هام', message: 'برجاء وضع الرابط الجديد المستخرج من جوجل شيت في الكود.' });
-                return;
-            }
+            listenToFirebase(date);
+
+            if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
 
             isLoadingData = true;
-            showSyncStatus('جاري تحميل البيانات...');
+            showSyncStatus('جاري تحميل بيانات السجل...');
             
             try {
                 let result = await fetchFromGoogle({ action: 'GET_DATA', date: date });
@@ -557,6 +645,8 @@
                     patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
                     
                     renderUI(); 
+                    
+                    pushToFirebase();
                 }
             } catch(e) {}
             
@@ -572,13 +662,18 @@
             let savedFin = {}; patientsQueue.forEach((p,i) => savedFin[p.name+'_'+i] = p.finished);
             localStorage.setItem('clinic_fin_'+date, JSON.stringify(savedFin));
             
-            showSyncStatus('تعديلات معلقة...');
+            pushToFirebase();
+
+            showSyncStatus('جاري الأرشفة...');
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(async () => {
                 try {
                     await fetchFromGoogle({ action: 'SYNC_DATA', date: date, schedule: patientsQueue, glp: glpQueue, financials: financialsQueue });
-                } catch(e) {}
-                hideSyncStatus();
+                    hideSyncStatus();
+                } catch(e) {
+                    showSyncStatus('خطأ في الأرشفة');
+                    setTimeout(hideSyncStatus, 2000);
+                }
             }, 2000); 
         }
 
@@ -730,7 +825,6 @@
             renderUI(); scheduleSync();
         }
 
-        // --- وظائف النقر على اسم المريض ---
         function openPatientCard(patientName) {
             const cleanName = patientName.replace(/\s*\(.*\)\s*/g, '');
             localStorage.setItem('clinic_auto_search_name', cleanName);
@@ -889,6 +983,5 @@
 
         window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); loadDataFromGoogle(); };
     </script> 
-
 </body>
 </html>
