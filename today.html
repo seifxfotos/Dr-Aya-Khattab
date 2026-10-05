@@ -169,6 +169,22 @@
         .modal-actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px;}
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
+        
+        .history-total-box {
+            background: rgba(140, 198, 63, 0.1);
+            border: 1px solid var(--primary-green);
+            color: var(--primary-green);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -314,16 +330,19 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي (معدلة لمنع السكرول الأفقي وتفعيل الرأسي) -->
+    <!-- نافذة السجل المالي -->
     <div id="historyModal" class="modal-overlay">
-        <div class="modal-box" style="max-width: 800px; width: 95%;"> <!-- عرض أوسع للبوب أب -->
+        <div class="modal-box" style="max-width: 550px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
                 <i class="fa-solid fa-file-invoice-dollar"></i> السجل المالي: <span id="historyPatientName" style="color: var(--text-dark);"></span>
             </h3>
-            <!-- إخفاء السكرول الأفقي، وتفعيل السكرول الرأسي فقط -->
-            <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; margin-bottom: 15px;">
-                <!-- إعطاء عرض 100% للجدول ده بالذات عشان مياخدش عرض الـ 900 بيكسل بتاع الجداول التانية -->
-                <table class="schedule-table" style="min-width: 100%; margin-bottom: 0;">
+            
+            <div class="history-total-box">
+                إجمالي المبالغ المدفوعة: <span id="historyTotalPaid" style="font-size: 18px; color: var(--primary-blue);">0</span> ج.م
+            </div>
+
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                <table class="schedule-table">
                     <thead><tr><th>التاريخ</th><th>البيان / القسم</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead>
                     <tbody id="historyTableBody"></tbody>
                 </table>
@@ -355,7 +374,9 @@
         } catch(e) { console.error("Firebase init error", e); }
 
         let unsubscribeFirebase = null;
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyrJ3bUr0vlQFVfe-50ZqtlAT8MQim5BWTX95tp3N1CKJr6BPS0G9dOBFYgG7crNQFr/exec'; 
+        
+        // 🚨 الرابط الخاص بك 🚨
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuR7lJh6RIoFONmFOjSAfEixti0_1Pqop897qS5BWal7V7_O1XwEvSgUC5gi4fvaSK/exec';
 
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
         let syncTimeout = null; let audioCtx = null; let isLoadingData = false;
@@ -549,35 +570,18 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        function normalizeArabicName(text) {
-            if (!text) return "";
-            return text.trim().replace(/\s+/g, ' ')
-                .replace(/[أإآ]/g, 'ا')
-                .replace(/ة/g, 'ه')
-                .replace(/ى/g, 'ي');
-        }
-
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = '';
             
             let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
+            let patientHistory = allHistory[name] || [];
+            
             let todayDate = document.getElementById('todayDate').value;
-            let combined = [];
+            let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
-            let normalizedTargetName = normalizeArabicName(name);
-            for (let savedName in allHistory) {
-                if (normalizeArabicName(savedName) === normalizedTargetName) {
-                    allHistory[savedName].forEach(record => {
-                        if (record.date !== todayDate) {
-                            combined.push(record);
-                        }
-                    });
-                }
-            }
-            
-            let todayRecords = patientsQueue.filter(p => normalizeArabicName(p.name) === normalizedTargetName && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
+            let combined = [...patientHistory];
             
             todayRecords.forEach(tr => {
                 combined.push({
@@ -589,12 +593,14 @@
                 });
             });
             
-            combined.sort((a, b) => new Date(b.date.replace(' (اليوم)', '')) - new Date(a.date.replace(' (اليوم)', '')));
+            let totalPaid = 0; 
             
             if (combined.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات مالية مسجلة لهذا المريض</td></tr>';
             } else {
                 combined.forEach(record => {
+                    totalPaid += parseFloat(record.amount) || 0; 
+                    
                     let debtHtml = record.debt > 0 ? `<span style="color:var(--danger);font-weight:bold;">${record.debt}</span>` : '0';
                     let creditHtml = record.credit > 0 ? `<span style="color:var(--primary-blue);font-weight:bold;">${record.credit}</span>` : '0';
                     let amountHtml = record.amount > 0 ? `<span style="color:var(--primary-green);font-weight:bold;">${record.amount}</span>` : '0';
@@ -607,6 +613,8 @@
                     </tr>`;
                 });
             }
+            
+            document.getElementById('historyTotalPaid').innerText = totalPaid;
             
             document.getElementById('historyModal').style.display = 'flex';
         }
