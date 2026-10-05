@@ -174,11 +174,17 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
 
-        /* ستايل جدول السجل المالي الجديد (بدون سكرول عرضي) */
-        .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; }
-        .history-table th, .history-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        /* ستايل جدول السجل المالي محكم بدون سكرول عرضي */
+        .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; table-layout: fixed; }
+        .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
         .history-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         .history-table tr:last-child td { border-bottom: none; }
+        /* عرض مخصص لكل عمود عشان يبقى متناسق وميخرجش برا الشاشة */
+        .history-table th:nth-child(1) { width: 25%; }
+        .history-table th:nth-child(2) { width: 35%; }
+        .history-table th:nth-child(3) { width: 15%; }
+        .history-table th:nth-child(4) { width: 12.5%; }
+        .history-table th:nth-child(5) { width: 12.5%; }
     </style>
 </head>
 <body>
@@ -327,7 +333,7 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي المحدثة -->
+    <!-- نافذة السجل المالي (من غير سكرول عرضي وبتجمع المدفوع بس) -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 650px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
@@ -367,7 +373,8 @@
         } catch(e) { console.error("Firebase init error", e); }
 
         let unsubscribeFirebase = null;
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7CyihMxoECPjZLwMhVD_dLyllBBuEwnJgMZae8y3j2wjRi-mfIG88YfCYdycT0Oqy/exec';
+        // السكريبت الخاص بك
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxj2clkzx8uQF_p2i-12YIMq0w-QBf8xWLfeaGmwoDJHPxN-q6aZdQZ6GIJE_aXpN5x/exec';
 
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
         let syncTimeout = null; let audioCtx = null; let isLoadingData = false;
@@ -604,8 +611,8 @@
             let todayDate = document.getElementById('todayDate').value;
             let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
-            // فلترة ذكية لمنع تكرار داتا "النهاردة"
-            let combined = patientHistory.filter(record => record.date !== todayDate);
+            // الحل الذكي هنا: استخدام includes عشان يمسح أي تاريخ بيحتوي على "النهاردة" ويمنع التكرار نهائياً
+            let combined = patientHistory.filter(record => !String(record.date).includes(todayDate));
             
             todayRecords.forEach(tr => {
                 combined.push({
@@ -642,7 +649,7 @@
                     </tr>`;
                 });
 
-                // صف الإجمالي الذكي 
+                // صف الإجمالي الذكي تحت خالص
                 tbody.innerHTML += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
                     <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
