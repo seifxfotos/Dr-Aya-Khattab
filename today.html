@@ -333,7 +333,7 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي (من غير سكرول عرضي وبتجمع المدفوع بس) -->
+    <!-- نافذة السجل المالي -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 650px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
@@ -600,6 +600,7 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
+        // --- تم حل المشكلة: الفلتر بيستخدم includes بشكل قاطع لمسح أي تكرار ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
@@ -611,7 +612,7 @@
             let todayDate = document.getElementById('todayDate').value;
             let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
-            // الحل الذكي هنا: استخدام includes عشان يمسح أي تاريخ بيحتوي على "النهاردة" ويمنع التكرار نهائياً
+            // فلترة ذكية لضمان مسح تاريخ النهاردة لو كان متسجل في الأرشيف
             let combined = patientHistory.filter(record => !String(record.date).includes(todayDate));
             
             todayRecords.forEach(tr => {
@@ -649,7 +650,6 @@
                     </tr>`;
                 });
 
-                // صف الإجمالي الذكي تحت خالص
                 tbody.innerHTML += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
                     <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
