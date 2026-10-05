@@ -174,7 +174,7 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
 
-        /* تنسيقات نافذة السجل المالي الجديدة */
+        /* ستايل جدول السجل المالي الجديد (بدون سكرول عرضي) */
         .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; }
         .history-table th, .history-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .history-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
@@ -327,7 +327,7 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي الجديدة (بدون سكرول عرضي وبتعديل الإجمالي) -->
+    <!-- نافذة السجل المالي المحدثة -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 650px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
@@ -593,7 +593,6 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        // --- تم حل مشكلة تكرار "النهاردة" وإلغاء جمع الديون ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
@@ -605,7 +604,7 @@
             let todayDate = document.getElementById('todayDate').value;
             let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
-            // فلترة الشيت القديم عشان ميجيبش داتا بتاعت "النهاردة" تاني لو كانت متسجلة
+            // فلترة ذكية لمنع تكرار داتا "النهاردة"
             let combined = patientHistory.filter(record => record.date !== todayDate);
             
             todayRecords.forEach(tr => {
@@ -643,7 +642,7 @@
                     </tr>`;
                 });
 
-                // صف الإجمالي الذكي في نهاية الجدول (يجمع المدفوع فقط)
+                // صف الإجمالي الذكي 
                 tbody.innerHTML += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
                     <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
