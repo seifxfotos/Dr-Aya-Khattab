@@ -333,7 +333,7 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي -->
+    <!-- نافذة السجل المالي المحدثة -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 650px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
@@ -373,7 +373,6 @@
         } catch(e) { console.error("Firebase init error", e); }
 
         let unsubscribeFirebase = null;
-        // السكريبت الخاص بك
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxj2clkzx8uQF_p2i-12YIMq0w-QBf8xWLfeaGmwoDJHPxN-q6aZdQZ6GIJE_aXpN5x/exec';
 
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
@@ -600,7 +599,6 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        // --- تم حل المشكلة: الفلتر بيستخدم includes بشكل قاطع لمسح أي تكرار ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
@@ -612,7 +610,7 @@
             let todayDate = document.getElementById('todayDate').value;
             let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
-            // فلترة ذكية لضمان مسح تاريخ النهاردة لو كان متسجل في الأرشيف
+            // الفلترة الذكية لمنع التكرار
             let combined = patientHistory.filter(record => !String(record.date).includes(todayDate));
             
             todayRecords.forEach(tr => {
