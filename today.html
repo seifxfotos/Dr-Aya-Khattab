@@ -64,10 +64,13 @@
         .btn-glp { background-color: var(--glp-color); }
         .btn-glp:hover { background-color: #2980b9; }
 
-        /* جعل الجداول قابلة للتمرير على الشاشات الصغيرة */
+        /* جعل الجداول قابلة للتمرير على الشاشات الصغيرة وتصحيح العرض */
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-        .schedule-table { width: 100%; min-width: 800px; background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 20px; }
+        .schedule-table { width: 100%; background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 20px; }
+        /* الجداول الرئيسية فقط هي اللي بتاخد عرض كبير عشان متأثرش على اللي تحت */
+        .table-responsive .schedule-table { min-width: 850px; }
+        
         .schedule-table th, .schedule-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px;}
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px;}
         .schedule-table tr:last-child td { border-bottom: none; }
@@ -154,8 +157,8 @@
         /* الشاشات المتوسطة والتابلت */
         @media (max-width: 1000px) {
             .grid-3col { grid-template-columns: 1fr; }
-            .add-patient-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } /* توزيع الخلايا على صفين */
-            .btn-add { grid-column: span 4; } /* الزر ياخد العرض كله */
+            .add-patient-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } 
+            .btn-add { grid-column: span 4; } 
             
             /* تحويل شريط الإجمالي ليكون جزء من الصفحة مش طاير */
             .revenue-wrapper { position: relative; bottom: auto; left: auto; transform: none; width: 100%; margin-top: -10px; margin-bottom: 25px; flex-direction: column; align-items: center; gap: 8px; }
@@ -264,9 +267,7 @@
                     <select id="glpDose" class="modal-input" style="width: auto; margin:0;"><option value="0.25">جرعة 0.25</option><option value="0.50">جرعة 0.50</option><option value="1">جرعة 1</option></select>
                     <button class="btn-add btn-glp" onclick="addGLP()"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div class="table-responsive">
-                    <table class="schedule-table"><thead><tr><th>الاسم</th><th>الجرعة</th><th>حذف</th></tr></thead><tbody id="glpTableBody"></tbody></table>
-                </div>
+                <table class="schedule-table"><thead><tr><th>الاسم</th><th>الجرعة</th><th>حذف</th></tr></thead><tbody id="glpTableBody"></tbody></table>
             </div>
 
             <div class="card-panel">
@@ -278,9 +279,7 @@
                     <input type="number" id="medAmount" placeholder="المبلغ" class="modal-input" style="width: 70px; margin:0;">
                     <button class="btn-add" style="background:var(--primary-green)" onclick="addMedication()"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div class="table-responsive">
-                    <table class="schedule-table"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medTableBody"></tbody></table>
-                </div>
+                <table class="schedule-table"><thead><tr><th>البيان</th><th>الوسيلة</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="medTableBody"></tbody></table>
             </div>
 
             <div class="card-panel">
@@ -290,9 +289,7 @@
                     <input type="number" id="expAmount" placeholder="المبلغ" class="modal-input" style="width: 80px; margin:0;">
                     <button class="btn-add" style="background:var(--danger)" onclick="addExpense()"><i class="fa-solid fa-minus"></i></button>
                 </div>
-                <div class="table-responsive">
-                    <table class="schedule-table"><thead><tr><th>البيان</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
-                </div>
+                <table class="schedule-table"><thead><tr><th>البيان</th><th>المبلغ</th><th>حذف</th></tr></thead><tbody id="expTableBody"></tbody></table>
             </div>
         </div>
     </div>
@@ -566,7 +563,6 @@
             if (d === 1 || d === 3) sel.value = "علاج طبيعي"; else if (d === 2) sel.value = "تغذية علاجية";
         }
 
-        // --- دالة الحسابات لتوزيع القيم على الأشكال الثلاثة ---
         function calculateTotals() {
             let clinicCash = 0; let clinicElec = 0; 
             let medsCash = 0; let medsElec = 0;
