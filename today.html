@@ -314,14 +314,16 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي (معدلة لعرض أوسع) -->
+    <!-- نافذة السجل المالي (معدلة لمنع السكرول الأفقي وتفعيل الرأسي) -->
     <div id="historyModal" class="modal-overlay">
-        <div class="modal-box" style="max-width: 750px; width: 95%;">
+        <div class="modal-box" style="max-width: 800px; width: 95%;"> <!-- عرض أوسع للبوب أب -->
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
                 <i class="fa-solid fa-file-invoice-dollar"></i> السجل المالي: <span id="historyPatientName" style="color: var(--text-dark);"></span>
             </h3>
-            <div class="table-responsive" style="max-height: 350px; overflow-y: auto; margin-bottom: 15px;">
-                <table class="schedule-table">
+            <!-- إخفاء السكرول الأفقي، وتفعيل السكرول الرأسي فقط -->
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; margin-bottom: 15px;">
+                <!-- إعطاء عرض 100% للجدول ده بالذات عشان مياخدش عرض الـ 900 بيكسل بتاع الجداول التانية -->
+                <table class="schedule-table" style="min-width: 100%; margin-bottom: 0;">
                     <thead><tr><th>التاريخ</th><th>البيان / القسم</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead>
                     <tbody id="historyTableBody"></tbody>
                 </table>
