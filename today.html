@@ -321,15 +321,15 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي الجديدة مع صف الإجمالي الذكي -->
+    <!-- نافذة السجل المالي الجديدة (تم إلغاء السكرول العرضي وتعديل الإجمالي) -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 650px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
                 <i class="fa-solid fa-file-invoice-dollar"></i> السجل المالي: <span id="historyPatientName" style="color: var(--text-dark);"></span>
             </h3>
             
-            <div class="table-responsive" style="max-height: 350px; overflow-y: auto; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px;">
-                <table class="schedule-table" style="margin-bottom: 0; box-shadow: none;">
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto; overflow-x: hidden; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px;">
+                <table class="schedule-table" style="min-width: 100%; margin-bottom: 0; box-shadow: none;">
                     <thead><tr><th>التاريخ</th><th>البيان / القسم</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead>
                     <tbody id="historyTableBody"></tbody>
                 </table>
@@ -375,7 +375,6 @@
         }
         function hideSyncStatus() { document.getElementById('syncIndicator').classList.remove('show'); }
 
-        // تم إضافة معالجة قوية للمصفوفات عشان ميحصلش Crash بسبب Firebase
         function applyData(data) {
             let nSched = Array.isArray(data.schedule) ? data.schedule : (data.schedule ? Object.values(data.schedule) : []);
             let nFin = Array.isArray(data.financials) ? data.financials : (data.financials ? Object.values(data.financials) : []);
@@ -409,14 +408,12 @@
             
             dayRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                // التعديل هنا: لو الداتا فاضية تماماً من الحجوزات، هيسحب من الشيت عشان يتأكد
                 if (data && (data.schedule || data.glp || data.financials)) { applyData(data); } 
                 else { fetchFromGoogleSheets(date); }
             });
             unsubscribeFirebase = dayRef;
         }
 
-        // الزرار السحري عشان لو حصل أي لخبطة تجيب من الشيت طوالي
         async function forceRefreshFromSheet() {
             const date = document.getElementById('todayDate').value;
             showSyncStatus('جاري التحديث من الشيت...');
@@ -585,7 +582,7 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        // --- التحديث الجديد لدالة السجل المالي (صف الإجمالي الذكي) ---
+        // --- التحديث الجديد لدالة السجل المالي (تعديل الإجمالي وإلغاء السكرول) ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
@@ -610,8 +607,6 @@
             });
             
             let totalPaid = 0; 
-            let totalDebt = 0;
-            let totalCredit = 0;
             
             if (combined.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات مالية مسجلة لهذا المريض</td></tr>';
@@ -622,8 +617,6 @@
                     let crd = parseFloat(record.credit) || 0;
 
                     totalPaid += amt; 
-                    totalDebt += dbt;
-                    totalCredit += crd;
                     
                     let debtHtml = dbt > 0 ? `<span style="color:var(--danger);font-weight:bold;">${dbt}</span>` : '0';
                     let creditHtml = crd > 0 ? `<span style="color:var(--primary-blue);font-weight:bold;">${crd}</span>` : '0';
@@ -637,13 +630,13 @@
                     </tr>`;
                 });
 
-                // صف الإجمالي الذكي في نهاية الجدول
+                // صف الإجمالي الذكي في نهاية الجدول (يجمع المدفوع فقط)
                 tbody.innerHTML += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
-                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">الإجمالي الكلي للمريض:</td>
+                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
                     <td style="color:var(--primary-green); font-weight:900; font-size: 16px;">${totalPaid}</td>
-                    <td style="color:var(--danger); font-weight:900; font-size: 16px;">${totalDebt}</td>
-                    <td style="color:var(--primary-blue); font-weight:900; font-size: 16px;">${totalCredit}</td>
+                    <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
+                    <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
                 </tr>`;
             }
             
@@ -717,46 +710,11 @@
         }
 
         function showModal(opts) { const modal = document.getElementById('customModal'); document.getElementById('modalTitle').innerHTML = opts.title; document.getElementById('modalMessage').innerHTML = opts.message; let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn']; elementsToHide.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; }); if (opts.type === 'prompt') { document.getElementById('modalInputContainer').style.display = 'flex'; if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || ''); if (opts.showSlot) { document.getElementById('modalSlotInput').style.display = 'block'; updateModalSlotDropdown(opts.inputValue); if(opts.defaultSlot) document.getElementById('modalSlotInput').value = opts.defaultSlot; } if (opts.showPayment) { document.getElementById('modalPaymentInput').style.display = 'block'; document.getElementById('modalPaymentMethodInput').style.display = 'block'; document.getElementById('modalAmountInput').style.display = 'block'; document.getElementById('modalPaymentInput').value = 'تم الدفع'; document.getElementById('modalPaymentMethodInput').value = 'كاش'; document.getElementById('modalAmountInput').value = ''; document.getElementById('modalPaymentInput').style.borderColor = 'var(--border)'; } document.getElementById('modalCancelBtn').style.display = 'inline-block'; } modal.style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { if (opts.type === 'prompt' && opts.showPayment && !document.getElementById('modalPaymentInput').value) { document.getElementById('modalPaymentInput').style.borderColor = 'var(--danger)'; return; } modal.style.display = 'none'; if (opts.type === 'prompt' && opts.onConfirm) { opts.onConfirm(document.getElementById('modalDateInput').value, document.getElementById('modalPaymentInput').value, document.getElementById('modalSlotInput').value, document.getElementById('modalAmountInput').value, document.getElementById('modalPaymentMethodInput').value); } }; document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none'; }
-        
-        // --- تعديل مشكلة حجز المتابعات هنا ---
-        function bookFutureAppt(idx, visitType) { 
-            let patient = patientsQueue[idx]; 
-            showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { 
-                if(cDate) { 
-                    showSyncStatus('جاري تسجيل الموعد...'); 
-                    try { 
-                        let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; 
-                        let amtVal = parseFloat(cAmt); 
-                        if (!isNaN(amtVal) && amtVal > 0) { 
-                            patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', credit: '', doctor: '', finished: false }); 
-                            sortPatientsArray(); renderUI(); scheduleSync(); 
-                            cPay = "مدفوع مسبقاً"; cAmt = ""; 
-                        } 
-                        
-                        let newPatient = { slot: fSlot, name: patient.name, dept: patient.dept, type: visitType, payment: cPay, method: cMethod, amount: cAmt, debt: '', credit: '', doctor: '', finished: false };
-                        
-                        // هنا الحل: تحويل أي Object يرجع من Firebase لـ Array سليم قبل إضافة المريض المستقبلي
-                        if(db) { 
-                            db.ref('clinic_days/' + cDate).once('value').then(snap => { 
-                                let dayData = snap.val() || { schedule: [], glp: [], financials: [] }; 
-                                let sched = Array.isArray(dayData.schedule) ? dayData.schedule : (dayData.schedule ? Object.values(dayData.schedule) : []);
-                                sched.push(newPatient);
-                                dayData.schedule = sched; 
-                                dayData.timestamp = firebase.database.ServerValue.TIMESTAMP; 
-                                db.ref('clinic_days/' + cDate).set(dayData); 
-                            }); 
-                        }
-                        
-                        localStorage.removeItem('clinic_cache_' + cDate);
-                        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); 
-                        
-                        showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); 
-                    } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } 
-                    hideSyncStatus(); 
-                } 
-            } }); 
-        }
-
+        function bookFutureAppt(idx, visitType) { let patient = patientsQueue[idx]; showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { if(cDate) { showSyncStatus('جاري تسجيل الموعد...'); try { let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; let amtVal = parseFloat(cAmt); if (!isNaN(amtVal) && amtVal > 0) { patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', credit: '', doctor: '', finished: false }); sortPatientsArray(); renderUI(); scheduleSync(); cPay = "مدفوع مسبقاً"; cAmt = ""; } 
+        let newPatient = { slot: fSlot, name: patient.name, dept: patient.dept, type: visitType, payment: cPay, method: cMethod, amount: cAmt, debt: '', credit: '', doctor: '', finished: false };
+        if(db) { db.ref('clinic_days/' + cDate).once('value').then(snap => { let dayData = snap.val() || { schedule: [], glp: [], financials: [] }; let sched = Array.isArray(dayData.schedule) ? dayData.schedule : (dayData.schedule ? Object.values(dayData.schedule) : []); sched.push(newPatient); dayData.schedule = sched; dayData.timestamp = firebase.database.ServerValue.TIMESTAMP; db.ref('clinic_days/' + cDate).set(dayData); }); }
+        localStorage.removeItem('clinic_cache_' + cDate);
+        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } hideSyncStatus(); } } }); }
         let timerInterval; function updateTimerDisplay(secondsLeft) { let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60; let display = document.getElementById('globalTimerDisplay'); if (secondsLeft > 0) { display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`; display.classList.remove('time-ended'); } else { display.innerText = 'انتهى الوقت'; display.classList.add('time-ended'); } } function checkAndStartTimer() { let endTime = localStorage.getItem('clinicTimerEnd'); if (endTime && endTime > Date.now()) { document.getElementById('btnTimerPlay').innerText = 'إيقاف'; document.getElementById('btnTimerPlay').style.background = 'var(--warning)'; timerInterval = setInterval(() => { let left = Math.floor((localStorage.getItem('clinicTimerEnd') - Date.now()) / 1000); if (left <= 0) { clearInterval(timerInterval); updateTimerDisplay(0); document.getElementById('btnTimerPlay').style.display = 'none'; playTimerEndSound(); localStorage.removeItem('clinicTimerEnd'); } else { updateTimerDisplay(left); } }, 1000); } else { let mins = document.getElementById('timerDuration').value; updateTimerDisplay(mins * 60); } } function toggleTimer() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} let btn = document.getElementById('btnTimerPlay'); if (localStorage.getItem('clinicTimerEnd')) { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); btn.innerText = 'تشغيل'; btn.style.background = 'var(--primary-blue)'; } else { let mins = document.getElementById('timerDuration').value; localStorage.setItem('clinicTimerEnd', Date.now() + (mins * 60 * 1000)); checkAndStartTimer(); } } function resetTimer() { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); document.getElementById('btnTimerPlay').style.display = 'block'; document.getElementById('btnTimerPlay').innerText = 'تشغيل'; document.getElementById('btnTimerPlay').style.background = 'var(--primary-blue)'; updateTimerDisplay(document.getElementById('timerDuration').value * 60); } function setTimer() { if(!localStorage.getItem('clinicTimerEnd')) resetTimer(); } function playTimerEndSound() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let playTone = (freq, time, duration) => { let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.3, audioCtx.currentTime + time); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + time + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(audioCtx.currentTime + time); osc.stop(audioCtx.currentTime + time + duration); }; playTone(523.25, 0, 0.5); playTone(659.25, 0.2, 0.6); } catch (e) {} }
         function getNextWeekDate() { let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); const year = nextWeek.getFullYear(); const month = String(nextWeek.getMonth() + 1).padStart(2, '0'); const day = String(nextWeek.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; } function getSlotsForDay() { const d = new Date(document.getElementById('todayDate').value).getDay(); if (d === 6) return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function updateModalSlotDropdown(dateStr) { const slotSelect = document.getElementById('modalSlotInput'); if(!slotSelect) return; slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>'; const slots = getSlotsForSpecificDate(dateStr); if (slots) { slots.forEach(slot => { let opt = document.createElement('option'); opt.value = slot; opt.innerText = slot; slotSelect.appendChild(opt); }); } } function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); if(!s) return; s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => { let opt = document.createElement('option'); opt.value = x; opt.innerText = x; s.appendChild(opt); }); }
         function initDatePickers() { headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); initDay(); } }); modalDatePicker = flatpickr("#modalDateInput", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true", onChange: (d, s) => { updateModalSlotDropdown(s); } }); }
