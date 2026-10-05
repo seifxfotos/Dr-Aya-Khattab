@@ -169,22 +169,6 @@
         .modal-actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px;}
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
-        
-        .history-total-box {
-            background: rgba(140, 198, 63, 0.1);
-            border: 1px solid var(--primary-green);
-            color: var(--primary-green);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 15px;
-            text-align: center;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
     </style>
 </head>
 <body>
@@ -332,16 +316,12 @@
 
     <!-- نافذة السجل المالي -->
     <div id="historyModal" class="modal-overlay">
-        <div class="modal-box" style="max-width: 550px; width: 95%;">
+        <div class="modal-box" style="max-width: 600px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
                 <i class="fa-solid fa-file-invoice-dollar"></i> السجل المالي: <span id="historyPatientName" style="color: var(--text-dark);"></span>
             </h3>
             
-            <div class="history-total-box">
-                إجمالي المبالغ المدفوعة: <span id="historyTotalPaid" style="font-size: 18px; color: var(--primary-blue);">0</span> ج.م
-            </div>
-
-            <div class="table-responsive" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto; margin-bottom: 15px;">
                 <table class="schedule-table">
                     <thead><tr><th>التاريخ</th><th>البيان / القسم</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead>
                     <tbody id="historyTableBody"></tbody>
@@ -375,7 +355,7 @@
 
         let unsubscribeFirebase = null;
         
-        // 🚨 الرابط الخاص بك 🚨
+        // الرابط الخاص بك
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7CyihMxoECPjZLwMhVD_dLyllBBuEwnJgMZae8y3j2wjRi-mfIG88YfCYdycT0Oqy/exec';
 
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
@@ -570,6 +550,7 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
+        // --- التعديل الذكي لإظهار الإجمالي في آخر صف بالجدول ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
@@ -594,16 +575,24 @@
             });
             
             let totalPaid = 0; 
+            let totalDebt = 0;
+            let totalCredit = 0;
             
             if (combined.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات مالية مسجلة لهذا المريض</td></tr>';
             } else {
                 combined.forEach(record => {
-                    totalPaid += parseFloat(record.amount) || 0; 
+                    let amt = parseFloat(record.amount) || 0;
+                    let dbt = parseFloat(record.debt) || 0;
+                    let crd = parseFloat(record.credit) || 0;
+
+                    totalPaid += amt; 
+                    totalDebt += dbt;
+                    totalCredit += crd;
                     
-                    let debtHtml = record.debt > 0 ? `<span style="color:var(--danger);font-weight:bold;">${record.debt}</span>` : '0';
-                    let creditHtml = record.credit > 0 ? `<span style="color:var(--primary-blue);font-weight:bold;">${record.credit}</span>` : '0';
-                    let amountHtml = record.amount > 0 ? `<span style="color:var(--primary-green);font-weight:bold;">${record.amount}</span>` : '0';
+                    let debtHtml = dbt > 0 ? `<span style="color:var(--danger);font-weight:bold;">${dbt}</span>` : '0';
+                    let creditHtml = crd > 0 ? `<span style="color:var(--primary-blue);font-weight:bold;">${crd}</span>` : '0';
+                    let amountHtml = amt > 0 ? `<span style="color:var(--primary-green);font-weight:bold;">${amt}</span>` : '0';
                     tbody.innerHTML += `<tr>
                         <td>${record.date}</td>
                         <td>${record.type}</td>
@@ -612,9 +601,15 @@
                         <td>${creditHtml}</td>
                     </tr>`;
                 });
+
+                // صف الإجمالي الذكي في نهاية الجدول
+                tbody.innerHTML += `<tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
+                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">الإجمالي الكلي:</td>
+                    <td style="color:var(--primary-green); font-weight:900; font-size: 16px;">${totalPaid}</td>
+                    <td style="color:var(--danger); font-weight:900; font-size: 16px;">${totalDebt}</td>
+                    <td style="color:var(--primary-blue); font-weight:900; font-size: 16px;">${totalCredit}</td>
+                </tr>`;
             }
-            
-            document.getElementById('historyTotalPaid').innerText = totalPaid;
             
             document.getElementById('historyModal').style.display = 'flex';
         }
