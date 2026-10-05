@@ -179,7 +179,6 @@
         .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
         .history-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         .history-table tr:last-child td { border-bottom: none; }
-        /* عرض مخصص لكل عمود عشان يبقى متناسق وميخرجش برا الشاشة */
         .history-table th:nth-child(1) { width: 25%; }
         .history-table th:nth-child(2) { width: 35%; }
         .history-table th:nth-child(3) { width: 15%; }
@@ -333,7 +332,7 @@
         </div>
     </div>
 
-    <!-- نافذة السجل المالي المحدثة -->
+    <!-- نافذة السجل المالي -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 650px; width: 95%;">
             <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
@@ -379,6 +378,19 @@
         let syncTimeout = null; let audioCtx = null; let isLoadingData = false;
         
         let patientsQueue = []; let glpQueue = []; let financialsQueue = [];
+
+        // خوارزمية الذكاء لتوحيد الأسماء العربية 
+        function normalizeArabicName(name) {
+            if (!name) return "";
+            return name.replace(/[أإآ]/g, "ا") // توحيد الألف
+                       .replace(/ة/g, "ه")     // توحيد التاء المربوطة
+                       .replace(/ى/g, "ي")     // توحيد الياء
+                       .replace(/عبد ال/g, "عبدال")
+                       .replace(/ابو /g, "ابو")
+                       .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "") // إزالة الألقاب لو كتبت بالخطأ
+                       .trim()
+                       .replace(/\s+/g, " "); // إزالة المسافات المزدوجة
+        }
 
         function showSyncStatus(text) {
             const indicator = document.getElementById('syncIndicator');
@@ -599,18 +611,27 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
+        // --- دالة السجل المالي بعد دمج فلتر توحيد الأسماء العربية ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = '';
             
             let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
-            let patientHistory = allHistory[name] || [];
+            let targetNorm = normalizeArabicName(name); // الاسم بعد توحيد الهاء والتاء والهمزات
+            let patientHistory = [];
+            
+            // تجميع كل الهيستوري اللي بيطابق الاسم الموحد
+            for (let key in allHistory) {
+                if (normalizeArabicName(key) === targetNorm) {
+                    patientHistory = patientHistory.concat(allHistory[key]);
+                }
+            }
             
             let todayDate = document.getElementById('todayDate').value;
-            let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
+            // فلترة مرضى اليوم بنفس خوارزمية الاسم الموحد
+            let todayRecords = patientsQueue.filter(p => normalizeArabicName(p.name) === targetNorm && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
-            // الفلترة الذكية لمنع التكرار
             let combined = patientHistory.filter(record => !String(record.date).includes(todayDate));
             
             todayRecords.forEach(tr => {
