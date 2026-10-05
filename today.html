@@ -66,7 +66,7 @@
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .schedule-table { width: 100%; background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 20px; }
-        .table-responsive .schedule-table { min-width: 850px; } 
+        .table-responsive .schedule-table { min-width: 900px; } 
         .grid-3col .table-responsive .schedule-table { min-width: 100%; } 
 
         .schedule-table th, .schedule-table td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px;}
@@ -102,8 +102,9 @@
         .inline-pay-select.status-unpaid { color: var(--danger); border-color: var(--danger); }
         .inline-dept-select { max-width: 100px; }
         
-        .patient-name-cell { font-weight: bold; cursor: pointer; transition: color 0.3s ease; }
-        .patient-name-cell:hover { color: var(--primary-blue); text-decoration: underline; }
+        .patient-name-cell { font-weight: bold; transition: color 0.3s ease; }
+        .patient-name-cell span { cursor: pointer; }
+        .patient-name-cell span:hover { color: var(--primary-blue); text-decoration: underline; }
 
         .inline-amount-input { width: 50px; padding: 4px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; font-weight: 700; font-size: 13px; text-align: center; outline: none; background-color: var(--input-bg); color: var(--text-dark); }
         .debt-input { color: var(--danger); border-color: var(--danger); }
@@ -313,11 +314,28 @@
         </div>
     </div>
 
+    <!-- نافذة السجل المالي الجديدة -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 550px; width: 95%;">
+            <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+                <i class="fa-solid fa-file-invoice-dollar"></i> السجل المالي: <span id="historyPatientName" style="color: var(--text-dark);"></span>
+            </h3>
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                <table class="schedule-table">
+                    <thead><tr><th>التاريخ</th><th>البيان / القسم</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button onclick="document.getElementById('historyModal').style.display='none'" class="btn-cancel" style="width: 100%;">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        // إعدادات فايربيس كاملة لضمان الاتصال
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -335,10 +353,12 @@
         } catch(e) { console.error("Firebase init error", e); }
 
         let unsubscribeFirebase = null;
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx77Y7M4TpwlAwk7xh5E9duD_VwFqPMbHEnqezOER_-2KGZWT7moTPvjWN5tCpncfA/exec';
+        
+        // 🚨 ضع الرابط الخاص بك هنا بعد عمل (New Deployment) 🚨
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyrJ3bUr0vlQFVfe-50ZqtlAT8MQim5BWTX95tp3N1CKJr6BPS0G9dOBFYgG7crNQFr/exec';
 
         let headerDatePicker; let modalDatePicker; let draggedItemIndex = null;
-        let syncTimeout = null; let audioCtx = null; let isLoadingData = false;
+        let syncTimeout = null; let audioCtx = null;
         
         let patientsQueue = []; let glpQueue = []; let financialsQueue = [];
 
@@ -349,7 +369,6 @@
         }
         function hideSyncStatus() { document.getElementById('syncIndicator').classList.remove('show'); }
 
-        // --- 1. تطبيق البيانات بحرص ---
         function applyData(data) {
             const newScheduleStr = JSON.stringify(data.schedule || []);
             const currentScheduleStr = JSON.stringify(patientsQueue);
@@ -374,7 +393,6 @@
             hideSyncStatus();
         }
 
-        // --- 2. الاستماع اللحظي للفايربيس ---
         function startFirebaseListener(date) {
             if (!db) { fetchFromGoogleSheets(date); return; }
             
@@ -389,7 +407,7 @@
             unsubscribeFirebase = dayRef;
         }
 
-        // --- 3. سحب الأرشيف (تعديل الأمان عشان ميمسحش فايربيس) ---
+        // تم إلغاء القيود اللي كانت بتمنع السحب لو الصفحة فيها داتا عشان يغير اليوم براحته
         async function fetchFromGoogleSheets(date) {
             if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
             showSyncStatus('جاري سحب الأرشيف...');
@@ -398,45 +416,92 @@
                 let result = JSON.parse(await res.text());
                 
                 if(result.status === 'success') {
+                    // لو المستخدم غير التاريخ أثناء التحميل متبوظش الصفحة
+                    if(document.getElementById('todayDate').value !== date) return;
+
                     let validSlots = getSlotsForDay();
                     let fetchedSchedule = Array.isArray(result.data) ? result.data : (result.data.schedule || []);
                     
-                    // لو الداتا المحلية لسه فاضية، اعرض داتا الشيت
-                    if(patientsQueue.length === 0 && financialsQueue.length === 0) {
-                        patientsQueue = fetchedSchedule.map(p => {
-                            let s = p.slot ? String(p.slot).trim() : 'عام';
-                            if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                            return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', doctor: p.doctor || '' };
-                        });
-                        glpQueue = result.data.glp || [];
-                        financialsQueue = result.data.financials || [];
-                        
-                        localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
-                        let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
-                        patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
-                        renderUI();
+                    patientsQueue = fetchedSchedule.map(p => {
+                        let s = p.slot ? String(p.slot).trim() : 'عام';
+                        if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
+                        return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
+                    });
+                    glpQueue = result.data.glp || [];
+                    financialsQueue = result.data.financials || [];
+                    
+                    localStorage.setItem('clinic_cache_' + date, JSON.stringify({schedule: patientsQueue, glp: glpQueue, financials: financialsQueue}));
+                    let savedFin = JSON.parse(localStorage.getItem('clinic_fin_'+date) || '{}');
+                    patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
+                    renderUI();
 
-                        // اكتب في فايربيس فقط لو لسه فاضي عشان متمسحش شغل غيرك
-                        if(db) {
-                            db.ref('clinic_days/' + date).once('value').then(snap => {
-                                if (!snap.exists() && (patientsQueue.length > 0 || financialsQueue.length > 0)) {
-                                    db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
-                                }
-                            });
-                        }
+                    if(db) {
+                        db.ref('clinic_days/' + date).once('value').then(snap => {
+                            if (!snap.exists() && (patientsQueue.length > 0 || financialsQueue.length > 0)) {
+                                db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                            }
+                        });
                     }
                 }
             } catch(e) {}
             hideSyncStatus();
         }
 
-        function initDay() {
-            const date = document.getElementById('todayDate').value;
-            try { let cachedData = localStorage.getItem('clinic_cache_' + date); if (cachedData) { applyData(JSON.parse(cachedData)); } } catch(e) {}
-            startFirebaseListener(date);
+        // سحب الهيستوري الخاص بالبوب أب
+        function fetchAllPatientsHistoryInBackground() {
+            setTimeout(async () => {
+                if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
+                try {
+                    let res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'GET_FINANCIAL_HISTORY' }) });
+                    let result = JSON.parse(await res.text());
+                    if(result.status === 'success') { localStorage.setItem('clinic_all_history', JSON.stringify(result.data)); }
+                } catch(e) {}
+            }, 5000); 
         }
 
-        // --- 4. الحفظ والدفع للسيرفر (إضافة رسالة التحذير لو الفايربيس مقفول) ---
+        // الميزة الخرافية (تحميل آخر 45 يوم في الكاش للسرعة الصاروخية)
+        function prefetchMonthInBackground() {
+            setTimeout(async () => {
+                if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
+                try {
+                    let res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'PREFETCH_MONTH' }) });
+                    let result = JSON.parse(await res.text());
+                    if(result.status === 'success' && result.data) {
+                        for (let d in result.data) {
+                            localStorage.setItem('clinic_cache_' + d, JSON.stringify(result.data[d]));
+                        }
+                    }
+                } catch(e) {}
+            }, 8000); // بيشتغل بهدوء بعد 8 ثواني من فتح الموقع
+        }
+
+        function initDay() {
+            const date = document.getElementById('todayDate').value;
+            let cachedData = null;
+
+            try { 
+                let cacheStr = localStorage.getItem('clinic_cache_' + date); 
+                if (cacheStr) cachedData = JSON.parse(cacheStr);
+            } catch(e) {}
+
+            // تفريغ الشاشة مؤقتاً لو الداتا لسه مجاتش عشان متلخبطش مع اليوم القديم
+            if (cachedData) {
+                applyData(cachedData);
+            } else {
+                patientsQueue = []; glpQueue = []; financialsQueue = []; renderUI();
+                showSyncStatus('جاري التحميل...');
+            }
+
+            startFirebaseListener(date);
+            
+            // التأكد إن داتا الخلفية متتسحبش غير مرة واحدة بس في الجلسة عشان الباقة
+            if(!window.backgroundTasksRun) {
+                window.backgroundTasksRun = true;
+                fetchAllPatientsHistoryInBackground(); 
+                prefetchMonthInBackground();
+            }
+        }
+
         function scheduleSync() {
             const date = document.getElementById('todayDate').value;
             
@@ -447,10 +512,7 @@
             if (db) {
                 db.ref('clinic_days/' + date).set({ 
                     schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP 
-                }).catch(error => {
-                    alert("⚠️ فايربيس يرفض الحفظ! برجاء التأكد من تغيير (Rules) إلى true من حسابك.");
-                    console.error("Firebase Rule Error:", error);
-                });
+                }).catch(error => { console.error("Firebase Rule Error:", error); });
             }
 
             if (syncTimeout) clearTimeout(syncTimeout);
@@ -473,7 +535,7 @@
         function addPatient() {
             const name = document.getElementById('patientName').value.trim(); const dept = document.getElementById('department').value; const type = document.getElementById('visitType').value; const payment = document.getElementById('paymentStatus').value; const method = document.getElementById('paymentMethod').value; const amount = document.getElementById('paidAmount').value; let manualSlot = document.getElementById('manualSlot').value;
             if(!name) return; let targetSlot = type === 'مقدم' ? 'عام' : (manualSlot || getSlotsForDay()[0]); 
-            patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', doctor: '', finished: false });
+            patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', credit: '', doctor: '', finished: false });
             sortPatientsArray(); document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
         }
 
@@ -493,28 +555,82 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
+        function showHistoryModal(name) {
+            document.getElementById('historyPatientName').innerText = name;
+            let tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
+            let patientHistory = allHistory[name] || [];
+            
+            let todayDate = document.getElementById('todayDate').value;
+            let todayRecords = patientsQueue.filter(p => p.name === name && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
+            
+            let combined = [...patientHistory];
+            
+            todayRecords.forEach(tr => {
+                combined.push({
+                    date: todayDate + ' (اليوم)',
+                    type: tr.type + (tr.dept ? ' - ' + tr.dept : ''),
+                    amount: parseFloat(tr.amount) || 0,
+                    debt: parseFloat(tr.debt) || 0,
+                    credit: parseFloat(tr.credit) || 0
+                });
+            });
+            
+            if (combined.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات مالية مسجلة لهذا المريض</td></tr>';
+            } else {
+                combined.forEach(record => {
+                    let debtHtml = record.debt > 0 ? `<span style="color:var(--danger);font-weight:bold;">${record.debt}</span>` : '0';
+                    let creditHtml = record.credit > 0 ? `<span style="color:var(--primary-blue);font-weight:bold;">${record.credit}</span>` : '0';
+                    let amountHtml = record.amount > 0 ? `<span style="color:var(--primary-green);font-weight:bold;">${record.amount}</span>` : '0';
+                    tbody.innerHTML += `<tr>
+                        <td>${record.date}</td>
+                        <td>${record.type}</td>
+                        <td>${amountHtml}</td>
+                        <td>${debtHtml}</td>
+                        <td>${creditHtml}</td>
+                    </tr>`;
+                });
+            }
+            
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
         function renderUI() {
             updateStatsCounters();
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${g.name}</td><td><span class="badge badge-glp">${g.dose}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             let medsHtml = ''; let expsHtml = '';
-            financialsQueue.forEach((f, i) => { if (f.type === 'دواء') medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`; else if (f.type === 'مصروف') expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+            financialsQueue.forEach((f, i) => {
+                if (f.type === 'دواء') medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                else if (f.type === 'مصروف') expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+            });
             document.getElementById('medTableBody').innerHTML = medsHtml; document.getElementById('expTableBody').innerHTML = expsHtml;
+
             const cont = document.getElementById('tablesContainer'); cont.innerHTML = ''; let validSlots = getSlotsForDay();
+
             validSlots.forEach(slot => {
                 let sPats = patientsQueue.filter(p => p.slot === slot);
-                let html = `<div class="slot-title">${slot}</div><div class="table-responsive"><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
-                if (sPats.length===0) html += `<tr><td colspan="8" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
+                let html = `<div class="slot-title">${slot}</div><div class="table-responsive"><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>متبقي لي</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
+                if (sPats.length===0) html += `<tr><td colspan="9" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
                 let sCount = 0;
                 sPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
-                        <td class="patient-name-cell" onclick="handleNameInteraction(event, ${gIdx}, '${p.name}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${p.name}')" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">${p.name}</td>
+                        <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
+                            <div style="display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="showHistoryModal('${p.name}')" title="السجل المالي"></i>
+                                <span onclick="handleNameInteraction(event, ${gIdx}, '${p.name}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${p.name}')">${p.name}</span>
+                            </div>
+                        </td>
                         <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)"><option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option><option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option></select><select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)"><option ${p.type==='كشف'?'selected':''}>كشف</option><option ${p.type==='متابعة'?'selected':''}>متابعة</option><option ${p.type==='جلسة'?'selected':''}>جلسة</option><option ${p.type==='مقدم'?'selected':''}>مقدم</option></select></div></td>
                         <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select></div></td>
                         <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
                         <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
-                        <td><input type="text" class="inline-amount-input" style="width: 140px; text-align: right;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
+                        <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
+                        <td><input type="text" class="inline-amount-input" style="width: 120px; text-align: right;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
                         <td><div class="action-btns"><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>`;
                 });
@@ -523,17 +639,23 @@
 
             let depositPats = patientsQueue.filter(p => !validSlots.includes(p.slot));
             if(depositPats.length > 0) {
-                let dHtml = `<div class="slot-title deposit-title">حجوزات المقدم (بدون موعد اليوم)</div><div class="table-responsive"><table class="schedule-table" style="opacity: 0.9;" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'عام')"><thead><tr><th>-</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
+                let dHtml = `<div class="slot-title deposit-title">حجوزات المقدم (بدون موعد اليوم)</div><div class="table-responsive"><table class="schedule-table" style="opacity: 0.9;" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'عام')"><thead><tr><th>-</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>متبقي لي</th><th>الطبيب المعالج</th><th>إجراءات</th></tr></thead><tbody>`;
                 depositPats.forEach((p) => {
                     let gIdx = patientsQueue.indexOf(p);
                     dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
-                        <td class="patient-name-cell" onclick="handleNameInteraction(event, ${gIdx}, '${p.name}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${p.name}')" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">${p.name}</td>
+                        <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
+                            <div style="display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="showHistoryModal('${p.name}')" title="السجل المالي"></i>
+                                <span onclick="handleNameInteraction(event, ${gIdx}, '${p.name}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${p.name}')">${p.name}</span>
+                            </div>
+                        </td>
                         <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)"><option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option><option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option></select><select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)"><option ${p.type==='كشف'?'selected':''}>كشف</option><option ${p.type==='متابعة'?'selected':''}>متابعة</option><option ${p.type==='جلسة'?'selected':''}>جلسة</option><option ${p.type==='مقدم'?'selected':''}>مقدم</option></select></div></td>
                         <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select></div></td>
                         <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
                         <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
-                        <td><input type="text" class="inline-amount-input" style="width: 140px; text-align: right;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
+                        <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
+                        <td><input type="text" class="inline-amount-input" style="width: 120px; text-align: right;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)"></td>
                         <td><div class="action-btns"><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>`;
                 });
@@ -542,9 +664,8 @@
             calculateTotals();
         }
 
-        // --- باقي دوال التايمر ونوافذ الحجز ---
         function showModal(opts) { const modal = document.getElementById('customModal'); document.getElementById('modalTitle').innerHTML = opts.title; document.getElementById('modalMessage').innerHTML = opts.message; let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn']; elementsToHide.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; }); if (opts.type === 'prompt') { document.getElementById('modalInputContainer').style.display = 'flex'; if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || ''); if (opts.showSlot) { document.getElementById('modalSlotInput').style.display = 'block'; updateModalSlotDropdown(opts.inputValue); if(opts.defaultSlot) document.getElementById('modalSlotInput').value = opts.defaultSlot; } if (opts.showPayment) { document.getElementById('modalPaymentInput').style.display = 'block'; document.getElementById('modalPaymentMethodInput').style.display = 'block'; document.getElementById('modalAmountInput').style.display = 'block'; document.getElementById('modalPaymentInput').value = 'تم الدفع'; document.getElementById('modalPaymentMethodInput').value = 'كاش'; document.getElementById('modalAmountInput').value = ''; document.getElementById('modalPaymentInput').style.borderColor = 'var(--border)'; } document.getElementById('modalCancelBtn').style.display = 'inline-block'; } modal.style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { if (opts.type === 'prompt' && opts.showPayment && !document.getElementById('modalPaymentInput').value) { document.getElementById('modalPaymentInput').style.borderColor = 'var(--danger)'; return; } modal.style.display = 'none'; if (opts.type === 'prompt' && opts.onConfirm) { opts.onConfirm(document.getElementById('modalDateInput').value, document.getElementById('modalPaymentInput').value, document.getElementById('modalSlotInput').value, document.getElementById('modalAmountInput').value, document.getElementById('modalPaymentMethodInput').value); } }; document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none'; }
-        function bookFutureAppt(idx, visitType) { let patient = patientsQueue[idx]; showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { if(cDate) { showSyncStatus('جاري تسجيل الموعد...'); try { let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; let amtVal = parseFloat(cAmt); if (!isNaN(amtVal) && amtVal > 0) { patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', doctor: '', finished: false }); sortPatientsArray(); renderUI(); scheduleSync(); cPay = "مدفوع مسبقاً"; cAmt = ""; } await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } hideSyncStatus(); } } }); }
+        function bookFutureAppt(idx, visitType) { let patient = patientsQueue[idx]; showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { if(cDate) { showSyncStatus('جاري تسجيل الموعد...'); try { let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; let amtVal = parseFloat(cAmt); if (!isNaN(amtVal) && amtVal > 0) { patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', credit: '', doctor: '', finished: false }); sortPatientsArray(); renderUI(); scheduleSync(); cPay = "مدفوع مسبقاً"; cAmt = ""; } await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } hideSyncStatus(); } } }); }
         let timerInterval; function updateTimerDisplay(secondsLeft) { let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60; let display = document.getElementById('globalTimerDisplay'); if (secondsLeft > 0) { display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`; display.classList.remove('time-ended'); } else { display.innerText = 'انتهى الوقت'; display.classList.add('time-ended'); } } function checkAndStartTimer() { let endTime = localStorage.getItem('clinicTimerEnd'); if (endTime && endTime > Date.now()) { document.getElementById('btnTimerPlay').innerText = 'إيقاف'; document.getElementById('btnTimerPlay').style.background = 'var(--warning)'; timerInterval = setInterval(() => { let left = Math.floor((localStorage.getItem('clinicTimerEnd') - Date.now()) / 1000); if (left <= 0) { clearInterval(timerInterval); updateTimerDisplay(0); document.getElementById('btnTimerPlay').style.display = 'none'; playTimerEndSound(); localStorage.removeItem('clinicTimerEnd'); } else { updateTimerDisplay(left); } }, 1000); } else { let mins = document.getElementById('timerDuration').value; updateTimerDisplay(mins * 60); } } function toggleTimer() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} let btn = document.getElementById('btnTimerPlay'); if (localStorage.getItem('clinicTimerEnd')) { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); btn.innerText = 'تشغيل'; btn.style.background = 'var(--primary-blue)'; } else { let mins = document.getElementById('timerDuration').value; localStorage.setItem('clinicTimerEnd', Date.now() + (mins * 60 * 1000)); checkAndStartTimer(); } } function resetTimer() { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); document.getElementById('btnTimerPlay').style.display = 'block'; document.getElementById('btnTimerPlay').innerText = 'تشغيل'; document.getElementById('btnTimerPlay').style.background = 'var(--primary-blue)'; updateTimerDisplay(document.getElementById('timerDuration').value * 60); } function setTimer() { if(!localStorage.getItem('clinicTimerEnd')) resetTimer(); } function playTimerEndSound() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let playTone = (freq, time, duration) => { let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.3, audioCtx.currentTime + time); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + time + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(audioCtx.currentTime + time); osc.stop(audioCtx.currentTime + time + duration); }; playTone(523.25, 0, 0.5); playTone(659.25, 0.2, 0.6); } catch (e) {} }
         function getNextWeekDate() { let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); const year = nextWeek.getFullYear(); const month = String(nextWeek.getMonth() + 1).padStart(2, '0'); const day = String(nextWeek.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; } function getSlotsForDay() { const d = new Date(document.getElementById('todayDate').value).getDay(); if (d === 6) return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function updateModalSlotDropdown(dateStr) { const slotSelect = document.getElementById('modalSlotInput'); if(!slotSelect) return; slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>'; const slots = getSlotsForSpecificDate(dateStr); if (slots) { slots.forEach(slot => { let opt = document.createElement('option'); opt.value = slot; opt.innerText = slot; slotSelect.appendChild(opt); }); } } function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); if(!s) return; s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => { let opt = document.createElement('option'); opt.value = x; opt.innerText = x; s.appendChild(opt); }); }
         function initDatePickers() { headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); initDay(); } }); modalDatePicker = flatpickr("#modalDateInput", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true", onChange: (d, s) => { updateModalSlotDropdown(s); } }); }
