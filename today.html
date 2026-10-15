@@ -407,14 +407,13 @@
             }
         }
 
-        // 🌟 المزامنة الذكية التي تحافظ على الترتيب والعد الصحيح ولا تحذف الإضافات اليدوية من clinic
+        // 🌟 المزامنة الذكية التي تحافظ على الإضافات اليدوية في clinic وتضيف الحالات بالترتيب الصحيح دون مسح القديم
         function syncTodayWithClinicSmart() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
 
             if (selectedDate !== actualToday || !clinicQueueDB) return;
 
-            // الحالات المطابقة للشروط في صفحة today
             const eligibleTodayPatients = patientsQueue.filter(p => 
                 p.dept === 'تغذية علاجية' && (p.type === 'كشف' || p.type === 'متابعة')
             );
@@ -424,48 +423,57 @@
                 const rawVal = snapshot.val();
                 let currentClinicList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
                 
-                let updatedList = [];
                 let clinicNamesMap = new Map();
-
-                // حفظ عناصر clinic الحالية للرجوع إليها
                 currentClinicList.forEach(cp => {
                     if (cp && cp.name) {
                         clinicNamesMap.set(cp.name.trim(), cp);
                     }
                 });
 
-                // تجميع العناصر بالترتيب الحالي
-                eligibleTodayPatients.forEach(tp => {
-                    const cleanName = (tp.name || '').trim();
-                    if (!cleanName) return;
+                let updatedList = [];
+                let processedNames = new Set();
 
-                    if (clinicNamesMap.has(cleanName)) {
-                        let existing = clinicNamesMap.get(cleanName);
-                        existing.visitType = tp.type;
-                        existing.category = tp.dept;
-                        updatedList.push(existing);
-                        clinicNamesMap.delete(cleanName);
+                // 1. أولاً: نمر على الحالات الموجودة حالياً في clinic لنحافظ على الترتيب الأصلي (سواء اتضافت مانوال أو من today)
+                currentClinicList.forEach(cp => {
+                    if (!cp || !cp.name) return;
+                    const cName = cp.name.trim();
+                    
+                    // هل المريض لسه موجود في today ومطابق للشروط؟
+                    const foundInToday = eligibleTodayPatients.find(tp => tp.name && tp.name.trim() === cName);
+                    
+                    if (foundInToday) {
+                        // لو موجود في today، نحدث نوع الزيارة والقسم مع الحفاظ على حالته (entered) وترتيبه
+                        cp.visitType = foundInToday.type;
+                        cp.category = foundInToday.dept;
+                        updatedList.push(cp);
+                        processedNames.add(cName);
                     } else {
-                        updatedList.push({
-                            id: tp.id || Date.now() + Math.random().toString(36).substring(7),
-                            name: cleanName,
-                            category: tp.dept,
-                            visitType: tp.type,
-                            entered: false
-                        });
+                        // لو المريض مش موجود في today (يعني ممكن يكون مضاف مانوال في clinic أو اتغير نوعه/حذفه من today)
+                        // بنتحقق هل تم حذفه من today تماماً؟
+                        const anyInToday = patientsQueue.find(p => p.name && p.name.trim() === cName);
+                        if (!anyInToday) {
+                            // مضاف يدوياً بالكامل في clinic ولم يتم حذفه من today -> نتركه في مكانه ولا نحذفه!
+                            updatedList.push(cp);
+                            processedNames.add(cName);
+                        } else {
+                            // كان في today بس تم تغييره (مثلاً لعلاج طبيعي أو جلسة) -> إذن يتم استبعاده من clinic
+                        }
                     }
                 });
 
-                // الاحتفاظ بأي مريض أضيف يدوياً من صفحة clinic ولم يتم حذفه من today
-                clinicNamesMap.forEach((remainingCp, nameKey) => {
-                    const foundInToday = patientsQueue.find(p => p.name && p.name.trim() === nameKey);
-                    if (!foundInToday) {
-                        updatedList.push(remainingCp); // مضاف يدوياً بالكامل
-                    } else {
-                        if (foundInToday.dept === 'تغذية علاجية' && (foundInToday.type === 'كشف' || foundInToday.type === 'متابعة')) {
-                            updatedList.push(remainingCp);
-                        }
-                    }
+                // 2. ثانياً: أي مريض جديد في today ولم يكن موجوداً في clinic يتم إضافته في النهاية بالترتيب الصحيح (مثل رقم 3)
+                eligibleTodayPatients.forEach(tp => {
+                    const cleanName = (tp.name || '').trim();
+                    if (!cleanName || processedNames.has(cleanName)) return;
+
+                    updatedList.push({
+                        id: tp.id || Date.now() + Math.random().toString(36).substring(7),
+                        name: cleanName,
+                        category: tp.dept,
+                        visitType: tp.type,
+                        entered: false
+                    });
+                    processedNames.add(cleanName);
                 });
 
                 pushClinicQueueList(actualToday, updatedList);
@@ -720,7 +728,7 @@
         function removePatient(idx) {
             patientsQueue.splice(idx, 1);
             renderUI();
-            scheduleSync();
+            scheduleSync(); // الآن سيتم تحديث جدول clinic تلقائياً وحذف المريض منه أيضاً
         }
 
         function moveRow(idx, dir) { let p1 = patientsQueue[idx]; let p1Slot = p1.slot; let slotArray = []; let slotIndices = []; patientsQueue.forEach((p, i) => { if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }}); let localIdx = slotArray.indexOf(p1); if (dir === 'up' && localIdx > 0) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]]; patientsQueue[slotIndices[localIdx - 1]] = temp; } if (dir === 'down' && localIdx < slotArray.length - 1) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]]; patientsQueue[slotIndices[localIdx + 1]] = temp; } renderUI(); scheduleSync(); }
