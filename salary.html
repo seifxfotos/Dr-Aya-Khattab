@@ -103,7 +103,8 @@
                     <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
                     <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
                 </div>
-                <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة البيانات</button>
+                <!-- زر مسح الكاش والمزامنة الإجبارية -->
+                <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة وتنظيف الكاش</button>
             </div>
         </div>
 
@@ -209,8 +210,8 @@
                 .replace(/ة/g, "ه")
                 .replace(/ى/g, "ي")
                 .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "") // إزالة الألقاب من الأول
-                .trim()
-                .replace(/\s+/g, " "); // إزالة المسافات الزائدة
+                .replace(/\s+/g, "") // إزالة كل المسافات
+                .trim();
         }
 
         function initMonthSelector() {
@@ -232,13 +233,16 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // زر التحديث الإجباري يسحب الداتا الطازجة مباشرة بدون أي كاش
+        // زر تحديث إجباري يمسح الكاش المحلي ويسحب الداتا النظيفة من الفايربيز
         function forceSyncRefresh() {
             const btn = document.querySelector('.btn-sync-refresh');
             const originalIcon = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...`;
             btn.disabled = true;
 
+            // تنظيف الكاش المحلي
+            localStorage.removeItem('clinic_salary_config');
+            
             if (db) {
                 db.ref('clinic_days').once('value').then((snapshot) => {
                     allClinicDaysData = snapshot.val() || {};
@@ -263,7 +267,7 @@
             });
         }
 
-        // --- دالة الحساب الذكية والمباشرة ---
+        // --- دالة الحساب المباشرة بعد إصلاح التكرار وتأكيد التطابق ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -283,18 +287,18 @@
                 let dayData = allClinicDaysData[dateStr];
                 if (!dayData || !dayData.schedule) return;
 
+                // تحويل كل الجداول الموزعة لآراي واحدة
                 let sched = Array.isArray(dayData.schedule) ? dayData.schedule : Object.values(dayData.schedule);
                 
                 let dayKashfCount = 0;
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // نقرأ الجدول حرفياً بدون أي حماية زائدة (بدون Set)
-                // لو المريض مسجل 10 مرات في صفحة today، هيتحسب 10 مرات. 
-                // لو اتمسح من today مش هيتحسب خالص.
+                // نقرأ الجدول حرفياً بدون حماية زائدة تمنع العد (بدون Set)
                 sched.forEach(patient => {
                     if (!patient) return; 
 
+                    // تنظيف كامل لأي مسافات أو تشكيل
                     let typeNorm = cleanExactMatchString(patient.type);
                     let rawDoc = String(patient.doctor || '');
                     let docNorm = cleanExactMatchString(rawDoc);
@@ -309,7 +313,7 @@
                             
                             let isMatch = false;
                             
-                            // تطابق فعلي للاسم أو الرمز
+                            // تطابق فعلي للاسم أو الرمز بعد تنظيف المسافات والتشكيل
                             if (dCode && docNorm === dCode) isMatch = true;
                             if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
                             
@@ -332,7 +336,7 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء
+                // تجميع حسابات الأطباء لكل الجلسات المجمعة لهذا اليوم
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
 
