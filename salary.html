@@ -210,8 +210,8 @@
                 .replace(/ة/g, "ه")
                 .replace(/ى/g, "ي")
                 .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "") // إزالة الألقاب من الأول
-                .replace(/\s+/g, "") // إزالة كل المسافات
-                .trim();
+                .trim()
+                .replace(/\s+/g, " "); // إزالة المسافات الزائدة
         }
 
         function initMonthSelector() {
@@ -266,7 +266,7 @@
             });
         }
 
-        // --- دالة الحساب الذكية مع حساب أي مريض للدكتور بغض النظر عن نوع الزيارة ---
+        // --- دالة الحساب الذكية والمباشرة ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -292,18 +292,22 @@
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // نقرأ الجدول حرفياً
+                // نقرأ الجدول حرفياً بدون أي حماية زائدة تمنع العد (بدون Set)
                 sched.forEach(patient => {
                     if (!patient) return; 
 
                     let typeNorm = cleanExactMatchString(patient.type);
                     let rawDoc = String(patient.doctor || '');
                     let docNorm = cleanExactMatchString(rawDoc);
+                    let paymentStatus = String(patient.payment || '').trim();
 
-                    if (typeNorm === 'كشف') dayKashfCount++;
-                    if (typeNorm === 'متابعه') dayMotabaaCount++; 
+                    // السكرتارية بتتحاسب فقط لو الدفع "تم الدفع"
+                    if (paymentStatus === 'تم الدفع') {
+                        if (typeNorm === 'كشف') dayKashfCount++;
+                        if (typeNorm === 'متابعه') dayMotabaaCount++; 
+                    }
 
-                    // 🚨 التعديل الجديد: السستم بيحسب الجلسة للدكتور طالما اسمه مكتوب في الخانة، حتى لو السكرتارية غلطت وكتبت نوع الزيارة "متابعة"
+                    // الدكاترة بيتحاسبوا بمجرد كتابة اسمهم أو حرفهم (بغض النظر عن حالة الدفع أو نوع الزيارة)
                     if (docNorm) { 
                         staffConfig.doctors.forEach(doc => {
                             let dName = cleanExactMatchString(doc.name);
@@ -311,6 +315,7 @@
                             
                             let isMatch = false;
                             
+                            // تطابق فعلي للاسم أو الرمز
                             if (dCode && docNorm === dCode) isMatch = true;
                             if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
                             
@@ -333,7 +338,7 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء لكل الحالات (الجلسات) المجمعة لهذا اليوم
+                // تجميع حسابات الأطباء لكل الجلسات المجمعة لهذا اليوم
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
 
