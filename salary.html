@@ -266,7 +266,7 @@
             });
         }
 
-        // --- دالة الحساب الذكية والمباشرة ---
+        // --- دالة الحساب الذكية مع حساب أي مريض للدكتور بغض النظر عن نوع الزيارة والشرط الجديد للمبلغ ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -292,22 +292,24 @@
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // نقرأ الجدول حرفياً بدون أي حماية زائدة تمنع العد (بدون Set)
+                // نقرأ الجدول حرفياً
                 sched.forEach(patient => {
                     if (!patient) return; 
 
                     let typeNorm = cleanExactMatchString(patient.type);
                     let rawDoc = String(patient.doctor || '');
                     let docNorm = cleanExactMatchString(rawDoc);
+                    
                     let paymentStatus = String(patient.payment || '').trim();
+                    let amountPaid = parseFloat(patient.amount) || 0; // تحويل المبلغ لرقم
 
-                    // السكرتارية بتتحاسب فقط لو الدفع "تم الدفع"
-                    if (paymentStatus === 'تم الدفع') {
+                    // السكرتارية بتتحاسب فقط لو الدفع "تم الدفع" والمبلغ لا يقل عن 50 جنيه
+                    if (paymentStatus === 'تم الدفع' && amountPaid >= 50) {
                         if (typeNorm === 'كشف') dayKashfCount++;
                         if (typeNorm === 'متابعه') dayMotabaaCount++; 
                     }
 
-                    // الدكاترة بيتحاسبوا بمجرد كتابة اسمهم أو حرفهم (بغض النظر عن حالة الدفع أو نوع الزيارة)
+                    // الدكاترة بيتحاسبوا بمجرد كتابة اسمهم أو حرفهم (بغض النظر عن حالة الدفع أو نوع الزيارة أو المبلغ)
                     if (docNorm) { 
                         staffConfig.doctors.forEach(doc => {
                             let dName = cleanExactMatchString(doc.name);
@@ -338,7 +340,7 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء لكل الجلسات المجمعة لهذا اليوم
+                // تجميع حسابات الأطباء لكل الحالات (الجلسات) المجمعة لهذا اليوم
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
 
