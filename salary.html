@@ -194,16 +194,18 @@
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
-        // دالة تنظيف وتوحيد النصوص (لحل مشكلة ى و ي والمسافات)
+        // دالة تنظيف وتوحيد النصوص متطورة جداً (لحل مشكلة ى، ي، المسافات، والتشكيل)
         function normalizeText(text) {
             if (!text) return "";
-            return String(text).replace(/[أإآ]/g, "ا")
-                               .replace(/ة/g, "ه")
-                               .replace(/ى/g, "ي")
-                               .trim();
+            return String(text)
+                .replace(/[\u064B-\u065F]/g, "") // إزالة التشكيل
+                .replace(/[أإآ]/g, "ا")
+                .replace(/ة/g, "ه")
+                .replace(/ى/g, "ي")
+                .replace(/\s+/g, " ") // توحيد المسافات المتعددة
+                .trim();
         }
 
-        // تعيين الشهر الحالي افتراضياً
         function initMonthSelector() {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -211,7 +213,6 @@
             document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
         }
 
-        // نظام الثيم
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -224,7 +225,6 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // سحب الداتا من فايربيز
         function startDataListener() {
             if (!db) { alert('خطأ في الاتصال بقاعدة البيانات'); return; }
             db.ref('clinic_days').on('value', (snapshot) => {
@@ -248,7 +248,6 @@
             });
 
             Object.keys(allClinicDaysData).forEach(dateStr => { 
-                
                 if (!dateStr.startsWith(selectedMonth)) return;
 
                 let dayData = allClinicDaysData[dateStr];
@@ -261,23 +260,35 @@
                 let dayDoctorSessions = {};
 
                 sched.forEach(patient => {
-                    // توحيد النصوص لضمان تطابق البيانات
+                    // 🚨 حماية من الـ null: لو كان المريض محذوف مكانه بيبقى فاضي، الخطوة دي بتمنع الكود يقف وتخليه يكمل عد عادي جداً
+                    if (!patient) return; 
+
                     let typeNorm = normalizeText(patient.type);
-                    let docNorm = normalizeText(patient.doctor);
+                    let rawDoc = String(patient.doctor || '');
+                    let docNorm = normalizeText(rawDoc);
+
+                    // استخراج الاسم الصافي بدون ألقاب (د. أو دكتور أو د/)
+                    let coreDocNorm = docNorm.replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "").trim();
 
                     if (typeNorm === 'كشف') dayKashfCount++;
-                    if (typeNorm === 'متابعه') dayMotabaaCount++; // تحولت "متابعة" إلى "متابعه" بسبب الـ normalize
+                    if (typeNorm === 'متابعه') dayMotabaaCount++; 
 
-                    // حساب جلسات الأطباء
-                    if (typeNorm === 'جلسه' && docNorm) { // تحولت "جلسة" إلى "جلسه"
+                    if (typeNorm === 'جلسه' && docNorm) { 
                         staffConfig.doctors.forEach(doc => {
                             let dName = normalizeText(doc.name);
                             let dCode = normalizeText(doc.code);
                             
-                            // التحقق من التطابق مع اسم الدكتور أو رمزه، حتى لو مضاف قبله "د." أو "دكتورة"
                             let isMatch = false;
-                            if (dName && (docNorm === dName || docNorm === "د " + dName || docNorm === "د." + dName || docNorm === "دكتور " + dName || docNorm === "دكتوره " + dName)) isMatch = true;
-                            if (dCode && (docNorm === dCode || docNorm === "د " + dCode || docNorm === "د." + dCode)) isMatch = true;
+                            
+                            // 1. التطابق مع الرمز (مثال: ي، م، د.ي، د ي)
+                            if (dCode && (coreDocNorm === dCode || docNorm === dCode || coreDocNorm === "د" + dCode)) {
+                                isMatch = true;
+                            }
+                            
+                            // 2. التطابق مع الاسم (مثال: ياسمين، دكتورة ياسمين، د ياسمين)
+                            if (dName && (coreDocNorm === dName || docNorm === dName || coreDocNorm.includes(dName))) {
+                                isMatch = true;
+                            }
                             
                             if (isMatch) {
                                 if (!dayDoctorSessions[doc.id]) dayDoctorSessions[doc.id] = 0;
@@ -314,7 +325,6 @@
             renderDashboard(doctorsCalc, receptionCalc);
         }
 
-        // --- تحديث الواجهة والبطاقات ---
         function renderDashboard(doctorsCalc, receptionCalc) {
             const docList = document.getElementById('doctorsList');
             const recList = document.getElementById('receptionList');
@@ -345,7 +355,6 @@
             });
         }
 
-        // --- عرض التقارير التفصيلية ---
         function openReportModal(type, data) {
             document.getElementById('reportModal').style.display = 'flex';
             document.getElementById('reportTitle').innerText = `كشف حساب: ${data.config.name} (${document.getElementById('monthSelector').value})`;
@@ -382,7 +391,6 @@
             }
         }
 
-        // --- إدارة الإعدادات ---
         function openEditModal(type) {
             currentEditMode = type;
             document.getElementById('editStaffModal').style.display = 'flex';
@@ -457,7 +465,6 @@
             calculateAllSalaries(); 
         }
 
-        // تشغيل التهيئة عند فتح الصفحة
         window.onload = () => {
             initMonthSelector();
             startDataListener();
