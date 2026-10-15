@@ -103,7 +103,6 @@
                     <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
                     <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
                 </div>
-                <!-- زر التحديث الإجباري والمزامنة الصريحة -->
                 <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة البيانات</button>
             </div>
         </div>
@@ -201,7 +200,7 @@
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
-        // دالة قوية لتنظيف وتوحيد النصوص ومنع أي تطابق خاطئ أو مسافات إضافية
+        // دالة تنظيف الكلمات وحذف أي فراغات أو ألقاب أو تشكيل للتطابق الصارم
         function cleanExactMatchString(text) {
             if (!text) return "";
             return String(text)
@@ -209,8 +208,9 @@
                 .replace(/[أإآ]/g, "ا")
                 .replace(/ة/g, "ه")
                 .replace(/ى/g, "ي")
-                .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "") // إزالة الألقاب من الأول فقط
-                .trim();
+                .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "") // إزالة الألقاب من الأول
+                .trim()
+                .replace(/\s+/g, " "); // إزالة المسافات الزائدة
         }
 
         function initMonthSelector() {
@@ -232,7 +232,7 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // زر تحديث إجباري للمزامنة وإعادة الحساب
+        // زر التحديث الإجباري يسحب الداتا الطازجة مباشرة بدون أي كاش
         function forceSyncRefresh() {
             const btn = document.querySelector('.btn-sync-refresh');
             const originalIcon = btn.innerHTML;
@@ -263,7 +263,7 @@
             });
         }
 
-        // --- دالة الحساب الذكية مع منع التكرار وإصلاح الـ Exact Match ---
+        // --- دالة الحساب الذكية والمباشرة ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -289,17 +289,11 @@
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // ماب لمنع عد المريض أكتر من مرة لو متسجل مرتين بالغلط في نفس اليوم
-                let uniqueProcessedPatients = new Set();
-
+                // نقرأ الجدول حرفياً بدون أي حماية زائدة (بدون Set)
+                // لو المريض مسجل 10 مرات في صفحة today، هيتحسب 10 مرات. 
+                // لو اتمسح من today مش هيتحسب خالص.
                 sched.forEach(patient => {
-                    // حماية وتخطي للبيانات التالفة أو المحذوفة
-                    if (!patient || !patient.name) return; 
-
-                    // لمنع ازدواجية الحساب (لو مريض اتنقل من ساعة لساعة واتسجل نسختين)
-                    let uniqueId = patient.id || (patient.name.trim() + "_" + patient.type);
-                    if (uniqueProcessedPatients.has(uniqueId)) return;
-                    uniqueProcessedPatients.add(uniqueId);
+                    if (!patient) return; 
 
                     let typeNorm = cleanExactMatchString(patient.type);
                     let rawDoc = String(patient.doctor || '');
@@ -315,10 +309,9 @@
                             
                             let isMatch = false;
                             
-                            // تطابق فعلي 100% (Exact Match)
-                            // يمنع مشكلة "منال" تعد لو اسم المريض فيه ميم
+                            // تطابق فعلي للاسم أو الرمز
                             if (dCode && docNorm === dCode) isMatch = true;
-                            if (dName && docNorm === dName) isMatch = true;
+                            if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
                             
                             if (isMatch) {
                                 if (!dayDoctorSessions[doc.id]) dayDoctorSessions[doc.id] = 0;
@@ -339,7 +332,7 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء لكل الجلسات المجمعة لهذا اليوم
+                // تجميع حسابات الأطباء
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
 
