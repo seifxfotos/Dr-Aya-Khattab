@@ -407,7 +407,7 @@
             }
         }
 
-        // 🚨 المزامنة الذكية الآمنة (تدمج الحالات الجديدة والتعديلات ولا تحذف الحالات المضافة يدويًا من clinic)
+        // 🌟 المزامنة الذكية التي تحافظ على الترتيب والعد الصحيح ولا تحذف الإضافات اليدوية من clinic
         function syncTodayWithClinicSmart() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
@@ -427,27 +427,25 @@
                 let updatedList = [];
                 let clinicNamesMap = new Map();
 
-                // نحتفظ بكل الحالات الموجودة في clinic مسبقاً (سواء اتضافت مانوال أو من today)
+                // حفظ عناصر clinic الحالية للرجوع إليها
                 currentClinicList.forEach(cp => {
                     if (cp && cp.name) {
                         clinicNamesMap.set(cp.name.trim(), cp);
                     }
                 });
 
-                // نمر على الحالات المؤهلة في today
+                // تجميع العناصر بالترتيب الحالي
                 eligibleTodayPatients.forEach(tp => {
                     const cleanName = (tp.name || '').trim();
                     if (!cleanName) return;
 
                     if (clinicNamesMap.has(cleanName)) {
-                        // لو المريض موجود في clinic، نحدث بياناته (نوع الزيارة لو اتغيرت لكشف/متابعة) ونحافظ على entered
                         let existing = clinicNamesMap.get(cleanName);
                         existing.visitType = tp.type;
                         existing.category = tp.dept;
                         updatedList.push(existing);
-                        clinicNamesMap.delete(cleanName); // عشان نعرف إيه اللي اتبقى
+                        clinicNamesMap.delete(cleanName);
                     } else {
-                        // لو مريض جديد اتضاف في today، نضيفه لـ clinic
                         updatedList.push({
                             id: tp.id || Date.now() + Math.random().toString(36).substring(7),
                             name: cleanName,
@@ -458,18 +456,13 @@
                     }
                 });
 
-                // 🌟 المفتاح السحري: الحالات اللي اتبقت في clinicNamesMap (اللي اتضافت مانوال من صفحة clinic) بنحافظ عليها زي ما هي ومش بنمسحها!
+                // الاحتفاظ بأي مريض أضيف يدوياً من صفحة clinic ولم يتم حذفه من today
                 clinicNamesMap.forEach((remainingCp, nameKey) => {
-                    // نتأكد إن المريض لسه موجود في today بس ممكن يكون اتغير لـ "علاج طبيعي" أو "جلسة" عشان نمسحه، أما لو اتضاف مانوال خالص فيبقى يفضل
                     const foundInToday = patientsQueue.find(p => p.name && p.name.trim() === nameKey);
                     if (!foundInToday) {
-                        // لو مش موجود في today خالص وتم حذفه، يتبعت زي ما هو لأنه غالباً مضاف مانوال
-                        updatedList.push(remainingCp);
+                        updatedList.push(remainingCp); // مضاف يدوياً بالكامل
                     } else {
-                        // لو موجود في today بس تخصصها اتغير لعلاج طبيعي أو جلسة، يبقى يتمسح من clinic
-                        if (!(foundInToday.dept === 'تغذية علاجية' && (foundInToday.type === 'كشف' || foundInToday.type === 'متابعة'))) {
-                            // يتم استبعاده (لا يتم إضافته لـ updatedList)
-                        } else {
+                        if (foundInToday.dept === 'تغذية علاجية' && (foundInToday.type === 'كشف' || foundInToday.type === 'متابعة')) {
                             updatedList.push(remainingCp);
                         }
                     }
@@ -680,7 +673,6 @@
                 }).catch(error => { console.error("Firebase Rule Error:", error); });
             }
 
-            // --- التحديث الذكي الآمن مع Clinic.html ---
             syncTodayWithClinicSmart();
 
             if (syncTimeout) clearTimeout(syncTimeout);
