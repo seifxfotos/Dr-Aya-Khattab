@@ -28,9 +28,14 @@
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 20px; transition: 0.3s; }
         .container { max-width: 1000px; margin: 0 auto; }
 
-        .header-section { background: linear-gradient(135deg, #2c3e50, var(--primary-blue)); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; position: relative;}
+        .header-section { background: linear-gradient(135deg, #2c3e50, var(--primary-blue)); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; position: relative; display: flex; flex-direction: column; align-items: center;}
         .header-section h1 { margin: 0; font-size: 26px; }
-        .header-section p { margin: 5px 0 0 0; opacity: 0.8; font-size: 15px;}
+        .header-section p { margin: 5px 0 15px 0; opacity: 0.8; font-size: 14px;}
+
+        /* فلتر الشهور */
+        .month-selector-container { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.3); display: inline-flex; align-items: center; gap: 10px; }
+        .month-selector-container label { font-weight: bold; font-size: 15px;}
+        .month-input { background: var(--input-bg); color: var(--text-dark); border: none; padding: 6px 15px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; font-size: 16px; outline: none; cursor: pointer; }
 
         .theme-switch-wrapper { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 30px; display: flex; align-items: center; }
         .theme-switch { display: inline-block; position: relative; width: 50px; height: 26px; }
@@ -58,7 +63,7 @@
 
         /* Modal Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
-        .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 95%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; }
         .modal-header h3 { margin: 0; font-size: 20px; color: var(--primary-blue); }
         .btn-close { background: none; border: none; font-size: 20px; color: var(--danger); cursor: pointer; }
@@ -69,8 +74,9 @@
         .report-total-row { font-weight: 800; background: rgba(0,147,208,0.1) !important; font-size: 16px; color: var(--primary-blue);}
 
         /* Edit Staff Form */
-        .staff-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr 0.5fr; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px dashed var(--border); border-radius: 8px;}
-        .staff-form-row input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; background: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box;}
+        .staff-form-row { display: grid; grid-template-columns: 1fr 0.8fr 1fr 1fr 0.5fr; gap: 8px; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px dashed var(--border); border-radius: 8px;}
+        .rec-form-row { grid-template-columns: 1fr 0.8fr 0.8fr 1fr 0.5fr; }
+        .staff-form-row input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; background: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box; font-size: 12px;}
         .btn-save { background: var(--primary-green); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px;}
         .btn-remove-staff { background: var(--danger); color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
         .btn-add-row { background: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; width: 100%;}
@@ -87,7 +93,12 @@
                 </label>
             </div>
             <h1><i class="fa-solid fa-sack-dollar"></i> إدارة الرواتب والحسابات</h1>
-            <p>يتم الحساب تلقائياً بناءً على بيانات العيادة (جلسات، كشوفات، متابعات)</p>
+            <p>اختر الشهر لعرض الرواتب المستحقة (لا يتم حساب الحالات قبل تاريخ تعيين الموظف)</p>
+            
+            <div class="month-selector-container">
+                <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
+                <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
+            </div>
         </div>
 
         <div class="sections-grid">
@@ -151,7 +162,7 @@
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة ببيانات العيادة (today)
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -168,22 +179,31 @@
             db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
-        // --- الإعدادات الافتراضية المحفوظة محلياً ---
+        // --- الإعدادات الافتراضية المحفوظة محلياً (مع تواريخ البدء) ---
         const DEFAULT_CONFIG = {
             doctors: [
-                { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30 },
-                { id: 'doc2', name: 'منال', code: 'م', sessionPrice: 30 }
+                { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30, startDate: '' },
+                { id: 'doc2', name: 'منال', code: 'م', sessionPrice: 30, startDate: '' }
             ],
             reception: [
-                { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10 }
+                // تم ضبط تاريخ بدء آلاء على 2026-10-06
+                { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10, startDate: '2026-10-06' }
             ]
         };
 
         let staffConfig = JSON.parse(localStorage.getItem('clinic_salary_config')) || DEFAULT_CONFIG;
-        let allClinicDaysData = {}; // تخزين كل الداتا المسحوبة من الفايربيز
-        let currentEditMode = ''; // 'doctors' or 'reception'
+        let allClinicDaysData = {}; 
+        let currentEditMode = ''; 
 
-        // --- نظام الثيم (Dark Mode) ---
+        // تعيين الشهر الحالي افتراضياً في الفلتر
+        function initMonthSelector() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
+        }
+
+        // نظام الثيم
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -196,7 +216,7 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- جلب البيانات المجمعة من Firebase (أثر رجعي + لحظي) ---
+        // سحب الداتا من فايربيز
         function startDataListener() {
             if (!db) { alert('خطأ في الاتصال بقاعدة البيانات'); return; }
             db.ref('clinic_days').on('value', (snapshot) => {
@@ -205,12 +225,14 @@
             });
         }
 
-        // --- حساب الرواتب ---
+        // --- دالة الحساب المفلترة بالشهر وتاريخ البدء ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
+            
+            // قراءة الشهر المحدد من الواجهة (مثال: "2026-10")
+            const selectedMonth = document.getElementById('monthSelector').value; 
 
-            // تجهيز هيكل الحساب
             staffConfig.doctors.forEach(doc => {
                 doctorsCalc[doc.id] = { config: doc, total: 0, days: {} };
             });
@@ -218,32 +240,31 @@
                 receptionCalc[rec.id] = { config: rec, total: 0, days: {} };
             });
 
-            // مسح كل الأيام واستخراج الجلسات والكشوفات والمتابعات
-            Object.keys(allClinicDaysData).forEach(dateStr => {
+            // اللف على كل الأيام في الفايربيز
+            Object.keys(allClinicDaysData).forEach(dateStr => { // dateStr بيكون "YYYY-MM-DD"
+                
+                // 1. فلتر الشهر: تجاهل أي يوم لا يبدأ بالشهر المحدد
+                if (!dateStr.startsWith(selectedMonth)) return;
+
                 let dayData = allClinicDaysData[dateStr];
                 if (!dayData || !dayData.schedule) return;
 
                 let sched = Array.isArray(dayData.schedule) ? dayData.schedule : Object.values(dayData.schedule);
                 
-                // إحصاءات اليوم الكاملة للعيادة (تستخدم لحساب الرسيبشن)
                 let dayKashfCount = 0;
                 let dayMotabaaCount = 0;
-
-                // إحصاءات الجلسات لكل دكتور في هذا اليوم
                 let dayDoctorSessions = {};
 
+                // استخراج عدد الحالات في هذا اليوم
                 sched.forEach(patient => {
                     let type = (patient.type || '').trim();
                     let doctorName = (patient.doctor || '').trim();
 
-                    // حساب الرسيبشن
                     if (type === 'كشف') dayKashfCount++;
                     if (type === 'متابعة') dayMotabaaCount++;
 
-                    // حساب الأطباء (جلسات فقط)
                     if (type === 'جلسة' && doctorName) {
                         staffConfig.doctors.forEach(doc => {
-                            // التحقق إذا كان الاسم في الخانة يطابق اسم الدكتور أو رمزه السري
                             if (doctorName === doc.name || doctorName === doc.code) {
                                 if (!dayDoctorSessions[doc.id]) dayDoctorSessions[doc.id] = 0;
                                 dayDoctorSessions[doc.id]++;
@@ -252,8 +273,11 @@
                     }
                 });
 
-                // تجميع حسابات الرسيبشن لهذا اليوم
+                // تجميع حسابات الرسيبشن
                 staffConfig.reception.forEach(rec => {
+                    // 2. فلتر تاريخ البدء: تجاهل الحساب لو اليوم ده قبل تاريخ تعيين الموظف
+                    if (rec.startDate && dateStr < rec.startDate) return;
+
                     if (dayKashfCount > 0 || dayMotabaaCount > 0) {
                         let dailyTotal = (dayKashfCount * rec.kashfPrice) + (dayMotabaaCount * rec.motabaaPrice);
                         receptionCalc[rec.id].days[dateStr] = { kashf: dayKashfCount, motabaa: dayMotabaaCount, dailyTotal: dailyTotal };
@@ -261,8 +285,11 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء لهذا اليوم
+                // تجميع حسابات الأطباء
                 staffConfig.doctors.forEach(doc => {
+                    // فلتر تاريخ البدء للدكتور
+                    if (doc.startDate && dateStr < doc.startDate) return;
+
                     if (dayDoctorSessions[doc.id] && dayDoctorSessions[doc.id] > 0) {
                         let sessionsCount = dayDoctorSessions[doc.id];
                         let dailyTotal = sessionsCount * doc.sessionPrice;
@@ -288,7 +315,7 @@
                     <div class="staff-card" onclick='openReportModal("doctor", ${JSON.stringify(data)})'>
                         <div class="staff-info">
                             <h3>د. ${doc.name} <span style="font-size:12px; color:var(--primary-blue)">(${doc.code})</span></h3>
-                            <p>سعر الجلسة: ${doc.sessionPrice} ج.م</p>
+                            <p>سعر الجلسة: ${doc.sessionPrice} ج.م ${doc.startDate ? `| بدأ: ${doc.startDate}` : ''}</p>
                         </div>
                         <div class="staff-total">${data.total} ج.م</div>
                     </div>`;
@@ -301,7 +328,7 @@
                     <div class="staff-card" onclick='openReportModal("reception", ${JSON.stringify(data)})'>
                         <div class="staff-info">
                             <h3>${rec.name}</h3>
-                            <p>كشف: ${rec.kashfPrice} | متابعة: ${rec.motabaaPrice}</p>
+                            <p>كشف: ${rec.kashfPrice} | متابعة: ${rec.motabaaPrice} ${rec.startDate ? `| بدأت: ${rec.startDate}` : ''}</p>
                         </div>
                         <div class="staff-total">${data.total} ج.م</div>
                     </div>`;
@@ -311,7 +338,7 @@
         // --- عرض التقارير التفصيلية ---
         function openReportModal(type, data) {
             document.getElementById('reportModal').style.display = 'flex';
-            document.getElementById('reportTitle').innerText = `كشف حساب: ${data.config.name}`;
+            document.getElementById('reportTitle').innerText = `كشف حساب: ${data.config.name} (${document.getElementById('monthSelector').value})`;
             
             const thead = document.getElementById('reportThead');
             const tbody = document.getElementById('reportTbody');
@@ -322,14 +349,14 @@
 
             if (type === 'doctor') {
                 thead.innerHTML = `<tr><th>التاريخ</th><th>عدد الجلسات</th><th>راتب اليوم</th></tr>`;
-                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="3">لا توجد جلسات مسجلة.</td></tr>`;
+                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="3" style="padding:20px; opacity:0.6;">لا توجد جلسات مسجلة في هذا الشهر.</td></tr>`;
                 sortedDates.forEach(date => {
                     let d = data.days[date];
                     tbody.innerHTML += `<tr><td>${date}</td><td>${d.sessions}</td><td style="color:var(--primary-green); font-weight:bold;">${d.dailyTotal} ج.م</td></tr>`;
                 });
             } else {
                 thead.innerHTML = `<tr><th>التاريخ</th><th>كشوفات</th><th>متابعات</th><th>راتب اليوم</th></tr>`;
-                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="4">لا توجد حالات مسجلة.</td></tr>`;
+                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; opacity:0.6;">لا توجد حالات مسجلة في هذا الشهر.</td></tr>`;
                 sortedDates.forEach(date => {
                     let d = data.days[date];
                     tbody.innerHTML += `<tr><td>${date}</td><td>${d.kashf}</td><td>${d.motabaa}</td><td style="color:var(--primary-green); font-weight:bold;">${d.dailyTotal} ج.م</td></tr>`;
@@ -341,7 +368,7 @@
             if(sortedDates.length > 0) {
                 tbody.innerHTML += `
                     <tr class="report-total-row">
-                        <td colspan="${colSpan}" style="text-align: left; padding-left: 20px;">الإجمالي المستحق:</td>
+                        <td colspan="${colSpan}" style="text-align: left; padding-left: 20px;">إجمالي راتب الشهر:</td>
                         <td>${data.total} ج.م</td>
                     </tr>`;
             }
@@ -363,20 +390,22 @@
             if (currentEditMode === 'doctors') {
                 list.forEach((doc, idx) => {
                     container.innerHTML += `
-                        <div class="staff-form-row" id="row-${idx}">
+                        <div class="staff-form-row">
                             <div><label style="font-size:11px">الاسم:</label><input type="text" value="${doc.name}" id="${currentEditMode}-name-${idx}"></div>
-                            <div><label style="font-size:11px">الرمز المعالج:</label><input type="text" value="${doc.code}" id="${currentEditMode}-code-${idx}" placeholder="مثال: ي"></div>
-                            <div><label style="font-size:11px">سعر الجلسة:</label><input type="number" value="${doc.sessionPrice}" id="${currentEditMode}-price-${idx}"></div>
+                            <div><label style="font-size:11px">الرمز:</label><input type="text" value="${doc.code}" id="${currentEditMode}-code-${idx}" placeholder="ي"></div>
+                            <div><label style="font-size:11px">الجلسة:</label><input type="number" value="${doc.sessionPrice}" id="${currentEditMode}-price-${idx}"></div>
+                            <div><label style="font-size:11px">تاريخ البدء:</label><input type="date" value="${doc.startDate || ''}" id="${currentEditMode}-date-${idx}"></div>
                             <div style="text-align:center"><br><button class="btn-remove-staff" onclick="removeStaffRow(${idx})"><i class="fa-solid fa-trash"></i></button></div>
                         </div>`;
                 });
             } else {
                 list.forEach((rec, idx) => {
                     container.innerHTML += `
-                        <div class="staff-form-row" id="row-${idx}">
+                        <div class="staff-form-row rec-form-row">
                             <div><label style="font-size:11px">الاسم:</label><input type="text" value="${rec.name}" id="${currentEditMode}-name-${idx}"></div>
                             <div><label style="font-size:11px">سعر الكشف:</label><input type="number" value="${rec.kashfPrice}" id="${currentEditMode}-kprice-${idx}"></div>
                             <div><label style="font-size:11px">سعر المتابعة:</label><input type="number" value="${rec.motabaaPrice}" id="${currentEditMode}-mprice-${idx}"></div>
+                            <div><label style="font-size:11px">تاريخ البدء:</label><input type="date" value="${rec.startDate || ''}" id="${currentEditMode}-date-${idx}"></div>
                             <div style="text-align:center"><br><button class="btn-remove-staff" onclick="removeStaffRow(${idx})"><i class="fa-solid fa-trash"></i></button></div>
                         </div>`;
                 });
@@ -385,9 +414,9 @@
 
         function addNewStaffRow() {
             if (currentEditMode === 'doctors') {
-                staffConfig.doctors.push({ id: 'doc' + Date.now(), name: '', code: '', sessionPrice: 0 });
+                staffConfig.doctors.push({ id: 'doc' + Date.now(), name: '', code: '', sessionPrice: 0, startDate: '' });
             } else {
-                staffConfig.reception.push({ id: 'rec' + Date.now(), name: '', kashfPrice: 0, motabaaPrice: 0 });
+                staffConfig.reception.push({ id: 'rec' + Date.now(), name: '', kashfPrice: 0, motabaaPrice: 0, startDate: '' });
             }
             renderEditForm();
         }
@@ -404,23 +433,27 @@
                     doc.name = document.getElementById(`${currentEditMode}-name-${idx}`).value.trim();
                     doc.code = document.getElementById(`${currentEditMode}-code-${idx}`).value.trim();
                     doc.sessionPrice = parseFloat(document.getElementById(`${currentEditMode}-price-${idx}`).value) || 0;
+                    doc.startDate = document.getElementById(`${currentEditMode}-date-${idx}`).value;
                 });
             } else {
                 list.forEach((rec, idx) => {
                     rec.name = document.getElementById(`${currentEditMode}-name-${idx}`).value.trim();
                     rec.kashfPrice = parseFloat(document.getElementById(`${currentEditMode}-kprice-${idx}`).value) || 0;
                     rec.motabaaPrice = parseFloat(document.getElementById(`${currentEditMode}-mprice-${idx}`).value) || 0;
+                    rec.startDate = document.getElementById(`${currentEditMode}-date-${idx}`).value;
                 });
             }
             
-            // حفظ الإعدادات وإعادة الحساب
             localStorage.setItem('clinic_salary_config', JSON.stringify(staffConfig));
             closeModal('editStaffModal');
             calculateAllSalaries(); 
         }
 
-        // تشغيل الاستماع للداتا عند فتح الصفحة
-        window.onload = startDataListener;
+        // تشغيل التهيئة عند فتح الصفحة
+        window.onload = () => {
+            initMonthSelector();
+            startDataListener();
+        };
     </script>
 </body>
 </html>
