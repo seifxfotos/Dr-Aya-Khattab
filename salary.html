@@ -194,7 +194,7 @@
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
-        // دالة تنظيف وتوحيد النصوص متطورة جداً (لحل مشكلة ى، ي، المسافات، والتشكيل)
+        // دالة تنظيف وتوحيد النصوص متطورة (بتشيل المسافات وبتوحد الياء)
         function normalizeText(text) {
             if (!text) return "";
             return String(text)
@@ -202,7 +202,7 @@
                 .replace(/[أإآ]/g, "ا")
                 .replace(/ة/g, "ه")
                 .replace(/ى/g, "ي")
-                .replace(/\s+/g, " ") // توحيد المسافات المتعددة
+                .replace(/\s+/g, "") // إزالة كل المسافات عشان لو اتكتبت بمسافة تتحسب صح
                 .trim();
         }
 
@@ -253,6 +253,7 @@
                 let dayData = allClinicDaysData[dateStr];
                 if (!dayData || !dayData.schedule) return;
 
+                // تحويل كل الجداول الموزعة على الساعات لآراي واحدة عشان تتجمع صح
                 let sched = Array.isArray(dayData.schedule) ? dayData.schedule : Object.values(dayData.schedule);
                 
                 let dayKashfCount = 0;
@@ -260,19 +261,16 @@
                 let dayDoctorSessions = {};
 
                 sched.forEach(patient => {
-                    // 🚨 حماية من الـ null: لو كان المريض محذوف مكانه بيبقى فاضي، الخطوة دي بتمنع الكود يقف وتخليه يكمل عد عادي جداً
                     if (!patient) return; 
 
                     let typeNorm = normalizeText(patient.type);
                     let rawDoc = String(patient.doctor || '');
-                    let docNorm = normalizeText(rawDoc);
-
-                    // استخراج الاسم الصافي بدون ألقاب (د. أو دكتور أو د/)
-                    let coreDocNorm = docNorm.replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "").trim();
+                    let docNorm = normalizeText(rawDoc); // هنا الكلمة بدون أي مسافات وموحدة الياء
 
                     if (typeNorm === 'كشف') dayKashfCount++;
                     if (typeNorm === 'متابعه') dayMotabaaCount++; 
 
+                    // حساب جلسات الأطباء على كل المرضى في كل الساعات في هذا اليوم
                     if (typeNorm === 'جلسه' && docNorm) { 
                         staffConfig.doctors.forEach(doc => {
                             let dName = normalizeText(doc.name);
@@ -280,15 +278,9 @@
                             
                             let isMatch = false;
                             
-                            // 1. التطابق مع الرمز (مثال: ي، م، د.ي، د ي)
-                            if (dCode && (coreDocNorm === dCode || docNorm === dCode || coreDocNorm === "د" + dCode)) {
-                                isMatch = true;
-                            }
-                            
-                            // 2. التطابق مع الاسم (مثال: ياسمين، دكتورة ياسمين، د ياسمين)
-                            if (dName && (coreDocNorm === dName || docNorm === dName || coreDocNorm.includes(dName))) {
-                                isMatch = true;
-                            }
+                            // التطابق الدقيق مع الحرف أو الاسم (ي = ي)
+                            if (dCode && docNorm === dCode) isMatch = true;
+                            if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
                             
                             if (isMatch) {
                                 if (!dayDoctorSessions[doc.id]) dayDoctorSessions[doc.id] = 0;
@@ -309,7 +301,7 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء
+                // تجميع حسابات الأطباء لكل الجلسات المجمعة لهذا اليوم
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
 
