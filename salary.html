@@ -179,14 +179,13 @@
             db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
-        // --- الإعدادات الافتراضية المحفوظة محلياً (مع تواريخ البدء) ---
+        // --- الإعدادات الافتراضية ---
         const DEFAULT_CONFIG = {
             doctors: [
                 { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30, startDate: '' },
                 { id: 'doc2', name: 'منال', code: 'م', sessionPrice: 30, startDate: '' }
             ],
             reception: [
-                // تم ضبط تاريخ بدء آلاء على 2026-10-06
                 { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10, startDate: '2026-10-06' }
             ]
         };
@@ -195,7 +194,16 @@
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
-        // تعيين الشهر الحالي افتراضياً في الفلتر
+        // دالة تنظيف وتوحيد النصوص (لحل مشكلة ى و ي والمسافات)
+        function normalizeText(text) {
+            if (!text) return "";
+            return String(text).replace(/[أإآ]/g, "ا")
+                               .replace(/ة/g, "ه")
+                               .replace(/ى/g, "ي")
+                               .trim();
+        }
+
+        // تعيين الشهر الحالي افتراضياً
         function initMonthSelector() {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -225,12 +233,11 @@
             });
         }
 
-        // --- دالة الحساب المفلترة بالشهر وتاريخ البدء ---
+        // --- دالة الحساب الذكية المفلترة ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
             
-            // قراءة الشهر المحدد من الواجهة (مثال: "2026-10")
             const selectedMonth = document.getElementById('monthSelector').value; 
 
             staffConfig.doctors.forEach(doc => {
@@ -240,10 +247,8 @@
                 receptionCalc[rec.id] = { config: rec, total: 0, days: {} };
             });
 
-            // اللف على كل الأيام في الفايربيز
-            Object.keys(allClinicDaysData).forEach(dateStr => { // dateStr بيكون "YYYY-MM-DD"
+            Object.keys(allClinicDaysData).forEach(dateStr => { 
                 
-                // 1. فلتر الشهر: تجاهل أي يوم لا يبدأ بالشهر المحدد
                 if (!dateStr.startsWith(selectedMonth)) return;
 
                 let dayData = allClinicDaysData[dateStr];
@@ -255,17 +260,26 @@
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // استخراج عدد الحالات في هذا اليوم
                 sched.forEach(patient => {
-                    let type = (patient.type || '').trim();
-                    let doctorName = (patient.doctor || '').trim();
+                    // توحيد النصوص لضمان تطابق البيانات
+                    let typeNorm = normalizeText(patient.type);
+                    let docNorm = normalizeText(patient.doctor);
 
-                    if (type === 'كشف') dayKashfCount++;
-                    if (type === 'متابعة') dayMotabaaCount++;
+                    if (typeNorm === 'كشف') dayKashfCount++;
+                    if (typeNorm === 'متابعه') dayMotabaaCount++; // تحولت "متابعة" إلى "متابعه" بسبب الـ normalize
 
-                    if (type === 'جلسة' && doctorName) {
+                    // حساب جلسات الأطباء
+                    if (typeNorm === 'جلسه' && docNorm) { // تحولت "جلسة" إلى "جلسه"
                         staffConfig.doctors.forEach(doc => {
-                            if (doctorName === doc.name || doctorName === doc.code) {
+                            let dName = normalizeText(doc.name);
+                            let dCode = normalizeText(doc.code);
+                            
+                            // التحقق من التطابق مع اسم الدكتور أو رمزه، حتى لو مضاف قبله "د." أو "دكتورة"
+                            let isMatch = false;
+                            if (dName && (docNorm === dName || docNorm === "د " + dName || docNorm === "د." + dName || docNorm === "دكتور " + dName || docNorm === "دكتوره " + dName)) isMatch = true;
+                            if (dCode && (docNorm === dCode || docNorm === "د " + dCode || docNorm === "د." + dCode)) isMatch = true;
+                            
+                            if (isMatch) {
                                 if (!dayDoctorSessions[doc.id]) dayDoctorSessions[doc.id] = 0;
                                 dayDoctorSessions[doc.id]++;
                             }
@@ -275,7 +289,6 @@
 
                 // تجميع حسابات الرسيبشن
                 staffConfig.reception.forEach(rec => {
-                    // 2. فلتر تاريخ البدء: تجاهل الحساب لو اليوم ده قبل تاريخ تعيين الموظف
                     if (rec.startDate && dateStr < rec.startDate) return;
 
                     if (dayKashfCount > 0 || dayMotabaaCount > 0) {
@@ -287,7 +300,6 @@
 
                 // تجميع حسابات الأطباء
                 staffConfig.doctors.forEach(doc => {
-                    // فلتر تاريخ البدء للدكتور
                     if (doc.startDate && dateStr < doc.startDate) return;
 
                     if (dayDoctorSessions[doc.id] && dayDoctorSessions[doc.id] > 0) {
@@ -308,7 +320,6 @@
             const recList = document.getElementById('receptionList');
             docList.innerHTML = ''; recList.innerHTML = '';
 
-            // عرض الأطباء
             staffConfig.doctors.forEach(doc => {
                 let data = doctorsCalc[doc.id];
                 docList.innerHTML += `
@@ -321,7 +332,6 @@
                     </div>`;
             });
 
-            // عرض الرسيبشن
             staffConfig.reception.forEach(rec => {
                 let data = receptionCalc[rec.id];
                 recList.innerHTML += `
@@ -344,7 +354,6 @@
             const tbody = document.getElementById('reportTbody');
             tbody.innerHTML = '';
 
-            // ترتيب الأيام من الأحدث للأقدم
             const sortedDates = Object.keys(data.days).sort((a, b) => new Date(b) - new Date(a));
 
             if (type === 'doctor') {
@@ -363,7 +372,6 @@
                 });
             }
 
-            // إضافة صف الإجمالي النهائي
             let colSpan = type === 'doctor' ? 2 : 3;
             if(sortedDates.length > 0) {
                 tbody.innerHTML += `
@@ -374,7 +382,7 @@
             }
         }
 
-        // --- إدارة الإعدادات (الأقلام) ---
+        // --- إدارة الإعدادات ---
         function openEditModal(type) {
             currentEditMode = type;
             document.getElementById('editStaffModal').style.display = 'flex';
