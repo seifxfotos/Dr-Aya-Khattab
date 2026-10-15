@@ -121,35 +121,31 @@
         @keyframes blink { 50% { opacity: 0.3; } }
         
         /* 🚨 تعديلات شريط الحسابات وزر الإظهار 🚨 */
-        .revenue-toggle-btn { position: fixed; bottom: 70px; right: 20px; background: var(--warning); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; cursor: pointer; z-index: 105; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; border: none; }
-        .revenue-toggle-btn:hover { transform: scale(1.1); background: #d68910; }
+        .revenue-toggle-btn { position: fixed; bottom: 20px; right: 100px; background: #27ae60; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; z-index: 1001; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; border: none; }
+        .revenue-toggle-btn:hover { transform: scale(1.1); background: #2ecc71; }
         
-        .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(150%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 98%; max-width: 1100px; z-index: 100; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; opacity: 0; }
-        .revenue-wrapper.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+        .revenue-wrapper { position: fixed; bottom: 80px; right: 20px; display: flex; gap: 12px; flex-direction: column; width: auto; max-width: 400px; z-index: 1000; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; opacity: 0; transform: translateY(20px) scale(0.9); transform-origin: bottom right; }
+        .revenue-wrapper.show { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         
-        .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
-        .clinic-box { border: 2px solid var(--primary-blue); }
-        .meds-box { border: 2px solid var(--primary-green); }
-        .total-box { border: 2px solid var(--warning); background: var(--warning); color: #fff; }
+        .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 15px; justify-content: space-between; pointer-events: auto; transition: 0.3s; }
+        .clinic-box { border-right: 4px solid var(--primary-blue); }
+        .meds-box { border-right: 4px solid var(--primary-green); }
+        .total-box { border: none; background: var(--warning); color: #fff; justify-content: center;}
         .total-box .revenue-item { color: #fff; }
         .total-box .revenue-item i { color: #fff; opacity: 1; }
         
-        .revenue-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-        .revenue-item i { font-size: 16px; opacity: 0.8;}
-        .revenue-total { border-right: 2px solid var(--border); padding-right: 10px; font-weight: 800; font-size: 14px;}
+        .revenue-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .revenue-item i { font-size: 18px; opacity: 0.8;}
+        .revenue-total { border-right: 2px dashed var(--border); padding-right: 15px; font-weight: 800; font-size: 16px;}
         .clinic-box .revenue-total { color: var(--primary-blue); }
         .meds-box .revenue-total { color: var(--primary-green); }
 
         .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         
         @media (max-width: 1400px) {
-            .revenue-wrapper { bottom: 12px; gap: 8px; }
-            .revenue-box { padding: 6px 12px; font-size: 12px; }
-            .revenue-total { font-size: 13px; padding-right: 8px; }
-            .revenue-item i { font-size: 14px; }
             .floating-timer { bottom: 75px; left: 15px; transform: scale(0.9); transform-origin: left bottom; }
             .theme-switch-wrapper { bottom: 20px; right: 15px; transform: scale(0.9); transform-origin: right bottom; }
-            .revenue-toggle-btn { bottom: 70px; right: 15px; width: 45px; height: 45px; font-size: 18px; }
+            .revenue-toggle-btn { bottom: 20px; right: 85px; width: 45px; height: 45px; font-size: 18px; }
             body { padding-bottom: 130px; } 
             .add-patient-grid { gap: 5px; }
         }
@@ -158,13 +154,10 @@
             .grid-3col { grid-template-columns: 1fr; }
             .add-patient-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } 
             .btn-add { grid-column: span 4; } 
-            .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(150%); width: 95%; flex-direction: column; align-items: center; gap: 8px; margin: 0; }
-            .revenue-wrapper.show { transform: translateX(-50%) translateY(0); }
-            .revenue-box { width: 100%; justify-content: center; padding: 10px; }
-            .revenue-total { border-right: none; border-top: 1px dashed var(--border); padding-top: 5px; padding-right: 0; margin-top: 5px; width: 100%; text-align: center; justify-content: center;}
+            .revenue-wrapper { position: fixed; bottom: 80px; right: 15px; width: 90%; max-width: 350px; flex-direction: column; align-items: stretch; gap: 8px; margin: 0; }
             .floating-timer { bottom: 15px; left: 15px; transform: scale(0.85); }
             .theme-switch-wrapper { bottom: 15px; right: 15px; transform: scale(0.85); }
-            .revenue-toggle-btn { bottom: 65px; right: 15px; }
+            .revenue-toggle-btn { bottom: 15px; right: 80px; }
             body { padding-bottom: 80px; }
         }
 
@@ -210,22 +203,26 @@
 
     <!-- 🚨 زر إظهار/إخفاء شريط الحسابات 🚨 -->
     <button class="revenue-toggle-btn" id="revenueToggleBtn" onclick="toggleRevenueWrapper()" title="عرض / إخفاء الحسابات">
-        <i class="fa-solid fa-sack-dollar"></i>
+        <i class="fa-solid fa-wallet"></i>
     </button>
 
     <div class="revenue-wrapper" id="revenueWrapper">
         <div class="revenue-box clinic-box">
-            <div class="revenue-item" title="كاش العيادة بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> كاش عيادة: <span id="totalCash">0</span></div>
-            <div class="revenue-item" title="محافظ وفون كاش للعيادة"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="totalElec">0</span></div>
+            <div style="display: flex; gap: 15px;">
+                <div class="revenue-item" title="كاش العيادة بعد خصم المصروفات"><i class="fa-solid fa-money-bill-wave"></i> كاش: <span id="totalCash">0</span></div>
+                <div class="revenue-item" title="محافظ وفون كاش للعيادة"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="totalElec">0</span></div>
+            </div>
             <div class="revenue-item revenue-total"><i class="fa-solid fa-stethoscope"></i> إجمالي العيادة: <span id="totalClinicValue">0</span></div>
         </div>
         <div class="revenue-box meds-box">
-            <div class="revenue-item" title="مبيعات الأدوية كاش"><i class="fa-solid fa-money-bill-wave"></i> كاش أدوية: <span id="medsCashLabel">0</span></div>
-            <div class="revenue-item" title="مبيعات الأدوية إلكتروني"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="medsElecLabel">0</span></div>
+            <div style="display: flex; gap: 15px;">
+                <div class="revenue-item" title="مبيعات الأدوية كاش"><i class="fa-solid fa-money-bill-wave"></i> كاش أد: <span id="medsCashLabel">0</span></div>
+                <div class="revenue-item" title="مبيعات الأدوية إلكتروني"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="medsElecLabel">0</span></div>
+            </div>
             <div class="revenue-item revenue-total"><i class="fa-solid fa-pills"></i> إجمالي الأدوية: <span id="totalMedsValue">0</span></div>
         </div>
         <div class="revenue-box total-box" title="إجمالي الدخل اليوم كاش والكتروني شامل الأدوية">
-            <div class="revenue-item" style="font-weight: 800; font-size: 15px;"><i class="fa-solid fa-wallet"></i> الإجمالي الكلي: <span id="totalRevenueValue">0</span></div>
+            <div class="revenue-item" style="font-weight: 800; font-size: 18px;"><i class="fa-solid fa-wallet"></i> الإجمالي الكلي: <span id="totalRevenueValue">0</span> ج.م</div>
         </div>
     </div>
 
@@ -447,28 +444,35 @@
                 let updatedList = [];
                 let processedNames = new Set();
 
+                // 1. أولاً: نمر على الحالات الموجودة حالياً في clinic لنحافظ على الترتيب الأصلي (سواء اتضافت مانوال أو من today)
                 currentClinicList.forEach(cp => {
                     if (!cp || !cp.name) return;
                     const cName = cp.name.trim();
                     
+                    // هل المريض لسه موجود في today ومطابق للشروط؟
                     const foundInToday = eligibleTodayPatients.find(tp => tp.name && tp.name.trim() === cName);
                     
                     if (foundInToday) {
+                        // لو موجود في today، نحدث نوع الزيارة والقسم مع الحفاظ على حالته (entered) وترتيبه
                         cp.visitType = foundInToday.type;
                         cp.category = foundInToday.dept;
                         updatedList.push(cp);
                         processedNames.add(cName);
                     } else {
+                        // لو المريض مش موجود في today (يعني ممكن يكون مضاف مانوال في clinic أو اتغير نوعه/حذفه من today)
+                        // بنتحقق هل تم حذفه من today تماماً؟
                         const anyInToday = patientsQueue.find(p => p.name && p.name.trim() === cName);
                         if (!anyInToday) {
+                            // مضاف يدوياً بالكامل في clinic ولم يتم حذفه من today -> نتركه في مكانه ولا نحذفه!
                             updatedList.push(cp);
                             processedNames.add(cName);
                         } else {
-                            // تم حذفه لأنه أصبح لا يطابق شروط الـ clinic
+                            // كان في today بس تم تغييره (مثلاً لعلاج طبيعي أو جلسة) -> إذن يتم استبعاده من clinic
                         }
                     }
                 });
 
+                // 2. ثانياً: أي مريض جديد في today ولم يكن موجوداً في clinic يتم إضافته في النهاية بالترتيب الصحيح (مثل رقم 3)
                 eligibleTodayPatients.forEach(tp => {
                     const cleanName = (tp.name || '').trim();
                     if (!cleanName || processedNames.has(cleanName)) return;
