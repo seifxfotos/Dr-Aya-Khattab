@@ -120,7 +120,13 @@
         .time-ended { color: var(--danger) !important; animation: blink 1s infinite; font-size: 15px !important; font-family: 'Cairo' !important; }
         @keyframes blink { 50% { opacity: 0.3; } }
         
-        .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 98%; max-width: 1100px; z-index: 100; pointer-events: none; transition: 0.3s; }
+        /* 🚨 تعديلات شريط الحسابات وزر الإظهار 🚨 */
+        .revenue-toggle-btn { position: fixed; bottom: 70px; right: 20px; background: var(--warning); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; cursor: pointer; z-index: 105; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; border: none; }
+        .revenue-toggle-btn:hover { transform: scale(1.1); background: #d68910; }
+        
+        .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(150%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 98%; max-width: 1100px; z-index: 100; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; opacity: 0; }
+        .revenue-wrapper.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+        
         .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
         .clinic-box { border: 2px solid var(--primary-blue); }
         .meds-box { border: 2px solid var(--primary-green); }
@@ -142,7 +148,8 @@
             .revenue-total { font-size: 13px; padding-right: 8px; }
             .revenue-item i { font-size: 14px; }
             .floating-timer { bottom: 75px; left: 15px; transform: scale(0.9); transform-origin: left bottom; }
-            .theme-switch-wrapper { bottom: 75px; right: 15px; transform: scale(0.9); transform-origin: right bottom; }
+            .theme-switch-wrapper { bottom: 20px; right: 15px; transform: scale(0.9); transform-origin: right bottom; }
+            .revenue-toggle-btn { bottom: 70px; right: 15px; width: 45px; height: 45px; font-size: 18px; }
             body { padding-bottom: 130px; } 
             .add-patient-grid { gap: 5px; }
         }
@@ -151,11 +158,13 @@
             .grid-3col { grid-template-columns: 1fr; }
             .add-patient-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } 
             .btn-add { grid-column: span 4; } 
-            .revenue-wrapper { position: relative; bottom: auto; left: auto; transform: none; width: 100%; margin-top: -10px; margin-bottom: 25px; flex-direction: column; align-items: center; gap: 8px; }
+            .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(150%); width: 95%; flex-direction: column; align-items: center; gap: 8px; margin: 0; }
+            .revenue-wrapper.show { transform: translateX(-50%) translateY(0); }
             .revenue-box { width: 100%; justify-content: center; padding: 10px; }
             .revenue-total { border-right: none; border-top: 1px dashed var(--border); padding-top: 5px; padding-right: 0; margin-top: 5px; width: 100%; text-align: center; justify-content: center;}
             .floating-timer { bottom: 15px; left: 15px; transform: scale(0.85); }
             .theme-switch-wrapper { bottom: 15px; right: 15px; transform: scale(0.85); }
+            .revenue-toggle-btn { bottom: 65px; right: 15px; }
             body { padding-bottom: 80px; }
         }
 
@@ -198,6 +207,11 @@
             <div class="slider round"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></div>
         </label>
     </div>
+
+    <!-- 🚨 زر إظهار/إخفاء شريط الحسابات 🚨 -->
+    <button class="revenue-toggle-btn" id="revenueToggleBtn" onclick="toggleRevenueWrapper()" title="عرض / إخفاء الحسابات">
+        <i class="fa-solid fa-sack-dollar"></i>
+    </button>
 
     <div class="revenue-wrapper" id="revenueWrapper">
         <div class="revenue-box clinic-box">
@@ -433,35 +447,28 @@
                 let updatedList = [];
                 let processedNames = new Set();
 
-                // 1. أولاً: نمر على الحالات الموجودة حالياً في clinic لنحافظ على الترتيب الأصلي (سواء اتضافت مانوال أو من today)
                 currentClinicList.forEach(cp => {
                     if (!cp || !cp.name) return;
                     const cName = cp.name.trim();
                     
-                    // هل المريض لسه موجود في today ومطابق للشروط؟
                     const foundInToday = eligibleTodayPatients.find(tp => tp.name && tp.name.trim() === cName);
                     
                     if (foundInToday) {
-                        // لو موجود في today، نحدث نوع الزيارة والقسم مع الحفاظ على حالته (entered) وترتيبه
                         cp.visitType = foundInToday.type;
                         cp.category = foundInToday.dept;
                         updatedList.push(cp);
                         processedNames.add(cName);
                     } else {
-                        // لو المريض مش موجود في today (يعني ممكن يكون مضاف مانوال في clinic أو اتغير نوعه/حذفه من today)
-                        // بنتحقق هل تم حذفه من today تماماً؟
                         const anyInToday = patientsQueue.find(p => p.name && p.name.trim() === cName);
                         if (!anyInToday) {
-                            // مضاف يدوياً بالكامل في clinic ولم يتم حذفه من today -> نتركه في مكانه ولا نحذفه!
                             updatedList.push(cp);
                             processedNames.add(cName);
                         } else {
-                            // كان في today بس تم تغييره (مثلاً لعلاج طبيعي أو جلسة) -> إذن يتم استبعاده من clinic
+                            // تم حذفه لأنه أصبح لا يطابق شروط الـ clinic
                         }
                     }
                 });
 
-                // 2. ثانياً: أي مريض جديد في today ولم يكن موجوداً في clinic يتم إضافته في النهاية بالترتيب الصحيح (مثل رقم 3)
                 eligibleTodayPatients.forEach(tp => {
                     const cleanName = (tp.name || '').trim();
                     if (!cleanName || processedNames.has(cleanName)) return;
@@ -728,10 +735,16 @@
         function removePatient(idx) {
             patientsQueue.splice(idx, 1);
             renderUI();
-            scheduleSync(); // الآن سيتم تحديث جدول clinic تلقائياً وحذف المريض منه أيضاً
+            scheduleSync();
         }
 
         function moveRow(idx, dir) { let p1 = patientsQueue[idx]; let p1Slot = p1.slot; let slotArray = []; let slotIndices = []; patientsQueue.forEach((p, i) => { if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }}); let localIdx = slotArray.indexOf(p1); if (dir === 'up' && localIdx > 0) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]]; patientsQueue[slotIndices[localIdx - 1]] = temp; } if (dir === 'down' && localIdx < slotArray.length - 1) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]]; patientsQueue[slotIndices[localIdx + 1]] = temp; } renderUI(); scheduleSync(); }
+
+        // 🚨 دالة إظهار/إخفاء شريط الحسابات 🚨
+        function toggleRevenueWrapper() {
+            const wrapper = document.getElementById('revenueWrapper');
+            wrapper.classList.toggle('show');
+        }
 
         function calculateTotals() {
             let clinicCash = 0; let clinicElec = 0; let medsCash = 0; let medsElec = 0; let expenses = 0;
