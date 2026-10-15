@@ -371,6 +371,71 @@
             db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
+        // --- إعداد الاتصال المباشر بصفحة انتظار العيادة (clinic.html) ---
+        const CLINIC_QUEUE_FIREBASE_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/";
+        const CLINIC_QUEUE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYqOapiXLj08hR7FH00KeGeFkMt1ZTai9ap0phHx89s5ofQ5-x3-h_P2MXsUE_PuDd/exec";
+        let clinicQueueDB = null;
+        try {
+            const clinicApp = firebase.initializeApp({ databaseURL: CLINIC_QUEUE_FIREBASE_URL }, "clinicQueueApp");
+            clinicQueueDB = clinicApp.database();
+        } catch(e) { console.error("Clinic Queue Firebase init error", e); }
+
+        function getActualTodayDateStr() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        // إرسال المريض الجديد فقط لحظة تسجيله في يومها إلى صفحة clinic.html
+        function sendNewPatientToClinicQueue(name, dept, type) {
+            const selectedDate = document.getElementById('todayDate').value;
+            const actualToday = getActualTodayDateStr();
+
+            // لا يرسل إلا إذا كان التسجيل في نفس اليوم الحالي، وللتغذية العلاجية (كشف أو متابعة) فقط
+            if (selectedDate !== actualToday) return;
+            if (dept !== 'تغذية علاجية' || (type !== 'كشف' && type !== 'متابعة')) return;
+
+            const cleanName = name.trim();
+            if (!cleanName || !clinicQueueDB) return;
+
+            const newClinicPatient = {
+                id: Date.now(),
+                name: cleanName,
+                category: 'تغذية علاجية',
+                visitType: type,
+                entered: false
+            };
+
+            const queueRef = clinicQueueDB.ref(`daily_queues/${actualToday}`);
+            queueRef.once('value').then((snapshot) => {
+                const rawVal = snapshot.val();
+                let currentList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
+
+                // عدم تكرار الاسم إذا كان مضافاً بالفعل في قائمة الانتظار
+                const exists = currentList.some(p => p && p.name && p.name.trim() === cleanName);
+                if (!exists) {
+                    currentList.push(newClinicPatient);
+                    queueRef.set(currentList);
+
+                    if (CLINIC_QUEUE_SCRIPT_URL) {
+                        fetch(CLINIC_QUEUE_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                date: actualToday,
+                                patients: currentList.map(p => ({
+                                    name: p.name,
+                                    category: p.category || 'تغذية علاجية',
+                                    visitType: (p.category === 'علاج طبيعي') ? '-' : (p.visitType || 'كشف'),
+                                    entered: Boolean(p.entered)
+                                }))
+                            })
+                        }).catch(err => console.log(err));
+                    }
+                }
+            }).catch(err => console.error("Clinic Queue Sync Error:", err));
+        }
+
         let unsubscribeFirebase = null;
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxj2clkzx8uQF_p2i-12YIMq0w-QBf8xWLfeaGmwoDJHPxN-q6aZdQZ6GIJE_aXpN5x/exec';
 
@@ -593,6 +658,9 @@
             if(!name) return; let targetSlot = type === 'مقدم' ? 'عام' : (manualSlot || getSlotsForDay()[0]); 
             patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', credit: '', doctor: '', finished: false });
             sortPatientsArray(); document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
+            
+            // إرسال المريض الجديد فقط لحظة تسجيله في نفس اليوم لصفحة clinic.html
+            sendNewPatientToClinicQueue(name, dept, type);
         }
 
         function sortPatientsArray() { let sorted = []; let validSlots = getSlotsForDay(); validSlots.forEach(s => { sorted = sorted.concat(patientsQueue.filter(p => p.slot === s)); }); sorted = sorted.concat(patientsQueue.filter(p => !validSlots.includes(p.slot))); patientsQueue = sorted; }
