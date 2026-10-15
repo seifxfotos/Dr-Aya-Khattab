@@ -385,7 +385,7 @@
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
-        // تحديث جدول clinic.html في جوجل شيت
+        // تحديث جدول clinic.html في جوجل شيت وقاعدة البيانات
         function pushClinicQueueList(dateStr, list) {
             if (!clinicQueueDB) return;
             clinicQueueDB.ref(`daily_queues/${dateStr}`).set(list);
@@ -407,16 +407,14 @@
             }
         }
 
-        // 🚨 المزامنة الشاملة والذكية مع صفحة Clinic.html
-        // الدالة دي بتشتغل مع أي تحديث (إضافة/تعديل/حذف) عشان تخلي قائمة الانتظار نسخة طبق الأصل للحالات المطابقة للشروط
-        function syncTodayWithClinicMaster() {
+        // 🚨 المزامنة الذكية الآمنة (تدمج الحالات الجديدة والتعديلات ولا تحذف الحالات المضافة يدويًا من clinic)
+        function syncTodayWithClinicSmart() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
 
-            // المزامنة بتتم ليوم النهاردة فقط
             if (selectedDate !== actualToday || !clinicQueueDB) return;
 
-            // بنجيب كل الحالات اللي في today وتطابق شروط العيادة (تغذية علاجية + كشف/متابعة)
+            // الحالات المطابقة للشروط في صفحة today
             const eligibleTodayPatients = patientsQueue.filter(p => 
                 p.dept === 'تغذية علاجية' && (p.type === 'كشف' || p.type === 'متابعة')
             );
@@ -425,29 +423,33 @@
             queueRef.once('value').then((snapshot) => {
                 const rawVal = snapshot.val();
                 let currentClinicList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
-                let updatedClinicList = [];
+                
+                let updatedList = [];
+                let clinicNamesMap = new Map();
 
+                // نحتفظ بكل الحالات الموجودة في clinic مسبقاً (سواء اتضافت مانوال أو من today)
+                currentClinicList.forEach(cp => {
+                    if (cp && cp.name) {
+                        clinicNamesMap.set(cp.name.trim(), cp);
+                    }
+                });
+
+                // نمر على الحالات المؤهلة في today
                 eligibleTodayPatients.forEach(tp => {
                     const cleanName = (tp.name || '').trim();
                     if (!cleanName) return;
 
-                    // نبحث هل المريض موجود أصلاً في Clinic عشان نحافظ على حالة (entered)
-                    let existingMatch = currentClinicList.find(cp => 
-                        (cp.id && tp.id && String(cp.id) === String(tp.id)) || 
-                        (cp.name && cp.name.trim() === cleanName)
-                    );
-
-                    if (existingMatch) {
-                        updatedClinicList.push({
-                            id: existingMatch.id || tp.id,
-                            name: cleanName,
-                            category: tp.dept,
-                            visitType: tp.type,
-                            entered: existingMatch.entered // بنحافظ على الشغل بتاع السكرتارية
-                        });
+                    if (clinicNamesMap.has(cleanName)) {
+                        // لو المريض موجود في clinic، نحدث بياناته (نوع الزيارة لو اتغيرت لكشف/متابعة) ونحافظ على entered
+                        let existing = clinicNamesMap.get(cleanName);
+                        existing.visitType = tp.type;
+                        existing.category = tp.dept;
+                        updatedList.push(existing);
+                        clinicNamesMap.delete(cleanName); // عشان نعرف إيه اللي اتبقى
                     } else {
-                        updatedClinicList.push({
-                            id: tp.id,
+                        // لو مريض جديد اتضاف في today، نضيفه لـ clinic
+                        updatedList.push({
+                            id: tp.id || Date.now() + Math.random().toString(36).substring(7),
                             name: cleanName,
                             category: tp.dept,
                             visitType: tp.type,
@@ -456,9 +458,25 @@
                     }
                 });
 
-                // رفع القائمة المحدثة بالكامل
-                pushClinicQueueList(actualToday, updatedClinicList);
-            }).catch(err => console.error("Master Sync Error:", err));
+                // 🌟 المفتاح السحري: الحالات اللي اتبقت في clinicNamesMap (اللي اتضافت مانوال من صفحة clinic) بنحافظ عليها زي ما هي ومش بنمسحها!
+                clinicNamesMap.forEach((remainingCp, nameKey) => {
+                    // نتأكد إن المريض لسه موجود في today بس ممكن يكون اتغير لـ "علاج طبيعي" أو "جلسة" عشان نمسحه، أما لو اتضاف مانوال خالص فيبقى يفضل
+                    const foundInToday = patientsQueue.find(p => p.name && p.name.trim() === nameKey);
+                    if (!foundInToday) {
+                        // لو مش موجود في today خالص وتم حذفه، يتبعت زي ما هو لأنه غالباً مضاف مانوال
+                        updatedList.push(remainingCp);
+                    } else {
+                        // لو موجود في today بس تخصصها اتغير لعلاج طبيعي أو جلسة، يبقى يتمسح من clinic
+                        if (!(foundInToday.dept === 'تغذية علاجية' && (foundInToday.type === 'كشف' || foundInToday.type === 'متابعة'))) {
+                            // يتم استبعاده (لا يتم إضافته لـ updatedList)
+                        } else {
+                            updatedList.push(remainingCp);
+                        }
+                    }
+                });
+
+                pushClinicQueueList(actualToday, updatedList);
+            }).catch(err => console.error("Smart Sync Error:", err));
         }
 
         let unsubscribeFirebase = null;
@@ -469,7 +487,6 @@
         
         let patientsQueue = []; let glpQueue = []; let financialsQueue = [];
 
-        // خوارزمية الذكاء لتوحيد الأسماء العربية 
         function normalizeArabicName(name) {
             if (!name) return "";
             return name.replace(/[أإآ]/g, "ا")
@@ -503,7 +520,6 @@
 
             if (newScheduleStr === currentScheduleStr && newFinStr === currentFinStr && newGlpStr === currentGlpStr) return;
 
-            // التأكد من إعطاء ID لكل مريض لضمان المزامنة السليمة مع clinic.html
             patientsQueue = nSched.map(p => ({ ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7) }));
             glpQueue = nGlp; 
             financialsQueue = nFin;
@@ -664,8 +680,8 @@
                 }).catch(error => { console.error("Firebase Rule Error:", error); });
             }
 
-            // --- التحديث الشامل اللحظي مع Clinic.html ---
-            syncTodayWithClinicMaster();
+            // --- التحديث الذكي الآمن مع Clinic.html ---
+            syncTodayWithClinicSmart();
 
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(async () => {
@@ -703,7 +719,7 @@
             }
             if(field==='amount' || field==='method') calculateTotals();
             renderUI();
-            scheduleSync(); // المزامنة مع clinic تتم تلقائياً بداخل هذه الدالة
+            scheduleSync();
         }
 
         function updateStatsCounters() { document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length; document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length; document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length; document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length; }
@@ -712,7 +728,7 @@
         function removePatient(idx) {
             patientsQueue.splice(idx, 1);
             renderUI();
-            scheduleSync(); // المزامنة مع clinic تتم تلقائياً بالحذف هنا
+            scheduleSync();
         }
 
         function moveRow(idx, dir) { let p1 = patientsQueue[idx]; let p1Slot = p1.slot; let slotArray = []; let slotIndices = []; patientsQueue.forEach((p, i) => { if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }}); let localIdx = slotArray.indexOf(p1); if (dir === 'up' && localIdx > 0) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]]; patientsQueue[slotIndices[localIdx - 1]] = temp; } if (dir === 'down' && localIdx < slotArray.length - 1) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]]; patientsQueue[slotIndices[localIdx + 1]] = temp; } renderUI(); scheduleSync(); }
