@@ -385,55 +385,80 @@
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
-        // إرسال المريض الجديد فقط لحظة تسجيله في يومها إلى صفحة clinic.html
-        function sendNewPatientToClinicQueue(name, dept, type) {
+        // تحديث جدول clinic.html في جوجل شيت
+        function pushClinicQueueList(dateStr, list) {
+            if (!clinicQueueDB) return;
+            clinicQueueDB.ref(`daily_queues/${dateStr}`).set(list);
+            if (CLINIC_QUEUE_SCRIPT_URL) {
+                fetch(CLINIC_QUEUE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        date: dateStr,
+                        patients: list.map(p => ({
+                            name: p.name,
+                            category: p.category || 'تغذية علاجية',
+                            visitType: (p.category === 'علاج طبيعي') ? '-' : (p.visitType || 'كشف'),
+                            entered: Boolean(p.entered)
+                        }))
+                    })
+                }).catch(err => console.log(err));
+            }
+        }
+
+        // 🚨 المزامنة الشاملة والذكية مع صفحة Clinic.html
+        // الدالة دي بتشتغل مع أي تحديث (إضافة/تعديل/حذف) عشان تخلي قائمة الانتظار نسخة طبق الأصل للحالات المطابقة للشروط
+        function syncTodayWithClinicMaster() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
 
-            // لا يرسل إلا إذا كان التسجيل في نفس اليوم الحالي، وللتغذية العلاجية (كشف أو متابعة) فقط
-            if (selectedDate !== actualToday) return;
-            if (dept !== 'تغذية علاجية' || (type !== 'كشف' && type !== 'متابعة')) return;
+            // المزامنة بتتم ليوم النهاردة فقط
+            if (selectedDate !== actualToday || !clinicQueueDB) return;
 
-            const cleanName = name.trim();
-            if (!cleanName || !clinicQueueDB) return;
-
-            const newClinicPatient = {
-                id: Date.now(),
-                name: cleanName,
-                category: 'تغذية علاجية',
-                visitType: type,
-                entered: false
-            };
+            // بنجيب كل الحالات اللي في today وتطابق شروط العيادة (تغذية علاجية + كشف/متابعة)
+            const eligibleTodayPatients = patientsQueue.filter(p => 
+                p.dept === 'تغذية علاجية' && (p.type === 'كشف' || p.type === 'متابعة')
+            );
 
             const queueRef = clinicQueueDB.ref(`daily_queues/${actualToday}`);
             queueRef.once('value').then((snapshot) => {
                 const rawVal = snapshot.val();
-                let currentList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
+                let currentClinicList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
+                let updatedClinicList = [];
 
-                // عدم تكرار الاسم إذا كان مضافاً بالفعل في قائمة الانتظار
-                const exists = currentList.some(p => p && p.name && p.name.trim() === cleanName);
-                if (!exists) {
-                    currentList.push(newClinicPatient);
-                    queueRef.set(currentList);
+                eligibleTodayPatients.forEach(tp => {
+                    const cleanName = (tp.name || '').trim();
+                    if (!cleanName) return;
 
-                    if (CLINIC_QUEUE_SCRIPT_URL) {
-                        fetch(CLINIC_QUEUE_SCRIPT_URL, {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                            body: JSON.stringify({
-                                date: actualToday,
-                                patients: currentList.map(p => ({
-                                    name: p.name,
-                                    category: p.category || 'تغذية علاجية',
-                                    visitType: (p.category === 'علاج طبيعي') ? '-' : (p.visitType || 'كشف'),
-                                    entered: Boolean(p.entered)
-                                }))
-                            })
-                        }).catch(err => console.log(err));
+                    // نبحث هل المريض موجود أصلاً في Clinic عشان نحافظ على حالة (entered)
+                    let existingMatch = currentClinicList.find(cp => 
+                        (cp.id && tp.id && String(cp.id) === String(tp.id)) || 
+                        (cp.name && cp.name.trim() === cleanName)
+                    );
+
+                    if (existingMatch) {
+                        updatedClinicList.push({
+                            id: existingMatch.id || tp.id,
+                            name: cleanName,
+                            category: tp.dept,
+                            visitType: tp.type,
+                            entered: existingMatch.entered // بنحافظ على الشغل بتاع السكرتارية
+                        });
+                    } else {
+                        updatedClinicList.push({
+                            id: tp.id,
+                            name: cleanName,
+                            category: tp.dept,
+                            visitType: tp.type,
+                            entered: false
+                        });
                     }
-                }
-            }).catch(err => console.error("Clinic Queue Sync Error:", err));
+                });
+
+                // رفع القائمة المحدثة بالكامل
+                pushClinicQueueList(actualToday, updatedClinicList);
+            }).catch(err => console.error("Master Sync Error:", err));
         }
 
         let unsubscribeFirebase = null;
@@ -447,14 +472,14 @@
         // خوارزمية الذكاء لتوحيد الأسماء العربية 
         function normalizeArabicName(name) {
             if (!name) return "";
-            return name.replace(/[أإآ]/g, "ا") // توحيد الألف
-                       .replace(/ة/g, "ه")     // توحيد التاء المربوطة
-                       .replace(/ى/g, "ي")     // توحيد الياء
+            return name.replace(/[أإآ]/g, "ا")
+                       .replace(/ة/g, "ه")
+                       .replace(/ى/g, "ي")
                        .replace(/عبد ال/g, "عبدال")
                        .replace(/ابو /g, "ابو")
-                       .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "") // إزالة الألقاب لو كتبت بالخطأ
+                       .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
                        .trim()
-                       .replace(/\s+/g, " "); // إزالة المسافات المزدوجة
+                       .replace(/\s+/g, " ");
         }
 
         function showSyncStatus(text) {
@@ -478,7 +503,10 @@
 
             if (newScheduleStr === currentScheduleStr && newFinStr === currentFinStr && newGlpStr === currentGlpStr) return;
 
-            patientsQueue = nSched; glpQueue = nGlp; financialsQueue = nFin;
+            // التأكد من إعطاء ID لكل مريض لضمان المزامنة السليمة مع clinic.html
+            patientsQueue = nSched.map(p => ({ ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7) }));
+            glpQueue = nGlp; 
+            financialsQueue = nFin;
             
             const date = document.getElementById('todayDate').value;
             localStorage.setItem('clinic_cache_' + date, JSON.stringify(data));
@@ -516,7 +544,7 @@
                     patientsQueue = fetchedSchedule.map(p => {
                         let s = p.slot ? String(p.slot).trim() : 'عام';
                         if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
+                        return { ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
                     });
                     glpQueue = result.data.glp || [];
                     financialsQueue = result.data.financials || [];
@@ -549,7 +577,7 @@
                         patientsQueue = fetchedSchedule.map(p => {
                             let s = p.slot ? String(p.slot).trim() : 'عام';
                             if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                            return { ...p, slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
+                            return { ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '' };
                         });
                         glpQueue = result.data.glp || [];
                         financialsQueue = result.data.financials || [];
@@ -636,6 +664,9 @@
                 }).catch(error => { console.error("Firebase Rule Error:", error); });
             }
 
+            // --- التحديث الشامل اللحظي مع Clinic.html ---
+            syncTodayWithClinicMaster();
+
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(async () => {
                 if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
@@ -656,18 +687,34 @@
         function addPatient() {
             const name = document.getElementById('patientName').value.trim(); const dept = document.getElementById('department').value; const type = document.getElementById('visitType').value; const payment = document.getElementById('paymentStatus').value; const method = document.getElementById('paymentMethod').value; const amount = document.getElementById('paidAmount').value; let manualSlot = document.getElementById('manualSlot').value;
             if(!name) return; let targetSlot = type === 'مقدم' ? 'عام' : (manualSlot || getSlotsForDay()[0]); 
-            patientsQueue.push({ slot: targetSlot, name, dept, type, payment, method, amount, debt: '', credit: '', doctor: '', finished: false });
+            const newPatientObj = { id: Date.now() + Math.random().toString(36).substring(7), slot: targetSlot, name, dept, type, payment, method, amount, debt: '', credit: '', doctor: '', finished: false };
+            patientsQueue.push(newPatientObj);
             sortPatientsArray(); document.getElementById('patientName').value = ''; document.getElementById('paidAmount').value = ''; renderUI(); scheduleSync(); 
-            
-            // إرسال المريض الجديد فقط لحظة تسجيله في نفس اليوم لصفحة clinic.html
-            sendNewPatientToClinicQueue(name, dept, type);
         }
 
         function sortPatientsArray() { let sorted = []; let validSlots = getSlotsForDay(); validSlots.forEach(s => { sorted = sorted.concat(patientsQueue.filter(p => p.slot === s)); }); sorted = sorted.concat(patientsQueue.filter(p => !validSlots.includes(p.slot))); patientsQueue = sorted; }
-        function updateScheduleField(idx, field, val) { patientsQueue[idx][field] = val; if (field === 'type') { if (val === 'مقدم') patientsQueue[idx].slot = 'عام'; sortPatientsArray(); updateStatsCounters(); } if(field==='amount' || field==='method') calculateTotals(); renderUI(); scheduleSync(); }
+        
+        function updateScheduleField(idx, field, val) {
+            patientsQueue[idx][field] = val;
+            if (field === 'type') {
+                if (val === 'مقدم') patientsQueue[idx].slot = 'عام';
+                sortPatientsArray();
+                updateStatsCounters();
+            }
+            if(field==='amount' || field==='method') calculateTotals();
+            renderUI();
+            scheduleSync(); // المزامنة مع clinic تتم تلقائياً بداخل هذه الدالة
+        }
+
         function updateStatsCounters() { document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length; document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length; document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length; document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length; }
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
-        function removePatient(idx) { patientsQueue.splice(idx, 1); renderUI(); scheduleSync(); }
+        
+        function removePatient(idx) {
+            patientsQueue.splice(idx, 1);
+            renderUI();
+            scheduleSync(); // المزامنة مع clinic تتم تلقائياً بالحذف هنا
+        }
+
         function moveRow(idx, dir) { let p1 = patientsQueue[idx]; let p1Slot = p1.slot; let slotArray = []; let slotIndices = []; patientsQueue.forEach((p, i) => { if (p.slot === p1Slot) { slotArray.push(p); slotIndices.push(i); }}); let localIdx = slotArray.indexOf(p1); if (dir === 'up' && localIdx > 0) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx - 1]]; patientsQueue[slotIndices[localIdx - 1]] = temp; } if (dir === 'down' && localIdx < slotArray.length - 1) { let temp = patientsQueue[slotIndices[localIdx]]; patientsQueue[slotIndices[localIdx]] = patientsQueue[slotIndices[localIdx + 1]]; patientsQueue[slotIndices[localIdx + 1]] = temp; } renderUI(); scheduleSync(); }
 
         function calculateTotals() {
@@ -679,17 +726,15 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        // --- دالة السجل المالي بعد دمج فلتر توحيد الأسماء العربية ---
         function showHistoryModal(name) {
             document.getElementById('historyPatientName').innerText = name;
             let tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = '';
             
             let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
-            let targetNorm = normalizeArabicName(name); // الاسم بعد توحيد الهاء والتاء والهمزات
+            let targetNorm = normalizeArabicName(name); 
             let patientHistory = [];
             
-            // تجميع كل الهيستوري اللي بيطابق الاسم الموحد
             for (let key in allHistory) {
                 if (normalizeArabicName(key) === targetNorm) {
                     patientHistory = patientHistory.concat(allHistory[key]);
@@ -697,7 +742,6 @@
             }
             
             let todayDate = document.getElementById('todayDate').value;
-            // فلترة مرضى اليوم بنفس خوارزمية الاسم الموحد
             let todayRecords = patientsQueue.filter(p => normalizeArabicName(p.name) === targetNorm && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
             let combined = patientHistory.filter(record => !String(record.date).includes(todayDate));
@@ -858,7 +902,20 @@
         function getNextWeekDate() { let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); const year = nextWeek.getFullYear(); const month = String(nextWeek.getMonth() + 1).padStart(2, '0'); const day = String(nextWeek.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; } function getSlotsForDay() { const d = new Date(document.getElementById('todayDate').value).getDay(); if (d === 6) return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function updateModalSlotDropdown(dateStr) { const slotSelect = document.getElementById('modalSlotInput'); if(!slotSelect) return; slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>'; const slots = getSlotsForSpecificDate(dateStr); if (slots) { slots.forEach(slot => { let opt = document.createElement('option'); opt.value = slot; opt.innerText = slot; slotSelect.appendChild(opt); }); } } function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); if(!s) return; s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => { let opt = document.createElement('option'); opt.value = x; opt.innerText = x; s.appendChild(opt); }); }
         function initDatePickers() { headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); initDay(); } }); modalDatePicker = flatpickr("#modalDateInput", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true", onChange: (d, s) => { updateModalSlotDropdown(s); } }); }
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]'); if (localStorage.getItem('theme') === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); toggleSwitch.checked = true; } toggleSwitch.addEventListener('change', (e) => { document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light'); localStorage.setItem('theme', e.target.checked ? 'dark' : 'light'); }); function smartSelectDepartment() { const d = new Date().getDay(); const sel = document.getElementById('department'); if (d === 1 || d === 3) sel.value = "علاج طبيعي"; else if (d === 2) sel.value = "تغذية علاجية"; }
-        function handleDragStart(e, idx) { draggedItemIndex = idx; e.dataTransfer.setData('text/plain', idx); } function handleDragOver(e) { e.preventDefault(); } function handleDrop(e, tSlot) { e.preventDefault(); let idx = e.dataTransfer.getData('text/plain'); if(!idx) return; let p = patientsQueue[idx]; p.slot = tSlot; if (p.type === 'مقدم' && tSlot !== 'عام') p.type = 'كشف'; patientsQueue.splice(idx, 1); patientsQueue.push(p); sortPatientsArray(); renderUI(); scheduleSync(); }
+        function handleDragStart(e, idx) { draggedItemIndex = idx; e.dataTransfer.setData('text/plain', idx); } function handleDragOver(e) { e.preventDefault(); } 
+        function handleDrop(e, tSlot) {
+            e.preventDefault();
+            let idx = e.dataTransfer.getData('text/plain');
+            if(!idx) return;
+            let p = patientsQueue[idx];
+            p.slot = tSlot;
+            if (p.type === 'مقدم' && tSlot !== 'عام') { p.type = 'كشف'; }
+            patientsQueue.splice(idx, 1);
+            patientsQueue.push(p);
+            sortPatientsArray();
+            renderUI();
+            scheduleSync();
+        }
         function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
 
         window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); initDay(); };
