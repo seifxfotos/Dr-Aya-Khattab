@@ -240,7 +240,6 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...`;
             btn.disabled = true;
 
-            // تنظيف الكاش المحلي
             localStorage.removeItem('clinic_salary_config');
             
             if (db) {
@@ -267,7 +266,7 @@
             });
         }
 
-        // --- دالة الحساب المباشرة بعد إصلاح التكرار وتأكيد التطابق ---
+        // --- دالة الحساب الذكية مع حساب أي مريض للدكتور بغض النظر عن نوع الزيارة ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -287,18 +286,16 @@
                 let dayData = allClinicDaysData[dateStr];
                 if (!dayData || !dayData.schedule) return;
 
-                // تحويل كل الجداول الموزعة لآراي واحدة
                 let sched = Array.isArray(dayData.schedule) ? dayData.schedule : Object.values(dayData.schedule);
                 
                 let dayKashfCount = 0;
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // نقرأ الجدول حرفياً بدون حماية زائدة تمنع العد (بدون Set)
+                // نقرأ الجدول حرفياً
                 sched.forEach(patient => {
                     if (!patient) return; 
 
-                    // تنظيف كامل لأي مسافات أو تشكيل
                     let typeNorm = cleanExactMatchString(patient.type);
                     let rawDoc = String(patient.doctor || '');
                     let docNorm = cleanExactMatchString(rawDoc);
@@ -306,14 +303,14 @@
                     if (typeNorm === 'كشف') dayKashfCount++;
                     if (typeNorm === 'متابعه') dayMotabaaCount++; 
 
-                    if (typeNorm === 'جلسه' && docNorm) { 
+                    // 🚨 التعديل الجديد: السستم بيحسب الجلسة للدكتور طالما اسمه مكتوب في الخانة، حتى لو السكرتارية غلطت وكتبت نوع الزيارة "متابعة"
+                    if (docNorm) { 
                         staffConfig.doctors.forEach(doc => {
                             let dName = cleanExactMatchString(doc.name);
                             let dCode = cleanExactMatchString(doc.code);
                             
                             let isMatch = false;
                             
-                            // تطابق فعلي للاسم أو الرمز بعد تنظيف المسافات والتشكيل
                             if (dCode && docNorm === dCode) isMatch = true;
                             if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
                             
@@ -336,7 +333,7 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء لكل الجلسات المجمعة لهذا اليوم
+                // تجميع حسابات الأطباء لكل الحالات (الجلسات) المجمعة لهذا اليوم
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
 
@@ -393,8 +390,8 @@
             const sortedDates = Object.keys(data.days).sort((a, b) => new Date(b) - new Date(a));
 
             if (type === 'doctor') {
-                thead.innerHTML = `<tr><th>التاريخ</th><th>عدد الجلسات</th><th>راتب اليوم</th></tr>`;
-                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="3" style="padding:20px; opacity:0.6;">لا توجد جلسات مسجلة في هذا الشهر.</td></tr>`;
+                thead.innerHTML = `<tr><th>التاريخ</th><th>عدد الحالات</th><th>راتب اليوم</th></tr>`;
+                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="3" style="padding:20px; opacity:0.6;">لا توجد حالات مسجلة في هذا الشهر.</td></tr>`;
                 sortedDates.forEach(date => {
                     let d = data.days[date];
                     tbody.innerHTML += `<tr><td>${date}</td><td>${d.sessions}</td><td style="color:var(--primary-green); font-weight:bold;">${d.dailyTotal} ج.م</td></tr>`;
