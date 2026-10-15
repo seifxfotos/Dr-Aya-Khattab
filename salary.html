@@ -32,10 +32,13 @@
         .header-section h1 { margin: 0; font-size: 26px; }
         .header-section p { margin: 5px 0 15px 0; opacity: 0.8; font-size: 14px;}
 
-        /* فلتر الشهور */
+        /* فلتر الشهور وتحديث البيانات */
+        .controls-wrapper { display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
         .month-selector-container { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.3); display: inline-flex; align-items: center; gap: 10px; }
         .month-selector-container label { font-weight: bold; font-size: 15px;}
         .month-input { background: var(--input-bg); color: var(--text-dark); border: none; padding: 6px 15px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; font-size: 16px; outline: none; cursor: pointer; }
+        .btn-sync-refresh { background: var(--primary-green); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        .btn-sync-refresh:hover { background: #7bb530; transform: translateY(-2px); }
 
         .theme-switch-wrapper { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 30px; display: flex; align-items: center; }
         .theme-switch { display: inline-block; position: relative; width: 50px; height: 26px; }
@@ -95,9 +98,13 @@
             <h1><i class="fa-solid fa-sack-dollar"></i> إدارة الرواتب والحسابات</h1>
             <p>اختر الشهر لعرض الرواتب المستحقة (لا يتم حساب الحالات قبل تاريخ تعيين الموظف)</p>
             
-            <div class="month-selector-container">
-                <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
-                <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
+            <div class="controls-wrapper">
+                <div class="month-selector-container">
+                    <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
+                    <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
+                </div>
+                <!-- زر التحديث الإجباري والمزامنة الصريحة -->
+                <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة البيانات</button>
             </div>
         </div>
 
@@ -194,15 +201,15 @@
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
-        // دالة تنظيف وتوحيد النصوص متطورة (بتشيل المسافات وبتوحد الياء)
-        function normalizeText(text) {
+        // دالة قوية لتنظيف وتوحيد النصوص ومنع أي تطابق خاطئ أو مسافات إضافية
+        function cleanExactMatchString(text) {
             if (!text) return "";
             return String(text)
-                .replace(/[\u064B-\u065F]/g, "") // إزالة التشكيل
+                .replace(/[\u064B-\u065F]/g, "") // إزالة التشكيل تماماً
                 .replace(/[أإآ]/g, "ا")
                 .replace(/ة/g, "ه")
                 .replace(/ى/g, "ي")
-                .replace(/\s+/g, "") // إزالة كل المسافات عشان لو اتكتبت بمسافة تتحسب صح
+                .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "") // إزالة الألقاب من الأول فقط
                 .trim();
         }
 
@@ -225,6 +232,29 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+        // زر تحديث إجباري للمزامنة وإعادة الحساب
+        function forceSyncRefresh() {
+            const btn = document.querySelector('.btn-sync-refresh');
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...`;
+            btn.disabled = true;
+
+            if (db) {
+                db.ref('clinic_days').once('value').then((snapshot) => {
+                    allClinicDaysData = snapshot.val() || {};
+                    calculateAllSalaries();
+                    setTimeout(() => {
+                        btn.innerHTML = originalIcon;
+                        btn.disabled = false;
+                    }, 500);
+                }).catch(err => {
+                    alert('فشل التحديث، يرجى التحقق من الإنترنت.');
+                    btn.innerHTML = originalIcon;
+                    btn.disabled = false;
+                });
+            }
+        }
+
         function startDataListener() {
             if (!db) { alert('خطأ في الاتصال بقاعدة البيانات'); return; }
             db.ref('clinic_days').on('value', (snapshot) => {
@@ -233,7 +263,7 @@
             });
         }
 
-        // --- دالة الحساب الذكية المفلترة ---
+        // --- دالة الحساب الذكية مع منع التكرار وإصلاح الـ Exact Match ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -253,34 +283,42 @@
                 let dayData = allClinicDaysData[dateStr];
                 if (!dayData || !dayData.schedule) return;
 
-                // تحويل كل الجداول الموزعة على الساعات لآراي واحدة عشان تتجمع صح
                 let sched = Array.isArray(dayData.schedule) ? dayData.schedule : Object.values(dayData.schedule);
                 
                 let dayKashfCount = 0;
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                sched.forEach(patient => {
-                    if (!patient) return; 
+                // ماب لمنع عد المريض أكتر من مرة لو متسجل مرتين بالغلط في نفس اليوم
+                let uniqueProcessedPatients = new Set();
 
-                    let typeNorm = normalizeText(patient.type);
+                sched.forEach(patient => {
+                    // حماية وتخطي للبيانات التالفة أو المحذوفة
+                    if (!patient || !patient.name) return; 
+
+                    // لمنع ازدواجية الحساب (لو مريض اتنقل من ساعة لساعة واتسجل نسختين)
+                    let uniqueId = patient.id || (patient.name.trim() + "_" + patient.type);
+                    if (uniqueProcessedPatients.has(uniqueId)) return;
+                    uniqueProcessedPatients.add(uniqueId);
+
+                    let typeNorm = cleanExactMatchString(patient.type);
                     let rawDoc = String(patient.doctor || '');
-                    let docNorm = normalizeText(rawDoc); // هنا الكلمة بدون أي مسافات وموحدة الياء
+                    let docNorm = cleanExactMatchString(rawDoc);
 
                     if (typeNorm === 'كشف') dayKashfCount++;
                     if (typeNorm === 'متابعه') dayMotabaaCount++; 
 
-                    // حساب جلسات الأطباء على كل المرضى في كل الساعات في هذا اليوم
                     if (typeNorm === 'جلسه' && docNorm) { 
                         staffConfig.doctors.forEach(doc => {
-                            let dName = normalizeText(doc.name);
-                            let dCode = normalizeText(doc.code);
+                            let dName = cleanExactMatchString(doc.name);
+                            let dCode = cleanExactMatchString(doc.code);
                             
                             let isMatch = false;
                             
-                            // التطابق الدقيق مع الحرف أو الاسم (ي = ي)
+                            // تطابق فعلي 100% (Exact Match)
+                            // يمنع مشكلة "منال" تعد لو اسم المريض فيه ميم
                             if (dCode && docNorm === dCode) isMatch = true;
-                            if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
+                            if (dName && docNorm === dName) isMatch = true;
                             
                             if (isMatch) {
                                 if (!dayDoctorSessions[doc.id]) dayDoctorSessions[doc.id] = 0;
