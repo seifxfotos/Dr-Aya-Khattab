@@ -403,6 +403,9 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
+        // مصفوفة عامة لحفظ الأسماء الأصلية من الشيت
+        window.allPatientNames = [];
+
         function mapDoctorName(doc) {
             if (!doc) return "";
             let d = String(doc).trim();
@@ -603,9 +606,25 @@
         window.patientDebts = {};
         window.patientPhones = {}; 
         
+        // 🚨 فلتر ذكي لتحديث القائمة المنسدلة تلقائياً وإلغاء تأثير الهمزات 🚨
         document.getElementById('patientName').addEventListener('input', function(e) {
             let name = this.value.trim();
             let normName = normalizeArabicName(name);
+            
+            // تحديث القائمة المنسدلة بناءً على الفلتر الجديد (دعم الهمزات)
+            let dl = document.getElementById('patientNamesList');
+            dl.innerHTML = '';
+            if (window.allPatientNames) {
+                window.allPatientNames.forEach(origName => {
+                    if (normalizeArabicName(origName).includes(normName)) {
+                        let opt = document.createElement('option');
+                        opt.value = origName;
+                        dl.appendChild(opt);
+                    }
+                });
+            }
+
+            // فحص الديون
             let warnSpan = document.getElementById('debtWarning');
             let matchedDebt = 0;
             
@@ -619,7 +638,6 @@
             }
             
             if(matchedDebt > 0) {
-                // 🚨 تعديل التحذير ليكون في سطر واحد دائماً 🚨
                 warnSpan.innerHTML = `<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:5px; animation: blink 1s infinite; white-space: nowrap; display: inline-block;"><i class="fa-solid fa-triangle-exclamation"></i> متبقي عليه ${matchedDebt} ج.م من آخر زيارة</span>`;
                 document.getElementById('visitType').value = 'متابعة';
             } else {
@@ -630,7 +648,7 @@
             }
         });
 
-        // 🚨 فلتر الأسماء الصارم لتوحيد جميع أشكال (الهمزات والألف والياء والتاء المربوطة) 🚨
+        // توحيد جميع الحروف (أ إ آ ء ⬅️ ا) و (ي ى ئ ⬅️ ي)
         function normalizeArabicName(name) {
             if (!name) return "";
             return String(name)
@@ -810,8 +828,10 @@
                         window.patientDebts = {};
                         window.patientPhones = {};
                         
-                        let uniqueNames = Object.keys(result.data);
-                        uniqueNames.forEach(name => {
+                        // 🚨 تخزين الأسماء لفلتر القائمة المنسدلة 🚨
+                        window.allPatientNames = Object.keys(result.data);
+                        
+                        window.allPatientNames.forEach(name => {
                             let opt = document.createElement('option');
                             opt.value = name;
                             dl.appendChild(opt);
