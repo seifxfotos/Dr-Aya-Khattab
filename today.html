@@ -142,7 +142,7 @@
         .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
         .clinic-box { border: 2px solid var(--primary-blue); }
         .meds-box { border: 2px solid var(--primary-green); }
-        .total-box { border: 2px solid var(--warning); background: var(--warning); color: #fff; }
+        .total-box { border: 2px solid var(--warning); background: var(--warning); color: #fff; justify-content: center;}
         .total-box .revenue-item { color: #fff; }
         .total-box .revenue-item i { color: #fff; opacity: 1; }
         
@@ -197,7 +197,7 @@
 
         .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; table-layout: fixed; }
         .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
-        .history-table th { background: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
+        .history-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         .history-table tr:last-child td { border-bottom: none; }
         .history-table th:nth-child(1) { width: 25%; }
         .history-table th:nth-child(2) { width: 35%; }
@@ -409,6 +409,16 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
+        // 🚨 دالة المعالجة المسبقة لأسماء الدكاترة للتوافق مع الداتا القديمة 🚨
+        function mapDoctorName(doc) {
+            if (!doc) return "";
+            let d = String(doc).trim();
+            if (d === 'م') return 'د. منال';
+            if (d === 'ي' || d === 'ى') return 'د. ياسمين';
+            if (d === 'د') return 'د. آية';
+            return d; // لو متسجلة بالاسم كامل يرجعها زي ما هي
+        }
+
         // 🚨 حماية XSS 🚨
         function escapeHtml(unsafe) {
             if (typeof unsafe !== 'string') return unsafe;
@@ -521,7 +531,7 @@
             }
         }
 
-        // 🌟 المزامنة الذكية التي تتطلب وجود الحضور (الشيك بوكس)
+        // 🌟 المزامنة الذكية التي تتطلب وجود الحضور (الشيك بوكس) لإرسال المريض إلى العيادة
         function syncTodayWithClinicSmart() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
@@ -645,7 +655,14 @@
 
             if (newScheduleStr === currentScheduleStr && newFinStr === currentFinStr && newGlpStr === currentGlpStr) return;
 
-            patientsQueue = nSched.map(p => ({ ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), attended: p.attended || false }));
+            // 🚨 تمرير قيمة doctor عبر دالة التوافق (mapDoctorName) 🚨
+            patientsQueue = nSched.map(p => ({ 
+                ...p, 
+                id: p.id || Date.now() + Math.random().toString(36).substring(7), 
+                doctor: mapDoctorName(p.doctor),
+                attended: p.attended || false 
+            }));
+            
             glpQueue = nGlp; 
             financialsQueue = nFin;
             
@@ -685,7 +702,7 @@
                     patientsQueue = fetchedSchedule.map(p => {
                         let s = p.slot ? String(p.slot).trim() : 'عام';
                         if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                        return { ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '', attended: p.attended || false };
+                        return { ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: mapDoctorName(p.doctor), attended: p.attended || false };
                     });
                     glpQueue = result.data.glp || [];
                     financialsQueue = result.data.financials || [];
@@ -718,7 +735,7 @@
                         patientsQueue = fetchedSchedule.map(p => {
                             let s = p.slot ? String(p.slot).trim() : 'عام';
                             if (!validSlots.includes(s) && s !== 'عام') s = validSlots[0];
-                            return { ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: p.doctor || '', attended: p.attended || false };
+                            return { ...p, id: p.id || Date.now() + Math.random().toString(36).substring(7), slot: s, name: p.name || 'بدون اسم', dept: p.dept || 'علاج طبيعي', type: p.type || 'كشف', method: p.method || 'كاش', amount: p.amount || '', debt: p.debt || '', credit: p.credit || '', doctor: mapDoctorName(p.doctor), attended: p.attended || false };
                         });
                         glpQueue = result.data.glp || [];
                         financialsQueue = result.data.financials || [];
@@ -1014,6 +1031,7 @@
                     let gIdx = patientsQueue.indexOf(p);
                     let safeName = escapeHtml(p.name);
                     let jsSafeName = safeName.replace(/'/g, "\\'"); 
+                    let docVal = mapDoctorName(p.doctor);
                     
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
@@ -1030,10 +1048,10 @@
                         <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
                         <td>
                             <select class="inline-doctor-select" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)">
-                                <option value="" ${!p.doctor ? 'selected' : ''}>--</option>
-                                <option value="د. منال" ${p.doctor === 'د. منال' ? 'selected' : ''}>د. منال</option>
-                                <option value="د. ياسمين" ${p.doctor === 'د. ياسمين' ? 'selected' : ''}>د. ياسمين</option>
-                                <option value="د. آية" ${p.doctor === 'د. آية' ? 'selected' : ''}>د. آية</option>
+                                <option value="" ${!docVal ? 'selected' : ''}>--</option>
+                                <option value="د. منال" ${docVal === 'د. منال' || docVal === 'م' ? 'selected' : ''}>د. منال</option>
+                                <option value="د. ياسمين" ${docVal === 'د. ياسمين' || docVal === 'ي' || docVal === 'ى' ? 'selected' : ''}>د. ياسمين</option>
+                                <option value="د. آية" ${docVal === 'د. آية' || docVal === 'د' ? 'selected' : ''}>د. آية</option>
                             </select>
                         </td>
                         <td style="text-align:center;">
@@ -1052,6 +1070,7 @@
                     let gIdx = patientsQueue.indexOf(p);
                     let safeName = escapeHtml(p.name);
                     let jsSafeName = safeName.replace(/'/g, "\\'");
+                    let docVal = mapDoctorName(p.doctor);
                     
                     dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
@@ -1068,10 +1087,10 @@
                         <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
                         <td>
                             <select class="inline-doctor-select" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)">
-                                <option value="" ${!p.doctor ? 'selected' : ''}>--</option>
-                                <option value="د. منال" ${p.doctor === 'د. منال' ? 'selected' : ''}>د. منال</option>
-                                <option value="د. ياسمين" ${p.doctor === 'د. ياسمين' ? 'selected' : ''}>د. ياسمين</option>
-                                <option value="د. آية" ${p.doctor === 'د. آية' ? 'selected' : ''}>د. آية</option>
+                                <option value="" ${!docVal ? 'selected' : ''}>--</option>
+                                <option value="د. منال" ${docVal === 'د. منال' || docVal === 'م' ? 'selected' : ''}>د. منال</option>
+                                <option value="د. ياسمين" ${docVal === 'د. ياسمين' || docVal === 'ي' || docVal === 'ى' ? 'selected' : ''}>د. ياسمين</option>
+                                <option value="د. آية" ${docVal === 'د. آية' || docVal === 'د' ? 'selected' : ''}>د. آية</option>
                             </select>
                         </td>
                         <td style="text-align:center;">
@@ -1144,6 +1163,7 @@
         }
         function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
 
+        window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); initDay(); };
     </script> 
 </body>
 </html>
