@@ -140,15 +140,15 @@
         .revenue-wrapper.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
         
         .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
-        .clinic-box { border-right: 4px solid var(--primary-blue); }
-        .meds-box { border-right: 4px solid var(--primary-green); }
-        .total-box { border: none; background: var(--warning); color: #fff; justify-content: center;}
+        .clinic-box { border: 2px solid var(--primary-blue); }
+        .meds-box { border: 2px solid var(--primary-green); }
+        .total-box { border: 2px solid var(--warning); background: var(--warning); color: #fff; }
         .total-box .revenue-item { color: #fff; }
         .total-box .revenue-item i { color: #fff; opacity: 1; }
         
-        .revenue-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .revenue-item i { font-size: 18px; opacity: 0.8;}
-        .revenue-total { border-right: 2px dashed var(--border); padding-right: 15px; font-weight: 800; font-size: 16px;}
+        .revenue-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .revenue-item i { font-size: 16px; opacity: 0.8;}
+        .revenue-total { border-right: 2px solid var(--border); padding-right: 10px; font-weight: 800; font-size: 14px;}
         .clinic-box .revenue-total { color: var(--primary-blue); }
         .meds-box .revenue-total { color: var(--primary-green); }
 
@@ -197,7 +197,7 @@
 
         .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; table-layout: fixed; }
         .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
-        .history-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
+        .history-table th { background: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         .history-table tr:last-child td { border-bottom: none; }
         .history-table th:nth-child(1) { width: 25%; }
         .history-table th:nth-child(2) { width: 35%; }
@@ -521,7 +521,7 @@
             }
         }
 
-        // 🌟 المزامنة الذكية التي تتطلب وجود الحضور (الشيك بوكس) لإرسال المريض إلى العيادة
+        // 🌟 المزامنة الذكية التي تتطلب وجود الحضور (الشيك بوكس)
         function syncTodayWithClinicSmart() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
@@ -596,6 +596,7 @@
 
         // 🌟 البحث التلقائي ومراقبة الديون 🌟
         window.patientDebts = {};
+        window.patientPhones = {}; // لتخزين أرقام التليفونات من الشيت
         
         document.getElementById('patientName').addEventListener('input', function(e) {
             let name = this.value.trim();
@@ -740,7 +741,7 @@
             hideSyncStatus();
         }
 
-        // 🌟 استخراج البيانات للاقتراحات والديون 🌟
+        // 🌟 استخراج البيانات والتليفونات للاقتراحات والديون 🌟
         function fetchAllPatientsHistoryInBackground() {
             setTimeout(async () => {
                 if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
@@ -753,6 +754,7 @@
                         let dl = document.getElementById('patientNamesList');
                         dl.innerHTML = '';
                         window.patientDebts = {};
+                        window.patientPhones = {};
                         
                         let uniqueNames = Object.keys(result.data);
                         uniqueNames.forEach(name => {
@@ -765,6 +767,8 @@
                             if(hist && hist.length > 0) {
                                 let lastRec = hist[hist.length - 1]; 
                                 totalDebt = parseFloat(lastRec.debt) || 0;
+                                // افتراض أن الشيت يرسل رقم الهاتف تحت مفتاح phone
+                                if (lastRec.phone) window.patientPhones[name] = lastRec.phone; 
                             }
                             window.patientDebts[name] = totalDebt;
                         });
@@ -870,9 +874,17 @@
         function updateStatsCounters() { document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length; document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length; document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length; document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length; }
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         
+        // 🚨 تعديل دالة الحذف لضمان مسح المريض فوراً 🚨
         function removePatient(idx) {
             patientsQueue.splice(idx, 1);
+            if (db) {
+                const date = document.getElementById('todayDate').value;
+                db.ref('clinic_days/' + date).set({ 
+                    schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP 
+                });
+            }
             renderUI();
+            syncTodayWithClinicSmart();
             scheduleSync();
         }
 
@@ -883,10 +895,19 @@
             wrapper.classList.toggle('show');
         }
 
-        // 🌟 تذكير الواتساب 🌟
+        // 🌟 تذكير الواتساب المطور 🌟
         function sendWhatsApp(idx) {
             const p = patientsQueue[idx];
-            let phone = prompt("أدخل رقم الواتساب للمريض " + p.name + " (بدون صفر البداية، مثال 1012345678):");
+            let phone = '';
+            
+            // محاولة جلب الرقم من سجل المريض المخزن
+            if (window.patientPhones && window.patientPhones[p.name]) {
+                phone = window.patientPhones[p.name];
+            } else {
+                // إذا لم يوجد رقم مسجل، يطلب إدخاله يدوياً
+                phone = prompt("لا يوجد رقم مسجل. أدخل رقم الواتساب للمريض " + p.name + " (بدون صفر البداية):");
+            }
+            
             if (phone) {
                phone = phone.replace(/\D/g,'');
                if (phone.startsWith('0')) phone = phone.substring(1);
@@ -1056,7 +1077,7 @@
                         <td style="text-align:center;">
                             <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
                         </td>
-                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
+                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>`;
                 });
                 dHtml += `</tbody></table></div>`; cont.innerHTML += dHtml;
@@ -1121,9 +1142,7 @@
             renderUI();
             scheduleSync();
         }
-        function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } 
-        function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } 
-        function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
+        function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
 
     </script> 
 </body>
