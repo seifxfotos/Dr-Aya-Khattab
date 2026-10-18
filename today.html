@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
-    <!-- مكاتب Firebase للـ Realtime Database و Auth -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -29,7 +28,6 @@
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; overflow: hidden; }
         .container { max-width: 1250px; margin: 0 auto; }
 
-        /* 🚨 شاشة تسجيل الدخول المدمجة 🚨 */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; justify-content: center; align-items: center; z-index: 999999; }
         .login-box { background: var(--card-bg); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 350px; text-align: center; }
         .login-box h2 { margin-top: 0; color: var(--primary-blue); font-weight: 800; margin-bottom: 25px; }
@@ -208,7 +206,6 @@
 </head>
 <body>
 
-    <!-- 🚨 شاشة تسجيل الدخول المدمجة 🚨 -->
     <div id="login-overlay">
         <div class="login-box">
             <h2>تسجيل الدخول</h2>
@@ -227,7 +224,6 @@
         </div>
     </div>
 
-    <!-- باقي محتوى الصفحة محمي -->
     <div id="main-app-content" style="opacity: 0; pointer-events: none; transition: 0.5s;">
         <div id="syncIndicator" class="sync-indicator">
             <i class="fa-solid fa-spinner"></i> <span id="syncIndicatorText">جاري الحفظ...</span>
@@ -254,7 +250,7 @@
             </div>
             <div class="revenue-box meds-box">
                 <div style="display: flex; gap: 15px;">
-                    <div class="revenue-item" title="مبيعات الأدوية كاش"><i class="fa-solid fa-money-bill-wave"></i> كاش أد: <span id="medsCashLabel">0</span></div>
+                    <div class="revenue-item" title="مبيعات الأدوية كاش"><i class="fa-solid fa-money-bill-wave"></i> كاش أدوية: <span id="medsCashLabel">0</span></div>
                     <div class="revenue-item" title="مبيعات الأدوية إلكتروني"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="medsElecLabel">0</span></div>
                 </div>
                 <div class="revenue-item revenue-total"><i class="fa-solid fa-pills"></i> إجمالي الأدوية: <span id="totalMedsValue">0</span></div>
@@ -355,7 +351,6 @@
             </div>
         </div>
 
-        <!-- نوافذ التنبيه -->
         <div id="customModal" class="modal-overlay">
             <div class="modal-box">
                 <h3 id="modalTitle">عنوان التنبيه</h3>
@@ -385,7 +380,6 @@
             </div>
         </div>
 
-        <!-- نافذة السجل المالي -->
         <div id="historyModal" class="modal-overlay">
             <div class="modal-box" style="max-width: 650px; width: 95%;">
                 <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
@@ -403,23 +397,21 @@
                 </div>
             </div>
         </div>
-    </div> <!-- نهاية محتوى التطبيق -->
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        // 🚨 دالة المعالجة المسبقة لأسماء الدكاترة للتوافق مع الداتا القديمة 🚨
         function mapDoctorName(doc) {
             if (!doc) return "";
             let d = String(doc).trim();
             if (d === 'م') return 'د. منال';
             if (d === 'ي' || d === 'ى') return 'د. ياسمين';
             if (d === 'د') return 'د. آية';
-            return d; // لو متسجلة بالاسم كامل يرجعها زي ما هي
+            return d;
         }
 
-        // 🚨 حماية XSS 🚨
         function escapeHtml(unsafe) {
             if (typeof unsafe !== 'string') return unsafe;
             return unsafe
@@ -446,7 +438,6 @@
             db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
-        // 🚨 تسجيل الدخول المدمج 🚨
         let appInitialized = false;
 
         firebase.auth().onAuthStateChanged((user) => {
@@ -496,7 +487,6 @@
                 });
         }
 
-        // --- إعداد الاتصال المباشر بصفحة انتظار العيادة (clinic.html) ---
         const CLINIC_QUEUE_FIREBASE_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/";
         const CLINIC_QUEUE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYqOapiXLj08hR7FH00KeGeFkMt1ZTai9ap0phHx89s5ofQ5-x3-h_P2MXsUE_PuDd/exec";
         let clinicQueueDB = null;
@@ -531,7 +521,6 @@
             }
         }
 
-        // 🌟 المزامنة الذكية التي تتطلب وجود الحضور (الشيك بوكس) لإرسال المريض إلى العيادة
         function syncTodayWithClinicSmart() {
             const selectedDate = document.getElementById('todayDate').value;
             const actualToday = getActualTodayDateStr();
@@ -604,19 +593,30 @@
         
         let patientsQueue = []; let glpQueue = []; let financialsQueue = [];
 
-        // 🌟 البحث التلقائي ومراقبة الديون 🌟
         window.patientDebts = {};
-        window.patientPhones = {}; // لتخزين أرقام التليفونات من الشيت
+        window.patientPhones = {}; 
         
         document.getElementById('patientName').addEventListener('input', function(e) {
             let name = this.value.trim();
+            let normName = normalizeArabicName(name);
             let warnSpan = document.getElementById('debtWarning');
-            if(window.patientDebts && window.patientDebts[name] > 0) {
-                warnSpan.innerHTML = `<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:5px; animation: blink 1s infinite;"><i class="fa-solid fa-triangle-exclamation"></i> عليه ${window.patientDebts[name]} ج.م</span>`;
+            let matchedDebt = 0;
+            
+            if (window.patientDebts) {
+                for (let key in window.patientDebts) {
+                    if (normalizeArabicName(key) === normName) {
+                        matchedDebt = window.patientDebts[key];
+                        break;
+                    }
+                }
+            }
+            
+            if(matchedDebt > 0) {
+                warnSpan.innerHTML = `<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:5px; animation: blink 1s infinite;"><i class="fa-solid fa-triangle-exclamation"></i> عليه ${matchedDebt} ج.م</span>`;
                 document.getElementById('visitType').value = 'متابعة';
             } else {
                 warnSpan.innerHTML = '';
-                if (window.patientDebts && window.patientDebts[name] !== undefined) {
+                if (matchedDebt !== undefined && matchedDebt === 0 && window.patientDebts && Object.keys(window.patientDebts).some(k => normalizeArabicName(k) === normName)) {
                      document.getElementById('visitType').value = 'متابعة'; 
                 }
             }
@@ -655,7 +655,6 @@
 
             if (newScheduleStr === currentScheduleStr && newFinStr === currentFinStr && newGlpStr === currentGlpStr) return;
 
-            // 🚨 تمرير قيمة doctor عبر دالة التوافق (mapDoctorName) 🚨
             patientsQueue = nSched.map(p => ({ 
                 ...p, 
                 id: p.id || Date.now() + Math.random().toString(36).substring(7), 
@@ -758,7 +757,6 @@
             hideSyncStatus();
         }
 
-        // 🌟 استخراج البيانات والتليفونات للاقتراحات والديون 🌟
         function fetchAllPatientsHistoryInBackground() {
             setTimeout(async () => {
                 if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
@@ -784,7 +782,6 @@
                             if(hist && hist.length > 0) {
                                 let lastRec = hist[hist.length - 1]; 
                                 totalDebt = parseFloat(lastRec.debt) || 0;
-                                // افتراض أن الشيت يرسل رقم الهاتف تحت مفتاح phone
                                 if (lastRec.phone) window.patientPhones[name] = lastRec.phone; 
                             }
                             window.patientDebts[name] = totalDebt;
@@ -891,7 +888,6 @@
         function updateStatsCounters() { document.getElementById('statKashf').innerText = patientsQueue.filter(p => p.type === 'كشف').length; document.getElementById('statGalsa').innerText = patientsQueue.filter(p => p.type === 'جلسة').length; document.getElementById('statMotab3a').innerText = patientsQueue.filter(p => p.type === 'متابعة').length; document.getElementById('statMokadam').innerText = patientsQueue.filter(p => p.type === 'مقدم').length; }
         function toggleFinished(idx) { patientsQueue[idx].finished = !patientsQueue[idx].finished; renderUI(); scheduleSync(); }
         
-        // 🚨 تعديل دالة الحذف لضمان مسح المريض فوراً 🚨
         function removePatient(idx) {
             patientsQueue.splice(idx, 1);
             if (db) {
@@ -912,16 +908,21 @@
             wrapper.classList.toggle('show');
         }
 
-        // 🌟 تذكير الواتساب المطور 🌟
         function sendWhatsApp(idx) {
             const p = patientsQueue[idx];
             let phone = '';
+            let targetNorm = normalizeArabicName(p.name);
             
-            // محاولة جلب الرقم من سجل المريض المخزن
-            if (window.patientPhones && window.patientPhones[p.name]) {
-                phone = window.patientPhones[p.name];
-            } else {
-                // إذا لم يوجد رقم مسجل، يطلب إدخاله يدوياً
+            if (window.patientPhones) {
+                for (let key in window.patientPhones) {
+                    if (normalizeArabicName(key) === targetNorm) {
+                        phone = window.patientPhones[key];
+                        break;
+                    }
+                }
+            }
+            
+            if (!phone) {
                 phone = prompt("لا يوجد رقم مسجل. أدخل رقم الواتساب للمريض " + p.name + " (بدون صفر البداية):");
             }
             
