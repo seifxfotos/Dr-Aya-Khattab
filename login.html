@@ -5,17 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - عيادة د. آية خطاب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #0093D0, #8CC63F); height: 100vh; margin: 0; display: flex; justify-content: center; align-items: center; color: #2c3e50;}
         .login-box { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 350px; text-align: center; }
+        .login-box img { max-width: 150px; margin-bottom: 20px; }
         .login-box h2 { margin-top: 0; color: #0093D0; font-weight: 800; margin-bottom: 25px;}
         .input-group { margin-bottom: 20px; text-align: right; }
         .input-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;}
         .input-group select, .input-group input { width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 8px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; outline: none; transition: 0.3s;}
         .input-group select:focus, .input-group input:focus { border-color: #0093D0; }
-        .btn-login { background: #0093D0; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-family: 'Cairo'; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-login { background: #0093D0; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-family: 'Cairo'; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;}
         .btn-login:hover { background: #007bb5; }
         .error-msg { color: #e74c3c; font-size: 13px; margin-top: 10px; font-weight: bold; display: none;}
     </style>
@@ -26,7 +29,7 @@
         <div class="input-group">
             <label>المستخدم</label>
             <select id="username">
-                <option value="aya">Dr. Aya (آية)</option>
+                <option value="dr">Dr. Aya (آية)</option>
                 <option value="alaa">Alaa (آلاء)</option>
                 <option value="seif">Seif (سيف)</option>
             </select>
@@ -54,11 +57,10 @@
             const err = document.getElementById('errorMsg');
             
             if(!pass) return;
-            btn.innerHTML = "جاري التحقق...";
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> جاري التحقق...";
             btn.disabled = true;
             err.style.display = "none";
 
-            // إضافة الدومين الوهمي اللي عملناه في فايربيز
             const email = user + "@clinic.com";
 
             firebase.auth().signInWithEmailAndPassword(email, pass)
