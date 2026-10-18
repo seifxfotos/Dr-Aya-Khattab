@@ -115,29 +115,57 @@
         input:checked + .slider:before { transform: translateX(28px); }
         .icon { font-size: 14px; z-index: 1; }
 
+        /* 🚨 إعدادات الطباعة الشاملة 🚨 */
         @media print {
-            .no-print, .controls, .theme-switch-wrapper, .save-status-badge, .inline-date-btn { display: none !important; } 
+            /* 🚨 إخفاء اللينكات والتواريخ وأرقام الصفحات من المتصفح 🚨 */
+            @page { margin: 0; }
             
-            body, .paper-sheet, .controls input, .input-group-textarea textarea, table, th, td { 
+            /* إرجاع الهوامش للصفحة عشان الكلام ميكونش مقطوع */
+            body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
+
+            /* إخفاء الأزرار والشات وأي عناصر غير ضرورية */
+            .no-print, .controls, .theme-switch-wrapper, .save-status-badge, .inline-date-btn,
+            iframe, .chat-toggle-btn, #chatBox, #chat-widget-container { 
+                display: none !important; 
+            } 
+            
+            .paper-sheet { 
                 background-color: #ffffff !important; 
-                color: #000000 !important; 
-                border-color: #cccccc !important;
+                border: none !important; 
+                box-shadow: none !important; 
+                padding: 0 !important; 
+                margin-bottom: 20px !important;
             }
+            
             .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
-            .input-group input { border-bottom: 1px dotted #000 !important; color: #000 !important; }
+            
+            /* 🚨 توضيح وتسميك خطوط الجدول والمدخلات بقوة 🚨 */
+            table { border-collapse: collapse !important; border: 2px solid #000000 !important; }
+            th, td { border: 1.5px solid #000000 !important; }
+            th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important; }
+            td input { color: #000000 !important; font-weight: bold !important; background-color: #ffffff !important;}
+            
+            .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
             .input-group input.eng-text { direction: ltr !important; text-align: left !important; }
-            .input-group-textarea textarea { direction: ltr !important; text-align: left !important; }
-            th { background-color: #f5f5f5 !important; color: #000 !important; }
+            
+            .input-group-textarea textarea { 
+                direction: ltr !important; 
+                text-align: left !important; 
+                border: 2px dashed #000000 !important; 
+                color: #000000 !important;
+                background-color: #ffffff !important;
+            }
             
             .sheet-body { flex-direction: row !important; }
-            .paper-sheet { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important;}
             
+            /* 🚨 فصل الصفحات 🚨 */
             .dynamic-card:not(:first-child) { page-break-before: always !important; }
             .medical-sheet { page-break-before: always !important; margin-top: 20px !important; }
             
             .empty-notes { display: none !important; }
         }
 
+        /* 🚨 كلاس Light Mode لتصدير الـ PDF 🚨 */
         .force-light-mode {
             background-color: #ffffff !important;
             color: #000000 !important;
@@ -145,8 +173,9 @@
         .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .input-group label { color: #0093D0 !important; }
-        .force-light-mode .table-section table, .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border-color: #cccccc !important;}
-        .force-light-mode th { background-color: #eaf5fa !important; color: #0093D0 !important;}
+        .force-light-mode .table-section table { border: 2px solid #000000 !important; }
+        .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1.5px solid #000000 !important;}
+        .force-light-mode th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important;}
         
         .force-light-mode .dynamic-card:not(:first-child) { page-break-before: always !important; margin-top: 30px !important; }
         .force-light-mode .medical-sheet { page-break-before: always !important; margin-top: 30px !important; }
@@ -341,7 +370,6 @@
                 `;
             }
 
-            // 🚨 أزرار إضافة وإزالة الكروت الإضافية 🚨
             let extraCardBtns = `<button class="btn btn-new" style="background: #27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>`;
             if (currentPatient.sessions.length > 12) {
                 extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
@@ -379,7 +407,6 @@
             }, 100);
         };
 
-        // 🚨 دالة إزالة الكرت الأخير مع التحذير 🚨
         window.removeExtraCard = function() {
             updateStateFromDOM();
             if (currentPatient.sessions.length <= 12) return;
@@ -416,7 +443,6 @@
             }, 100);
         };
 
-        // 🚨 دالة إزالة الملف الطبي مع التحذير 🚨
         window.removeMedicalSheet = function() {
             updateStateFromDOM();
             if (currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '') {
