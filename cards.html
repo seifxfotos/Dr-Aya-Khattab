@@ -117,13 +117,10 @@
 
         /* 🚨 إعدادات الطباعة الشاملة 🚨 */
         @media print {
-            /* 🚨 إخفاء اللينكات والتواريخ وأرقام الصفحات من المتصفح 🚨 */
             @page { margin: 0; }
             
-            /* إرجاع الهوامش للصفحة عشان الكلام ميكونش مقطوع */
             body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
 
-            /* إخفاء الأزرار والشات وأي عناصر غير ضرورية */
             .no-print, .controls, .theme-switch-wrapper, .save-status-badge, .inline-date-btn,
             iframe, .chat-toggle-btn, #chatBox, #chat-widget-container { 
                 display: none !important; 
@@ -139,11 +136,11 @@
             
             .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
             
-            /* 🚨 توضيح وتسميك خطوط الجدول والمدخلات بقوة 🚨 */
-            table { border-collapse: collapse !important; border: 2px solid #000000 !important; }
-            th, td { border: 1.5px solid #000000 !important; }
+            /* 🚨 تعديل خطوط الجدول لتكون واضحة بدون كسور (1px) 🚨 */
+            table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
+            th, td { border: 1px solid #000000 !important; position: static !important; }
             th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important; }
-            td input { color: #000000 !important; font-weight: bold !important; background-color: #ffffff !important;}
+            td input { color: #000000 !important; font-weight: bold !important; background-color: transparent !important;}
             
             .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
             .input-group input.eng-text { direction: ltr !important; text-align: left !important; }
@@ -158,7 +155,6 @@
             
             .sheet-body { flex-direction: row !important; }
             
-            /* 🚨 فصل الصفحات 🚨 */
             .dynamic-card:not(:first-child) { page-break-before: always !important; }
             .medical-sheet { page-break-before: always !important; margin-top: 20px !important; }
             
@@ -173,8 +169,10 @@
         .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .input-group label { color: #0093D0 !important; }
-        .force-light-mode .table-section table { border: 2px solid #000000 !important; }
-        .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1.5px solid #000000 !important;}
+        
+        /* 🚨 تعديل خطوط الجدول لـ PDF 🚨 */
+        .force-light-mode .table-section table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
+        .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1px solid #000000 !important; position: static !important; }
         .force-light-mode th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important;}
         
         .force-light-mode .dynamic-card:not(:first-child) { page-break-before: always !important; margin-top: 30px !important; }
