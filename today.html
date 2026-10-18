@@ -137,10 +137,11 @@
         .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 98%; max-width: 1100px; z-index: 100; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; transform: translateX(-50%) translateY(150px); opacity: 0; }
         .revenue-wrapper.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
         
-        .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
+        /* 🚨 تم تعديل تصميم بوكسات الحسابات ليظهر بشكل أوضح 🚨 */
+        .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 12px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
         .clinic-box { border: 2px solid var(--primary-blue); }
         .meds-box { border: 2px solid var(--primary-green); }
-        .total-box { border: 2px solid var(--warning); background: var(--warning); color: #fff; justify-content: center;}
+        .total-box { border: 2px solid var(--warning); background: var(--warning); color: #fff; }
         .total-box .revenue-item { color: #fff; }
         .total-box .revenue-item i { color: #fff; opacity: 1; }
         
@@ -154,7 +155,7 @@
         
         @media (max-width: 1400px) {
             .revenue-wrapper { bottom: 12px; gap: 8px; }
-            .revenue-box { padding: 6px 12px; font-size: 12px; }
+            .revenue-box { padding: 6px 8px; font-size: 12px; }
             .revenue-total { font-size: 13px; padding-right: 8px; }
             .revenue-item i { font-size: 14px; }
             .floating-timer { bottom: 75px; left: 15px; transform: scale(0.9); transform-origin: left bottom; }
@@ -170,7 +171,7 @@
             .btn-add { grid-column: span 4; } 
             .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; width: 95%; flex-direction: column; align-items: center; gap: 8px; margin: 0; transform: translateX(-50%) translateY(150px); }
             .revenue-wrapper.show { transform: translateX(-50%) translateY(0); }
-            .revenue-box { width: 100%; justify-content: center; padding: 10px; }
+            .revenue-box { width: 100%; justify-content: center; padding: 10px; flex-wrap: wrap;}
             .revenue-total { border-right: none; border-top: 1px dashed var(--border); padding-top: 5px; padding-right: 0; margin-top: 5px; width: 100%; text-align: center; justify-content: center;}
             .floating-timer { bottom: 15px; left: 15px; transform: scale(0.85); }
             .theme-switch-wrapper { bottom: 15px; right: 15px; transform: scale(0.85); }
@@ -195,7 +196,7 @@
 
         .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; table-layout: fixed; }
         .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
-        .history-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
+        .history-table th { background: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         .history-table tr:last-child td { border-bottom: none; }
         .history-table th:nth-child(1) { width: 25%; }
         .history-table th:nth-child(2) { width: 35%; }
@@ -250,6 +251,7 @@
             </div>
             <div class="revenue-box meds-box">
                 <div style="display: flex; gap: 15px;">
+                    <!-- 🚨 تم إصلاح وتوضيح اسم "كاش أدوية" 🚨 -->
                     <div class="revenue-item" title="مبيعات الأدوية كاش"><i class="fa-solid fa-money-bill-wave"></i> كاش أدوية: <span id="medsCashLabel">0</span></div>
                     <div class="revenue-item" title="مبيعات الأدوية إلكتروني"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="medsElecLabel">0</span></div>
                 </div>
@@ -596,6 +598,7 @@
         window.patientDebts = {};
         window.patientPhones = {}; 
         
+        // 🚨 تعديل تنبيه الديون ليصبح واضحاً (من آخر زيارة) 🚨
         document.getElementById('patientName').addEventListener('input', function(e) {
             let name = this.value.trim();
             let normName = normalizeArabicName(name);
@@ -612,7 +615,7 @@
             }
             
             if(matchedDebt > 0) {
-                warnSpan.innerHTML = `<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:5px; animation: blink 1s infinite;"><i class="fa-solid fa-triangle-exclamation"></i> عليه ${matchedDebt} ج.م</span>`;
+                warnSpan.innerHTML = `<span style="background:var(--danger); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:5px; animation: blink 1s infinite;"><i class="fa-solid fa-triangle-exclamation"></i> متبقي عليه ${matchedDebt} ج.م من آخر زيارة</span>`;
                 document.getElementById('visitType').value = 'متابعة';
             } else {
                 warnSpan.innerHTML = '';
@@ -908,29 +911,31 @@
             wrapper.classList.toggle('show');
         }
 
+        // 🚨 دالة الواتساب الذكية مع حفظ الرقم محلياً 🚨
         function sendWhatsApp(idx) {
             const p = patientsQueue[idx];
-            let phone = '';
             let targetNorm = normalizeArabicName(p.name);
             
-            if (window.patientPhones) {
-                for (let key in window.patientPhones) {
-                    if (normalizeArabicName(key) === targetNorm) {
-                        phone = window.patientPhones[key];
-                        break;
-                    }
+            // البحث عن الرقم في الشيت أولاً، ثم في الكاش (الذاكرة المحلية)
+            let phone = window.patientPhones[p.name] || localStorage.getItem('phone_' + targetNorm);
+            
+            if (!phone) {
+                // لو مش موجود، هيطلب الرقم ويحفظه فوراً في الكاش عشان ميسألش تاني أبداً
+                phone = prompt("الرقم مش متسجل في الداتا الحالية. أدخل رقم الواتساب للمريض " + p.name + " (مرة واحدة بس وهيفضل محفوظ):");
+                if (phone) {
+                    localStorage.setItem('phone_' + targetNorm, phone);
                 }
             }
             
-            if (!phone) {
-                phone = prompt("لا يوجد رقم مسجل. أدخل رقم الواتساب للمريض " + p.name + " (بدون صفر البداية):");
-            }
-            
             if (phone) {
+               // تنظيف الرقم وإضافة كود مصر أوتوماتيك
                phone = phone.replace(/\D/g,'');
-               if (phone.startsWith('0')) phone = phone.substring(1);
+               if (phone.length === 10) phone = '20' + phone; 
+               else if (phone.startsWith('01')) phone = '2' + phone.substring(1); 
+               else if (!phone.startsWith('20')) phone = '20' + phone;
+
                let msg = encodeURIComponent(`مرحباً ${p.name}، تذكير بموعدك غداً في عيادة د. آية خطاب. للتأكيد أو الإلغاء يرجى الرد على هذه الرسالة. نتمنى لك دوام الصحة.`);
-               window.open(`https://wa.me/20${phone}?text=${msg}`, '_blank');
+               window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
             }
         }
 
