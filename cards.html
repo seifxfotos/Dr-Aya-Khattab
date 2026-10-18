@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- مكاتب فايربيز (شاملة الـ Storage) -->
+    <!-- مكاتب فايربيز -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
@@ -24,14 +24,12 @@
             --sheet-bg: #ffffff; --text-main: #111111; --text-muted: #666666;
             --border-light: #cccccc; --border-dash: #999999; --table-th-bg: #eaf5fa;
             --table-idx-bg: #f9f9f9; --focus-bg: #f4fbf0;
-            --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px);
         }
 
         body.dark-mode {
             --body-bg: #121212; --sheet-bg: #1e1e1e; --text-main: #f0f0f0;
             --text-muted: #aaaaaa; --border-light: #444444; --border-dash: #666666;
             --table-th-bg: #2a2a2a; --table-idx-bg: #252525; --focus-bg: #2c3e20;
-            --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #444 40px);
         }
 
         body { font-family: 'Cairo', sans-serif; background-color: var(--body-bg); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s ease; }
@@ -68,6 +66,10 @@
         .clinic-logo img { width: 180px; object-fit: contain; }
         body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: #fff; padding: 5px; border-radius: 8px; }
 
+        /* 🚨 تصميم اختيار نوع الكرت 🚨 */
+        .card-type-select { font-size: 18px; font-weight: 800; color: var(--primary-blue); border: 2px dashed var(--primary-green); background: var(--focus-bg); padding: 5px 15px; border-radius: 8px; font-family: 'Cairo'; outline: none; cursor: pointer; text-align: center; }
+        .card-type-select:hover { filter: brightness(0.95); }
+
         .sheet-body { display: flex; gap: 30px; width: 100%; }
         .info-section { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
         .row { display: flex; gap: 20px; width: 100%; }
@@ -75,10 +77,9 @@
         .input-group label { font-weight: 700; white-space: nowrap; color: var(--primary-blue); font-size: 16px; margin: 0; }
         .input-group input { flex: 1; border: none; border-bottom: 2px dashed var(--border-dash); background: transparent; font-size: 16px; padding: 0 5px 2px 5px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; direction: rtl;}
         .input-group input:focus { border-bottom-color: var(--primary-green); }
-        .input-group input.eng-text { direction: ltr; text-align: left; }
-
-        /* 🚨 الكلاس المخصص لإجبار النصوص الإنجليزية على القراءة من اليسار وعدم التداخل 🚨 */
+        
         .eng-label { direction: ltr !important; display: inline-block; unicode-bidi: isolate; }
+        .input-group input.eng-text { direction: ltr; text-align: left; }
 
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
@@ -91,6 +92,12 @@
         th { background-color: var(--table-th-bg); color: var(--primary-blue); font-size: 16px; padding: 5px; }
         td input { width: 100%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo'; background: transparent; color: var(--text-main); outline: none; box-sizing: border-box;}
         td input:focus { background-color: var(--focus-bg); }
+
+        /* 🚨 تصميم خانات التغذية والعلاج الطبيعي 🚨 */
+        .n-parts-wrapper input { width: 28% !important; border-bottom: 1px dotted var(--border-dash) !important; height: 80% !important; background: transparent !important; }
+        .n-parts-wrapper input:focus { border-bottom-color: var(--primary-green) !important; background: var(--focus-bg) !important; }
+        .ws-select { width: 90%; font-family: 'Cairo'; font-weight: 700; border: 1px solid var(--border-light); border-radius: 4px; padding: 2px; outline: none; background: var(--sheet-bg); color: var(--text-main); }
+        .ws-custom-input { width: 90% !important; height: 24px !important; border-bottom: 1px dashed var(--border-dash) !important; font-size: 14px !important; margin-top: 2px; }
 
         .date-cell-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
         .inline-date-btn { position: absolute; background: #f39c12; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 13px; font-weight: 700; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; white-space: nowrap; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
@@ -120,22 +127,12 @@
 
         @media print {
             @page { margin: 0; }
-            
             body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
 
             .no-print, .controls, .theme-switch-wrapper, .save-status-badge, .inline-date-btn,
-            iframe, .chat-toggle-btn, #chatBox, #chat-widget-container { 
-                display: none !important; 
-            } 
+            iframe, .chat-toggle-btn, #chatBox, #chat-widget-container { display: none !important; } 
             
-            .paper-sheet { 
-                background-color: #ffffff !important; 
-                border: none !important; 
-                box-shadow: none !important; 
-                padding: 0 !important; 
-                margin-bottom: 20px !important;
-            }
-            
+            .paper-sheet { background-color: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important;}
             .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
             
             table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
@@ -146,38 +143,34 @@
             .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
             .input-group input.eng-text { direction: ltr !important; text-align: left !important; }
             
-            .input-group-textarea textarea { 
-                direction: ltr !important; 
-                text-align: left !important; 
-                border: 2px dashed #000000 !important; 
-                color: #000000 !important;
-                background-color: #ffffff !important;
-            }
+            .input-group-textarea textarea { direction: ltr !important; text-align: left !important; border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; }
             
+            /* 🚨 إخفاء أيقونات القوائم المنسدلة والحدود الخاصة بها 🚨 */
+            .card-type-select, .ws-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
+            .n-parts-wrapper input { border: none !important; }
+            .ws-custom-input { border: none !important; }
+
             .sheet-body { flex-direction: row !important; }
-            
             .dynamic-card:not(:first-child) { page-break-before: always !important; }
             .medical-sheet { page-break-before: always !important; margin-top: 20px !important; }
-            
             .empty-notes { display: none !important; }
         }
 
-        .force-light-mode {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-        }
+        .force-light-mode { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .input-group label { color: #0093D0 !important; }
-        
         .force-light-mode .table-section table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
         .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1px solid #000000 !important; position: static !important; }
         .force-light-mode th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important;}
         
+        .force-light-mode .card-type-select, .force-light-mode .ws-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
+        .force-light-mode .n-parts-wrapper input { border: none !important; }
+        .force-light-mode .ws-custom-input { border: none !important; }
+
         .force-light-mode .dynamic-card:not(:first-child) { page-break-before: always !important; margin-top: 30px !important; }
         .force-light-mode .medical-sheet { page-break-before: always !important; margin-top: 30px !important; }
         .force-light-mode .medical-notes { background-image: repeating-linear-gradient(transparent, transparent 39px, #eee 40px) !important; color: #000000 !important;}
-        
         .force-light-mode .empty-notes { display: none !important; }
     </style>
 </head>
@@ -252,7 +245,8 @@
         let currentPatient = {
             name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
             sessions: Array(12).fill({d: '', ws: '', n: ''}),
-            files: []
+            files: [],
+            cardTypes: {} // 🚨 تخزين أنواع الكروت (تغذية أو علاج طبيعي) 🚨
         };
 
         let lastSavedStateString = "";
@@ -267,6 +261,10 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeSwitch').checked = true;
             }
+            // إعطاء نوع افتراضي للكرت الأول
+            if(!currentPatient.cardTypes) currentPatient.cardTypes = {};
+            if(!currentPatient.cardTypes[0]) currentPatient.cardTypes[0] = 'تغذية علاجية';
+            
             renderPatientToDOM(); 
             silentPreFetchAll();
 
@@ -289,12 +287,10 @@
             const toast = document.getElementById('appToast');
             const icon = document.getElementById('toastIcon');
             const msg = document.getElementById('toastMessage');
-            
             toast.className = `app-toast ${type}`;
             if(type === 'success') icon.className = 'fa-solid fa-check-circle';
             else if(type === 'error') icon.className = 'fa-solid fa-exclamation-circle';
             else icon.className = 'fa-solid fa-info-circle';
-            
             msg.innerText = message;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
@@ -324,7 +320,8 @@
             currentPatient = {
                 name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
                 sessions: Array(12).fill({d: '', ws: '', n: ''}),
-                files: []
+                files: [],
+                cardTypes: {0: 'تغذية علاجية'}
             };
             lastSavedStateString = ""; 
             showMedicalSheetFlag = false; 
@@ -337,6 +334,29 @@
             let p = document.getElementById('p_phone') ? document.getElementById('p_phone').value : '';
             document.querySelectorAll('.extra-card-name').forEach(el => el.value = n);
             document.querySelectorAll('.extra-card-phone').forEach(el => el.value = p);
+        };
+
+        // 🚨 دالة تحديث نوع الكرت وإعادة الرسم 🚨
+        window.updateCardType = function(cardIndex, newType) {
+            updateStateFromDOM(); // حفظ الداتا الحالية قبل إعادة الرسم
+            currentPatient.cardTypes[cardIndex] = newType;
+            renderPatientToDOM();
+            handleInput();
+        };
+
+        // 🚨 دالة التحكم في إظهار الإدخال اليدوي لقسم العلاج الطبيعي 🚨
+        window.toggleWsCustom = function(idx) {
+            let sel = document.getElementById(`ws_sel_${idx}`);
+            let cust = document.getElementById(`ws_cust_${idx}`);
+            if (sel && cust) {
+                if (sel.value === 'أخري') {
+                    cust.style.display = 'block';
+                    cust.focus();
+                } else {
+                    cust.style.display = 'none';
+                    cust.value = ''; // تفريغ الخانة لو رجع اختار حاجة تانية
+                }
+            }
         };
 
         function renderPatientToDOM() {
@@ -397,68 +417,36 @@
             for(let i=0; i<12; i++) {
                 currentPatient.sessions.push({d: '', ws: '', n: ''});
             }
+            let newCardIndex = (currentPatient.sessions.length / 12) - 1;
+            // الوراثة: الكرت الجديد بياخد نفس نوع الكرت اللي قبله
+            let prevType = currentPatient.cardTypes[newCardIndex - 1] || 'تغذية علاجية';
+            currentPatient.cardTypes[newCardIndex] = prevType;
+            
             renderPatientToDOM();
             handleInput(); 
-            setTimeout(() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            }, 100);
+            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
         };
 
         window.removeExtraCard = function() {
             updateStateFromDOM();
             if (currentPatient.sessions.length <= 12) return;
-            
             let last12 = currentPatient.sessions.slice(-12);
             let hasData = last12.some(s => s.d || s.ws || s.n);
-            
             if (hasData) {
-                showCustomConfirm(
-                    '<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير',
-                    'الكرت الأخير جواه بيانات جلسات متسجلة، متأكد إنك عايز تمسحه؟',
-                    () => {
-                        currentPatient.sessions.splice(-12);
-                        renderPatientToDOM();
-                        handleInput();
-                    }
-                );
-            } else {
-                currentPatient.sessions.splice(-12);
-                renderPatientToDOM();
-                handleInput();
-            }
+                showCustomConfirm('<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير', 'الكرت الأخير جواه بيانات جلسات متسجلة، متأكد إنك عايز تمسحه؟', () => { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); });
+            } else { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); }
         };
 
         window.addMedicalSheet = function() {
-            showMedicalSheetFlag = true; 
-            renderPatientToDOM();
-            setTimeout(() => {
-                const notesEl = document.getElementById('p_medical_notes');
-                if(notesEl) {
-                    notesEl.focus();
-                    window.scrollTo({ top: notesEl.offsetTop - 50, behavior: 'smooth' });
-                }
-            }, 100);
+            showMedicalSheetFlag = true; renderPatientToDOM();
+            setTimeout(() => { const notesEl = document.getElementById('p_medical_notes'); if(notesEl) { notesEl.focus(); window.scrollTo({ top: notesEl.offsetTop - 50, behavior: 'smooth' }); } }, 100);
         };
 
         window.removeMedicalSheet = function() {
             updateStateFromDOM();
             if (currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '') {
-                showCustomConfirm(
-                    '<i class="fa-solid fa-triangle-exclamation"></i> مسح الملف الطبي',
-                    'الملف الطبي جواه كلام مكتوب، متأكد إنك عايز تمسحه وتلغيه خالص؟',
-                    () => {
-                        currentPatient.medical_notes = '';
-                        showMedicalSheetFlag = false;
-                        renderPatientToDOM();
-                        handleInput();
-                    }
-                );
-            } else {
-                currentPatient.medical_notes = '';
-                showMedicalSheetFlag = false;
-                renderPatientToDOM();
-                handleInput();
-            }
+                showCustomConfirm('<i class="fa-solid fa-triangle-exclamation"></i> مسح الملف الطبي', 'الملف الطبي جواه كلام مكتوب، متأكد إنك عايز تمسحه وتلغيه خالص؟', () => { currentPatient.medical_notes = ''; showMedicalSheetFlag = false; renderPatientToDOM(); handleInput(); });
+            } else { currentPatient.medical_notes = ''; showMedicalSheetFlag = false; renderPatientToDOM(); handleInput(); }
         };
 
         window.setSpecificDate = function(idx) {
@@ -467,15 +455,27 @@
             input.value = today;
             let btn = input.nextElementSibling;
             if(btn) btn.style.display = 'none';
-            document.getElementById(`ws_${idx}`).focus();
+            // النقل للخانة المناسبة حسب نوع الكرت
+            let wsInput = document.getElementById(`ws_${idx}`);
+            let wsSel = document.getElementById(`ws_sel_${idx}`);
+            if(wsSel) wsSel.focus(); else if(wsInput) wsInput.focus();
             handleInput();
         }
 
         function buildCardHtml(cardIndex) {
             let isFirst = cardIndex === 0;
-            let title = isFirst ? "" : `<h3 style="text-align:center; color:var(--primary-blue);">(متابعة الجلسات - كرت ${cardIndex + 1})</h3>`;
+            let cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
             
-            // 🚨 إضافة الكلاس eng-label لإجبار الإنجليزي على عدم التداخل 🚨
+            // 🚨 قائمة اختيار نوع الكرت في الـ Header 🚨
+            let headerTitleHtml = `
+                <div style="flex-grow: 1; text-align: center;">
+                    <select class="card-type-select" onchange="updateCardType(${cardIndex}, this.value)">
+                        <option value="تغذية علاجية" ${cardType === 'تغذية علاجية' ? 'selected' : ''}>كرت تغذية علاجية ${!isFirst ? `(متابعة ${cardIndex + 1})` : ''}</option>
+                        <option value="علاج طبيعي" ${cardType === 'علاج طبيعي' ? 'selected' : ''}>كرت علاج طبيعي ${!isFirst ? `(متابعة ${cardIndex + 1})` : ''}</option>
+                    </select>
+                </div>
+            `;
+            
             let infoSection = isFirst ? `
                 <div class="row">
                     <div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput(); syncCardNames();"></div>
@@ -507,6 +507,55 @@
                 
                 let dateBtnHtml = !session.d ? `<button class="inline-date-btn no-print" onclick="setSpecificDate(${sIdx})" tabindex="-1" title="تاريخ اليوم"><i class="fa-solid fa-calendar-day"></i> تاريخ اليوم</button>` : '';
 
+                // 🚨 بناء خانات W/S و N بناءً على نوع الكرت 🚨
+                let wsHtml = '';
+                let nHtml = '';
+
+                if (cardType === 'تغذية علاجية') {
+                    // خانة W/S عادية
+                    wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" oninput="handleInput()">`;
+                    
+                    // خانة N مقسمة لثلاث أجزاء
+                    let nStr = session.n || '';
+                    let nParts = nStr.split('-');
+                    if(nParts.length === 1 && nStr.includes('/')) nParts = nStr.split('/');
+                    if(nParts.length === 1 && nStr.includes('\\')) nParts = nStr.split('\\');
+                    if(nParts.length === 1 && nStr.includes(' ')) nParts = nStr.split(' ');
+                    
+                    let n1 = nParts[0] ? nParts[0].trim() : '';
+                    let n2 = nParts[1] ? nParts[1].trim() : '';
+                    let n3 = nParts[2] ? nParts[2].trim() : '';
+
+                    nHtml = `
+                        <div class="n-parts-wrapper" style="display:flex; justify-content:center; align-items:center; direction:ltr; gap:2px; height:100%;">
+                            <input type="text" id="n1_${sIdx}" value="${escapeHtml(n1)}" oninput="handleInput()">
+                            <span style="font-weight:900; color:var(--primary-blue);">-</span>
+                            <input type="text" id="n2_${sIdx}" value="${escapeHtml(n2)}" oninput="handleInput()">
+                            <span style="font-weight:900; color:var(--primary-blue);">-</span>
+                            <input type="text" id="n3_${sIdx}" value="${escapeHtml(n3)}" oninput="handleInput()">
+                        </div>
+                    `;
+                } else {
+                    // علاج طبيعي: خانة N عادية
+                    nHtml = `<input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()">`;
+                    
+                    // علاج طبيعي: خانة W/S قائمة منسدلة
+                    let wsVal = session.ws || '';
+                    let isCustom = wsVal && wsVal !== 'عادي' && wsVal !== 'شوك';
+                    
+                    wsHtml = `
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:2px; padding-top:2px;">
+                            <select id="ws_sel_${sIdx}" onchange="toggleWsCustom(${sIdx}); handleInput();" class="ws-select">
+                                <option value=""></option>
+                                <option value="عادي" ${wsVal === 'عادي' ? 'selected' : ''}>عادي</option>
+                                <option value="شوك" ${wsVal === 'شوك' ? 'selected' : ''}>شوك</option>
+                                <option value="أخري" ${isCustom ? 'selected' : ''}>أخري...</option>
+                            </select>
+                            <input type="text" id="ws_cust_${sIdx}" value="${isCustom ? escapeHtml(wsVal) : ''}" oninput="handleInput()" class="ws-custom-input" style="display:${isCustom ? 'block' : 'none'};">
+                        </div>
+                    `;
+                }
+
                 tbodyHtml += `
                     <tr>
                         <td style="font-weight:700; background:var(--table-idx-bg); color:var(--primary-blue);">${sIdx + 1}</td>
@@ -516,8 +565,8 @@
                                 ${dateBtnHtml}
                             </div>
                         </td>
-                        <td><input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" oninput="handleInput()"></td>
-                        <td><input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()"></td>
+                        <td>${wsHtml}</td>
+                        <td>${nHtml}</td>
                     </tr>
                 `;
             }
@@ -526,11 +575,11 @@
             <div class="paper-sheet dynamic-card">
                 <div class="sheet-header">
                     <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR" onerror="this.style.display='none'"></div>
+                    ${headerTitleHtml}
                     <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo" onerror="this.style.display='none'"></div>
                 </div>
                 <div class="sheet-body">
                     <div class="info-section">
-                        ${title}
                         ${infoSection}
                     </div>
                     <div class="table-section">
@@ -543,6 +592,7 @@
             </div>`;
         }
 
+        // 🚨 تعديل الحفظ ليناسب الخانات الجديدة لكل نوع كرت 🚨
         function updateStateFromDOM() {
             if(document.getElementById('p_name')) {
                 currentPatient.name = document.getElementById('p_name').value.trim();
@@ -559,10 +609,31 @@
             }
 
             for(let i=0; i<currentPatient.sessions.length; i++) {
+                let cardIndex = Math.floor(i / 12);
+                let cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
+
                 if(document.getElementById(`d_${i}`)) {
                     currentPatient.sessions[i].d = document.getElementById(`d_${i}`).value;
-                    currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
-                    currentPatient.sessions[i].n = document.getElementById(`n_${i}`).value;
+                    
+                    if(cardType === 'تغذية علاجية') {
+                        // تجميع التغذية
+                        let n1 = document.getElementById(`n1_${i}`).value.trim();
+                        let n2 = document.getElementById(`n2_${i}`).value.trim();
+                        let n3 = document.getElementById(`n3_${i}`).value.trim();
+                        if(n1 || n2 || n3) currentPatient.sessions[i].n = [n1, n2, n3].join('-');
+                        else currentPatient.sessions[i].n = '';
+                        
+                        currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
+                    } else {
+                        // علاج طبيعي
+                        currentPatient.sessions[i].n = document.getElementById(`n_${i}`).value;
+                        let sel = document.getElementById(`ws_sel_${i}`).value;
+                        if(sel === 'أخري') {
+                            currentPatient.sessions[i].ws = document.getElementById(`ws_cust_${i}`).value;
+                        } else {
+                            currentPatient.sessions[i].ws = sel;
+                        }
+                    }
                 }
             }
         }
@@ -581,22 +652,15 @@
             const notesEl = document.getElementById('p_medical_notes');
             const wrapper = document.getElementById('medicalSheetWrapper');
             if(notesEl && wrapper) {
-                if(notesEl.value.trim() === '') {
-                    wrapper.classList.add('empty-notes');
-                } else {
-                    wrapper.classList.remove('empty-notes');
-                }
+                if(notesEl.value.trim() === '') wrapper.classList.add('empty-notes');
+                else wrapper.classList.remove('empty-notes');
             }
 
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                forceSave(true); 
-            }, 5000);
+            saveTimeout = setTimeout(() => { forceSave(true); }, 5000);
         }
 
-        function saveData() {
-            forceSave(false);
-        }
+        function saveData() { forceSave(false); }
 
         async function forceSave(isSilent = false) {
             updateStateFromDOM();
@@ -607,7 +671,6 @@
             }
             
             let currentStateStr = JSON.stringify(currentPatient);
-            
             if (currentStateStr === lastSavedStateString) {
                 if(!isSilent) showToast("الكرت ده محفوظ بالفعل ومفيش تعديلات جديدة!", "info");
                 return;
@@ -622,8 +685,7 @@
                         '<i class="fa-solid fa-copy"></i> كرت مكرر!',
                         'المريض ده مسجل عندنا قبل كده بنفس الاسم أو الرقم! تحب نفتح الكرت بتاعه بدل ما نسجل واحد جديد يكرر الداتا؟',
                         () => { loadPatientData(found); },
-                        'افتح كرت المريض',
-                        'var(--primary-blue)'
+                        'افتح كرت المريض', 'var(--primary-blue)'
                     );
                     return; 
                 }
@@ -640,8 +702,7 @@
 
             let cache = await localforage.getItem('patients_cache') || [];
             let idx = cache.findIndex(p => p.phone === payload.phone);
-            if(idx > -1) cache[idx] = payload;
-            else cache.push(payload);
+            if(idx > -1) cache[idx] = payload; else cache.push(payload);
             await localforage.setItem('patients_cache', cache);
 
             try {
@@ -709,9 +770,7 @@
                 renderFilesList();
                 forceSave(true);
                 showToast("تم رفع الملف", "success");
-            } catch(err) {
-                showToast("فشل الرفع!", "error");
-            }
+            } catch(err) { showToast("فشل الرفع!", "error"); }
         }
 
         function renderFilesList() {
@@ -734,46 +793,27 @@
         }
 
         function deleteFile(idx) {
-            showCustomConfirm(
-                '<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق',
-                'هل أنت متأكد من مسح هذا الملف؟',
-                () => {
-                    currentPatient.files.splice(idx, 1);
-                    renderFilesList();
-                    handleInput();
-                }
-            );
+            showCustomConfirm('<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق', 'هل أنت متأكد من مسح هذا الملف؟', () => { currentPatient.files.splice(idx, 1); renderFilesList(); handleInput(); });
         }
 
         function deletePatient() {
-            let phone = currentPatient.phone;
-            let name = currentPatient.name;
+            let phone = currentPatient.phone; let name = currentPatient.name;
             if(!name) { showToast("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!", "error"); return; }
-
-            showCustomConfirm(
-                '<i class="fa-solid fa-trash"></i> تأكيد الحذف',
-                `هل أنت متأكد من مسح بيانات المريض (${name}) من قاعدة البيانات نهائياً؟`,
-                async () => {
-                    let cache = await localforage.getItem('patients_cache') || [];
-                    cache = cache.filter(p => !(p.phone === phone && p.name === name));
-                    await localforage.setItem('patients_cache', cache);
-                    
-                    showToast("تم الحذف بنجاح!", "success");
-                    createNewPatient();
-
-                    fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' })
-                    .catch(e => console.log("Cloud sync delayed"));
-                }
-            );
+            showCustomConfirm('<i class="fa-solid fa-trash"></i> تأكيد الحذف', `هل أنت متأكد من مسح بيانات المريض (${name}) من قاعدة البيانات نهائياً؟`, async () => {
+                let cache = await localforage.getItem('patients_cache') || [];
+                cache = cache.filter(p => !(p.phone === phone && p.name === name));
+                await localforage.setItem('patients_cache', cache);
+                showToast("تم الحذف بنجاح!", "success");
+                createNewPatient();
+                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' }).catch(e => console.log("Cloud sync delayed"));
+            });
         }
 
         async function silentPreFetchAll() {
             try {
                 let res = await fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH");
                 let data = await res.json();
-                if(data.status === 'found') {
-                    await localforage.setItem('patients_cache', data.data);
-                }
+                if(data.status === 'found') await localforage.setItem('patients_cache', data.data);
             } catch(e) {}
         }
 
@@ -786,19 +826,14 @@
             
             let cache = await localforage.getItem('patients_cache') || [];
             let localResults = cache.filter(p => {
-                let pName = normalizeArabicText(p.name);
-                let pPhone = p.phone ? p.phone : "";
+                let pName = normalizeArabicText(p.name); let pPhone = p.phone ? p.phone : "";
                 return pName.includes(cleanSearchName) || pPhone.includes(searchInput);
             });
 
             if (localResults.length > 0) {
                 showToast(`تم العثور على ${localResults.length} نتيجة بحث ⚡`, "success");
-                if (localResults.length === 1) {
-                    loadPatientData(localResults[0]);
-                } else {
-                    globalSearchResults = localResults;
-                    renderMultiplePatientsList(localResults);
-                }
+                if (localResults.length === 1) loadPatientData(localResults[0]);
+                else { globalSearchResults = localResults; renderMultiplePatientsList(localResults); }
                 return; 
             }
 
@@ -812,53 +847,41 @@
                 
                 if(res.status === "found") {
                     showToast(`تم العثور على ${res.data.length} نتيجة بحث!`, "success");
-                    
-                    res.data.forEach(newP => {
-                        let idx = cache.findIndex(p => p.phone === newP.phone);
-                        if(idx > -1) cache[idx] = newP; else cache.push(newP);
-                    });
+                    res.data.forEach(newP => { let idx = cache.findIndex(p => p.phone === newP.phone); if(idx > -1) cache[idx] = newP; else cache.push(newP); });
                     await localforage.setItem('patients_cache', cache);
                     
-                    if (res.data.length === 1) {
-                        loadPatientData(res.data[0]);
-                    } else {
-                        globalSearchResults = res.data;
-                        renderMultiplePatientsList(res.data);
-                    }
-                } else {
-                    showToast("المريض غير موجود، يمكنك إدخال بياناته كملف جديد.", "error");
-                }
-            } catch(e) {
-                showToast("تعذر الوصول لقاعدة البيانات.", "error");
-            }
+                    if (res.data.length === 1) loadPatientData(res.data[0]);
+                    else { globalSearchResults = res.data; renderMultiplePatientsList(res.data); }
+                } else showToast("المريض غير موجود، يمكنك إدخال بياناته كملف جديد.", "error");
+            } catch(e) { showToast("تعذر الوصول لقاعدة البيانات.", "error"); }
             btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
         }
 
         function renderMultiplePatientsList(results) {
             let listHtml = "";
             results.forEach((patient, index) => {
-                listHtml += `
-                    <div class="patient-option" onclick="selectPatient(${index})">
-                        <div>
-                            <div class="patient-name">${escapeHtml(patient.name)}</div>
-                            <div class="patient-details">${escapeHtml(patient.phone) || "بدون رقم"}</div>
-                        </div>
-                    </div>
-                `;
+                listHtml += `<div class="patient-option" onclick="selectPatient(${index})"><div><div class="patient-name">${escapeHtml(patient.name)}</div><div class="patient-details">${escapeHtml(patient.phone) || "بدون رقم"}</div></div></div>`;
             });
             document.getElementById('patientList').innerHTML = listHtml;
             document.getElementById('patientModal').style.display = "flex";
         }
 
-        function selectPatient(index) {
-            loadPatientData(globalSearchResults[index]);
-            closeModal();
-        }
+        function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
         function loadPatientData(data) {
             currentPatient = { ...currentPatient, ...data };
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
+            
+            // 🚨 استنتاج أنواع الكروت من الداتا القديمة 🚨
+            if(!currentPatient.cardTypes) {
+                currentPatient.cardTypes = {};
+                let numCards = Math.ceil((currentPatient.sessions.length || 12) / 12);
+                for(let i=0; i<numCards; i++) {
+                    currentPatient.cardTypes[i] = 'تغذية علاجية'; // الافتراضي
+                }
+            }
+
             lastSavedStateString = JSON.stringify(currentPatient); 
             showMedicalSheetFlag = false; 
             renderPatientToDOM();
@@ -870,9 +893,7 @@
         function convertToEnglishNumbers(str) { const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return str.split('').map(c => ar.indexOf(c) !== -1 ? ar.indexOf(c) : c).join(''); }
         function normalizeArabicText(text) { return text ? text.toString().replace(/[أإآء]/g, 'ا').replace(/ة/g, 'ه').replace(/[يىئ]/g, 'ي').replace(/[\u064B-\u065F]/g, '').trim().toLowerCase() : ""; }
         function escapeHtml(text) { return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ""; }
-
     </script> 
-    <!-- استدعاء الشات في صفحة الكروت -->
     <script src="chat-widget.js"></script>
 </body>
 </html>
