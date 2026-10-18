@@ -41,7 +41,8 @@
         .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); }
         .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
 
-        .save-status-badge { position: fixed; top: 20px; right: 20px; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--sheet-bg); color: var(--text-muted); transition: 0.3s; border: 1px solid var(--border-light);}
+        /* 🚨 تم تعديل مكان حالة الحفظ لتكون أسفل 🚨 */
+        .save-status-badge { position: fixed; bottom: 20px; left: 20px; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--sheet-bg); color: var(--text-muted); transition: 0.3s; border: 1px solid var(--border-light);}
         .save-status-badge.saving { border-color: #f39c12; color: #f39c12; }
         .save-status-badge.saved { border-color: var(--primary-green); color: var(--primary-green); }
         .save-status-badge.unsaved { border-color: var(--danger); color: var(--danger); }
@@ -57,7 +58,10 @@
         .btn-new:hover { filter: brightness(0.9); }
         .btn-delete { background-color: #e74c3c; } 
         .btn-pdf { background-color: #9b59b6; }
-        .btn-quick-session { background-color: #f39c12; }
+        /* 🚨 تم تغيير لون زر الحفظ ليكون مميز 🚨 */
+        .btn-save { background-color: #27ae60; color: white;} 
+        .btn-save:hover { background-color: #2ecc71;}
+        .btn-quick-date { background-color: #f39c12; }
 
         .paper-sheet { background-color: var(--sheet-bg); max-width: 1100px; margin: 0 auto; padding: 25px 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 2px solid var(--primary-blue); border-top: 10px solid var(--primary-green); margin-bottom: 20px; }
         .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -70,12 +74,14 @@
         .row { display: flex; gap: 20px; width: 100%; }
         .input-group { display: flex; flex-direction: row; align-items: baseline; gap: 10px; width: 100%; }
         .input-group label { font-weight: 700; white-space: nowrap; color: var(--primary-blue); font-size: 16px; margin: 0; }
-        .input-group input { flex: 1; border: none; border-bottom: 2px dashed var(--border-dash); background: transparent; font-size: 16px; padding: 0 5px 2px 5px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; }
+        .input-group input { flex: 1; border: none; border-bottom: 2px dashed var(--border-dash); background: transparent; font-size: 16px; padding: 0 5px 2px 5px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; direction: rtl;}
         .input-group input:focus { border-bottom-color: var(--primary-green); }
+        /* 🚨 تصليح تداخل الإنجليزي في الـ PDF 🚨 */
+        .input-group input.eng-text { direction: ltr; text-align: left; }
 
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
-        .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 16px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; min-height: 75px; resize: vertical; }
+        .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 16px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; min-height: 75px; resize: vertical; direction: ltr; text-align: left;}
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
 
         .table-section { flex: 1; display: flex; flex-direction: column; }
@@ -98,54 +104,77 @@
         .patient-option:hover { border-color: var(--primary-green); background-color: var(--focus-bg); }
         .patient-name { font-weight: bold; color: var(--primary-blue); font-size: 18px; margin-bottom: 5px;}
 
-        .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-        .theme-switch { display: inline-block; height: 34px; position: relative; width: 70px; }
+        /* 🚨 تعديل تصميم زر الدارك مود 🚨 */
+        .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #2c3e50; padding: 5px; border-radius: 30px; border: 2px solid #1a252f; box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
+        .theme-switch { display: inline-block; height: 26px; position: relative; width: 56px; }
         .theme-switch input { display:none; }
-        .slider { background-color: #f1c40f; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 34px;}
-        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 26px; left: 4px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #2c3e50; }
-        input:checked + .slider:before { transform: translateX(36px); }
+        .slider { background-color: transparent; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;}
+        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 22px; left: 3px; position: absolute; transition: .4s; width: 22px; border-radius: 50%; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input:checked + .slider:before { transform: translateX(28px); }
+        .icon { font-size: 14px; z-index: 1; }
 
         @media print {
             .no-print, .controls, .theme-switch-wrapper, .save-status-badge { display: none !important; } 
-            body { background: white; padding: 0; }
+            
+            /* 🚨 إجبار الـ PDF على Light Mode وتنسيق الخطوط الإنجليزية 🚨 */
+            body, .paper-sheet, .controls input, .input-group-textarea textarea, table, th, td { 
+                background: white !important; 
+                color: black !important; 
+                border-color: #ccc !important;
+            }
+            .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
+            .input-group input { border-bottom: 1px dotted #000 !important; color: #000 !important; }
+            .input-group input.eng-text { direction: ltr !important; text-align: left !important; }
+            .input-group-textarea textarea { direction: ltr !important; text-align: left !important; }
+            th { background-color: #eee !important; color: #000 !important; }
+            
             .sheet-body { flex-direction: row !important; }
-            .paper-sheet { border: none; box-shadow: none; padding: 0; margin-bottom: 20px;}
-            .input-group input { border-bottom: 1px dotted #000; color: #000; }
-            table, th, td { border: 1px solid #000; }
-            th { background-color: #eee !important; color: #000; }
+            .paper-sheet { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important;}
         }
+
+        /* كلاس مخصص لفرض اللون الأبيض أثناء التصدير (Light Mode) */
+        .force-light-mode {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+        .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
+        .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { color: #000000 !important; }
+        .force-light-mode .input-group label { color: #0093D0 !important; }
+        .force-light-mode th { background-color: #eaf5fa !important; color: #0093D0 !important;}
+        .force-light-mode td, .force-light-mode th, .force-light-mode table { border-color: #cccccc !important; }
+        .force-light-mode .medical-notes { background-image: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px) !important; color: #000000 !important;}
     </style>
 </head>
 <body>
 
-    <div id="saveStatusBadge" class="save-status-badge saved">
+    <div id="saveStatusBadge" class="save-status-badge saved no-print">
         <i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>
     </div>
 
-    <div id="appToast" class="app-toast">
+    <div id="appToast" class="app-toast no-print">
         <i id="toastIcon" class="fa-solid fa-check-circle"></i>
         <span id="toastMessage"></span>
     </div>
 
+    <!-- 🚨 زر الدارك مود المحدث 🚨 -->
     <div class="theme-switch-wrapper no-print" dir="ltr">
         <label class="theme-switch">
             <input type="checkbox" id="themeSwitch" onchange="toggleTheme(this)">
-            <div class="slider"></div>
+            <div class="slider">
+                <span class="icon" style="color: #f1c40f;">☀️</span>
+            </div>
         </label>
     </div>
 
-    <!-- نافذة البحث المتعدد -->
-    <div id="patientModal" class="modal">
+    <div id="patientModal" class="modal no-print">
         <div class="modal-content">
             <h2 style="color: var(--primary-blue); margin-top: 0;">نتائج البحث</h2>
             <div id="patientList"></div>
-            <button class="btn" style="background-color: #e74c3c; width: 100%; justify-content: center;" onclick="closeModal()">إغلاق</button>
+            <button class="btn" style="background-color: #e74c3c; width: 100%; justify-content: center; margin-top: 15px;" onclick="closeModal()">إغلاق</button>
         </div>
     </div>
 
-    <!-- 🚨 النافذة المنبثقة المخصصة للتأكيد بدلاً من Alert/Confirm 🚨 -->
-    <div id="customConfirmModal" class="modal" style="z-index: 999999;">
+    <div id="customConfirmModal" class="modal no-print" style="z-index: 999999;">
         <div class="modal-content" style="max-width: 400px; text-align: center; border-top-color: var(--danger);">
             <h2 id="confirmTitle" style="color: var(--danger); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;"></h2>
             <p id="confirmMessage" style="color: var(--text-main); margin-bottom: 25px; font-size: 16px; font-weight: 600; line-height: 1.6;"></p>
@@ -160,7 +189,8 @@
         <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل...">
         <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
-        <button class="btn btn-quick-session" onclick="quickTodaySession()"><i class="fa-solid fa-bolt"></i> جلسة اليوم</button>
+        <!-- 🚨 تم إضافة زر "تاريخ اليوم" جنب أزرار الطباعة 🚨 -->
+        <button class="btn btn-quick-date" onclick="quickTodaySession()"><i class="fa-solid fa-calendar-day"></i> تاريخ اليوم</button>
         <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
         <button class="btn btn-save" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
         <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف</button>
@@ -171,7 +201,6 @@
     </div>
 
     <script>
-        // ================== Firebase Init ==================
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -186,18 +215,14 @@
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
-        // ================== State Management ==================
         let currentPatient = {
             name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
             sessions: Array(12).fill({d: '', ws: '', n: ''}),
             files: []
         };
 
-        // متغير لحفظ "آخر حالة تم حفظها" لمنع الحفظ المزدوج
         let lastSavedStateString = "";
-        
         let saveTimeout = null;
-        let isSaving = false;
         let confirmActionCallback = null;
 
         localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
@@ -225,7 +250,6 @@
             });
         });
 
-        // ================== Pop-ups & Modals ==================
         function showToast(message, type = 'success') {
             const toast = document.getElementById('appToast');
             const icon = document.getElementById('toastIcon');
@@ -261,14 +285,13 @@
             closeConfirmModal();
         });
 
-        // ================== Core Logic & Renders ==================
         function createNewPatient() {
             currentPatient = {
                 name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
                 sessions: Array(12).fill({d: '', ws: '', n: ''}),
                 files: []
             };
-            lastSavedStateString = ""; // تصفير الذاكرة لأن ده كرت جديد
+            lastSavedStateString = ""; 
             renderPatientToDOM();
             showToast("تم فتح استمارة جديدة", "info");
         }
@@ -286,23 +309,57 @@
                 container.innerHTML += buildCardHtml(c);
             }
 
-            container.innerHTML += `
-                <div class="paper-sheet" style="margin-top:20px;">
-                    <h3 style="color: var(--primary-blue); border-bottom: 2px solid var(--primary-green); padding-bottom:10px;">التشخيص والملاحظات الطبية</h3>
-                    <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
-                    
-                    <div class="upload-section no-print">
-                        <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
-                        <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
-                        <button class="btn btn-new" style="margin: 0 auto;" onclick="document.getElementById('fileUploader').click()">اختيار ملف للرفع</button>
-                        <div class="file-list" id="filesListContainer"></div>
+            // 🚨 إظهار الملف الطبي فقط إذا كان هناك ملاحظات مكتوبة فيه 🚨
+            let medicalNotesHtml = '';
+            if (currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '') {
+                medicalNotesHtml = `
+                    <div class="paper-sheet medical-sheet" style="margin-top:20px;">
+                        <h3 style="color: var(--primary-blue); border-bottom: 2px solid var(--primary-green); padding-bottom:10px;">التشخيص والملاحظات الطبية</h3>
+                        <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
                     </div>
+                `;
+            } else {
+                // ديف مخفي لكي لا يتعطل الـ JavaScript
+                medicalNotesHtml = `<textarea id="p_medical_notes" style="display:none;"></textarea>`;
+            }
+
+            container.innerHTML += medicalNotesHtml;
+            
+            // إضافة قسم المرفقات دائمًا (لا يظهر في الـ PDF)
+            container.innerHTML += `
+                <div class="paper-sheet upload-section no-print" style="margin-top:20px;">
+                    <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
+                    <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
+                    <button class="btn btn-new" style="margin: 0 auto;" onclick="document.getElementById('fileUploader').click()">اختيار ملف للرفع</button>
+                    <div class="file-list" id="filesListContainer"></div>
                 </div>
             `;
+
+            // إضافة زر لإظهار الملف الطبي إذا لم يكن ظاهراً
+            if (!currentPatient.medical_notes || currentPatient.medical_notes.trim() === '') {
+                container.innerHTML += `
+                    <div class="no-print" style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-medical" style="margin: 0 auto;" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>
+                    </div>
+                `;
+            }
 
             renderFilesList();
             attachDoubleClickListener();
         }
+
+        // دالة لإضافة الملف الطبي فارغاً إذا أراد المستخدم
+        window.addMedicalSheet = function() {
+            currentPatient.medical_notes = " "; // مسافة لتجنب إخفائه
+            renderPatientToDOM();
+            setTimeout(() => {
+                const notesEl = document.getElementById('p_medical_notes');
+                if(notesEl) {
+                    notesEl.focus();
+                    window.scrollTo({ top: notesEl.offsetTop - 50, behavior: 'smooth' });
+                }
+            }, 100);
+        };
 
         function buildCardHtml(cardIndex) {
             let isFirst = cardIndex === 0;
@@ -314,12 +371,12 @@
                     <div class="input-group"><label>العنوان:</label><input type="text" id="p_address" value="${escapeHtml(currentPatient.address)}" oninput="handleInput()"></div>
                 </div>
                 <div class="row">
-                    <div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput()"></div>
+                    <div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput()" dir="ltr" style="text-align:right;"></div>
                     <div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div>
                 </div>
                 <div class="input-group" style="width: 50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div>
-                <div class="input-group"><label>Referred By:</label><input type="text" id="p_referred" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div>
-                <div class="input-group"><label>Diagnosis:</label><input type="text" id="p_diagnosis" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div>
+                <div class="input-group"><label>Referred By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div>
+                <div class="input-group"><label>Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div>
                 <div class="input-group-textarea">
                     <label>Treatment Protocol:</label>
                     <textarea id="p_protocol" rows="3" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea>
@@ -327,7 +384,7 @@
             ` : `
                 <div class="row">
                     <div class="input-group"><label>الاسم:</label><input type="text" value="${escapeHtml(currentPatient.name)}" readonly style="color:var(--text-muted)"></div>
-                    <div class="input-group"><label>الموبايل:</label><input type="text" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted)"></div>
+                    <div class="input-group"><label>الموبايل:</label><input type="text" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted)" dir="ltr" style="text-align:right;"></div>
                 </div>
             `;
 
@@ -339,7 +396,7 @@
                 tbodyHtml += `
                     <tr>
                         <td style="font-weight:700; background:var(--table-idx-bg); color:var(--primary-blue);">${sIdx + 1}</td>
-                        <td><input type="text" id="d_${sIdx}" class="date-dblclick" value="${escapeHtml(session.d)}" oninput="handleInput()"></td>
+                        <td><input type="text" id="d_${sIdx}" class="date-dblclick" value="${escapeHtml(session.d)}" oninput="handleInput()" dir="ltr"></td>
                         <td><input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" oninput="handleInput()"></td>
                         <td><input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()"></td>
                     </tr>
@@ -391,10 +448,9 @@
             }
         }
 
-        // ================== Auto-save & Intelligent Save Logic ==================
         function setSaveStatus(status) {
             const badge = document.getElementById('saveStatusBadge');
-            badge.className = `save-status-badge ${status}`;
+            badge.className = `save-status-badge ${status} no-print`;
             if(status === 'saving') badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>';
             else if(status === 'saved') badge.innerHTML = '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>';
             else badge.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>';
@@ -404,11 +460,10 @@
             setSaveStatus('unsaved');
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
-                forceSave(true); // true = حفظ صامت في الخلفية
+                forceSave(true); 
             }, 5000);
         }
 
-        // دالة زر الحفظ اليدوي (تستخدم نفس الفورس سيف بس مش صامتة)
         function saveData() {
             forceSave(false);
         }
@@ -423,13 +478,11 @@
             
             let currentStateStr = JSON.stringify(currentPatient);
             
-            // 🚨 منع الحفظ المزدوج لو الداتا زي ما هي متغيرتش 🚨
             if (currentStateStr === lastSavedStateString) {
                 if(!isSilent) showToast("الكرت ده محفوظ بالفعل ومفيش تعديلات جديدة!", "info");
                 return;
             }
 
-            // 🚨 التنبيه الذكي عند محاولة حفظ كرت جديد لمريض مسجل بالفعل 🚨
             if (!isSilent && lastSavedStateString === "") {
                 let cache = await localforage.getItem('patients_cache') || [];
                 let found = cache.find(p => (p.phone && p.phone === currentPatient.phone) || (p.name && normalizeArabicText(p.name) === normalizeArabicText(currentPatient.name)));
@@ -442,13 +495,12 @@
                         'افتح كرت المريض',
                         'var(--primary-blue)'
                     );
-                    return; // إيقاف الحفظ
+                    return; 
                 }
             }
 
             setSaveStatus('saving');
             
-            // تنظيف الجلسات الفارغة من النهاية فقط
             let cleanedSessions = [...currentPatient.sessions];
             while(cleanedSessions.length > 0 && !cleanedSessions[cleanedSessions.length-1].d && !cleanedSessions[cleanedSessions.length-1].ws && !cleanedSessions[cleanedSessions.length-1].n) {
                 cleanedSessions.pop();
@@ -456,7 +508,6 @@
 
             let payload = { ...currentPatient, sessions: cleanedSessions };
 
-            // تحديث IndexedDB
             let cache = await localforage.getItem('patients_cache') || [];
             let idx = cache.findIndex(p => p.phone === payload.phone);
             if(idx > -1) cache[idx] = payload;
@@ -466,7 +517,7 @@
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
                 setSaveStatus('saved');
-                lastSavedStateString = currentStateStr; // تحديث ذاكرة السيف
+                lastSavedStateString = currentStateStr; 
                 if(!isSilent) showToast("تم الحفظ بنجاح", "success");
             } catch (e) {
                 setSaveStatus('unsaved');
@@ -474,7 +525,7 @@
             }
         }
 
-        // ================== Features ==================
+        // 🚨 إضافة "تاريخ اليوم" في أول خانة فاضية 🚨
         function quickTodaySession() {
             updateStateFromDOM();
             let sessions = currentPatient.sessions;
@@ -503,10 +554,20 @@
             });
         }
 
+        // 🚨 تصدير PDF بالإجبار على Light Mode وإخفاء الشات 🚨
         function exportToPDF() {
             if(!currentPatient.name) return showToast("يجب إدخال اسم المريض أولاً", "error");
             showToast("جاري تجهيز الـ PDF...", "info");
             
+            // إخفاء الشات مؤقتاً
+            const chatBtn = document.querySelector('.chat-toggle-btn');
+            const chatWin = document.getElementById('chatBox');
+            if(chatBtn) chatBtn.style.display = 'none';
+            if(chatWin) chatWin.style.display = 'none';
+
+            // إضافة كلاس لإجبار النمط الفاتح
+            document.body.classList.add('force-light-mode');
+
             const element = document.getElementById('cardsRenderContainer');
             const opt = {
                 margin:       5,
@@ -517,8 +578,12 @@
             };
             
             document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+            
             html2pdf().set(opt).from(element).save().then(() => {
+                // استرجاع كل شيء لوضعه الأصلي
+                document.body.classList.remove('force-light-mode');
                 document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
+                if(chatBtn) chatBtn.style.display = 'flex';
                 showToast("تم تحميل الملف بنجاح", "success");
             });
         }
@@ -561,7 +626,6 @@
             }
         }
 
-        // ================== Deletions with Pop-ups ==================
         function deleteFile(idx) {
             showCustomConfirm(
                 '<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق',
@@ -596,7 +660,6 @@
             );
         }
 
-        // ================== Search & Data Fetching ==================
         async function silentPreFetchAll() {
             try {
                 let res = await fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH");
@@ -689,7 +752,7 @@
             currentPatient = { ...currentPatient, ...data };
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
-            lastSavedStateString = JSON.stringify(currentPatient); // تحديث كاش الحفظ المزدوج
+            lastSavedStateString = JSON.stringify(currentPatient); 
             renderPatientToDOM();
             setSaveStatus('saved');
         }
@@ -701,6 +764,7 @@
         function escapeHtml(text) { return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ""; }
 
     </script> 
+    <!-- استدعاء الشات في صفحة الكروت -->
     <script src="chat-widget.js"></script>
 </body>
 </html>
