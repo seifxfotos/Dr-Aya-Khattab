@@ -8,392 +8,224 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- مكاتب مساعدة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- مكاتب فايربيز (شاملة الـ Storage) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+
     <style>
-        /* المتغيرات الأساسية للألوان (الوضع الفاتح) */
         :root {
-            --primary-blue: #0093D0;
-            --primary-green: #8CC63F;
-            --body-bg: #f0f4f8;
-            --sheet-bg: #ffffff;
-            --text-main: #111111;
-            --text-muted: #666666;
-            --border-light: #cccccc;
-            --border-dash: #999999;
-            --table-th-bg: #eaf5fa;
-            --table-idx-bg: #f9f9f9;
-            --focus-bg: #f4fbf0;
+            --primary-blue: #0093D0; --primary-green: #8CC63F; --body-bg: #f0f4f8;
+            --sheet-bg: #ffffff; --text-main: #111111; --text-muted: #666666;
+            --border-light: #cccccc; --border-dash: #999999; --table-th-bg: #eaf5fa;
+            --table-idx-bg: #f9f9f9; --focus-bg: #f4fbf0;
             --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px);
         }
 
-        /* متغيرات الألوان (الوضع الليلي) */
         body.dark-mode {
-            --body-bg: #121212;
-            --sheet-bg: #1e1e1e;
-            --text-main: #f0f0f0;
-            --text-muted: #aaaaaa;
-            --border-light: #444444;
-            --border-dash: #666666;
-            --table-th-bg: #2a2a2a;
-            --table-idx-bg: #252525;
-            --focus-bg: #2c3e20;
+            --body-bg: #121212; --sheet-bg: #1e1e1e; --text-main: #f0f0f0;
+            --text-muted: #aaaaaa; --border-light: #444444; --border-dash: #666666;
+            --table-th-bg: #2a2a2a; --table-idx-bg: #252525; --focus-bg: #2c3e20;
             --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #444 40px);
         }
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--body-bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* نظام الإشعارات (Toast) */
-        .app-toast {
-            position: fixed;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--sheet-bg);
-            color: var(--text-main);
-            padding: 12px 25px;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 999999;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 16px;
-            font-family: 'Cairo';
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-bottom: 4px solid var(--primary-blue);
-        }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--body-bg); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s ease; }
+        
+        .app-toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--sheet-bg); color: var(--text-main); padding: 12px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999999; display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 16px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-bottom: 4px solid var(--primary-blue); }
         .app-toast.show { top: 30px; }
         .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); }
         .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
-        .app-toast.info { border-bottom-color: var(--primary-blue); color: var(--primary-blue); }
 
-        .controls {
-            background: var(--sheet-bg);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            border-bottom: 4px solid var(--primary-green);
-            transition: background-color 0.3s ease;
-        }
+        .save-status-badge { position: fixed; top: 20px; right: 20px; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--sheet-bg); color: var(--text-muted); transition: 0.3s; border: 1px solid var(--border-light);}
+        .save-status-badge.saving { border-color: #f39c12; color: #f39c12; }
+        .save-status-badge.saved { border-color: var(--primary-green); color: var(--primary-green); }
+        .save-status-badge.unsaved { border-color: var(--danger); color: var(--danger); }
 
-        .controls input {
-            background: var(--sheet-bg);
-            color: var(--text-main);
-            padding: 12px;
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
-            flex-grow: 1;
-            font-size: 16px;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.3s ease;
-            outline: none;
-        }
+        .controls { background: var(--sheet-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 4px solid var(--primary-green); }
+        .controls input { background: var(--sheet-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; flex-grow: 1; font-size: 15px; font-family: 'Cairo'; outline: none; transition: 0.3s;}
         .controls input:focus { border-color: var(--primary-blue); }
-
-        ::placeholder { color: var(--text-muted); opacity: 1; }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 16px;
-            font-family: 'Cairo', sans-serif;
-            color: white;
-            transition: 0.3s;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 15px; font-family: 'Cairo'; color: white; transition: 0.3s; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
+        
         .btn-search { background-color: var(--primary-blue); }
         .btn-search:hover { filter: brightness(0.9); }
         .btn-new { background-color: var(--primary-green); }
         .btn-new:hover { filter: brightness(0.9); }
         .btn-delete { background-color: #e74c3c; } 
-        .btn-delete:hover { filter: brightness(0.9); }
-        .btn-save { background-color: #2c3e50; }
-        .btn-print { background-color: #e67e22; }
+        .btn-pdf { background-color: #9b59b6; }
+        .btn-quick-session { background-color: #f39c12; }
 
-        .btn-medical, .btn-new-card { 
-            background-color: var(--primary-blue); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            transition: all 0.3s ease; 
-        }
-        .btn-new-card { background-color: #27ae60; }
-        .btn-medical:hover, .btn-new-card:hover { filter: brightness(0.9); }
-
-        .paper-sheet {
-            background-color: var(--sheet-bg);
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 25px 35px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column; 
-            border: 2px solid var(--primary-blue);
-            border-top: 10px solid var(--primary-green);
-            transition: background-color 0.3s ease;
-        }
-
-        .sheet-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .clinic-qr img { width: 70px; height: auto; object-fit: contain; transition: 0.3s; }
-        .clinic-logo img { width: 180px; height: auto; object-fit: contain; transition: 0.3s; }
-
-        body.dark-mode .clinic-logo img, 
-        body.dark-mode .clinic-qr img {
-            background-color: #fff;
-            padding: 5px;
-            border-radius: 8px;
-        }
+        .paper-sheet { background-color: var(--sheet-bg); max-width: 1100px; margin: 0 auto; padding: 25px 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 2px solid var(--primary-blue); border-top: 10px solid var(--primary-green); margin-bottom: 20px; }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .clinic-qr img { width: 70px; object-fit: contain; }
+        .clinic-logo img { width: 180px; object-fit: contain; }
+        body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: #fff; padding: 5px; border-radius: 8px; }
 
         .sheet-body { display: flex; gap: 30px; width: 100%; }
         .info-section { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
-
         .row { display: flex; gap: 20px; width: 100%; }
         .input-group { display: flex; flex-direction: row; align-items: baseline; gap: 10px; width: 100%; }
         .input-group label { font-weight: 700; white-space: nowrap; color: var(--primary-blue); font-size: 16px; margin: 0; }
-        
-        .input-group input {
-            flex: 1; border: none; border-bottom: 2px dashed var(--border-dash);
-            background: transparent; font-size: 16px; padding: 0 5px 2px 5px; 
-            font-family: 'Cairo', sans-serif; color: var(--text-main); font-weight: 600;
-            outline: none; margin: 0; transition: border-color 0.3s;
-        }
+        .input-group input { flex: 1; border: none; border-bottom: 2px dashed var(--border-dash); background: transparent; font-size: 16px; padding: 0 5px 2px 5px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; }
         .input-group input:focus { border-bottom-color: var(--primary-green); }
 
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
-        .input-group-textarea textarea {
-            width: 100%; border: 2px dashed var(--border-light); border-radius: 8px;
-            background: var(--sheet-bg); font-size: 16px; padding: 8px;
-            font-family: 'Cairo', sans-serif; color: var(--text-main); font-weight: 600;
-            outline: none; min-height: 75px; resize: vertical; box-sizing: border-box;
-            transition: all 0.3s;
-        }
+        .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 16px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; min-height: 75px; resize: vertical; }
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
 
         .table-section { flex: 1; display: flex; flex-direction: column; }
-        table { width: 100%; border-collapse: collapse; border: 2px solid var(--primary-blue); background: var(--sheet-bg); transition: 0.3s; }
+        table { width: 100%; border-collapse: collapse; border: 2px solid var(--primary-blue); background: var(--sheet-bg); }
         th, td { border: 1px solid var(--border-light); text-align: center; height: 32px; }
-        th { background-color: var(--table-th-bg); color: var(--primary-blue); font-size: 16px; padding: 5px; transition: 0.3s; }
-        td input { width: 90%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo', sans-serif; background: transparent; color: var(--text-main); }
-        td input:focus { outline: none; background-color: var(--focus-bg); }
+        th { background-color: var(--table-th-bg); color: var(--primary-blue); font-size: 16px; padding: 5px; }
+        td input { width: 90%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo'; background: transparent; color: var(--text-main); outline: none;}
+        td input:focus { background-color: var(--focus-bg); }
 
-        .add-row-btn { background-color: var(--primary-blue); margin-top: 8px; padding: 6px; font-size: 14px; width: 100%; justify-content: center; }
-        .add-row-btn:hover { filter: brightness(0.9); }
-
-        .row-container { display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%; }
-        .delete-row-btn { color: white; background-color: #e74c3c; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; position: absolute; right: -25px; top: 50%; transform: translateY(-50%); line-height: 1; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-
-        .medical-notes {
-            width: 100%; min-height: 400px; border: none; outline: none;
-            font-size: 18px; font-family: 'Cairo', sans-serif; font-weight: 600; color: var(--text-main);
-            line-height: 2.5; background: transparent; resize: none;
-            background-image: var(--notes-bg); transition: 0.3s;
-        }
-
+        .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 15px; border-radius: 8px; text-align: center; }
+        .upload-section h4 { margin: 0 0 10px 0; color: var(--primary-blue); }
+        .file-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; justify-content: center;}
+        .file-item { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-light); }
+        .file-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer;}
+        .file-item .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(231, 76, 60, 0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center;}
+        
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--sheet-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border-top: 5px solid var(--primary-green); max-height: 80vh; overflow-y: auto; box-shadow: 0 5px 30px rgba(0,0,0,0.3); }
-        .patient-option { padding: 15px; border: 1px solid var(--border-light); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; background-color: var(--sheet-bg); }
+        .modal-content { background-color: var(--sheet-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border-top: 5px solid var(--primary-green); max-height: 80vh; overflow-y: auto; }
+        .patient-option { padding: 15px; border: 1px solid var(--border-light); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
         .patient-option:hover { border-color: var(--primary-green); background-color: var(--focus-bg); }
         .patient-name { font-weight: bold; color: var(--primary-blue); font-size: 18px; margin-bottom: 5px;}
-        .patient-details { color: var(--text-muted); font-size: 14px; font-weight: 600;}
-        .select-badge { background: var(--primary-blue); color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 14px; }
 
-        /* سويتش الدارك مود */
         .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
         .theme-switch { display: inline-block; height: 34px; position: relative; width: 70px; }
         .theme-switch input { display:none; }
-        .slider { background-color: #f1c40f; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .slider.round { border-radius: 34px; }
+        .slider { background-color: #f1c40f; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 34px;}
         .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 26px; left: 4px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: #2c3e50; }
         input:checked + .slider:before { transform: translateX(36px); }
-        .icon { font-size: 16px; z-index: 1; }
-
-        @media (max-width: 800px) {
-            .paper-sheet { padding: 20px; }
-            .sheet-header { flex-direction: column; gap: 15px; text-align: center; }
-            .sheet-body { flex-direction: column; gap: 30px; }
-            .row { flex-direction: column; gap: 20px; }
-            .controls { flex-direction: column; align-items: stretch; }
-            #cardControls { flex-direction: column; }
-        }
 
         @media print {
-            @page { size: A4 landscape; margin: 5mm; }
-            :root {
-                --body-bg: #ffffff !important;
-                --sheet-bg: #ffffff !important;
-                --text-main: #000000 !important;
-                --text-muted: #333333 !important;
-                --border-light: #cccccc !important;
-                --border-dash: #000000 !important;
-                --table-th-bg: #eeeeee !important;
-                --table-idx-bg: #f9f9f9 !important;
-                --notes-bg: repeating-linear-gradient(transparent, transparent 39px, #ccc 40px) !important;
-            }
-            body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: transparent; padding: 0; }
-
+            .no-print, .controls, .theme-switch-wrapper, .save-status-badge { display: none !important; } 
             body { background: white; padding: 0; }
-            .controls, .modal, .no-print, .delete-row-btn, .theme-switch-wrapper, .action-buttons-container { display: none !important; } 
-            .sheet-body { flex-direction: row !important; gap: 20px !important; }
-            .sheet-header { flex-direction: row !important; text-align: right !important; margin-bottom: 10px !important; }
-            .info-section { flex: 1.2 !important; gap: 10px !important; display: flex !important; flex-direction: column !important; }
-            .row { flex-direction: row !important; }
-            .table-section { flex: 1 !important; display: block !important; }
-            .paper-sheet { box-shadow: none; border: none; padding: 0 !important; width: 100%; max-width: 100%; transform: scale(0.98); transform-origin: top right; margin-bottom: 0 !important; }
-            
-            .dynamic-card { page-break-before: always; margin-top: 10mm !important; }
-            #medicalSheetForm { page-break-before: always; margin-top: 10mm !important; }
-            
-            .input-group label { color: #000; font-size: 15px; }
-            .input-group input { border-bottom: 2px dotted #000; font-size: 15px; }
-            .input-group-textarea textarea { border: 2px dotted #000; background: transparent; min-height: 55px !important; font-size: 15px; }
-            table, th, td { border: 2px solid #000; }
-            th { background-color: #eee !important; color: #000; padding: 3px !important; font-size: 15px; }
-            td { height: 26px !important; } 
-            td input { font-size: 15px; }
-            tr { page-break-inside: avoid; }
-            
-            textarea::placeholder { color: transparent !important; }
-            textarea::-webkit-input-placeholder { color: transparent !important; }
+            .sheet-body { flex-direction: row !important; }
+            .paper-sheet { border: none; box-shadow: none; padding: 0; margin-bottom: 20px;}
+            .input-group input { border-bottom: 1px dotted #000; color: #000; }
+            table, th, td { border: 1px solid #000; }
+            th { background-color: #eee !important; color: #000; }
         }
     </style>
 </head>
 <body>
 
-    <!-- نظام الإشعارات (Toast) -->
-    <div id="appToast" class="app-toast">
-        <i id="toastIcon" class="fa-solid fa-check-circle"></i>
-        <span id="toastMessage">تمت العملية بنجاح</span>
+    <div id="saveStatusBadge" class="save-status-badge saved">
+        <i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>
     </div>
 
-    <!-- زر الدارك مود -->
+    <div id="appToast" class="app-toast">
+        <i id="toastIcon" class="fa-solid fa-check-circle"></i>
+        <span id="toastMessage"></span>
+    </div>
+
     <div class="theme-switch-wrapper no-print" dir="ltr">
-        <label class="theme-switch" for="themeSwitch">
+        <label class="theme-switch">
             <input type="checkbox" id="themeSwitch" onchange="toggleTheme(this)">
-            <div class="slider round">
-                <span class="icon moon" style="margin-left: 8px;">🌙</span>
-                <span class="icon sun" style="margin-right: 8px;">☀️</span>
-            </div>
+            <div class="slider"></div>
         </label>
     </div>
 
     <!-- نافذة البحث المتعدد -->
     <div id="patientModal" class="modal">
         <div class="modal-content">
-            <h2 style="color: var(--primary-blue); margin-top: 0;">يوجد أكثر من كرت مسجل</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">الرجاء اختيار الكرت المطلوب من القائمة التالية:</p>
+            <h2 style="color: var(--primary-blue); margin-top: 0;">نتائج البحث</h2>
             <div id="patientList"></div>
-            <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px; justify-content: center;" onclick="closeModal()">إلغاء وإغلاق</button>
+            <button class="btn" style="background-color: #e74c3c; width: 100%; justify-content: center;" onclick="closeModal()">إغلاق</button>
         </div>
     </div>
 
-    <!-- أزرار التحكم العلوية -->
+    <!-- 🚨 النافذة المنبثقة المخصصة للتأكيد بدلاً من Alert/Confirm 🚨 -->
+    <div id="customConfirmModal" class="modal" style="z-index: 999999;">
+        <div class="modal-content" style="max-width: 400px; text-align: center; border-top-color: var(--danger);">
+            <h2 id="confirmTitle" style="color: var(--danger); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;"></h2>
+            <p id="confirmMessage" style="color: var(--text-main); margin-bottom: 25px; font-size: 16px; font-weight: 600; line-height: 1.6;"></p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="confirmBtnYes" class="btn" style="flex: 1; justify-content: center; background: var(--danger);">نعم</button>
+                <button onclick="closeConfirmModal()" class="btn" style="flex: 1; background-color: var(--border-dash); justify-content: center;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
     <div class="controls no-print">
-        <input type="text" id="searchName" placeholder="ابحث باسم المريض أو برقم الموبايل هنا ثم اضغط Enter...">
-        <button class="btn btn-search" id="searchBtn" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
-        <button class="btn btn-new" onclick="clearForm()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
-        <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف الكرت</button>
-        <button class="btn btn-save" id="saveBtn" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
-        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
+        <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل...">
+        <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
+        <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
+        <button class="btn btn-quick-session" onclick="quickTodaySession()"><i class="fa-solid fa-bolt"></i> جلسة اليوم</button>
+        <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
+        <button class="btn btn-save" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
+        <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف</button>
     </div>
 
-    <!-- الكرت الأساسي (الرقم 1) -->
-    <div class="paper-sheet" id="card_1">
-        <div class="sheet-header">
-            <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
-            <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
-        </div>
-
-        <div class="sheet-body">
-            <div class="info-section">
-                <div class="row">
-                    <div class="input-group"><label>الاسم:</label><input type="text" id="p_name"></div>
-                    <div class="input-group"><label>العنوان:</label><input type="text" id="p_address"></div>
-                </div>
-                <div class="row">
-                    <div class="input-group"><label>رقم الموبايل:</label><input type="text" id="p_phone"></div>
-                    <div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job"></div>
-                </div>
-                <div class="input-group" style="width: 50%;"><label>السن:</label><input type="text" id="p_age"></div>
-                <div class="input-group"><label>Referred Doctor:</label><input type="text" id="p_referred"></div>
-                <div class="input-group"><label>Diagnosis:</label><input type="text" id="p_diagnosis"></div>
-                <div class="input-group-textarea">
-                    <label>Treatment Protocol:</label>
-                    <textarea id="p_protocol" rows="3"></textarea>
-                </div>
-            </div>
-
-            <div class="table-section">
-                <table>
-                    <thead>
-                        <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
-                    </thead>
-                    <tbody id="sessionsTable1">
-                    </tbody>
-                </table>
-                <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(1)">+ إضافة جلسة</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- حاوية الكروت الإضافية اللانهائية -->
-    <div id="dynamicCardsContainer"></div>
-
-    <!-- أزرار الإدارة السفلية -->
-    <div class="action-buttons-container no-print" style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin: 20px auto; max-width: 1100px;">
-        <div id="cardControls" style="display: flex; gap: 15px; width: 100%; max-width: 600px;">
-            <button id="addCardBtn" class="btn btn-new-card" style="flex: 1; justify-content: center;" onclick="addCard()">➕ إضافة كرت إضافي</button>
-            <button id="removeCardBtn" class="btn btn-delete" style="flex: 1; display: none; justify-content: center;" onclick="removeLastCard()">🗑️ إزالة الكرت الأخير</button>
-        </div>
-        <button id="medicalToggleBtn" class="btn btn-medical" style="justify-content: center; width:100%; max-width:600px;" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
-    </div>
-
-    <!-- الملف الطبي -->
-    <div class="paper-sheet" id="medicalSheetForm" style="display: none; margin-bottom: 50px;">
-        <div class="sheet-header">
-            <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
-            <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
-        </div>
-        <div style="border-bottom: 3px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: flex-start; align-items: baseline;">
-            <h3 style="color: var(--primary-blue); margin: 0;">التشخيص والملاحظات الطبية</h3>
-        </div>
-        <textarea id="p_medical_notes" class="medical-notes" placeholder="اكتب التشخيص والتفاصيل هنا وسيتم حفظها مع الكرت..."></textarea>
+    <div id="cardsRenderContainer">
+        <!-- سيتم رسم الكروت هنا بواسطة الجافاسكريبت بناءً على الـ State -->
     </div>
 
     <script>
+        // ================== Firebase Init ==================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
+            authDomain: "today-2d146.firebaseapp.com",
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
+            projectId: "today-2d146",
+            storageBucket: "today-2d146.firebasestorage.app",
+            messagingSenderId: "742225764525",
+            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const storage = firebase.storage();
+
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
-        let globalSearchResults = []; 
-        let totalCards = 1;
-        let cardRowCounts = { 1: { start: 1, current: 12 } };
-        
-        let allPatientsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || []; 
+        // ================== State Management ==================
+        let currentPatient = {
+            name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
+            sessions: Array(12).fill({d: '', ws: '', n: ''}),
+            files: []
+        };
 
+        // متغير لحفظ "آخر حالة تم حفظها" لمنع الحفظ المزدوج
+        let lastSavedStateString = "";
+        
+        let saveTimeout = null;
+        let isSaving = false;
+        let confirmActionCallback = null;
+
+        localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeSwitch').checked = true;
+            }
+            renderPatientToDOM(); 
+            silentPreFetchAll();
+
+            const autoSearch = localStorage.getItem('clinic_auto_search_name');
+            if (autoSearch) {
+                document.getElementById('searchName').value = autoSearch;
+                setTimeout(() => searchPatient(), 500);
+                localStorage.removeItem('clinic_auto_search_name');
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    forceSave();
+                }
+            });
+        });
+
+        // ================== Pop-ups & Modals ==================
         function showToast(message, type = 'success') {
             const toast = document.getElementById('appToast');
             const icon = document.getElementById('toastIcon');
@@ -405,255 +237,392 @@
             else icon.className = 'fa-solid fa-info-circle';
             
             msg.innerText = message;
-            
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                let themeSwitch = document.getElementById('themeSwitch');
-                if (themeSwitch) themeSwitch.checked = true;
-            }
-            silentPreFetchAll();
+        function showCustomConfirm(title, message, onConfirm, confirmText = "نعم، متأكد", confirmColor = "var(--danger)") {
+            document.getElementById('confirmTitle').innerHTML = title;
+            document.getElementById('confirmMessage').innerHTML = message;
+            let btnYes = document.getElementById('confirmBtnYes');
+            btnYes.innerHTML = confirmText;
+            btnYes.style.backgroundColor = confirmColor;
+            confirmActionCallback = onConfirm;
+            document.getElementById('customConfirmModal').style.display = "flex";
+        }
 
-            const autoSearchName = localStorage.getItem('clinic_auto_search_name');
-            if (autoSearchName) {
-                setTimeout(() => {
-                    const searchBox = document.getElementById('searchName');
-                    if (searchBox) {
-                        searchBox.value = autoSearchName;
-                        searchPatient(); 
-                    }
-                    localStorage.removeItem('clinic_auto_search_name');
-                }, 800); 
-            }
+        function closeConfirmModal() {
+            document.getElementById('customConfirmModal').style.display = "none";
+            confirmActionCallback = null;
+        }
+
+        document.getElementById('confirmBtnYes').addEventListener('click', () => {
+            if(confirmActionCallback) confirmActionCallback();
+            closeConfirmModal();
         });
 
+        // ================== Core Logic & Renders ==================
+        function createNewPatient() {
+            currentPatient = {
+                name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
+                sessions: Array(12).fill({d: '', ws: '', n: ''}),
+                files: []
+            };
+            lastSavedStateString = ""; // تصفير الذاكرة لأن ده كرت جديد
+            renderPatientToDOM();
+            showToast("تم فتح استمارة جديدة", "info");
+        }
+
+        function renderPatientToDOM() {
+            const container = document.getElementById('cardsRenderContainer');
+            container.innerHTML = '';
+            
+            let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
+            while(currentPatient.sessions.length < totalNeeded) { currentPatient.sessions.push({d: '', ws: '', n: ''}); }
+            
+            let numCards = currentPatient.sessions.length / 12;
+
+            for(let c = 0; c < numCards; c++) {
+                container.innerHTML += buildCardHtml(c);
+            }
+
+            container.innerHTML += `
+                <div class="paper-sheet" style="margin-top:20px;">
+                    <h3 style="color: var(--primary-blue); border-bottom: 2px solid var(--primary-green); padding-bottom:10px;">التشخيص والملاحظات الطبية</h3>
+                    <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
+                    
+                    <div class="upload-section no-print">
+                        <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
+                        <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
+                        <button class="btn btn-new" style="margin: 0 auto;" onclick="document.getElementById('fileUploader').click()">اختيار ملف للرفع</button>
+                        <div class="file-list" id="filesListContainer"></div>
+                    </div>
+                </div>
+            `;
+
+            renderFilesList();
+            attachDoubleClickListener();
+        }
+
+        function buildCardHtml(cardIndex) {
+            let isFirst = cardIndex === 0;
+            let title = isFirst ? "" : `<h3 style="text-align:center; color:var(--primary-blue);">(متابعة الجلسات - كرت ${cardIndex + 1})</h3>`;
+            
+            let infoSection = isFirst ? `
+                <div class="row">
+                    <div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput()"></div>
+                    <div class="input-group"><label>العنوان:</label><input type="text" id="p_address" value="${escapeHtml(currentPatient.address)}" oninput="handleInput()"></div>
+                </div>
+                <div class="row">
+                    <div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput()"></div>
+                    <div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div>
+                </div>
+                <div class="input-group" style="width: 50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div>
+                <div class="input-group"><label>Referred By:</label><input type="text" id="p_referred" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div>
+                <div class="input-group"><label>Diagnosis:</label><input type="text" id="p_diagnosis" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div>
+                <div class="input-group-textarea">
+                    <label>Treatment Protocol:</label>
+                    <textarea id="p_protocol" rows="3" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea>
+                </div>
+            ` : `
+                <div class="row">
+                    <div class="input-group"><label>الاسم:</label><input type="text" value="${escapeHtml(currentPatient.name)}" readonly style="color:var(--text-muted)"></div>
+                    <div class="input-group"><label>الموبايل:</label><input type="text" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted)"></div>
+                </div>
+            `;
+
+            let tbodyHtml = '';
+            let startIdx = cardIndex * 12;
+            for(let i = 0; i < 12; i++) {
+                let sIdx = startIdx + i;
+                let session = currentPatient.sessions[sIdx] || {d:'', ws:'', n:''};
+                tbodyHtml += `
+                    <tr>
+                        <td style="font-weight:700; background:var(--table-idx-bg); color:var(--primary-blue);">${sIdx + 1}</td>
+                        <td><input type="text" id="d_${sIdx}" class="date-dblclick" value="${escapeHtml(session.d)}" oninput="handleInput()"></td>
+                        <td><input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" oninput="handleInput()"></td>
+                        <td><input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()"></td>
+                    </tr>
+                `;
+            }
+
+            return `
+            <div class="paper-sheet dynamic-card">
+                <div class="sheet-header">
+                    <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR" onerror="this.style.display='none'"></div>
+                    <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo" onerror="this.style.display='none'"></div>
+                </div>
+                <div class="sheet-body">
+                    <div class="info-section">
+                        ${title}
+                        ${infoSection}
+                    </div>
+                    <div class="table-section">
+                        <table>
+                            <thead><tr><th style="width:10%">#</th><th style="width:20%">D</th><th style="width:25%">W/S</th><th style="width:45%">N</th></tr></thead>
+                            <tbody>${tbodyHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function updateStateFromDOM() {
+            if(document.getElementById('p_name')) {
+                currentPatient.name = document.getElementById('p_name').value.trim();
+                currentPatient.phone = convertToEnglishNumbers(document.getElementById('p_phone').value.trim());
+                currentPatient.address = document.getElementById('p_address').value;
+                currentPatient.job = document.getElementById('p_job').value;
+                currentPatient.age = document.getElementById('p_age').value;
+                currentPatient.referred = document.getElementById('p_referred').value;
+                currentPatient.diagnosis = document.getElementById('p_diagnosis').value;
+                currentPatient.protocol = document.getElementById('p_protocol').value;
+            }
+            if(document.getElementById('p_medical_notes')) {
+                currentPatient.medical_notes = document.getElementById('p_medical_notes').value;
+            }
+
+            for(let i=0; i<currentPatient.sessions.length; i++) {
+                if(document.getElementById(`d_${i}`)) {
+                    currentPatient.sessions[i].d = document.getElementById(`d_${i}`).value;
+                    currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
+                    currentPatient.sessions[i].n = document.getElementById(`n_${i}`).value;
+                }
+            }
+        }
+
+        // ================== Auto-save & Intelligent Save Logic ==================
+        function setSaveStatus(status) {
+            const badge = document.getElementById('saveStatusBadge');
+            badge.className = `save-status-badge ${status}`;
+            if(status === 'saving') badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>';
+            else if(status === 'saved') badge.innerHTML = '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>';
+            else badge.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>';
+        }
+
+        function handleInput() {
+            setSaveStatus('unsaved');
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                forceSave(true); // true = حفظ صامت في الخلفية
+            }, 5000);
+        }
+
+        // دالة زر الحفظ اليدوي (تستخدم نفس الفورس سيف بس مش صامتة)
+        function saveData() {
+            forceSave(false);
+        }
+
+        async function forceSave(isSilent = false) {
+            updateStateFromDOM();
+            if(!currentPatient.name || !currentPatient.phone) {
+                if(!isSilent) showToast("الاسم ورقم الموبايل مطلوبان للحفظ", "error");
+                setSaveStatus('unsaved');
+                return;
+            }
+            
+            let currentStateStr = JSON.stringify(currentPatient);
+            
+            // 🚨 منع الحفظ المزدوج لو الداتا زي ما هي متغيرتش 🚨
+            if (currentStateStr === lastSavedStateString) {
+                if(!isSilent) showToast("الكرت ده محفوظ بالفعل ومفيش تعديلات جديدة!", "info");
+                return;
+            }
+
+            // 🚨 التنبيه الذكي عند محاولة حفظ كرت جديد لمريض مسجل بالفعل 🚨
+            if (!isSilent && lastSavedStateString === "") {
+                let cache = await localforage.getItem('patients_cache') || [];
+                let found = cache.find(p => (p.phone && p.phone === currentPatient.phone) || (p.name && normalizeArabicText(p.name) === normalizeArabicText(currentPatient.name)));
+                
+                if (found && found.name !== currentPatient.name) {
+                    showCustomConfirm(
+                        '<i class="fa-solid fa-copy"></i> كرت مكرر!',
+                        'المريض ده مسجل عندنا قبل كده بنفس الاسم أو الرقم! تحب نفتح الكرت بتاعه بدل ما نسجل واحد جديد يكرر الداتا؟',
+                        () => { loadPatientData(found); },
+                        'افتح كرت المريض',
+                        'var(--primary-blue)'
+                    );
+                    return; // إيقاف الحفظ
+                }
+            }
+
+            setSaveStatus('saving');
+            
+            // تنظيف الجلسات الفارغة من النهاية فقط
+            let cleanedSessions = [...currentPatient.sessions];
+            while(cleanedSessions.length > 0 && !cleanedSessions[cleanedSessions.length-1].d && !cleanedSessions[cleanedSessions.length-1].ws && !cleanedSessions[cleanedSessions.length-1].n) {
+                cleanedSessions.pop();
+            }
+
+            let payload = { ...currentPatient, sessions: cleanedSessions };
+
+            // تحديث IndexedDB
+            let cache = await localforage.getItem('patients_cache') || [];
+            let idx = cache.findIndex(p => p.phone === payload.phone);
+            if(idx > -1) cache[idx] = payload;
+            else cache.push(payload);
+            await localforage.setItem('patients_cache', cache);
+
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+                setSaveStatus('saved');
+                lastSavedStateString = currentStateStr; // تحديث ذاكرة السيف
+                if(!isSilent) showToast("تم الحفظ بنجاح", "success");
+            } catch (e) {
+                setSaveStatus('unsaved');
+                if(!isSilent) showToast("خطأ في الاتصال، تم الحفظ محلياً", "info");
+            }
+        }
+
+        // ================== Features ==================
+        function quickTodaySession() {
+            updateStateFromDOM();
+            let sessions = currentPatient.sessions;
+            let emptyIdx = sessions.findIndex(s => !s.d && !s.ws && !s.n);
+            
+            if (emptyIdx === -1) {
+                for(let i=0;i<12;i++) sessions.push({d:'', ws:'', n:''});
+                emptyIdx = sessions.length - 12;
+                renderPatientToDOM();
+            }
+
+            let today = new Date().toLocaleDateString('en-GB');
+            document.getElementById(`d_${emptyIdx}`).value = today;
+            document.getElementById(`ws_${emptyIdx}`).focus();
+            handleInput();
+        }
+
+        function attachDoubleClickListener() {
+            document.querySelectorAll('.date-dblclick').forEach(input => {
+                input.addEventListener('dblclick', function() {
+                    if(!this.value) {
+                        this.value = new Date().toLocaleDateString('en-GB');
+                        handleInput();
+                    }
+                });
+            });
+        }
+
+        function exportToPDF() {
+            if(!currentPatient.name) return showToast("يجب إدخال اسم المريض أولاً", "error");
+            showToast("جاري تجهيز الـ PDF...", "info");
+            
+            const element = document.getElementById('cardsRenderContainer');
+            const opt = {
+                margin:       5,
+                filename:     `استمارة_${currentPatient.name}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            
+            document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
+                showToast("تم تحميل الملف بنجاح", "success");
+            });
+        }
+
+        async function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if(!file || !currentPatient.phone) return showToast("يجب حفظ رقم الموبايل قبل الرفع", "error");
+            
+            showToast("جاري الرفع...", "info");
+            const storageRef = storage.ref(`patients_files/${currentPatient.phone}/${Date.now()}_${file.name}`);
+            
+            try {
+                const snapshot = await storageRef.put(file);
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                currentPatient.files.push({ url: downloadURL, name: file.name });
+                renderFilesList();
+                forceSave(true);
+                showToast("تم رفع الملف", "success");
+            } catch(err) {
+                showToast("فشل الرفع!", "error");
+            }
+        }
+
+        function renderFilesList() {
+            const container = document.getElementById('filesListContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            if(currentPatient.files) {
+                currentPatient.files.forEach((file, idx) => {
+                    let isImg = file.name.match(/\.(jpeg|jpg|gif|png)$/i);
+                    let iconHtml = isImg ? `<img src="${file.url}" onclick="window.open('${file.url}', '_blank')">` 
+                                         : `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#eee; cursor:pointer;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-2x" style="color:#e74c3c;"></i></div>`;
+                    container.innerHTML += `
+                        <div class="file-item no-print">
+                            ${iconHtml}
+                            <button class="del-btn" onclick="deleteFile(${idx})"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // ================== Deletions with Pop-ups ==================
+        function deleteFile(idx) {
+            showCustomConfirm(
+                '<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق',
+                'هل أنت متأكد من مسح هذا الملف؟',
+                () => {
+                    currentPatient.files.splice(idx, 1);
+                    renderFilesList();
+                    handleInput();
+                }
+            );
+        }
+
+        function deletePatient() {
+            let phone = currentPatient.phone;
+            let name = currentPatient.name;
+            if(!name) { showToast("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!", "error"); return; }
+
+            showCustomConfirm(
+                '<i class="fa-solid fa-trash"></i> تأكيد الحذف',
+                `هل أنت متأكد من مسح بيانات المريض (${name}) من قاعدة البيانات نهائياً؟`,
+                async () => {
+                    let cache = await localforage.getItem('patients_cache') || [];
+                    cache = cache.filter(p => !(p.phone === phone && p.name === name));
+                    await localforage.setItem('patients_cache', cache);
+                    
+                    showToast("تم الحذف بنجاح!", "success");
+                    createNewPatient();
+
+                    fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' })
+                    .catch(e => console.log("Cloud sync delayed"));
+                }
+            );
+        }
+
+        // ================== Search & Data Fetching ==================
         async function silentPreFetchAll() {
             try {
                 let res = await fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH");
                 let data = await res.json();
                 if(data.status === 'found') {
-                    allPatientsCache = data.data;
-                    localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
+                    await localforage.setItem('patients_cache', data.data);
                 }
-            } catch(e) { console.log("Silent fetch failed, will use cache."); }
+            } catch(e) {}
         }
-
-        function toggleTheme(e) {
-            if(e.checked) {
-                document.body.classList.add('dark-mode');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
-        function convertToEnglishNumbers(str) {
-            const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-            return str.split('').map(c => {
-                let idx = arabicNumbers.indexOf(c);
-                return idx !== -1 ? idx : c;
-            }).join('');
-        }
-
-        function normalizeArabicText(text) {
-            if (!text) return "";
-            return text.toString().replace(/[أإآء]/g, 'ا').replace(/ة/g, 'ه').replace(/[يىئ]/g, 'ي').replace(/[\u064B-\u065F]/g, '').trim().toLowerCase();
-        }
-
-        function syncAllCardsInfo() {
-            let baseName = document.getElementById('p_name').value;
-            let basePhone = document.getElementById('p_phone').value;
-            for(let i = 2; i <= totalCards; i++) {
-                if(document.getElementById(`p_name${i}`)) document.getElementById(`p_name${i}`).value = baseName;
-                if(document.getElementById(`p_phone${i}`)) document.getElementById(`p_phone${i}`).value = basePhone;
-            }
-        }
-        document.getElementById('p_name').addEventListener('input', syncAllCardsInfo);
-        document.getElementById('p_phone').addEventListener('input', syncAllCardsInfo);
-
-        function addCard() {
-            let prevCard = totalCards;
-            totalCards++;
-            
-            let startIdx = cardRowCounts[prevCard].current + 1;
-            let endIdx = startIdx + 11; 
-            
-            let cardHtml = `
-            <div class="paper-sheet dynamic-card" id="card_${totalCards}" style="margin-top: 20px;">
-                <div class="sheet-header">
-                    <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
-                    <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
-                </div>
-                <div class="sheet-body">
-                    <div class="info-section">
-                        <h3 style="color: var(--primary-blue); text-align: center; margin-top: 0; border-bottom: 2px dashed var(--border-dash); padding-bottom: 10px;">(متابعة الجلسات - كرت ${totalCards})</h3>
-                        <div class="row">
-                            <div class="input-group"><label>الاسم:</label><input type="text" id="p_name${totalCards}" readonly style="color: var(--text-muted);"></div>
-                            <div class="input-group"><label>الموبايل:</label><input type="text" id="p_phone${totalCards}" readonly style="color: var(--text-muted);"></div>
-                        </div>
-                    </div>
-                    <div class="table-section">
-                        <table>
-                            <thead>
-                                <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
-                            </thead>
-                            <tbody id="sessionsTable${totalCards}">
-                            </tbody>
-                        </table>
-                        <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(${totalCards})">+ إضافة جلسة</button>
-                    </div>
-                </div>
-            </div>
-            `;
-            
-            document.getElementById('dynamicCardsContainer').insertAdjacentHTML('beforeend', cardHtml);
-            initTableForCard(totalCards, startIdx, endIdx);
-            syncAllCardsInfo();
-            updateCardButtons();
-            
-            setTimeout(() => { 
-                let newCard = document.getElementById(`card_${totalCards}`);
-                window.scrollTo({ top: newCard.offsetTop - 20, behavior: 'smooth' }); 
-            }, 100);
-        }
-
-        function removeLastCard() {
-            if(totalCards <= 1) return;
-            if(confirm(`هل أنت متأكد من إزالة الكرت رقم ${totalCards} بكل محتوياته؟`)) {
-                document.getElementById(`card_${totalCards}`).remove();
-                delete cardRowCounts[totalCards];
-                totalCards--;
-                updateCardButtons();
-            }
-        }
-
-        function updateCardButtons() {
-            let addBtn = document.getElementById('addCardBtn');
-            let removeBtn = document.getElementById('removeCardBtn');
-            if(totalCards > 1) {
-                addBtn.innerHTML = `إضافة كرت (${totalCards + 1})`;
-                removeBtn.style.display = 'flex';
-                removeBtn.innerHTML = `إزالة كرت (${totalCards})`;
-            } else {
-                addBtn.innerHTML = `إضافة كرت إضافي`;
-                removeBtn.style.display = 'none';
-            }
-        }
-
-        function buildRowHtml(index, cardNum) {
-            let isExtraRow = index >= cardRowCounts[cardNum].start + 12;
-            let deleteBtn = isExtraRow ? `<span class="delete-row-btn no-print" onclick="deleteRow(this, ${cardNum})">×</span>` : '';
-            
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="font-weight: 700; background-color: var(--table-idx-bg); color: var(--primary-blue); border-left: none; position: relative;">
-                    <div class="row-container">
-                        <span class="row-index-text">${index}</span>
-                        ${deleteBtn}
-                    </div>
-                </td>
-                <td><input type="text" id="d_${index}"></td>
-                <td><input type="text" id="ws_${index}"></td>
-                <td><input type="text" id="n_${index}"></td>
-            `;
-            return tr;
-        }
-
-        function initTableForCard(cardNum, startIdx, currentCount) {
-            const tbody = document.getElementById(`sessionsTable${cardNum}`);
-            tbody.innerHTML = '';
-            cardRowCounts[cardNum] = { start: startIdx, current: currentCount };
-            for (let i = startIdx; i <= currentCount; i++) {
-                tbody.appendChild(buildRowHtml(i, cardNum));
-            }
-        }
-
-        function addNewRowToCard(cardNum) {
-            cardRowCounts[cardNum].current++;
-            let index = cardRowCounts[cardNum].current;
-            document.getElementById(`sessionsTable${cardNum}`).appendChild(buildRowHtml(index, cardNum));
-        }
-
-        function deleteRow(btnElement, cardNum) {
-            const tr = btnElement.closest('tr');
-            tr.remove();
-            cardRowCounts[cardNum].current--;
-            
-            const rows = document.getElementById(`sessionsTable${cardNum}`).querySelectorAll('tr');
-            const startIdx = cardRowCounts[cardNum].start;
-            
-            rows.forEach((row, idx) => {
-                const newIndex = startIdx + idx;
-                const indexTextSpan = row.querySelector('.row-index-text');
-                if (indexTextSpan) { indexTextSpan.innerText = newIndex; }
-
-                const tdElement = row.querySelector('td');
-                let deleteBtn = tdElement.querySelector('.delete-row-btn');
-                
-                if (newIndex >= startIdx + 12) {
-                    if (!deleteBtn) {
-                        let newBtn = document.createElement('span');
-                        newBtn.className = 'delete-row-btn no-print';
-                        newBtn.innerHTML = '×';
-                        newBtn.onclick = function() { deleteRow(this, cardNum); };
-                        tdElement.querySelector('.row-container').appendChild(newBtn);
-                    }
-                } else {
-                    if (deleteBtn) { deleteBtn.remove(); }
-                }
-                
-                const inputs = row.querySelectorAll('input');
-                if(inputs.length === 3) {
-                    inputs[0].id = `d_${newIndex}`;
-                    inputs[1].id = `ws_${newIndex}`;
-                    inputs[2].id = `n_${newIndex}`;
-                }
-            });
-        }
-
-        initTableForCard(1, 1, 12);
-
-        function toggleMedicalSheet() {
-            let sheet = document.getElementById('medicalSheetForm');
-            let btn = document.getElementById('medicalToggleBtn');
-            if(sheet.style.display === 'none' || sheet.style.display === '') {
-                sheet.style.display = 'flex';
-                btn.innerHTML = 'مسح الملف الطبي';
-                btn.style.backgroundColor = '#e74c3c'; 
-                setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
-            } else {
-                sheet.style.display = 'none';
-                document.getElementById('p_medical_notes').value = ''; 
-                btn.innerHTML = 'فتح الملف الطبي';
-                btn.style.backgroundColor = 'var(--primary-blue)'; 
-            }
-        }
-
-        // ================== بحث فائق السرعة (لحظي) ==================
-        document.getElementById('searchName').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') searchPatient();
-        });
 
         async function searchPatient() {
             let rawSearch = document.getElementById('searchName').value.trim();
-            if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل المريض للبحث!", "error");
+            if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل!", "error");
             
             let searchInput = convertToEnglishNumbers(rawSearch);
             let cleanSearchName = normalizeArabicText(searchInput);
             
-            let localResults = allPatientsCache.filter(p => {
+            let cache = await localforage.getItem('patients_cache') || [];
+            let localResults = cache.filter(p => {
                 let pName = normalizeArabicText(p.name);
                 let pPhone = p.phone ? p.phone : "";
                 return pName.includes(cleanSearchName) || pPhone.includes(searchInput);
             });
 
             if (localResults.length > 0) {
-                showToast("تم العثور على المريض لحظياً ⚡", "success");
+                showToast(`تم العثور على ${localResults.length} نتيجة بحث ⚡`, "success");
                 if (localResults.length === 1) {
                     loadPatientData(localResults[0]);
                 } else {
@@ -663,33 +632,26 @@
                 return; 
             }
 
-            let btn = document.getElementById('searchBtn');
+            let btn = document.querySelector('.btn-search');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري...';
 
             try {
                 let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput));
                 let text = await response.text();
-                
-                if(text.includes("<html")) {
-                    showToast("خطأ في اللينك! تأكد من تحديث رابط السكريبت.", "error");
-                    btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
-                    return;
-                }
-                
                 let res = JSON.parse(text);
                 
                 if(res.status === "found") {
-                    showToast("تم العثور على المريض بنجاح!", "success");
+                    showToast(`تم العثور على ${res.data.length} نتيجة بحث!`, "success");
                     
                     res.data.forEach(newP => {
-                        let existingIdx = allPatientsCache.findIndex(p => p.name === newP.name);
-                        if(existingIdx > -1) allPatientsCache[existingIdx] = newP;
-                        else allPatientsCache.push(newP);
+                        let idx = cache.findIndex(p => p.phone === newP.phone);
+                        if(idx > -1) cache[idx] = newP; else cache.push(newP);
                     });
-                    localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
+                    await localforage.setItem('patients_cache', cache);
                     
-                    if (res.data.length === 1) loadPatientData(res.data[0]);
-                    else {
+                    if (res.data.length === 1) {
+                        loadPatientData(res.data[0]);
+                    } else {
                         globalSearchResults = res.data;
                         renderMultiplePatientsList(res.data);
                     }
@@ -697,7 +659,7 @@
                     showToast("المريض غير موجود، يمكنك إدخال بياناته كملف جديد.", "error");
                 }
             } catch(e) {
-                showToast("تعذر الوصول لقاعدة البيانات. تأكد من الإنترنت.", "error");
+                showToast("تعذر الوصول لقاعدة البيانات.", "error");
             }
             btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
         }
@@ -708,10 +670,9 @@
                 listHtml += `
                     <div class="patient-option" onclick="selectPatient(${index})">
                         <div>
-                            <div class="patient-name">${patient.name}</div>
-                            <div class="patient-details">${patient.phone || "بدون رقم"}</div>
+                            <div class="patient-name">${escapeHtml(patient.name)}</div>
+                            <div class="patient-details">${escapeHtml(patient.phone) || "بدون رقم"}</div>
                         </div>
-                        <div class="select-badge">فتح الملف</div>
                     </div>
                 `;
             });
@@ -724,230 +685,22 @@
             closeModal();
         }
 
-        function closeModal() { document.getElementById('patientModal').style.display = "none"; }
-
         function loadPatientData(data) {
-            document.getElementById('p_name').value = data.name || "";
-            document.getElementById('p_address').value = data.address || "";
-            document.getElementById('p_phone').value = data.phone || "";
-            document.getElementById('p_job').value = data.job || "";
-            document.getElementById('p_age').value = data.age || "";
-            document.getElementById('p_referred').value = data.referred || "";
-            document.getElementById('p_diagnosis').value = data.diagnosis || "";
-            document.getElementById('p_protocol').value = data.protocol || "";
-            
-            let medicalNotes = data.medical_notes || "";
-            document.getElementById('p_medical_notes').value = medicalNotes;
-            let sheetM = document.getElementById('medicalSheetForm');
-            let btnM = document.getElementById('medicalToggleBtn');
-            if (medicalNotes.trim() !== "") {
-                sheetM.style.display = 'flex';
-                btnM.innerHTML = 'مسح الملف الطبي';
-                btnM.style.backgroundColor = '#e74c3c';
-            } else {
-                sheetM.style.display = 'none';
-                btnM.innerHTML = 'فتح الملف الطبي';
-                btnM.style.backgroundColor = 'var(--primary-blue)';
-            }
-
-            let sessions = data.sessions || [];
-            
-            document.getElementById('dynamicCardsContainer').innerHTML = '';
-            totalCards = 1;
-            cardRowCounts = {};
-            
-            let maxSessions = Math.max(12, sessions.length);
-            let neededCards = Math.ceil(maxSessions / 12);
-            
-            initTableForCard(1, 1, neededCards === 1 ? maxSessions : 12);
-
-            for (let c = 2; c <= neededCards; c++) {
-                totalCards++;
-                let startIdx = (c - 1) * 12 + 1;
-                let endIdx = (c === neededCards) ? Math.max(startIdx + 11, sessions.length) : c * 12;
-                
-                let cardHtml = `
-                <div class="paper-sheet dynamic-card" id="card_${totalCards}" style="margin-top: 20px;">
-                    <div class="sheet-header">
-                        <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR Code" onerror="this.style.display='none'"></div>
-                        <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo Dr Aya Khattab" onerror="this.style.display='none'"></div>
-                    </div>
-                    <div class="sheet-body">
-                        <div class="info-section">
-                            <h3 style="color: var(--primary-blue); text-align: center; margin-top: 0; border-bottom: 2px dashed var(--border-dash); padding-bottom: 10px;">(متابعة الجلسات - كرت ${totalCards})</h3>
-                            <div class="row">
-                                <div class="input-group"><label>الاسم:</label><input type="text" id="p_name${totalCards}" readonly style="color: var(--text-muted);"></div>
-                                <div class="input-group"><label>الموبايل:</label><input type="text" id="p_phone${totalCards}" readonly style="color: var(--text-muted);"></div>
-                            </div>
-                        </div>
-                        <div class="table-section">
-                            <table>
-                                <thead>
-                                    <tr><th style="width: 10%;">#</th><th style="width: 20%;">D</th><th style="width: 25%;">W/S</th><th style="width: 45%;">N</th></tr>
-                                </thead>
-                                <tbody id="sessionsTable${totalCards}"></tbody>
-                            </table>
-                            <button type="button" class="btn add-row-btn no-print" onclick="addNewRowToCard(${totalCards})">+ إضافة جلسة</button>
-                        </div>
-                    </div>
-                </div>
-                `;
-                document.getElementById('dynamicCardsContainer').insertAdjacentHTML('beforeend', cardHtml);
-                initTableForCard(totalCards, startIdx, endIdx);
-            }
-            
-            syncAllCardsInfo();
-            updateCardButtons();
-
-            for(let i = 1; i <= sessions.length; i++) {
-                let session = sessions[i-1];
-                let dInput = document.getElementById('d_'+i);
-                if(dInput) {
-                    dInput.value = session.d || "";
-                    document.getElementById('ws_'+i).value = session.ws || "";
-                    document.getElementById('n_'+i).value = session.n || "";
-                }
-            }
+            currentPatient = { ...currentPatient, ...data };
+            if(!currentPatient.sessions) currentPatient.sessions = [];
+            if(!currentPatient.files) currentPatient.files = [];
+            lastSavedStateString = JSON.stringify(currentPatient); // تحديث كاش الحفظ المزدوج
+            renderPatientToDOM();
+            setSaveStatus('saved');
         }
 
-        // ================== الحفظ اللحظي الذكي ==================
-        function saveData() {
-            let rawPhone = document.getElementById('p_phone').value;
-            let phone = convertToEnglishNumbers(rawPhone);
-            document.getElementById('p_phone').value = phone;
-            let name = document.getElementById('p_name').value.trim();
-            
-            if(!name || !phone) {
-                showToast("الاسم ورقم الموبايل إجباريين للحفظ!", "error");
-                return;
-            }
+        function closeModal() { document.getElementById('patientModal').style.display = "none"; }
+        function toggleTheme(e) { document.body.classList.toggle('dark-mode', e.checked); localStorage.setItem('theme', e.checked ? 'dark' : 'light'); }
+        function convertToEnglishNumbers(str) { const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return str.split('').map(c => ar.indexOf(c) !== -1 ? ar.indexOf(c) : c).join(''); }
+        function normalizeArabicText(text) { return text ? text.toString().replace(/[أإآء]/g, 'ا').replace(/ة/g, 'ه').replace(/[يىئ]/g, 'ي').replace(/[\u064B-\u065F]/g, '').trim().toLowerCase() : ""; }
+        function escapeHtml(text) { return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ""; }
 
-            let sessions = [];
-            for(let c = 1; c <= totalCards; c++) {
-                let start = cardRowCounts[c].start;
-                let end = cardRowCounts[c].current;
-                for(let i = start; i <= end; i++) {
-                    let dInput = document.getElementById('d_'+i);
-                    if(dInput) {
-                        sessions.push({
-                            d: dInput.value,
-                            ws: document.getElementById('ws_'+i).value,
-                            n: document.getElementById('n_'+i).value
-                        });
-                    }
-                }
-            }
-
-            let payload = {
-                name: name, address: document.getElementById('p_address').value,
-                phone: phone, job: document.getElementById('p_job').value,
-                age: document.getElementById('p_age').value,
-                referred: document.getElementById('p_referred').value,
-                diagnosis: document.getElementById('p_diagnosis').value,
-                protocol: document.getElementById('p_protocol').value,
-                medical_notes: document.getElementById('p_medical_notes').value, 
-                sessions: sessions
-            };
-
-            // حفظ في الذاكرة لتسميع الأرقام فوراً لصفحة اليومية
-            let existingIdx = allPatientsCache.findIndex(p => p.name === payload.name);
-            if(existingIdx > -1) allPatientsCache[existingIdx] = payload;
-            else allPatientsCache.push(payload);
-            
-            localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
-
-            showToast("تم الحفظ في ثانية ⚡.. تقدر تكمل شغلك", "success");
-
-            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
-            .catch(() => { showToast("حدث خطأ في المزامنة السحابية", "info"); });
-        }
-
-        function deletePatient() {
-            let phone = document.getElementById('p_phone').value;
-            let name = document.getElementById('p_name').value.trim();
-            if(!name) { showToast("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!", "error"); return; }
-
-            if(confirm(`هل أنت متأكد من مسح بيانات المريض من الشيت نهائياً؟`)) {
-                allPatientsCache = allPatientsCache.filter(p => p.name !== name);
-                localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
-                
-                showToast("تم الحذف بنجاح!", "success");
-                clearForm();
-
-                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' })
-                .catch(e => console.log("Cloud sync delayed"));
-            }
-        }
-
-        function clearForm() {
-            document.querySelectorAll('input:not(#searchName), textarea').forEach(el => el.value = '');
-            
-            document.getElementById('dynamicCardsContainer').innerHTML = '';
-            totalCards = 1;
-            cardRowCounts = {};
-            initTableForCard(1, 1, 12);
-            updateCardButtons();
-            
-            document.getElementById('medicalSheetForm').style.display = 'none'; 
-            let btnM = document.getElementById('medicalToggleBtn');
-            btnM.innerHTML = 'فتح الملف الطبي';
-            btnM.style.backgroundColor = 'var(--primary-blue)';
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                let active = document.activeElement;
-                if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) return;
-                
-                if (active.tagName === 'TEXTAREA') {
-                    if (e.key === 'ArrowDown' && active.selectionEnd === active.value.length) {} 
-                    else if (e.key === 'ArrowUp' && active.selectionStart === 0) {} 
-                    else { return; }
-                }
-
-                let id = active.id;
-                let nextId = null;
-
-                if (e.key === 'ArrowDown') {
-                    if (id === 'p_name') nextId = 'p_phone';
-                    else if (id === 'p_address') nextId = 'p_job';
-                    else if (id === 'p_phone' || id === 'p_job') nextId = 'p_age';
-                    else if (id === 'p_age') nextId = 'p_referred';
-                    else if (id === 'p_referred') nextId = 'p_diagnosis';
-                    else if (id === 'p_diagnosis') nextId = 'p_protocol';
-                    else if (id === 'p_protocol') nextId = 'd_1';
-                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
-                        let parts = id.split('_');
-                        let nextIdx = parseInt(parts[1]) + 1;
-                        nextId = parts[0] + '_' + nextIdx;
-                    }
-                } else if (e.key === 'ArrowUp') {
-                    if (id === 'p_phone') nextId = 'p_name';
-                    else if (id === 'p_job') nextId = 'p_address';
-                    else if (id === 'p_age') nextId = 'p_phone'; 
-                    else if (id === 'p_referred') nextId = 'p_age';
-                    else if (id === 'p_diagnosis') nextId = 'p_referred';
-                    else if (id === 'p_protocol') nextId = 'p_diagnosis';
-                    else if (id.match(/^(d|ws|n)_(\d+)$/)) {
-                        let parts = id.split('_');
-                        let prevIdx = parseInt(parts[1]) - 1;
-                        if (prevIdx >= 1) nextId = parts[0] + '_' + prevIdx;
-                        else nextId = 'p_protocol';
-                    }
-                }
-
-                if (nextId) {
-                    let nextEl = document.getElementById(nextId);
-                    if (nextEl) {
-                        e.preventDefault(); 
-                        nextEl.focus(); 
-                    }
-                }
-            }
-        });
     </script> 
-
-    <!-- استدعاء الشات في صفحة الكروت -->
     <script src="chat-widget.js"></script>
 </body>
 </html>
