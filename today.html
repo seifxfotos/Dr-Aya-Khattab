@@ -137,7 +137,6 @@
         .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 98%; max-width: 1100px; z-index: 100; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; transform: translateX(-50%) translateY(150px); opacity: 0; }
         .revenue-wrapper.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
         
-        /* 🚨 تم تعديل تصميم بوكسات الحسابات ليظهر بشكل أوضح 🚨 */
         .revenue-box { background: var(--card-bg); color: var(--text-dark); padding: 8px 12px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; justify-content: center; pointer-events: auto; transition: 0.3s; }
         .clinic-box { border: 2px solid var(--primary-blue); }
         .meds-box { border: 2px solid var(--primary-green); }
@@ -251,7 +250,6 @@
             </div>
             <div class="revenue-box meds-box">
                 <div style="display: flex; gap: 15px;">
-                    <!-- 🚨 تم إصلاح وتوضيح اسم "كاش أدوية" 🚨 -->
                     <div class="revenue-item" title="مبيعات الأدوية كاش"><i class="fa-solid fa-money-bill-wave"></i> كاش أدوية: <span id="medsCashLabel">0</span></div>
                     <div class="revenue-item" title="مبيعات الأدوية إلكتروني"><i class="fa-solid fa-mobile-screen"></i> إلكتروني: <span id="medsElecLabel">0</span></div>
                 </div>
@@ -598,7 +596,6 @@
         window.patientDebts = {};
         window.patientPhones = {}; 
         
-        // 🚨 تعديل تنبيه الديون ليصبح واضحاً (من آخر زيارة) 🚨
         document.getElementById('patientName').addEventListener('input', function(e) {
             let name = this.value.trim();
             let normName = normalizeArabicName(name);
@@ -1168,8 +1165,6 @@
             scheduleSync();
         }
         function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
-
-        window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); initDay(); };
     </script> 
 </body>
 </html>
