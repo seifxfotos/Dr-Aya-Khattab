@@ -403,7 +403,6 @@
             </div>
         </div>
 
-        <!-- نافذة إدخال رقم الواتساب مرة واحدة -->
         <div id="whatsappModal" class="modal-overlay">
             <div class="modal-box">
                 <h3 style="color: #27ae60; margin-bottom: 10px;"><i class="fa-brands fa-whatsapp"></i> إرسال رسالة واتساب</h3>
@@ -1056,13 +1055,14 @@
             }
         });
 
+        // 🚨 رسالة الواتساب المحدثة بصيغة التأكيد 🚨
         function processAndOpenWhatsApp(phone, patientName, targetNorm) {
             phone = phone.replace(/\D/g,'');
             if (phone.length === 10) phone = '20' + phone; 
             else if (phone.startsWith('01')) phone = '2' + phone.substring(1); 
             else if (!phone.startsWith('20')) phone = '20' + phone;
 
-            let msg = encodeURIComponent(`مرحباً ${patientName}، تذكير بموعدك غداً في عيادة د. آية خطاب. للتأكيد أو الإلغاء يرجى الرد على هذه الرسالة. نتمنى لك دوام الصحة.`);
+            let msg = encodeURIComponent(`مرحباً ${patientName}، بنأكد معاك معادك بكرا في عيادة د. آية خطاب. للتأكيد أو الإلغاء يرجى الرد على هذه الرسالة.`);
             window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
         }
 
