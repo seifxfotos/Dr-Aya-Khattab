@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة العيادة - د. آية خطاب</title>
-    
-    <!-- خطوط وأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -13,7 +11,7 @@
     <!-- مكاتب Firebase للـ Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
-
+    
     <style>
         :root {
             --primary-blue: #0093D0; --primary-green: #8CC63F; --dept-nutrition: #e67e22; 
@@ -27,7 +25,7 @@
             --border: #333333; --input-bg: #2c2c2c; --primary-blue: #0082b8; --primary-green: #7bb530;
         }
 
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 20px 20px 100px 20px; transition: 0.3s; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; }
         .container { max-width: 1250px; margin: 0 auto; }
 
         .sync-indicator { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background-color: var(--primary-blue); color: white; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: 0.3s; }
@@ -122,11 +120,11 @@
         .time-ended { color: var(--danger) !important; animation: blink 1s infinite; font-size: 15px !important; font-family: 'Cairo' !important; }
         @keyframes blink { 50% { opacity: 0.3; } }
         
-        /* زر إظهار/إخفاء شريط الحسابات المرفوع */
-        .revenue-toggle-btn { position: fixed; bottom: 20px; right: 95px; background: #27ae60; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; z-index: 1001; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; border: none; }
+        /* 🚨 تعديلات زر إظهار الشريط (مرفوع عن الدارك مود وموجود للشمال شوية) 🚨 */
+        .revenue-toggle-btn { position: fixed; bottom: 85px; right: 20px; background: #27ae60; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; z-index: 1001; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; border: none; }
         .revenue-toggle-btn:hover { transform: scale(1.1); background: #2ecc71; }
         
-        /* شريط الحسابات الأساسي - المنتصف بالأسفل */
+        /* 🚨 إرجاع الشريط لشكله الأساسي العريض في منتصف الشاشة 🚨 */
         .revenue-wrapper { position: fixed; bottom: 20px; left: 50%; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 98%; max-width: 1100px; z-index: 100; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; transform: translateX(-50%) translateY(150px); opacity: 0; }
         .revenue-wrapper.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
         
@@ -152,7 +150,7 @@
             .revenue-item i { font-size: 14px; }
             .floating-timer { bottom: 75px; left: 15px; transform: scale(0.9); transform-origin: left bottom; }
             .theme-switch-wrapper { bottom: 20px; right: 15px; transform: scale(0.9); transform-origin: right bottom; }
-            .revenue-toggle-btn { bottom: 20px; right: 85px; width: 45px; height: 45px; font-size: 18px; }
+            .revenue-toggle-btn { bottom: 75px; right: 15px; width: 45px; height: 45px; font-size: 18px; }
             body { padding-bottom: 130px; } 
             .add-patient-grid { gap: 5px; }
         }
@@ -167,7 +165,7 @@
             .revenue-total { border-right: none; border-top: 1px dashed var(--border); padding-top: 5px; padding-right: 0; margin-top: 5px; width: 100%; text-align: center; justify-content: center;}
             .floating-timer { bottom: 15px; left: 15px; transform: scale(0.85); }
             .theme-switch-wrapper { bottom: 15px; right: 15px; transform: scale(0.85); }
-            .revenue-toggle-btn { bottom: 15px; right: 85px; }
+            .revenue-toggle-btn { bottom: 65px; right: 15px; }
             body { padding-bottom: 80px; }
         }
 
@@ -402,6 +400,7 @@
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
+        // تحديث جدول clinic.html في جوجل شيت وقاعدة البيانات
         function pushClinicQueueList(dateStr, list) {
             if (!clinicQueueDB) return;
             clinicQueueDB.ref(`daily_queues/${dateStr}`).set(list);
@@ -823,4 +822,151 @@
                 tbody.innerHTML += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
                     <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
-                    <td style="color:var(--primary-green); font-weight:900; font-size: 16px
+                    <td style="color:var(--primary-green); font-weight:900; font-size: 16px;">${totalPaid}</td>
+                    <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
+                    <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
+                </tr>`;
+            }
+            
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function renderUI() {
+            updateStatsCounters();
+            document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${g.name}</td><td><span class="badge badge-glp">${g.dose}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+            let medsHtml = ''; let expsHtml = '';
+            financialsQueue.forEach((f, i) => {
+                if (f.type === 'دواء') medsHtml += `<tr><td>${f.desc}</td><td>${f.method}</td><td style="font-weight:bold; color:var(--primary-green)">+${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                else if (f.type === 'مصروف') expsHtml += `<tr><td>${f.desc}</td><td style="font-weight:bold; color:var(--danger)">-${f.amount}</td><td><button onclick="removeFin(${i})" style="color:var(--danger);background:none;border:none;cursor:pointer"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+            });
+            document.getElementById('medTableBody').innerHTML = medsHtml; document.getElementById('expTableBody').innerHTML = expsHtml;
+
+            const cont = document.getElementById('tablesContainer'); cont.innerHTML = ''; let validSlots = getSlotsForDay();
+
+            validSlots.forEach(slot => {
+                let sPats = patientsQueue.filter(p => p.slot === slot);
+                let html = `<div class="slot-title">${slot}</div><div class="table-responsive"><table class="schedule-table" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${slot}')"><thead><tr><th>#</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>متبقي لي</th><th>الطبيب | حضور</th><th>إجراءات</th></tr></thead><tbody>`;
+                if (sPats.length===0) html += `<tr><td colspan="9" style="text-align:center; opacity:0.5; padding:20px;">اسحب المرضى هنا</td></tr>`;
+                let sCount = 0;
+                sPats.forEach((p) => {
+                    let gIdx = patientsQueue.indexOf(p);
+                    html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
+                        <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
+                        <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
+                            <div style="display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="showHistoryModal('${p.name}')" title="السجل المالي"></i>
+                                <span onclick="handleNameInteraction(event, ${gIdx}, '${p.name}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${p.name}')">${p.name}</span>
+                            </div>
+                        </td>
+                        <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)"><option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option><option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option></select><select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)"><option ${p.type==='كشف'?'selected':''}>كشف</option><option ${p.type==='متابعة'?'selected':''}>متابعة</option><option ${p.type==='جلسة'?'selected':''}>جلسة</option><option ${p.type==='مقدم'?'selected':''}>مقدم</option></select></div></td>
+                        <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select></div></td>
+                        <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
+                        <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
+                        <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <input type="text" class="inline-amount-input" style="width: 50px; text-align: center;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)" title="الطبيب">
+                                <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
+                            </div>
+                        </td>
+                        <td><div class="action-btns"><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`; cont.innerHTML += html;
+            });
+
+            let depositPats = patientsQueue.filter(p => !validSlots.includes(p.slot));
+            if(depositPats.length > 0) {
+                let dHtml = `<div class="slot-title deposit-title">حجوزات المقدم (بدون موعد اليوم)</div><div class="table-responsive"><table class="schedule-table" style="opacity: 0.9;" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'عام')"><thead><tr><th>-</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>متبقي لي</th><th>الطبيب | حضور</th><th>إجراءات</th></tr></thead><tbody>`;
+                depositPats.forEach((p) => {
+                    let gIdx = patientsQueue.indexOf(p);
+                    dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
+                        <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
+                        <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
+                            <div style="display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="showHistoryModal('${p.name}')" title="السجل المالي"></i>
+                                <span onclick="handleNameInteraction(event, ${gIdx}, '${p.name}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${p.name}')">${p.name}</span>
+                            </div>
+                        </td>
+                        <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)"><option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option><option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option></select><select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)"><option ${p.type==='كشف'?'selected':''}>كشف</option><option ${p.type==='متابعة'?'selected':''}>متابعة</option><option ${p.type==='جلسة'?'selected':''}>جلسة</option><option ${p.type==='مقدم'?'selected':''}>مقدم</option></select></div></td>
+                        <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select></div></td>
+                        <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
+                        <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
+                        <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <input type="text" class="inline-amount-input" style="width: 50px; text-align: center;" value="${p.doctor||''}" placeholder="" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)" title="الطبيب">
+                                <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
+                            </div>
+                        </td>
+                        <td><div class="action-btns"><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
+                    </tr>`;
+                });
+                dHtml += `</tbody></table></div>`; cont.innerHTML += dHtml;
+            }
+            calculateTotals();
+        }
+
+        function showModal(opts) { const modal = document.getElementById('customModal'); document.getElementById('modalTitle').innerHTML = opts.title; document.getElementById('modalMessage').innerHTML = opts.message; let elementsToHide = ['modalInputContainer','modalSlotInput','modalPaymentInput','modalPaymentMethodInput','modalAmountInput','modalCancelBtn']; elementsToHide.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; }); if (opts.type === 'prompt') { document.getElementById('modalInputContainer').style.display = 'flex'; if(modalDatePicker) modalDatePicker.setDate(opts.inputValue || ''); if (opts.showSlot) { document.getElementById('modalSlotInput').style.display = 'block'; updateModalSlotDropdown(opts.inputValue); if(opts.defaultSlot) document.getElementById('modalSlotInput').value = opts.defaultSlot; } if (opts.showPayment) { document.getElementById('modalPaymentInput').style.display = 'block'; document.getElementById('modalPaymentMethodInput').style.display = 'block'; document.getElementById('modalAmountInput').style.display = 'block'; document.getElementById('modalPaymentInput').value = 'تم الدفع'; document.getElementById('modalPaymentMethodInput').value = 'كاش'; document.getElementById('modalAmountInput').value = ''; document.getElementById('modalPaymentInput').style.borderColor = 'var(--border)'; } document.getElementById('modalCancelBtn').style.display = 'inline-block'; } modal.style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { if (opts.type === 'prompt' && opts.showPayment && !document.getElementById('modalPaymentInput').value) { document.getElementById('modalPaymentInput').style.borderColor = 'var(--danger)'; return; } modal.style.display = 'none'; if (opts.type === 'prompt' && opts.onConfirm) { opts.onConfirm(document.getElementById('modalDateInput').value, document.getElementById('modalPaymentInput').value, document.getElementById('modalSlotInput').value, document.getElementById('modalAmountInput').value, document.getElementById('modalPaymentMethodInput').value); } }; document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none'; }
+        
+        function bookFutureAppt(idx, visitType) { 
+            let patient = patientsQueue[idx]; 
+            showModal({ type: 'prompt', title: `حجز ${visitType}`, message: `تحديد ${visitType} لـ: <strong>${patient.name}</strong>`, inputValue: getNextWeekDate(), showPayment: true, showSlot: true, defaultSlot: patient.slot, onConfirm: async (cDate, cPay, cSlot, cAmt, cMethod) => { 
+                if(cDate) { 
+                    showSyncStatus('جاري تسجيل الموعد...'); 
+                    try { 
+                        let fSlot = cSlot || getSlotsForSpecificDate(cDate)[0]; 
+                        let amtVal = parseFloat(cAmt); 
+                        if (!isNaN(amtVal) && amtVal > 0) { 
+                            patientsQueue.push({ slot: 'عام', name: patient.name + ` (مقدم ${visitType})`, dept: patient.dept, type: 'مقدم', payment: 'تم الدفع', method: cMethod, amount: amtVal, debt: '', credit: '', doctor: '', attended: false, finished: false }); 
+                            sortPatientsArray(); renderUI(); scheduleSync(); 
+                            cPay = "مدفوع مسبقاً"; cAmt = ""; 
+                        } 
+                        
+                        let newPatient = { slot: fSlot, name: patient.name, dept: patient.dept, type: visitType, payment: cPay, method: cMethod, amount: cAmt, debt: '', credit: '', doctor: '', attended: false, finished: false };
+                        
+                        if(db) { 
+                            db.ref('clinic_days/' + cDate).once('value').then(snap => { 
+                                let dayData = snap.val() || { schedule: [], glp: [], financials: [] }; 
+                                let sched = Array.isArray(dayData.schedule) ? dayData.schedule : (dayData.schedule ? Object.values(dayData.schedule) : []);
+                                sched.push(newPatient);
+                                dayData.schedule = sched; 
+                                dayData.timestamp = firebase.database.ServerValue.TIMESTAMP; 
+                                db.ref('clinic_days/' + cDate).set(dayData); 
+                            }); 
+                        }
+                        
+                        localStorage.removeItem('clinic_cache_' + cDate);
+                        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'BOOK_FUTURE', futureDate: cDate, name: patient.name, dept: patient.dept, payment: cPay, slot: fSlot, visitType: visitType, amount: cAmt, method: cMethod }) }); 
+                        
+                        showModal({ type: 'success', title: 'تم الحجز!', message: `تم حجز الـ ${visitType} بنجاح ليوم ${cDate}.` }); 
+                    } catch (e) { showModal({ type: 'error', title: 'خطأ', message: 'فشل الحجز!' }); } 
+                    hideSyncStatus(); 
+                } 
+            } }); 
+        }
+
+        let timerInterval; function updateTimerDisplay(secondsLeft) { let m = Math.floor(secondsLeft / 60); let s = secondsLeft % 60; let display = document.getElementById('globalTimerDisplay'); if (secondsLeft > 0) { display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`; display.classList.remove('time-ended'); } else { display.innerText = 'انتهى الوقت'; display.classList.add('time-ended'); } } function checkAndStartTimer() { let endTime = localStorage.getItem('clinicTimerEnd'); if (endTime && endTime > Date.now()) { document.getElementById('btnTimerPlay').innerText = 'إيقاف'; document.getElementById('btnTimerPlay').style.background = 'var(--warning)'; timerInterval = setInterval(() => { let left = Math.floor((localStorage.getItem('clinicTimerEnd') - Date.now()) / 1000); if (left <= 0) { clearInterval(timerInterval); updateTimerDisplay(0); document.getElementById('btnTimerPlay').style.display = 'none'; playTimerEndSound(); localStorage.removeItem('clinicTimerEnd'); } else { updateTimerDisplay(left); } }, 1000); } else { let mins = document.getElementById('timerDuration').value; updateTimerDisplay(mins * 60); } } function toggleTimer() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} let btn = document.getElementById('btnTimerPlay'); if (localStorage.getItem('clinicTimerEnd')) { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); btn.innerText = 'تشغيل'; btn.style.background = 'var(--primary-blue)'; } else { let mins = document.getElementById('timerDuration').value; localStorage.setItem('clinicTimerEnd', Date.now() + (mins * 60 * 1000)); checkAndStartTimer(); } } function resetTimer() { clearInterval(timerInterval); localStorage.removeItem('clinicTimerEnd'); document.getElementById('btnTimerPlay').style.display = 'block'; document.getElementById('btnTimerPlay').innerText = 'تشغيل'; document.getElementById('btnTimerPlay').style.background = 'var(--primary-blue)'; updateTimerDisplay(document.getElementById('timerDuration').value * 60); } function setTimer() { if(!localStorage.getItem('clinicTimerEnd')) resetTimer(); } function playTimerEndSound() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let playTone = (freq, time, duration) => { let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.3, audioCtx.currentTime + time); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + time + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(audioCtx.currentTime + time); osc.stop(audioCtx.currentTime + time + duration); }; playTone(523.25, 0, 0.5); playTone(659.25, 0.2, 0.6); } catch (e) {} }
+        function getNextWeekDate() { let nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); const year = nextWeek.getFullYear(); const month = String(nextWeek.getMonth() + 1).padStart(2, '0'); const day = String(nextWeek.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; } function getSlotsForDay() { const d = new Date(document.getElementById('todayDate').value).getDay(); if (d === 6) return ['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; return ['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function getSlotsForSpecificDate(ds) { if(!ds) return null; const d = new Date(ds).getDay(); return (d===6)?['1م - 2م', '2م - 3م', '3م - 4م', '4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']:['4م - 5م', '5م - 6م', '6م - 7م', '7م - 8م', '8م - 9م', '9م - 10م']; } function updateModalSlotDropdown(dateStr) { const slotSelect = document.getElementById('modalSlotInput'); if(!slotSelect) return; slotSelect.innerHTML = '<option value="">تلقائي (أول فترة متاحة)</option>'; const slots = getSlotsForSpecificDate(dateStr); if (slots) { slots.forEach(slot => { let opt = document.createElement('option'); opt.value = slot; opt.innerText = slot; slotSelect.appendChild(opt); }); } } function updateManualSlotDropdown() { const s = document.getElementById('manualSlot'); if(!s) return; s.innerHTML = '<option value="">تلقائي</option>'; getSlotsForDay().forEach(x => { let opt = document.createElement('option'); opt.value = x; opt.innerText = x; s.appendChild(opt); }); }
+        function initDatePickers() { headerDatePicker = flatpickr("#todayDate", { locale: "ar", defaultDate: "today", dateFormat: "Y-m-d", onChange: () => { updateManualSlotDropdown(); initDay(); } }); modalDatePicker = flatpickr("#modalDateInput", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true", onChange: (d, s) => { updateModalSlotDropdown(s); } }); }
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]'); if (localStorage.getItem('theme') === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); toggleSwitch.checked = true; } toggleSwitch.addEventListener('change', (e) => { document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light'); localStorage.setItem('theme', e.target.checked ? 'dark' : 'light'); }); function smartSelectDepartment() { const d = new Date().getDay(); const sel = document.getElementById('department'); if (d === 1 || d === 3) sel.value = "علاج طبيعي"; else if (d === 2) sel.value = "تغذية علاجية"; }
+        function handleDragStart(e, idx) { draggedItemIndex = idx; e.dataTransfer.setData('text/plain', idx); } function handleDragOver(e) { e.preventDefault(); } 
+        function handleDrop(e, tSlot) {
+            e.preventDefault();
+            let idx = e.dataTransfer.getData('text/plain');
+            if(!idx) return;
+            let p = patientsQueue[idx];
+            p.slot = tSlot;
+            if (p.type === 'مقدم' && tSlot !== 'عام') { p.type = 'كشف'; }
+            patientsQueue.splice(idx, 1);
+            patientsQueue.push(p);
+            sortPatientsArray();
+            renderUI();
+            scheduleSync();
+        }
+        function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
+
+        window.onload = () => { initDatePickers(); smartSelectDepartment(); checkAndStartTimer(); updateManualSlotDropdown(); initDay(); };
+    </script> 
+</body>
+</html>
