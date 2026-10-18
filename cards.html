@@ -56,6 +56,7 @@
         .btn-new { background-color: var(--primary-green); }
         .btn-new:hover { filter: brightness(0.9); }
         .btn-delete { background-color: #e74c3c; } 
+        .btn-delete:hover { filter: brightness(0.8); }
         .btn-pdf { background-color: #9b59b6; }
         .btn-print { background-color: #e67e22; }
         .btn-save { background-color: #27ae60; color: white;} 
@@ -134,7 +135,6 @@
             .dynamic-card:not(:first-child) { page-break-before: always !important; }
             .medical-sheet { page-break-before: always !important; margin-top: 20px !important; }
             
-            /* 🚨 إخفاء الملف الطبي تماماً إذا كان فارغاً أثناء الطباعة 🚨 */
             .empty-notes { display: none !important; }
         }
 
@@ -152,7 +152,6 @@
         .force-light-mode .medical-sheet { page-break-before: always !important; margin-top: 30px !important; }
         .force-light-mode .medical-notes { background-image: repeating-linear-gradient(transparent, transparent 39px, #eee 40px) !important; color: #000000 !important;}
         
-        /* 🚨 إخفاء الملف الطبي تماماً إذا كان فارغاً أثناء استخراج PDF 🚨 */
         .force-light-mode .empty-notes { display: none !important; }
     </style>
 </head>
@@ -200,7 +199,6 @@
         <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
         <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
-        <!-- 🚨 زر الطباعة المفقود تم إرجاعه 🚨 -->
         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
         <button class="btn btn-save" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
         <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف</button>
@@ -234,7 +232,7 @@
         let lastSavedStateString = "";
         let saveTimeout = null;
         let confirmActionCallback = null;
-        let showMedicalSheetFlag = false; // 🚨 للتحكم في ظهور التشخيص الطبي 🚨
+        let showMedicalSheetFlag = false; 
 
         localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
 
@@ -303,7 +301,7 @@
                 files: []
             };
             lastSavedStateString = ""; 
-            showMedicalSheetFlag = false; // إعادة تعيين إظهار الملف الطبي
+            showMedicalSheetFlag = false; 
             renderPatientToDOM();
             showToast("تم فتح استمارة جديدة", "info");
         }
@@ -328,29 +326,34 @@
                 container.innerHTML += buildCardHtml(c);
             }
 
-            // 🚨 بناء وتحديد حالة التشخيص الطبي بناءً على كونه فارغاً أو لا 🚨
             let hasNotes = currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '';
             
             if (hasNotes || showMedicalSheetFlag) {
-                // الكلاس empty-notes سيخفيه تماماً أثناء الـ Print / PDF
                 let emptyClass = (!currentPatient.medical_notes || currentPatient.medical_notes.trim() === '') ? 'empty-notes' : '';
                 container.innerHTML += `
                     <div class="paper-sheet medical-sheet ${emptyClass}" id="medicalSheetWrapper" style="margin-top:20px;">
-                        <h3 style="color: var(--primary-blue); border-bottom: 2px solid var(--primary-green); padding-bottom:10px;">التشخيص والملاحظات الطبية</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-green); padding-bottom:10px; margin-bottom: 10px;">
+                            <h3 style="color: var(--primary-blue); margin:0;">التشخيص والملاحظات الطبية</h3>
+                            <button class="btn btn-delete no-print" style="padding: 5px 10px; font-size: 13px;" onclick="removeMedicalSheet()"><i class="fa-solid fa-xmark"></i> إزالة الملف</button>
+                        </div>
                         <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
                     </div>
                 `;
             }
 
-            // 🚨 حاوية الأزرار المجمعة المتمركزة في المنتصف 🚨
+            // 🚨 أزرار إضافة وإزالة الكروت الإضافية 🚨
+            let extraCardBtns = `<button class="btn btn-new" style="background: #27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>`;
+            if (currentPatient.sessions.length > 12) {
+                extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
+            }
+
             container.innerHTML += `
                 <div class="no-print" style="max-width: 1100px; margin: 20px auto; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-new" style="background: #27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>
+                    ${extraCardBtns}
                     ${!(hasNotes || showMedicalSheetFlag) ? `<button class="btn btn-medical" style="background: var(--primary-blue);" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>` : ''}
                 </div>
             `;
 
-            // المرفقات
             container.innerHTML += `
                 <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
                     <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
@@ -376,6 +379,31 @@
             }, 100);
         };
 
+        // 🚨 دالة إزالة الكرت الأخير مع التحذير 🚨
+        window.removeExtraCard = function() {
+            updateStateFromDOM();
+            if (currentPatient.sessions.length <= 12) return;
+            
+            let last12 = currentPatient.sessions.slice(-12);
+            let hasData = last12.some(s => s.d || s.ws || s.n);
+            
+            if (hasData) {
+                showCustomConfirm(
+                    '<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير',
+                    'الكرت الأخير جواه بيانات جلسات متسجلة، متأكد إنك عايز تمسحه؟',
+                    () => {
+                        currentPatient.sessions.splice(-12);
+                        renderPatientToDOM();
+                        handleInput();
+                    }
+                );
+            } else {
+                currentPatient.sessions.splice(-12);
+                renderPatientToDOM();
+                handleInput();
+            }
+        };
+
         window.addMedicalSheet = function() {
             showMedicalSheetFlag = true; 
             renderPatientToDOM();
@@ -386,6 +414,28 @@
                     window.scrollTo({ top: notesEl.offsetTop - 50, behavior: 'smooth' });
                 }
             }, 100);
+        };
+
+        // 🚨 دالة إزالة الملف الطبي مع التحذير 🚨
+        window.removeMedicalSheet = function() {
+            updateStateFromDOM();
+            if (currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '') {
+                showCustomConfirm(
+                    '<i class="fa-solid fa-triangle-exclamation"></i> مسح الملف الطبي',
+                    'الملف الطبي جواه كلام مكتوب، متأكد إنك عايز تمسحه وتلغيه خالص؟',
+                    () => {
+                        currentPatient.medical_notes = '';
+                        showMedicalSheetFlag = false;
+                        renderPatientToDOM();
+                        handleInput();
+                    }
+                );
+            } else {
+                currentPatient.medical_notes = '';
+                showMedicalSheetFlag = false;
+                renderPatientToDOM();
+                handleInput();
+            }
         };
 
         window.setSpecificDate = function(idx) {
@@ -504,7 +554,6 @@
         function handleInput() {
             setSaveStatus('unsaved');
             
-            // 🚨 تحديث كلاس الإخفاء ديناميكياً لملف التشخيص 🚨
             const notesEl = document.getElementById('p_medical_notes');
             const wrapper = document.getElementById('medicalSheetWrapper');
             if(notesEl && wrapper) {
