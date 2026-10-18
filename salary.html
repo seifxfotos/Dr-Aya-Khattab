@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة الرواتب والحسابات - د. آية خطاب</title>
     
-    <!-- خطوط وأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- مكاتب Firebase للـ Realtime Database -->
+    <!-- مكاتب Firebase (تم إضافة مكتبة الحوث للحماية) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
@@ -25,14 +25,24 @@
             --border: #333333; --input-bg: #2c2c2c; --primary-blue: #0082b8; --primary-green: #7bb530;
         }
 
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 20px; transition: 0.3s; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 20px; transition: 0.3s; overflow: hidden; }
         .container { max-width: 1000px; margin: 0 auto; }
+
+        /* شاشة تسجيل الدخول المخصصة للدكتورة فقط */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); display: flex; justify-content: center; align-items: center; z-index: 999999; }
+        .login-box { background: var(--card-bg); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 350px; text-align: center; }
+        .login-box h2 { margin-top: 0; color: var(--primary-blue); font-weight: 800; margin-bottom: 25px; font-size: 20px;}
+        .login-box label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; text-align: right; color: var(--text-dark); }
+        .login-box input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; outline: none; background: var(--input-bg); color: var(--text-dark); transition: 0.3s; margin-bottom: 20px;}
+        .login-box input:focus { border-color: var(--primary-blue); }
+        .btn-login { background: var(--primary-blue); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-family: 'Cairo'; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .btn-login:hover { background: #007bb5; }
+        .login-error { color: var(--danger); font-size: 13px; margin-top: 10px; font-weight: bold; display: none; }
 
         .header-section { background: linear-gradient(135deg, #2c3e50, var(--primary-blue)); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; position: relative; display: flex; flex-direction: column; align-items: center;}
         .header-section h1 { margin: 0; font-size: 26px; }
         .header-section p { margin: 5px 0 15px 0; opacity: 0.8; font-size: 14px;}
 
-        /* فلتر الشهور وتحديث البيانات */
         .controls-wrapper { display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
         .month-selector-container { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.3); display: inline-flex; align-items: center; gap: 10px; }
         .month-selector-container label { font-weight: bold; font-size: 15px;}
@@ -64,7 +74,6 @@
         .staff-info p { margin: 0; font-size: 12px; opacity: 0.7; }
         .staff-total { font-size: 20px; font-weight: 800; color: var(--primary-green); background: rgba(140, 198, 63, 0.1); padding: 5px 12px; border-radius: 8px;}
 
-        /* Modal Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 95%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; }
@@ -76,7 +85,6 @@
         .report-table th { background: var(--primary-blue); color: white; position: sticky; top: 0;}
         .report-total-row { font-weight: 800; background: rgba(0,147,208,0.1) !important; font-size: 16px; color: var(--primary-blue);}
 
-        /* Edit Staff Form */
         .staff-form-row { display: grid; grid-template-columns: 1fr 0.8fr 1fr 1fr 0.5fr; gap: 8px; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px dashed var(--border); border-radius: 8px;}
         .rec-form-row { grid-template-columns: 1fr 0.8fr 0.8fr 1fr 0.5fr; }
         .staff-form-row input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; background: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box; font-size: 12px;}
@@ -87,53 +95,66 @@
 </head>
 <body>
 
-    <div class="container">
-        <div class="header-section">
-            <div class="theme-switch-wrapper">
-                <label class="theme-switch" for="checkbox">
-                    <input type="checkbox" id="checkbox" />
-                    <div class="slider round"></div>
-                </label>
+    <!-- 🚨 شاشة تسجيل الدخول المخصصة للدكتورة فقط 🚨 -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2><i class="fa-solid fa-user-shield"></i> لوحة الإدارة (للدكتورة فقط)</h2>
+            <div style="text-align: right;">
+                <label>كلمة المرور:</label>
+                <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور الخاصة بك..." onkeyup="if(event.key === 'Enter') executeLogin()">
             </div>
-            <h1><i class="fa-solid fa-sack-dollar"></i> إدارة الرواتب والحسابات</h1>
-            <p>اختر الشهر لعرض الرواتب المستحقة (لا يتم حساب الحالات قبل تاريخ تعيين الموظف)</p>
-            
-            <div class="controls-wrapper">
-                <div class="month-selector-container">
-                    <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
-                    <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
-                </div>
-                <!-- زر مسح الكاش والمزامنة الإجبارية -->
-                <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة وتنظيف الكاش</button>
-            </div>
+            <button class="btn-login" onclick="executeLogin()" id="executeLoginBtn">دخول <i class="fa-solid fa-arrow-left"></i></button>
+            <div class="login-error" id="loginErrorMsg">كلمة المرور غير صحيحة!</div>
         </div>
+    </div>
 
-        <div class="sections-grid">
-            <!-- قسم الأطباء -->
-            <div class="salary-panel">
-                <div class="panel-header">
-                    <h2><i class="fa-solid fa-user-doctor"></i> حسابات الأطباء</h2>
-                    <button class="btn-edit-staff" onclick="openEditModal('doctors')"><i class="fa-solid fa-pen"></i> إدارة الأطباء</button>
+    <!-- المحتوى المحمي -->
+    <div id="main-app-content" style="opacity: 0; pointer-events: none; transition: 0.5s;">
+        <div class="container">
+            <div class="header-section">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round"></div>
+                    </label>
                 </div>
-                <div class="staff-list" id="doctorsList">
-                    <div style="text-align: center; opacity: 0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري الحساب...</div>
+                <h1><i class="fa-solid fa-sack-dollar"></i> إدارة الرواتب والحسابات</h1>
+                <p>اختر الشهر لعرض الرواتب المستحقة (لا يتم حساب الحالات قبل تاريخ تعيين الموظف)</p>
+                
+                <div class="controls-wrapper">
+                    <div class="month-selector-container">
+                        <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
+                        <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
+                    </div>
+                    <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة وتنظيف الكاش</button>
                 </div>
             </div>
 
-            <!-- قسم السكرتارية (الرسيبشن) -->
-            <div class="salary-panel">
-                <div class="panel-header">
-                    <h2><i class="fa-solid fa-headset"></i> حسابات الرسيبشن</h2>
-                    <button class="btn-edit-staff" onclick="openEditModal('reception')"><i class="fa-solid fa-pen"></i> إدارة الرسيبشن</button>
+            <div class="sections-grid">
+                <div class="salary-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-user-doctor"></i> حسابات الأطباء</h2>
+                        <button class="btn-edit-staff" onclick="openEditModal('doctors')"><i class="fa-solid fa-pen"></i> إدارة الأطباء</button>
+                    </div>
+                    <div class="staff-list" id="doctorsList">
+                        <div style="text-align: center; opacity: 0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</div>
+                    </div>
                 </div>
-                <div class="staff-list" id="receptionList">
-                    <div style="text-align: center; opacity: 0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري الحساب...</div>
+
+                <div class="salary-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-headset"></i> حسابات الرسيبشن</h2>
+                        <button class="btn-edit-staff" onclick="openEditModal('reception')"><i class="fa-solid fa-pen"></i> إدارة الرسيبشن</button>
+                    </div>
+                    <div class="staff-list" id="receptionList">
+                        <div style="text-align: center; opacity: 0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة تقرير الحساب التفصيلي -->
+    <!-- النوافذ المنبثقة -->
     <div id="reportModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
@@ -142,27 +163,20 @@
             </div>
             <div style="overflow-x: auto; max-height: 400px;">
                 <table class="report-table">
-                    <thead id="reportThead">
-                        <!-- ديناميكي -->
-                    </thead>
-                    <tbody id="reportTbody">
-                        <!-- ديناميكي -->
-                    </tbody>
+                    <thead id="reportThead"></thead>
+                    <tbody id="reportTbody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- نافذة إضافة وتعديل الأشخاص -->
     <div id="editStaffModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
                 <h3 id="editModalTitle">إدارة الإعدادات</h3>
                 <button class="btn-close" onclick="closeModal('editStaffModal')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="editStaffFormContainer">
-                <!-- ديناميكي -->
-            </div>
+            <div id="editStaffFormContainer"></div>
             <button class="btn-add-row" onclick="addNewStaffRow()"><i class="fa-solid fa-plus"></i> إضافة شخص جديد</button>
             <button class="btn-save" onclick="saveStaffConfig()"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
         </div>
@@ -175,9 +189,6 @@
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
             projectId: "today-2d146",
-            storageBucket: "today-2d146.firebasestorage.app",
-            messagingSenderId: "742225764525",
-            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
 
         let db = null;
@@ -186,7 +197,61 @@
             db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
-        // --- الإعدادات الافتراضية ---
+        // 🚨 حماية وتأمين الصفحة 🚨
+        let appInitialized = false;
+
+        firebase.auth().onAuthStateChanged((user) => {
+            // السماح فقط لحساب الدكتورة بالدخول
+            if (!user || user.email !== 'dr@clinic.com') {
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // طرد أي مستخدم آخر يحاول الدخول للصفحة
+                if (user && user.email !== 'dr@clinic.com') {
+                    alert('عفواً، هذه الصفحة مخصصة للمدير (د. آية) فقط للخصوصية.');
+                    firebase.auth().signOut().then(() => {
+                        window.location.href = 'today.html';
+                    });
+                }
+            } else {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.body.style.overflow = 'auto';
+                const mainApp = document.getElementById('main-app-content');
+                mainApp.style.opacity = '1';
+                mainApp.style.pointerEvents = 'auto';
+                
+                if(!appInitialized){
+                    appInitialized = true;
+                    initMonthSelector();
+                    startDataListener();
+                }
+            }
+        });
+
+        function executeLogin() {
+            const pass = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('executeLoginBtn');
+            const err = document.getElementById('loginErrorMsg');
+            
+            if(!pass) return;
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> جاري التحقق...";
+            btn.disabled = true;
+            err.style.display = "none";
+
+            // تثبيت البريد الخاص بالدكتورة أوتوماتيكياً
+            firebase.auth().signInWithEmailAndPassword('dr@clinic.com', pass)
+                .then(() => {
+                    btn.innerHTML = "دخول <i class='fa-solid fa-arrow-left'></i>";
+                    btn.disabled = false;
+                })
+                .catch((error) => {
+                    err.style.display = "block";
+                    btn.innerHTML = "دخول <i class='fa-solid fa-arrow-left'></i>";
+                    btn.disabled = false;
+                });
+        }
+
+        // --- الإعدادات الافتراضية للرواتب ---
         const DEFAULT_CONFIG = {
             doctors: [
                 { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30, startDate: '' },
@@ -201,17 +266,16 @@
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
-        // دالة تنظيف الكلمات وحذف أي فراغات أو ألقاب أو تشكيل للتطابق الصارم
         function cleanExactMatchString(text) {
             if (!text) return "";
             return String(text)
-                .replace(/[\u064B-\u065F]/g, "") // إزالة التشكيل تماماً
+                .replace(/[\u064B-\u065F]/g, "")
                 .replace(/[أإآ]/g, "ا")
                 .replace(/ة/g, "ه")
                 .replace(/ى/g, "ي")
-                .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "") // إزالة الألقاب من الأول
+                .replace(/^(دكتور|دكتوره|د|د\.|د\/|د \/|د\s+)\s*/g, "")
                 .trim()
-                .replace(/\s+/g, " "); // إزالة المسافات الزائدة
+                .replace(/\s+/g, " ");
         }
 
         function initMonthSelector() {
@@ -233,7 +297,6 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // زر تحديث إجباري يمسح الكاش المحلي ويسحب الداتا النظيفة من الفايربيز
         function forceSyncRefresh() {
             const btn = document.querySelector('.btn-sync-refresh');
             const originalIcon = btn.innerHTML;
@@ -266,7 +329,6 @@
             });
         }
 
-        // --- دالة الحساب الذكية مع حساب أي مريض للدكتور بغض النظر عن نوع الزيارة والشرط الجديد للمبلغ ---
         function calculateAllSalaries() {
             let doctorsCalc = {};
             let receptionCalc = {};
@@ -292,7 +354,6 @@
                 let dayMotabaaCount = 0;
                 let dayDoctorSessions = {};
 
-                // نقرأ الجدول حرفياً
                 sched.forEach(patient => {
                     if (!patient) return; 
 
@@ -301,23 +362,19 @@
                     let docNorm = cleanExactMatchString(rawDoc);
                     
                     let paymentStatus = String(patient.payment || '').trim();
-                    let amountPaid = parseFloat(patient.amount) || 0; // تحويل المبلغ لرقم
+                    let amountPaid = parseFloat(patient.amount) || 0;
 
-                    // السكرتارية بتتحاسب فقط لو الدفع "تم الدفع" والمبلغ لا يقل عن 50 جنيه
                     if (paymentStatus === 'تم الدفع' && amountPaid >= 50) {
                         if (typeNorm === 'كشف') dayKashfCount++;
                         if (typeNorm === 'متابعه') dayMotabaaCount++; 
                     }
 
-                    // الدكاترة بيتحاسبوا بمجرد كتابة اسمهم أو حرفهم (بغض النظر عن حالة الدفع أو نوع الزيارة أو المبلغ)
                     if (docNorm) { 
                         staffConfig.doctors.forEach(doc => {
                             let dName = cleanExactMatchString(doc.name);
                             let dCode = cleanExactMatchString(doc.code);
                             
                             let isMatch = false;
-                            
-                            // تطابق فعلي للاسم أو الرمز
                             if (dCode && docNorm === dCode) isMatch = true;
                             if (dName && (docNorm === dName || docNorm.includes(dName))) isMatch = true;
                             
@@ -329,10 +386,8 @@
                     }
                 });
 
-                // تجميع حسابات الرسيبشن
                 staffConfig.reception.forEach(rec => {
                     if (rec.startDate && dateStr < rec.startDate) return;
-
                     if (dayKashfCount > 0 || dayMotabaaCount > 0) {
                         let dailyTotal = (dayKashfCount * rec.kashfPrice) + (dayMotabaaCount * rec.motabaaPrice);
                         receptionCalc[rec.id].days[dateStr] = { kashf: dayKashfCount, motabaa: dayMotabaaCount, dailyTotal: dailyTotal };
@@ -340,10 +395,8 @@
                     }
                 });
 
-                // تجميع حسابات الأطباء لكل الحالات (الجلسات) المجمعة لهذا اليوم
                 staffConfig.doctors.forEach(doc => {
                     if (doc.startDate && dateStr < doc.startDate) return;
-
                     if (dayDoctorSessions[doc.id] && dayDoctorSessions[doc.id] > 0) {
                         let sessionsCount = dayDoctorSessions[doc.id];
                         let dailyTotal = sessionsCount * doc.sessionPrice;
@@ -495,11 +548,6 @@
             closeModal('editStaffModal');
             calculateAllSalaries(); 
         }
-
-        window.onload = () => {
-            initMonthSelector();
-            startDataListener();
-        };
     </script>
 </body>
 </html>
