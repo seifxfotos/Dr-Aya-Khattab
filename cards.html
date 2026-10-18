@@ -168,7 +168,6 @@
 </head>
 <body>
 
-    <!-- داتا ليست لاقتراحات W/S في العلاج الطبيعي -->
     <datalist id="ws_options">
         <option value="عادي"></option>
         <option value="شوك"></option>
@@ -238,6 +237,9 @@
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const storage = firebase.storage();
+        
+        // 🚨 إضافة تعريف قاعدة البيانات هنا عشان تحفظ المرفقات 🚨
+        const db = firebase.database();
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
@@ -343,7 +345,7 @@
 
         function renderPatientToDOM() {
             const container = document.getElementById('cardsRenderContainer');
-            container.innerHTML = '';
+            let fullHtml = '';
             
             let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
             while(currentPatient.sessions.length < totalNeeded) { currentPatient.sessions.push({d: '', ws: '', n: ''}); }
@@ -351,14 +353,14 @@
             let numCards = currentPatient.sessions.length / 12;
 
             for(let c = 0; c < numCards; c++) {
-                container.innerHTML += buildCardHtml(c);
+                fullHtml += buildCardHtml(c);
             }
 
             let hasNotes = currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '';
             
             if (hasNotes || showMedicalSheetFlag) {
                 let emptyClass = (!currentPatient.medical_notes || currentPatient.medical_notes.trim() === '') ? 'empty-notes' : '';
-                container.innerHTML += `
+                fullHtml += `
                     <div class="paper-sheet medical-sheet ${emptyClass}" id="medicalSheetWrapper" style="margin-top:20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-green); padding-bottom:10px; margin-bottom: 10px;">
                             <h3 style="color: var(--primary-blue); margin:0;">التشخيص والملاحظات الطبية</h3>
@@ -374,14 +376,14 @@
                 extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
             }
 
-            container.innerHTML += `
+            fullHtml += `
                 <div class="no-print" style="max-width: 1100px; margin: 20px auto; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                     ${extraCardBtns}
                     ${!(hasNotes || showMedicalSheetFlag) ? `<button class="btn btn-medical" style="background: var(--primary-blue);" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>` : ''}
                 </div>
             `;
 
-            container.innerHTML += `
+            fullHtml += `
                 <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
                     <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
                     <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
@@ -390,6 +392,8 @@
                 </div>
             `;
 
+            // 🚨 استبدال DOM مرة واحدة لمنع المشاكل البصرية عند إعادة الرسم 🚨
+            container.innerHTML = fullHtml;
             renderFilesList();
             attachDoubleClickListener();
         }
@@ -437,10 +441,8 @@
             let btn = input.nextElementSibling;
             if(btn) btn.style.display = 'none';
             
-            // الفوكس حسب نوع الكرت
             let wsInput = document.getElementById(`ws_${idx}`);
             if(wsInput) wsInput.focus();
-            
             handleInput();
         }
 
@@ -515,6 +517,7 @@
                     `;
                 } else {
                     nHtml = `<input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()">`;
+                    // 🚨 استخدام DataList لمربع الـ W/S ليكون ذكي وسهل 🚨
                     wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" list="ws_options" oninput="handleInput()" style="width:100%; height:100%; border:none; text-align:center; font-family:'Cairo'; font-weight:700; background:transparent; color:var(--text-main); outline:none; box-sizing:border-box;">`;
                 }
 
@@ -661,6 +664,12 @@
 
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+                
+                // 🚨 الحفظ الدائم للملفات في الفايربيز 🚨
+                if (currentPatient.phone) {
+                    await db.ref('patients_files_data/' + currentPatient.phone).set(currentPatient.files || []);
+                }
+
                 setSaveStatus('saved');
                 lastSavedStateString = currentStateStr; 
                 if(!isSilent) showToast("تم الحفظ بنجاح", "success");
@@ -721,7 +730,12 @@
                 const snapshot = await storageRef.put(file);
                 const downloadURL = await snapshot.ref.getDownloadURL();
                 currentPatient.files.push({ url: downloadURL, name: file.name });
+                
+                // حفظ فوري في فايربيز لضمان بقاء الملفات
+                await db.ref('patients_files_data/' + currentPatient.phone).set(currentPatient.files);
+
                 renderFilesList();
+                e.target.value = ''; // تصفير زر الرفع
                 forceSave(true);
                 showToast("تم رفع الملف", "success");
             } catch(err) { showToast("فشل الرفع!", "error"); }
@@ -733,7 +747,7 @@
             container.innerHTML = '';
             if(currentPatient.files) {
                 currentPatient.files.forEach((file, idx) => {
-                    let isImg = file.name.match(/\.(jpeg|jpg|gif|png)$/i);
+                    let isImg = file.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                     let iconHtml = isImg ? `<img src="${file.url}" onclick="window.open('${file.url}', '_blank')">` 
                                          : `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#eee; cursor:pointer;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-2x" style="color:#e74c3c;"></i></div>`;
                     container.innerHTML += `
@@ -747,7 +761,11 @@
         }
 
         function deleteFile(idx) {
-            showCustomConfirm('<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق', 'هل أنت متأكد من مسح هذا الملف؟', () => { currentPatient.files.splice(idx, 1); renderFilesList(); handleInput(); });
+            showCustomConfirm('<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق', 'هل أنت متأكد من مسح هذا الملف؟', () => { 
+                currentPatient.files.splice(idx, 1); 
+                renderFilesList(); 
+                handleInput(); 
+            });
         }
 
         function deletePatient() {
@@ -757,6 +775,10 @@
                 let cache = await localforage.getItem('patients_cache') || [];
                 cache = cache.filter(p => !(p.phone === phone && p.name === name));
                 await localforage.setItem('patients_cache', cache);
+                
+                // حذف الملفات المرتبطة من فايربيز
+                db.ref('patients_files_data/' + phone).remove();
+
                 showToast("تم الحذف بنجاح!", "success");
                 createNewPatient();
                 fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' }).catch(e => console.log("Cloud sync delayed"));
@@ -827,7 +849,16 @@
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
             
-            // 🚨 الذكاء الاصطناعي لاستنتاج أنواع الكروت من الداتا القديمة 🚨
+            // 🚨 جلب الملفات المرفقة من فايربيز لضمان عدم ضياعها 🚨
+            if (currentPatient.phone) {
+                db.ref('patients_files_data/' + currentPatient.phone).once('value').then(snap => {
+                    if (snap.exists()) {
+                        currentPatient.files = snap.val() || [];
+                        renderFilesList();
+                    }
+                });
+            }
+            
             currentPatient.cardTypes = {};
             let numCards = Math.max(1, Math.ceil(currentPatient.sessions.length / 12));
             
@@ -844,18 +875,15 @@
                     let wsStr = String(s.ws || '').trim();
                     let nStr = String(s.n || '').trim();
 
-                    // أدلة العلاج الطبيعي
                     if (['عادي', 'شوك', 'تصريف', 'موجات', 'ليزر', 'كهرباء', 'أخري'].includes(wsStr)) {
                         isPhysio = true;
                     }
                     
-                    // أدلة التغذية: أرقام بينها فواصل
                     if (/[0-9]+(\s*[\-\/\\]\s*[0-9]+)+/.test(nStr)) {
                         isNutrition = true;
                     }
                 });
 
-                // لو مفيش دليل قاطع، نفحص لو الـ N أغلبه أرقام صافية -> تغذية
                 if (!isPhysio && !isNutrition) {
                     let filledN = cardSessions.filter(s => String(s.n).trim() !== '');
                     let numsOnly = filledN.filter(s => /^[0-9\.\s]+$/.test(String(s.n).trim())).length;
@@ -865,7 +893,6 @@
                     }
                 }
 
-                // الأولوية لعلاج طبيعي لو فيه دليل
                 if (isPhysio) {
                     currentPatient.cardTypes[c] = 'علاج طبيعي';
                 } else {
