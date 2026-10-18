@@ -77,6 +77,9 @@
         .input-group input:focus { border-bottom-color: var(--primary-green); }
         .input-group input.eng-text { direction: ltr; text-align: left; }
 
+        /* 🚨 الكلاس المخصص لإجبار النصوص الإنجليزية على القراءة من اليسار وعدم التداخل 🚨 */
+        .eng-label { direction: ltr !important; display: inline-block; unicode-bidi: isolate; }
+
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
         .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 16px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; min-height: 75px; resize: vertical; direction: ltr; text-align: left;}
@@ -115,7 +118,6 @@
         input:checked + .slider:before { transform: translateX(28px); }
         .icon { font-size: 14px; z-index: 1; }
 
-        /* 🚨 إعدادات الطباعة الشاملة 🚨 */
         @media print {
             @page { margin: 0; }
             
@@ -136,7 +138,6 @@
             
             .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
             
-            /* 🚨 تعديل خطوط الجدول لتكون واضحة بدون كسور (1px) 🚨 */
             table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
             th, td { border: 1px solid #000000 !important; position: static !important; }
             th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important; }
@@ -161,7 +162,6 @@
             .empty-notes { display: none !important; }
         }
 
-        /* 🚨 كلاس Light Mode لتصدير الـ PDF 🚨 */
         .force-light-mode {
             background-color: #ffffff !important;
             color: #000000 !important;
@@ -170,7 +170,6 @@
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .input-group label { color: #0093D0 !important; }
         
-        /* 🚨 تعديل خطوط الجدول لـ PDF 🚨 */
         .force-light-mode .table-section table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
         .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1px solid #000000 !important; position: static !important; }
         .force-light-mode th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important;}
@@ -476,6 +475,7 @@
             let isFirst = cardIndex === 0;
             let title = isFirst ? "" : `<h3 style="text-align:center; color:var(--primary-blue);">(متابعة الجلسات - كرت ${cardIndex + 1})</h3>`;
             
+            // 🚨 إضافة الكلاس eng-label لإجبار الإنجليزي على عدم التداخل 🚨
             let infoSection = isFirst ? `
                 <div class="row">
                     <div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput(); syncCardNames();"></div>
@@ -486,10 +486,10 @@
                     <div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div>
                 </div>
                 <div class="input-group" style="width: 50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div>
-                <div class="input-group"><label>Referred By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div>
-                <div class="input-group"><label>Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div>
+                <div class="input-group"><label class="eng-label">Referred&nbsp;By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div>
+                <div class="input-group"><label class="eng-label">Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div>
                 <div class="input-group-textarea">
-                    <label>Treatment Protocol:</label>
+                    <label class="eng-label">Treatment&nbsp;Protocol:</label>
                     <textarea id="p_protocol" rows="3" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea>
                 </div>
             ` : `
