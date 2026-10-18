@@ -66,7 +66,6 @@
         .clinic-logo img { width: 180px; object-fit: contain; }
         body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: #fff; padding: 5px; border-radius: 8px; }
 
-        /* 🚨 تصميم اختيار نوع الكرت 🚨 */
         .card-type-select { font-size: 18px; font-weight: 800; color: var(--primary-blue); border: 2px dashed var(--primary-green); background: var(--focus-bg); padding: 5px 15px; border-radius: 8px; font-family: 'Cairo'; outline: none; cursor: pointer; text-align: center; }
         .card-type-select:hover { filter: brightness(0.95); }
 
@@ -93,11 +92,8 @@
         td input { width: 100%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo'; background: transparent; color: var(--text-main); outline: none; box-sizing: border-box;}
         td input:focus { background-color: var(--focus-bg); }
 
-        /* 🚨 تصميم خانات التغذية والعلاج الطبيعي 🚨 */
         .n-parts-wrapper input { width: 28% !important; border-bottom: 1px dotted var(--border-dash) !important; height: 80% !important; background: transparent !important; }
         .n-parts-wrapper input:focus { border-bottom-color: var(--primary-green) !important; background: var(--focus-bg) !important; }
-        .ws-select { width: 90%; font-family: 'Cairo'; font-weight: 700; border: 1px solid var(--border-light); border-radius: 4px; padding: 2px; outline: none; background: var(--sheet-bg); color: var(--text-main); }
-        .ws-custom-input { width: 90% !important; height: 24px !important; border-bottom: 1px dashed var(--border-dash) !important; font-size: 14px !important; margin-top: 2px; }
 
         .date-cell-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
         .inline-date-btn { position: absolute; background: #f39c12; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 13px; font-weight: 700; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; white-space: nowrap; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
@@ -142,13 +138,10 @@
             
             .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
             .input-group input.eng-text { direction: ltr !important; text-align: left !important; }
-            
             .input-group-textarea textarea { direction: ltr !important; text-align: left !important; border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; }
             
-            /* 🚨 إخفاء أيقونات القوائم المنسدلة والحدود الخاصة بها 🚨 */
-            .card-type-select, .ws-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
+            .card-type-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
             .n-parts-wrapper input { border: none !important; }
-            .ws-custom-input { border: none !important; }
 
             .sheet-body { flex-direction: row !important; }
             .dynamic-card:not(:first-child) { page-break-before: always !important; }
@@ -164,9 +157,8 @@
         .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1px solid #000000 !important; position: static !important; }
         .force-light-mode th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important;}
         
-        .force-light-mode .card-type-select, .force-light-mode .ws-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
+        .force-light-mode .card-type-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
         .force-light-mode .n-parts-wrapper input { border: none !important; }
-        .force-light-mode .ws-custom-input { border: none !important; }
 
         .force-light-mode .dynamic-card:not(:first-child) { page-break-before: always !important; margin-top: 30px !important; }
         .force-light-mode .medical-sheet { page-break-before: always !important; margin-top: 30px !important; }
@@ -175,6 +167,13 @@
     </style>
 </head>
 <body>
+
+    <!-- داتا ليست لاقتراحات W/S في العلاج الطبيعي -->
+    <datalist id="ws_options">
+        <option value="عادي"></option>
+        <option value="شوك"></option>
+        <option value="تصريف"></option>
+    </datalist>
 
     <div id="saveStatusBadge" class="save-status-badge saved no-print">
         <i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>
@@ -246,7 +245,7 @@
             name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
             sessions: Array(12).fill({d: '', ws: '', n: ''}),
             files: [],
-            cardTypes: {} // 🚨 تخزين أنواع الكروت (تغذية أو علاج طبيعي) 🚨
+            cardTypes: {} 
         };
 
         let lastSavedStateString = "";
@@ -261,7 +260,6 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeSwitch').checked = true;
             }
-            // إعطاء نوع افتراضي للكرت الأول
             if(!currentPatient.cardTypes) currentPatient.cardTypes = {};
             if(!currentPatient.cardTypes[0]) currentPatient.cardTypes[0] = 'تغذية علاجية';
             
@@ -336,27 +334,11 @@
             document.querySelectorAll('.extra-card-phone').forEach(el => el.value = p);
         };
 
-        // 🚨 دالة تحديث نوع الكرت وإعادة الرسم 🚨
         window.updateCardType = function(cardIndex, newType) {
-            updateStateFromDOM(); // حفظ الداتا الحالية قبل إعادة الرسم
+            updateStateFromDOM(); 
             currentPatient.cardTypes[cardIndex] = newType;
             renderPatientToDOM();
             handleInput();
-        };
-
-        // 🚨 دالة التحكم في إظهار الإدخال اليدوي لقسم العلاج الطبيعي 🚨
-        window.toggleWsCustom = function(idx) {
-            let sel = document.getElementById(`ws_sel_${idx}`);
-            let cust = document.getElementById(`ws_cust_${idx}`);
-            if (sel && cust) {
-                if (sel.value === 'أخري') {
-                    cust.style.display = 'block';
-                    cust.focus();
-                } else {
-                    cust.style.display = 'none';
-                    cust.value = ''; // تفريغ الخانة لو رجع اختار حاجة تانية
-                }
-            }
         };
 
         function renderPatientToDOM() {
@@ -418,7 +400,6 @@
                 currentPatient.sessions.push({d: '', ws: '', n: ''});
             }
             let newCardIndex = (currentPatient.sessions.length / 12) - 1;
-            // الوراثة: الكرت الجديد بياخد نفس نوع الكرت اللي قبله
             let prevType = currentPatient.cardTypes[newCardIndex - 1] || 'تغذية علاجية';
             currentPatient.cardTypes[newCardIndex] = prevType;
             
@@ -455,10 +436,11 @@
             input.value = today;
             let btn = input.nextElementSibling;
             if(btn) btn.style.display = 'none';
-            // النقل للخانة المناسبة حسب نوع الكرت
+            
+            // الفوكس حسب نوع الكرت
             let wsInput = document.getElementById(`ws_${idx}`);
-            let wsSel = document.getElementById(`ws_sel_${idx}`);
-            if(wsSel) wsSel.focus(); else if(wsInput) wsInput.focus();
+            if(wsInput) wsInput.focus();
+            
             handleInput();
         }
 
@@ -466,7 +448,6 @@
             let isFirst = cardIndex === 0;
             let cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
             
-            // 🚨 قائمة اختيار نوع الكرت في الـ Header 🚨
             let headerTitleHtml = `
                 <div style="flex-grow: 1; text-align: center;">
                     <select class="card-type-select" onchange="updateCardType(${cardIndex}, this.value)">
@@ -507,16 +488,13 @@
                 
                 let dateBtnHtml = !session.d ? `<button class="inline-date-btn no-print" onclick="setSpecificDate(${sIdx})" tabindex="-1" title="تاريخ اليوم"><i class="fa-solid fa-calendar-day"></i> تاريخ اليوم</button>` : '';
 
-                // 🚨 بناء خانات W/S و N بناءً على نوع الكرت 🚨
                 let wsHtml = '';
                 let nHtml = '';
 
                 if (cardType === 'تغذية علاجية') {
-                    // خانة W/S عادية
                     wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" oninput="handleInput()">`;
                     
-                    // خانة N مقسمة لثلاث أجزاء
-                    let nStr = session.n || '';
+                    let nStr = String(session.n || '');
                     let nParts = nStr.split('-');
                     if(nParts.length === 1 && nStr.includes('/')) nParts = nStr.split('/');
                     if(nParts.length === 1 && nStr.includes('\\')) nParts = nStr.split('\\');
@@ -536,24 +514,8 @@
                         </div>
                     `;
                 } else {
-                    // علاج طبيعي: خانة N عادية
                     nHtml = `<input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()">`;
-                    
-                    // علاج طبيعي: خانة W/S قائمة منسدلة
-                    let wsVal = session.ws || '';
-                    let isCustom = wsVal && wsVal !== 'عادي' && wsVal !== 'شوك';
-                    
-                    wsHtml = `
-                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:2px; padding-top:2px;">
-                            <select id="ws_sel_${sIdx}" onchange="toggleWsCustom(${sIdx}); handleInput();" class="ws-select">
-                                <option value=""></option>
-                                <option value="عادي" ${wsVal === 'عادي' ? 'selected' : ''}>عادي</option>
-                                <option value="شوك" ${wsVal === 'شوك' ? 'selected' : ''}>شوك</option>
-                                <option value="أخري" ${isCustom ? 'selected' : ''}>أخري...</option>
-                            </select>
-                            <input type="text" id="ws_cust_${sIdx}" value="${isCustom ? escapeHtml(wsVal) : ''}" oninput="handleInput()" class="ws-custom-input" style="display:${isCustom ? 'block' : 'none'};">
-                        </div>
-                    `;
+                    wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" list="ws_options" oninput="handleInput()" style="width:100%; height:100%; border:none; text-align:center; font-family:'Cairo'; font-weight:700; background:transparent; color:var(--text-main); outline:none; box-sizing:border-box;">`;
                 }
 
                 tbodyHtml += `
@@ -592,7 +554,6 @@
             </div>`;
         }
 
-        // 🚨 تعديل الحفظ ليناسب الخانات الجديدة لكل نوع كرت 🚨
         function updateStateFromDOM() {
             if(document.getElementById('p_name')) {
                 currentPatient.name = document.getElementById('p_name').value.trim();
@@ -616,7 +577,6 @@
                     currentPatient.sessions[i].d = document.getElementById(`d_${i}`).value;
                     
                     if(cardType === 'تغذية علاجية') {
-                        // تجميع التغذية
                         let n1 = document.getElementById(`n1_${i}`).value.trim();
                         let n2 = document.getElementById(`n2_${i}`).value.trim();
                         let n3 = document.getElementById(`n3_${i}`).value.trim();
@@ -625,14 +585,8 @@
                         
                         currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
                     } else {
-                        // علاج طبيعي
                         currentPatient.sessions[i].n = document.getElementById(`n_${i}`).value;
-                        let sel = document.getElementById(`ws_sel_${i}`).value;
-                        if(sel === 'أخري') {
-                            currentPatient.sessions[i].ws = document.getElementById(`ws_cust_${i}`).value;
-                        } else {
-                            currentPatient.sessions[i].ws = sel;
-                        }
+                        currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
                     }
                 }
             }
@@ -873,12 +827,49 @@
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
             
-            // 🚨 استنتاج أنواع الكروت من الداتا القديمة 🚨
-            if(!currentPatient.cardTypes) {
-                currentPatient.cardTypes = {};
-                let numCards = Math.ceil((currentPatient.sessions.length || 12) / 12);
-                for(let i=0; i<numCards; i++) {
-                    currentPatient.cardTypes[i] = 'تغذية علاجية'; // الافتراضي
+            // 🚨 الذكاء الاصطناعي لاستنتاج أنواع الكروت من الداتا القديمة 🚨
+            currentPatient.cardTypes = {};
+            let numCards = Math.max(1, Math.ceil(currentPatient.sessions.length / 12));
+            
+            for(let c = 0; c < numCards; c++) {
+                let startIdx = c * 12;
+                let cardSessions = currentPatient.sessions.slice(startIdx, startIdx + 12);
+                
+                let isPhysio = false;
+                let isNutrition = false;
+
+                cardSessions.forEach(s => {
+                    if(!s.d && !s.ws && !s.n) return;
+                    
+                    let wsStr = String(s.ws || '').trim();
+                    let nStr = String(s.n || '').trim();
+
+                    // أدلة العلاج الطبيعي
+                    if (['عادي', 'شوك', 'تصريف', 'موجات', 'ليزر', 'كهرباء', 'أخري'].includes(wsStr)) {
+                        isPhysio = true;
+                    }
+                    
+                    // أدلة التغذية: أرقام بينها فواصل
+                    if (/[0-9]+(\s*[\-\/\\]\s*[0-9]+)+/.test(nStr)) {
+                        isNutrition = true;
+                    }
+                });
+
+                // لو مفيش دليل قاطع، نفحص لو الـ N أغلبه أرقام صافية -> تغذية
+                if (!isPhysio && !isNutrition) {
+                    let filledN = cardSessions.filter(s => String(s.n).trim() !== '');
+                    let numsOnly = filledN.filter(s => /^[0-9\.\s]+$/.test(String(s.n).trim())).length;
+                    
+                    if (filledN.length > 0 && numsOnly >= filledN.length / 2) {
+                        isNutrition = true;
+                    }
+                }
+
+                // الأولوية لعلاج طبيعي لو فيه دليل
+                if (isPhysio) {
+                    currentPatient.cardTypes[c] = 'علاج طبيعي';
+                } else {
+                    currentPatient.cardTypes[c] = 'تغذية علاجية';
                 }
             }
 
