@@ -8,10 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-
     <style>
         /* المتغيرات الأساسية للألوان (الوضع الفاتح) */
         :root {
@@ -52,7 +48,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* نظام الإشعارات الجديد (Toast) */
+        /* نظام الإشعارات (Toast) */
         .app-toast {
             position: fixed;
             top: -100px;
@@ -78,21 +74,6 @@
         .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
         .app-toast.info { border-bottom-color: var(--primary-blue); color: var(--primary-blue); }
 
-        .camera-box { background: var(--sheet-bg); border: 1px dashed var(--primary-blue); border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: center; }
-        .camera-btn { background: var(--primary-blue); color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-family: 'Cairo'; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-        .camera-btn input { display: none; }
-        
-        .crop-container { display: none; margin-top: 10px; }
-        .img-container { width: 100%; height: 400px; background: #000; margin-bottom: 10px; border-radius: 6px; overflow: hidden;}
-        .img-container img { max-width: 100%; display: block; }
-        
-        .sniper-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .btn-snipe { background: #8e44ad; color: white; border: none; padding: 8px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-snipe.phone { background: #d35400; }
-        .btn-retake { background: #e74c3c; color: white; border: none; padding: 8px; border-radius: 6px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; grid-column: span 2; }
-        
-        #ocrStatus { font-size: 12px; color: var(--primary-green); font-weight: bold; margin-bottom: 10px; display: block;}
-
         .controls {
             background: var(--sheet-bg);
             padding: 20px;
@@ -117,7 +98,9 @@
             font-size: 16px;
             font-family: 'Cairo', sans-serif;
             transition: all 0.3s ease;
+            outline: none;
         }
+        .controls input:focus { border-color: var(--primary-blue); }
 
         ::placeholder { color: var(--text-muted); opacity: 1; }
 
@@ -275,7 +258,7 @@
             body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: transparent; padding: 0; }
 
             body { background: white; padding: 0; }
-            .controls, .modal, .no-print, .delete-row-btn, .theme-switch-wrapper, .action-buttons-container, .camera-box { display: none !important; } 
+            .controls, .modal, .no-print, .delete-row-btn, .theme-switch-wrapper, .action-buttons-container { display: none !important; } 
             .sheet-body { flex-direction: row !important; gap: 20px !important; }
             .sheet-header { flex-direction: row !important; text-align: right !important; margin-bottom: 10px !important; }
             .info-section { flex: 1.2 !important; gap: 10px !important; display: flex !important; flex-direction: column !important; }
@@ -302,7 +285,7 @@
 </head>
 <body>
 
-    <!-- نظام الإشعارات الذكي (Toast) بديل الـ Alert -->
+    <!-- نظام الإشعارات (Toast) -->
     <div id="appToast" class="app-toast">
         <i id="toastIcon" class="fa-solid fa-check-circle"></i>
         <span id="toastMessage">تمت العملية بنجاح</span>
@@ -326,28 +309,6 @@
             <p style="color: var(--text-muted); margin-bottom: 20px;">الرجاء اختيار الكرت المطلوب من القائمة التالية:</p>
             <div id="patientList"></div>
             <button class="btn" style="background-color: #e74c3c; width: 100%; margin-top: 10px; justify-content: center;" onclick="closeModal()">إلغاء وإغلاق</button>
-        </div>
-    </div>
-
-    <div class="camera-box no-print">
-        <label class="camera-btn" id="uploadLabel">
-            <i class="fa-solid fa-camera"></i> تصوير أو اختيار صورة
-            <input type="file" accept="image/*" id="cardImage">
-        </label>
-        
-        <div class="crop-container" id="cropContainer">
-            <p style="font-size: 11px; color: var(--warning); margin: 0 0 8px 0;">يمكنك التقريب بإصبعين لتحديد الكلمة بدقة</p>
-            <div class="img-container">
-                <img id="imageToCrop" src="">
-            </div>
-            
-            <div id="ocrStatus"></div>
-
-            <div class="sniper-actions">
-                <button class="btn-snipe" onclick="extractTargeted('p_name', 'ara')"><i class="fa-solid fa-user"></i> سحب كـ (اسم)</button>
-                <button class="btn-snipe phone" onclick="extractTargeted('p_phone', 'ara+eng')"><i class="fa-solid fa-phone"></i> سحب كـ (موبايل/أرقام)</button>
-                <button class="btn-retake" onclick="document.getElementById('cardImage').click()"><i class="fa-solid fa-rotate"></i> تغيير الصورة</button>
-            </div>
         </div>
     </div>
 
@@ -409,9 +370,6 @@
             <button id="addCardBtn" class="btn btn-new-card" style="flex: 1; justify-content: center;" onclick="addCard()">➕ إضافة كرت إضافي</button>
             <button id="removeCardBtn" class="btn btn-delete" style="flex: 1; display: none; justify-content: center;" onclick="removeLastCard()">🗑️ إزالة الكرت الأخير</button>
         </div>
-        <button type="button" class="btn btn-new-card" style="justify-content: center; width:100%; max-width:600px;" onclick="saveAndNewCard()">
-            <i class="fa-solid fa-bolt"></i> حفظ ورفع التالي
-        </button>
         <button id="medicalToggleBtn" class="btn btn-medical" style="justify-content: center; width:100%; max-width:600px;" onclick="toggleMedicalSheet()">فتح الملف الطبي</button>
     </div>
 
@@ -429,13 +387,11 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
-        const SCRIPT_URL_TEMP = SCRIPT_URL; // لو في رابط تاني لـ saveAndNewCard استخدمه هنا
         
         let globalSearchResults = []; 
         let totalCards = 1;
         let cardRowCounts = { 1: { start: 1, current: 12 } };
         
-        // ⚡ ذاكرة محلية ذكية لسحب وبحث الداتا بسرعة البرق ⚡
         let allPatientsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || []; 
 
         function showToast(message, type = 'success') {
@@ -678,71 +634,6 @@
             }
         }
 
-        // ================== OCR الكاميرا ==================
-        let cropper = null;
-        document.getElementById('cardImage').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const image = document.getElementById('imageToCrop');
-                    image.src = event.target.result;
-                    document.getElementById('cropContainer').style.display = 'block';
-                    document.getElementById('uploadLabel').style.display = 'none';
-                    document.getElementById('ocrStatus').innerText = '';
-                    
-                    if (cropper) cropper.destroy();
-                    
-                    cropper = new Cropper(image, {
-                        viewMode: 2, 
-                        dragMode: 'move', 
-                        autoCropArea: 0.3,
-                        responsive: true,
-                        guides: true,
-                        zoomable: true,
-                        cropBoxMovable: true,
-                        cropBoxResizable: true,
-                    });
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        async function extractTargeted(targetInputId, lang) {
-            if (!cropper) return;
-            
-            const statusDiv = document.getElementById('ocrStatus');
-            const targetName = targetInputId === 'p_name' ? 'الاسم' : 'الموبايل';
-            statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج (${targetName})...`;
-            
-            try {
-                const canvas = cropper.getCroppedCanvas();
-                const base64Image = canvas.toDataURL('image/jpeg', 1.0);
-                
-                const result = await Tesseract.recognize(base64Image, lang);
-                let text = result.data.text.trim();
-                
-                if(targetInputId === 'p_phone') {
-                    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-                    for(let i=0; i<10; i++) {
-                        text = text.split(arabicNumbers[i]).join(i);
-                    }
-                    text = text.replace(/[^0-9]/g, ''); 
-                }
-
-                if(text === "") {
-                    statusDiv.innerHTML = `<span style="color:#e74c3c">لم يتعرف على ${targetName}. (يرجى النقل يدوياً)</span>`;
-                    return;
-                }
-
-                document.getElementById(targetInputId).value = text;
-                statusDiv.innerHTML = `<span style="color:var(--green-accent)"><i class="fa-solid fa-check"></i> تم استخراج ${targetName} بنجاح.</span>`;
-                
-            } catch (err) {
-                statusDiv.innerHTML = '<span style="color:#e74c3c">حدث خطأ. حاول التحديد مرة أخرى.</span>';
-            }
-        }
-
         // ================== بحث فائق السرعة (لحظي) ==================
         document.getElementById('searchName').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchPatient();
@@ -919,24 +810,7 @@
             }
         }
 
-        function getTableDataAsString() {
-            let tableData = "";
-            const rows = document.querySelectorAll('tbody[id^="sessionsTable"] tr');
-            rows.forEach((row, index) => {
-                const inputs = row.querySelectorAll('input');
-                if(inputs.length >= 3) {
-                    const d = inputs[0].value.trim();
-                    const ws = inputs[1].value.trim();
-                    const n = inputs[2].value.trim();
-                    if (d || ws || n) {
-                        tableData += `جـ${index + 1} [D:${d} | WS:${ws} | N:${n}]\n`;
-                    }
-                }
-            });
-            return tableData || "لا يوجد جلسات مسجلة";
-        }
-
-        // ================== الحفظ اللحظي الذكي (Optimistic Save) ==================
+        // ================== الحفظ اللحظي الذكي ==================
         function saveData() {
             let rawPhone = document.getElementById('p_phone').value;
             let phone = convertToEnglishNumbers(rawPhone);
@@ -975,91 +849,19 @@
                 sessions: sessions
             };
 
-            // 1. تحديث الذاكرة المحلية (الكاش) فوراً عشان لو بحث عنه يلاقيه في ثانية
+            // حفظ في الذاكرة لتسميع الأرقام فوراً لصفحة اليومية
             let existingIdx = allPatientsCache.findIndex(p => p.name === payload.name);
             if(existingIdx > -1) allPatientsCache[existingIdx] = payload;
             else allPatientsCache.push(payload);
             
             localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
 
-            // 2. إعطاء تأكيد نجاح للمستخدم فوراً
             showToast("تم الحفظ في ثانية ⚡.. تقدر تكمل شغلك", "success");
 
-            // 3. الإرسال الصامت لجوجل شيت في الخلفية (Background Sync)
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
-            .catch(() => {
-                showToast("حدث خطأ في مزامنة السحابة، لكن البيانات محفوظة محلياً.", "info");
-            });
+            .catch(() => { showToast("حدث خطأ في المزامنة السحابية", "info"); });
         }
 
-        // ================== الحفظ المتتالي لزر "حفظ ورفع التالي" ==================
-        function saveAndNewCard() {
-            const nameInput = document.getElementById('p_name');
-            if(!nameInput.value.trim()) {
-                showToast("⚠️ يجب إدخال اسم المريض", "error");
-                return;
-            }
-
-            let rawPhone = document.getElementById('p_phone').value;
-            let phone = convertToEnglishNumbers(rawPhone);
-            document.getElementById('p_phone').value = phone;
-
-            let sessions = [];
-            for(let c = 1; c <= totalCards; c++) {
-                let start = cardRowCounts[c].start;
-                let end = cardRowCounts[c].current;
-                for(let i = start; i <= end; i++) {
-                    let dInput = document.getElementById('d_'+i);
-                    if(dInput) {
-                        sessions.push({
-                            d: dInput.value,
-                            ws: document.getElementById('ws_'+i).value,
-                            n: document.getElementById('n_'+i).value
-                        });
-                    }
-                }
-            }
-
-            const payload = {
-                name: nameInput.value.trim(),
-                address: document.getElementById('p_address').value,
-                phone: phone,
-                job: document.getElementById('p_job').value,
-                age: document.getElementById('p_age').value,
-                referred: document.getElementById('p_referred').value,
-                diagnosis: document.getElementById('p_diagnosis').value,
-                protocol: document.getElementById('p_protocol').value,
-                medical_notes: document.getElementById('p_medical_notes').value, 
-                sessions: sessions
-            };
-
-            // 🚨 حفظ في الـ Cache مباشرة عشان Today تسحب الرقم منه في ثانية 🚨
-            let existingIdx = allPatientsCache.findIndex(p => p.name === payload.name);
-            if(existingIdx > -1) allPatientsCache[existingIdx] = payload;
-            else allPatientsCache.push(payload);
-            localStorage.setItem('clinic_all_patients_cache', JSON.stringify(allPatientsCache));
-
-            // تفريغ النموذج لبدء كارت جديد
-            document.getElementById('archiveForm') ? document.getElementById('archiveForm').reset() : clearForm();
-            
-            if(cropper) { cropper.destroy(); cropper = null; }
-            const cropContainer = document.getElementById('cropContainer');
-            if(cropContainer) cropContainer.style.display = 'none';
-            const uploadLabel = document.getElementById('uploadLabel');
-            if(uploadLabel) uploadLabel.style.display = 'flex';
-            const cardImage = document.getElementById('cardImage');
-            if(cardImage) cardImage.value = '';
-            const ocrStatus = document.getElementById('ocrStatus');
-            if(ocrStatus) ocrStatus.innerText = '';
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast("تم الحفظ ⚡ الكرت اللي بعده", "success");
-
-            fetch(SCRIPT_URL_TEMP, { method: "POST", body: JSON.stringify(payload) })
-            .catch(err => console.log("Background save error"));
-        }
-
-        // ================== الحذف اللحظي الذكي ==================
         function deletePatient() {
             let phone = document.getElementById('p_phone').value;
             let name = document.getElementById('p_name').value.trim();
