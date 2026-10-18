@@ -675,21 +675,46 @@
             hideSyncStatus();
         }
 
+        // 🚨 حماية وتفريغ الكاش لليوم الحالي لمنع تكرار داتا الأمس 🚨
         function startFirebaseListener(date) {
-            if (!db) { fetchFromGoogleSheets(date); return; }
+            if (!db) {
+                if (date < getActualTodayDateStr()) fetchFromGoogleSheets(date);
+                return;
+            }
             const dayRef = db.ref('clinic_days/' + date);
             if (unsubscribeFirebase) unsubscribeFirebase.off();
             
             dayRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data && (data.schedule || data.glp || data.financials)) { applyData(data); } 
-                else { fetchFromGoogleSheets(date); }
+                if (data && (data.schedule || data.glp || data.financials)) { 
+                    applyData(data); 
+                } else { 
+                    // إذا كان الفايربيز فاضي والتاريخ الحالي أو القادم، امنع السحب من الشيت لعدم تكرار داتا الأمس
+                    const actualToday = getActualTodayDateStr();
+                    if (date >= actualToday) {
+                        localStorage.removeItem('clinic_cache_' + date);
+                        patientsQueue = []; glpQueue = []; financialsQueue = [];
+                        renderUI();
+                        hideSyncStatus();
+                    } else {
+                        fetchFromGoogleSheets(date); 
+                    }
+                }
             });
             unsubscribeFirebase = dayRef;
         }
 
+        // 🚨 حماية ريفرش الشيت 🚨
         async function forceRefreshFromSheet() {
             const date = document.getElementById('todayDate').value;
+            const actualToday = getActualTodayDateStr();
+            
+            if (date >= actualToday) {
+                if(!confirm("تنبيه: سحب الداتا من الأرشيف لليوم الحالي قد يقوم باسترجاع بيانات الأمس إذا كان اليوم فارغاً في الأرشيف.\n\nهل تريد الاستمرار؟")) {
+                    return;
+                }
+            }
+
             showSyncStatus('جاري التحديث من الشيت...');
             if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
             try {
@@ -719,6 +744,13 @@
 
         async function fetchFromGoogleSheets(date) {
             if (!SCRIPT_URL || SCRIPT_URL.includes('ضع_الرابط_الجديد_هنا')) return;
+            
+            // 🚨 حظر السحب التلقائي لليوم الحالي لمنع تكرار داتا الأمس 🚨
+            if (date >= getActualTodayDateStr() && patientsQueue.length === 0) {
+                hideSyncStatus();
+                return; 
+            }
+            
             showSyncStatus('جاري سحب الأرشيف...');
             try {
                 let res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'GET_DATA', date: date }) });
@@ -744,7 +776,8 @@
                         patientsQueue.forEach((p,i) => { p.finished = savedFin[p.name+'_'+i] !== undefined ? savedFin[p.name+'_'+i] : p.finished; });
                         renderUI();
 
-                        if(db) {
+                        // 🚨 السماح بالأرشفة التلقائية للأيام الماضية فقط 🚨
+                        if(db && date < getActualTodayDateStr()) {
                             db.ref('clinic_days/' + date).once('value').then(snap => {
                                 if (!snap.exists() && (patientsQueue.length > 0 || financialsQueue.length > 0)) {
                                     db.ref('clinic_days/' + date).set({ schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP });
@@ -908,16 +941,13 @@
             wrapper.classList.toggle('show');
         }
 
-        // 🚨 دالة الواتساب الذكية مع حفظ الرقم محلياً 🚨
         function sendWhatsApp(idx) {
             const p = patientsQueue[idx];
             let targetNorm = normalizeArabicName(p.name);
             
-            // البحث عن الرقم في الشيت أولاً، ثم في الكاش (الذاكرة المحلية)
             let phone = window.patientPhones[p.name] || localStorage.getItem('phone_' + targetNorm);
             
             if (!phone) {
-                // لو مش موجود، هيطلب الرقم ويحفظه فوراً في الكاش عشان ميسألش تاني أبداً
                 phone = prompt("الرقم مش متسجل في الداتا الحالية. أدخل رقم الواتساب للمريض " + p.name + " (مرة واحدة بس وهيفضل محفوظ):");
                 if (phone) {
                     localStorage.setItem('phone_' + targetNorm, phone);
@@ -925,7 +955,6 @@
             }
             
             if (phone) {
-               // تنظيف الرقم وإضافة كود مصر أوتوماتيك
                phone = phone.replace(/\D/g,'');
                if (phone.length === 10) phone = '20' + phone; 
                else if (phone.startsWith('01')) phone = '2' + phone.substring(1); 
