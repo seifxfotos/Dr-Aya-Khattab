@@ -100,7 +100,6 @@
         .inline-date-btn:hover { background: #e67e22; transform: scale(1.05); }
         .date-input:focus + .inline-date-btn, .date-input:not(:placeholder-shown) + .inline-date-btn { display: none !important; }
 
-        /* 🚨 تصميم جديد وذكي لقسم المرفقات 🚨 */
         .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 25px; border-radius: 12px; text-align: center; background: var(--sheet-bg); transition: 0.3s;}
         .upload-section h4 { margin: 0 0 15px 0; color: var(--primary-blue); font-size: 18px; }
         .file-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; justify-content: center;}
@@ -108,8 +107,7 @@
         .file-item { position: relative; width: 140px; height: 140px; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #f9f9f9; transition: 0.3s;}
         .file-item img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: 0.3s; }
         
-        /* تأثيرات الـ Hover للملفات */
-        .file-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.75); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; backdrop-filter: blur(2px); transition: 0.3s; opacity: 0; transform: translateY(10px); }
+        .file-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.75); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; backdrop-filter: blur(2px); transition: 0.3s; opacity: 0; transform: translateY(10px); z-index: 20;}
         .file-item:hover .file-actions { opacity: 1; transform: translateY(0); }
         .file-item:hover img { transform: scale(1.08); }
         
@@ -249,7 +247,7 @@
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const storage = firebase.storage();
-        const db = firebase.database(); // 🚨 إضافة الداتابيز للحفظ الأبدي للمرفقات
+        const db = firebase.database(); 
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
@@ -293,7 +291,6 @@
             });
         });
 
-        // 🚨 فلترة وتأمين رقم الموبايل لمنع أي خطأ في قاعدة البيانات 🚨
         function getSafePhone(p) {
             if(!p) return "unknown";
             let eng = convertToEnglishNumbers(p);
@@ -400,7 +397,6 @@
                 </div>
             `;
 
-            // 🚨 تحديث شكل قسم المرفقات وإضافة زر الرفع باحترافية 🚨
             fullHtml += `
                 <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
                     <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
@@ -682,6 +678,13 @@
 
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+                
+                // حفظ المرفقات في قاعدة بيانات فايربيز أوتوماتيك
+                let safePhone = getSafePhone(currentPatient.phone);
+                if (safePhone !== "unknown" && currentPatient.files && currentPatient.files.length > 0) {
+                    await db.ref('patients_files_data/' + safePhone).set(currentPatient.files);
+                }
+
                 setSaveStatus('saved');
                 lastSavedStateString = currentStateStr; 
                 if(!isSilent) showToast("تم الحفظ بنجاح", "success");
@@ -731,7 +734,6 @@
             });
         }
 
-        // 🚨 دالة رفع الملفات المعدلة بـ Upload Task 🚨
         window.handleFileUpload = function(e) {
             updateStateFromDOM();
             const file = e.target.files[0];
@@ -748,7 +750,8 @@
             uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التجهيز...`;
             uploadBtn.disabled = true;
 
-            const storageRef = storage.ref(`patients_files/${safePhone}/${Date.now()}_${file.name}`);
+            let filePath = `patients_files/${safePhone}/${Date.now()}_${file.name}`;
+            const storageRef = storage.ref(filePath);
             const uploadTask = storageRef.put(file);
 
             uploadTask.on('state_changed',
@@ -757,7 +760,6 @@
                     uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع (${Math.round(progress)}%)...`;
                 },
                 (error) => {
-                    console.error("Upload failed", error);
                     showToast("فشل الرفع! يرجى التأكد من الإنترنت.", "error");
                     uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
                     uploadBtn.disabled = false;
@@ -766,9 +768,8 @@
                 () => {
                     uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
                         if(!currentPatient.files) currentPatient.files = [];
-                        currentPatient.files.push({ url: downloadURL, name: file.name });
+                        currentPatient.files.push({ url: downloadURL, name: file.name, path: filePath });
                         
-                        // حفظ في قاعدة البيانات فوراً
                         db.ref('patients_files_data/' + safePhone).set(currentPatient.files).then(() => {
                             renderFilesList();
                             uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
@@ -776,18 +777,12 @@
                             e.target.value = '';
                             forceSave(true);
                             showToast("تم رفع الملف بنجاح وحفظه!", "success");
-                        }).catch(err => {
-                            console.error("Database save failed", err);
-                            showToast("تم الرفع ولكن فشل الحفظ في السجل!", "error");
-                            uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
-                            uploadBtn.disabled = false;
                         });
                     });
                 }
             );
         };
 
-        // 🚨 عرض المرفقات مع تأثيرات شيك وتنزيل 🚨
         window.renderFilesList = function() {
             const container = document.getElementById('filesListContainer');
             if(!container) return;
@@ -796,35 +791,47 @@
                 currentPatient.files.forEach((file, idx) => {
                     let isImg = file.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                     let iconHtml = isImg ? `<img src="${file.url}" onclick="window.open('${file.url}', '_blank')" title="تكبير الصورة">` 
-                                         : `<div style="height:100%; width:100%; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-3x" style="color:#e74c3c;"></i></div>`;
+                                         : `<div style="height:100%; width:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#eee;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-3x" style="color:#e74c3c;"></i></div>`;
                     
                     container.innerHTML += `
                         <div class="file-item no-print">
                             ${iconHtml}
                             <button class="del-btn" onclick="deleteFile(${idx})" title="حذف المرفق"><i class="fa-solid fa-xmark"></i></button>
                             <div class="file-actions">
-                                <a href="${file.url}" target="_blank" download title="حفظ / تنزيل"><i class="fa-solid fa-download"></i></a>
-                                <button onclick="window.open('${file.url}', '_blank')" title="تكبير وعرض"><i class="fa-solid fa-expand"></i></button>
+                                <a href="${file.url}" target="_blank" download title="تنزيل"><i class="fa-solid fa-download"></i></a>
+                                <button onclick="window.open('${file.url}', '_blank')" title="تكبير"><i class="fa-solid fa-expand"></i></button>
                             </div>
                         </div>
                     `;
                 });
             } else {
-                container.innerHTML = `<p style="color: var(--text-muted); width: 100%; text-align: center;">لا توجد مرفقات حتى الآن.</p>`;
+                container.innerHTML = `<p style="color: var(--text-muted); width: 100%; text-align: center; font-weight: 600;">لا توجد مرفقات حتى الآن.</p>`;
             }
         };
 
         window.deleteFile = function(idx) {
             showCustomConfirm(
-                '<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق',
-                'هل أنت متأكد من مسح هذا الملف؟',
+                '<i class="fa-solid fa-trash-can"></i> حذف المرفق',
+                'هل أنت متأكد من مسح هذا الملف نهائياً؟',
                 () => {
+                    let fileToDelete = currentPatient.files[idx];
                     currentPatient.files.splice(idx, 1);
                     renderFilesList();
                     handleInput();
                     
                     let safePhone = getSafePhone(currentPatient.phone);
-                    db.ref('patients_files_data/' + safePhone).set(currentPatient.files);
+                    
+                    if (currentPatient.files.length > 0) {
+                        db.ref('patients_files_data/' + safePhone).set(currentPatient.files);
+                    } else {
+                        db.ref('patients_files_data/' + safePhone).remove();
+                    }
+
+                    if (fileToDelete.path) {
+                        storage.ref(fileToDelete.path).delete().catch(e => console.log("Storage delete error", e));
+                    }
+
+                    showToast("تم مسح المرفق بنجاح!", "success");
                 }
             );
         };
@@ -837,7 +844,6 @@
                 cache = cache.filter(p => !(p.phone === phone && p.name === name));
                 await localforage.setItem('patients_cache', cache);
                 
-                // مسح المرفقات من فايربيز
                 let safePhone = getSafePhone(phone);
                 db.ref('patients_files_data/' + safePhone).remove();
 
@@ -906,7 +912,6 @@
 
         function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
-        // 🚨 تحميل البيانات وسحب الملفات من فايربيز 🚨
         function loadPatientData(data) {
             currentPatient = { ...currentPatient, ...data };
             if(!currentPatient.sessions) currentPatient.sessions = [];
@@ -936,33 +941,21 @@
 
                 cardSessions.forEach(s => {
                     if(!s.d && !s.ws && !s.n) return;
-                    
                     let wsStr = String(s.ws || '').trim();
                     let nStr = String(s.n || '').trim();
 
-                    if (['عادي', 'شوك', 'تصريف', 'موجات', 'ليزر', 'كهرباء', 'أخري'].includes(wsStr)) {
-                        isPhysio = true;
-                    }
-                    
-                    if (/[0-9]+(\s*[\-\/\\]\s*[0-9]+)+/.test(nStr)) {
-                        isNutrition = true;
-                    }
+                    if (['عادي', 'شوك', 'تصريف', 'موجات', 'ليزر', 'كهرباء', 'أخري'].includes(wsStr)) isPhysio = true;
+                    if (/[0-9]+(\s*[\-\/\\]\s*[0-9]+)+/.test(nStr)) isNutrition = true;
                 });
 
                 if (!isPhysio && !isNutrition) {
                     let filledN = cardSessions.filter(s => String(s.n).trim() !== '');
                     let numsOnly = filledN.filter(s => /^[0-9\.\s]+$/.test(String(s.n).trim())).length;
-                    
-                    if (filledN.length > 0 && numsOnly >= filledN.length / 2) {
-                        isNutrition = true;
-                    }
+                    if (filledN.length > 0 && numsOnly >= filledN.length / 2) isNutrition = true;
                 }
 
-                if (isPhysio) {
-                    currentPatient.cardTypes[c] = 'علاج طبيعي';
-                } else {
-                    currentPatient.cardTypes[c] = 'تغذية علاجية';
-                }
+                if (isPhysio) currentPatient.cardTypes[c] = 'علاج طبيعي';
+                else currentPatient.cardTypes[c] = 'تغذية علاجية';
             }
 
             lastSavedStateString = JSON.stringify(currentPatient); 
