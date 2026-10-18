@@ -100,12 +100,24 @@
         .inline-date-btn:hover { background: #e67e22; transform: scale(1.05); }
         .date-input:focus + .inline-date-btn, .date-input:not(:placeholder-shown) + .inline-date-btn { display: none !important; }
 
-        .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 15px; border-radius: 8px; text-align: center; }
-        .upload-section h4 { margin: 0 0 10px 0; color: var(--primary-blue); }
-        .file-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; justify-content: center;}
-        .file-item { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-light); }
-        .file-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer;}
-        .file-item .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(231, 76, 60, 0.8); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center;}
+        /* 🚨 تصميم جديد وذكي لقسم المرفقات 🚨 */
+        .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 25px; border-radius: 12px; text-align: center; background: var(--sheet-bg); transition: 0.3s;}
+        .upload-section h4 { margin: 0 0 15px 0; color: var(--primary-blue); font-size: 18px; }
+        .file-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; justify-content: center;}
+        
+        .file-item { position: relative; width: 140px; height: 140px; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #f9f9f9; transition: 0.3s;}
+        .file-item img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: 0.3s; }
+        
+        /* تأثيرات الـ Hover للملفات */
+        .file-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.75); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; backdrop-filter: blur(2px); transition: 0.3s; opacity: 0; transform: translateY(10px); }
+        .file-item:hover .file-actions { opacity: 1; transform: translateY(0); }
+        .file-item:hover img { transform: scale(1.08); }
+        
+        .file-actions a, .file-actions button { color: white; text-decoration: none; font-size: 18px; background: none; border: none; cursor: pointer; transition: 0.2s; padding: 0 10px;}
+        .file-actions a:hover, .file-actions button:hover { color: var(--primary-green); transform: scale(1.2); }
+        
+        .file-item .del-btn { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: 0.2s; z-index: 10;}
+        .file-item .del-btn:hover { background: #c0392b; transform: scale(1.15); }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background-color: var(--sheet-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border-top: 5px solid var(--primary-green); max-height: 80vh; overflow-y: auto; }
@@ -126,7 +138,7 @@
             body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
 
             .no-print, .controls, .theme-switch-wrapper, .save-status-badge, .inline-date-btn,
-            iframe, .chat-toggle-btn, #chatBox, #chat-widget-container { display: none !important; } 
+            iframe, .chat-toggle-btn, #chatBox, #chat-widget-container, .upload-section { display: none !important; } 
             
             .paper-sheet { background-color: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important;}
             .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
@@ -237,9 +249,7 @@
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const storage = firebase.storage();
-        
-        // 🚨 إضافة تعريف قاعدة البيانات هنا عشان تحفظ المرفقات 🚨
-        const db = firebase.database();
+        const db = firebase.database(); // 🚨 إضافة الداتابيز للحفظ الأبدي للمرفقات
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
@@ -282,6 +292,13 @@
                 }
             });
         });
+
+        // 🚨 فلترة وتأمين رقم الموبايل لمنع أي خطأ في قاعدة البيانات 🚨
+        function getSafePhone(p) {
+            if(!p) return "unknown";
+            let eng = convertToEnglishNumbers(p);
+            return eng.replace(/\D/g, ''); 
+        }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('appToast');
@@ -383,16 +400,18 @@
                 </div>
             `;
 
+            // 🚨 تحديث شكل قسم المرفقات وإضافة زر الرفع باحترافية 🚨
             fullHtml += `
                 <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
                     <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
                     <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
-                    <button class="btn btn-new" style="margin: 0 auto;" onclick="document.getElementById('fileUploader').click()">اختيار ملف للرفع</button>
+                    <button id="uploadBtn" class="btn btn-new" style="margin: 0 auto; padding: 10px 25px; font-size: 16px;" onclick="document.getElementById('fileUploader').click()">
+                        <i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع
+                    </button>
                     <div class="file-list" id="filesListContainer"></div>
                 </div>
             `;
 
-            // 🚨 استبدال DOM مرة واحدة لمنع المشاكل البصرية عند إعادة الرسم 🚨
             container.innerHTML = fullHtml;
             renderFilesList();
             attachDoubleClickListener();
@@ -517,7 +536,6 @@
                     `;
                 } else {
                     nHtml = `<input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()">`;
-                    // 🚨 استخدام DataList لمربع الـ W/S ليكون ذكي وسهل 🚨
                     wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" list="ws_options" oninput="handleInput()" style="width:100%; height:100%; border:none; text-align:center; font-family:'Cairo'; font-weight:700; background:transparent; color:var(--text-main); outline:none; box-sizing:border-box;">`;
                 }
 
@@ -664,12 +682,6 @@
 
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-                
-                // 🚨 الحفظ الدائم للملفات في الفايربيز 🚨
-                if (currentPatient.phone) {
-                    await db.ref('patients_files_data/' + currentPatient.phone).set(currentPatient.files || []);
-                }
-
                 setSaveStatus('saved');
                 lastSavedStateString = currentStateStr; 
                 if(!isSilent) showToast("تم الحفظ بنجاح", "success");
@@ -719,54 +731,103 @@
             });
         }
 
-        async function handleFileUpload(e) {
+        // 🚨 دالة رفع الملفات المعدلة بـ Upload Task 🚨
+        window.handleFileUpload = function(e) {
+            updateStateFromDOM();
             const file = e.target.files[0];
-            if(!file || !currentPatient.phone) return showToast("يجب حفظ رقم الموبايل قبل الرفع", "error");
-            
-            showToast("جاري الرفع...", "info");
-            const storageRef = storage.ref(`patients_files/${currentPatient.phone}/${Date.now()}_${file.name}`);
-            
-            try {
-                const snapshot = await storageRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
-                currentPatient.files.push({ url: downloadURL, name: file.name });
-                
-                // حفظ فوري في فايربيز لضمان بقاء الملفات
-                await db.ref('patients_files_data/' + currentPatient.phone).set(currentPatient.files);
+            if(!file) return;
 
-                renderFilesList();
-                e.target.value = ''; // تصفير زر الرفع
-                forceSave(true);
-                showToast("تم رفع الملف", "success");
-            } catch(err) { showToast("فشل الرفع!", "error"); }
-        }
+            let safePhone = getSafePhone(currentPatient.phone);
+            if(safePhone === "unknown" || safePhone === "") {
+                showToast("يجب إدخال رقم الموبايل أولاً قبل رفع أي مرفق!", "error");
+                e.target.value = '';
+                return;
+            }
 
-        function renderFilesList() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التجهيز...`;
+            uploadBtn.disabled = true;
+
+            const storageRef = storage.ref(`patients_files/${safePhone}/${Date.now()}_${file.name}`);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع (${Math.round(progress)}%)...`;
+                },
+                (error) => {
+                    console.error("Upload failed", error);
+                    showToast("فشل الرفع! يرجى التأكد من الإنترنت.", "error");
+                    uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
+                    uploadBtn.disabled = false;
+                    e.target.value = '';
+                },
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        if(!currentPatient.files) currentPatient.files = [];
+                        currentPatient.files.push({ url: downloadURL, name: file.name });
+                        
+                        // حفظ في قاعدة البيانات فوراً
+                        db.ref('patients_files_data/' + safePhone).set(currentPatient.files).then(() => {
+                            renderFilesList();
+                            uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
+                            uploadBtn.disabled = false;
+                            e.target.value = '';
+                            forceSave(true);
+                            showToast("تم رفع الملف بنجاح وحفظه!", "success");
+                        }).catch(err => {
+                            console.error("Database save failed", err);
+                            showToast("تم الرفع ولكن فشل الحفظ في السجل!", "error");
+                            uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
+                            uploadBtn.disabled = false;
+                        });
+                    });
+                }
+            );
+        };
+
+        // 🚨 عرض المرفقات مع تأثيرات شيك وتنزيل 🚨
+        window.renderFilesList = function() {
             const container = document.getElementById('filesListContainer');
             if(!container) return;
             container.innerHTML = '';
-            if(currentPatient.files) {
+            if(currentPatient.files && currentPatient.files.length > 0) {
                 currentPatient.files.forEach((file, idx) => {
                     let isImg = file.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-                    let iconHtml = isImg ? `<img src="${file.url}" onclick="window.open('${file.url}', '_blank')">` 
-                                         : `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#eee; cursor:pointer;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-2x" style="color:#e74c3c;"></i></div>`;
+                    let iconHtml = isImg ? `<img src="${file.url}" onclick="window.open('${file.url}', '_blank')" title="تكبير الصورة">` 
+                                         : `<div style="height:100%; width:100%; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-3x" style="color:#e74c3c;"></i></div>`;
+                    
                     container.innerHTML += `
                         <div class="file-item no-print">
                             ${iconHtml}
-                            <button class="del-btn" onclick="deleteFile(${idx})"><i class="fa-solid fa-xmark"></i></button>
+                            <button class="del-btn" onclick="deleteFile(${idx})" title="حذف المرفق"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="file-actions">
+                                <a href="${file.url}" target="_blank" download title="حفظ / تنزيل"><i class="fa-solid fa-download"></i></a>
+                                <button onclick="window.open('${file.url}', '_blank')" title="تكبير وعرض"><i class="fa-solid fa-expand"></i></button>
+                            </div>
                         </div>
                     `;
                 });
+            } else {
+                container.innerHTML = `<p style="color: var(--text-muted); width: 100%; text-align: center;">لا توجد مرفقات حتى الآن.</p>`;
             }
-        }
+        };
 
-        function deleteFile(idx) {
-            showCustomConfirm('<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق', 'هل أنت متأكد من مسح هذا الملف؟', () => { 
-                currentPatient.files.splice(idx, 1); 
-                renderFilesList(); 
-                handleInput(); 
-            });
-        }
+        window.deleteFile = function(idx) {
+            showCustomConfirm(
+                '<i class="fa-solid fa-file-circle-xmark"></i> حذف المرفق',
+                'هل أنت متأكد من مسح هذا الملف؟',
+                () => {
+                    currentPatient.files.splice(idx, 1);
+                    renderFilesList();
+                    handleInput();
+                    
+                    let safePhone = getSafePhone(currentPatient.phone);
+                    db.ref('patients_files_data/' + safePhone).set(currentPatient.files);
+                }
+            );
+        };
 
         function deletePatient() {
             let phone = currentPatient.phone; let name = currentPatient.name;
@@ -776,8 +837,9 @@
                 cache = cache.filter(p => !(p.phone === phone && p.name === name));
                 await localforage.setItem('patients_cache', cache);
                 
-                // حذف الملفات المرتبطة من فايربيز
-                db.ref('patients_files_data/' + phone).remove();
+                // مسح المرفقات من فايربيز
+                let safePhone = getSafePhone(phone);
+                db.ref('patients_files_data/' + safePhone).remove();
 
                 showToast("تم الحذف بنجاح!", "success");
                 createNewPatient();
@@ -844,19 +906,22 @@
 
         function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
+        // 🚨 تحميل البيانات وسحب الملفات من فايربيز 🚨
         function loadPatientData(data) {
             currentPatient = { ...currentPatient, ...data };
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
             
-            // 🚨 جلب الملفات المرفقة من فايربيز لضمان عدم ضياعها 🚨
             if (currentPatient.phone) {
-                db.ref('patients_files_data/' + currentPatient.phone).once('value').then(snap => {
+                let safePhone = getSafePhone(currentPatient.phone);
+                db.ref('patients_files_data/' + safePhone).once('value').then(snap => {
                     if (snap.exists()) {
                         currentPatient.files = snap.val() || [];
-                        renderFilesList();
+                    } else {
+                        currentPatient.files = [];
                     }
-                });
+                    renderFilesList();
+                }).catch(err => console.log("Files Fetch Error", err));
             }
             
             currentPatient.cardTypes = {};
