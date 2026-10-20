@@ -191,7 +191,7 @@
         }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
-        .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: max-width 0.3s; }
         .modal-box h3 { margin-top: 0; color: var(--text-dark);}
         .modal-input { width: 90%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; margin-bottom: 10px; background: var(--input-bg); color: var(--text-dark); font-size: 13px;}
         .modal-actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px;}
@@ -385,19 +385,18 @@
             </div>
         </div>
 
+        <!-- 🚨 النافذة الجديدة المجمعة (السجل المالي + سجل GLP + النظام الحالي) 🚨 -->
         <div id="historyModal" class="modal-overlay">
-            <div class="modal-box" style="max-width: 650px; width: 95%;">
-                <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> السجل المالي: <span id="historyPatientName" style="color: var(--text-dark);"></span>
+            <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s;">
+                <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <i class="fa-solid fa-file-medical"></i> ملف المريض: <span id="historyPatientName" style="color: var(--text-dark);"></span>
                 </h3>
                 
-                <div style="max-height: 350px; overflow-y: auto; overflow-x: hidden; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px;">
-                    <table class="history-table">
-                        <thead><tr><th>التاريخ</th><th>البيان / القسم</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead>
-                        <tbody id="historyTableBody"></tbody>
-                    </table>
+                <div id="historyModalBody">
+                    <!-- سيتم ضخ المحتوى هنا أوتوماتيك من الجافاسكريبت -->
                 </div>
-                <div class="modal-actions">
+                
+                <div class="modal-actions" style="margin-top: 20px;">
                     <button onclick="document.getElementById('historyModal').style.display='none'" class="btn-cancel" style="width: 100%;">إغلاق</button>
                 </div>
             </div>
@@ -440,6 +439,12 @@
                  .replace(/>/g, "&gt;")
                  .replace(/"/g, "&quot;")
                  .replace(/'/g, "&#039;");
+        }
+
+        function getSafePhone(p) {
+            if(!p) return "unknown";
+            let eng = convertToEnglishNumbers(p);
+            return eng.replace(/\D/g, ''); 
         }
 
         const firebaseConfig = {
@@ -956,7 +961,31 @@
             }, 2000); 
         }
 
-        function addGLP() { let n = escapeHtml(document.getElementById('glpName').value.trim()); let d = document.getElementById('glpDose').value; if(!n) return; glpQueue.push({name: n, dose: d}); document.getElementById('glpName').value = ''; renderUI(); scheduleSync(); }
+        // 🚨 تعديل دالة إضافة GLP عشان تتسجل في الهيستوري بتاع المريض على الفايربيز 🚨
+        function addGLP() { 
+            let n = escapeHtml(document.getElementById('glpName').value.trim()); 
+            let d = document.getElementById('glpDose').value; 
+            if(!n) return; 
+            glpQueue.push({name: n, dose: d}); 
+            document.getElementById('glpName').value = ''; 
+            
+            // حفظ جرعة GLP للمريض في الفايربيز
+            let targetNorm = normalizeArabicName(n);
+            let phone = window.patientPhones[n] || localStorage.getItem('phone_' + targetNorm);
+            if (!phone) {
+                let p = patientsQueue.find(x => normalizeArabicName(x.name) === targetNorm);
+                if (p) phone = p.phone;
+            }
+            if (phone) {
+                let safePhone = getSafePhone(phone);
+                let todayStr = document.getElementById('todayDate').value;
+                if(db) db.ref(`nutrition_data/${safePhone}/glp/${todayStr}`).set(d);
+            }
+
+            renderUI(); 
+            scheduleSync(); 
+        }
+
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         function addMedication() { let name = escapeHtml(document.getElementById('medName').value.trim()); let buyer = escapeHtml(document.getElementById('medBuyer').value.trim()); let amt = document.getElementById('medAmount').value; let method = document.getElementById('medMethod').value; if(!name || !amt) return; let desc = buyer ? `${name} (للمريض: ${buyer})` : name; financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); document.getElementById('medName').value = ''; document.getElementById('medBuyer').value = ''; document.getElementById('medAmount').value = ''; renderUI(); scheduleSync(); }
         function addExpense() { let desc = escapeHtml(document.getElementById('expDesc').value.trim()); let amt = document.getElementById('expAmount').value; if(!desc || !amt) return; financialsQueue.push({type: 'مصروف', desc: desc, method: 'كاش', amount: amt}); document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = ''; renderUI(); scheduleSync(); }
@@ -1055,7 +1084,6 @@
             }
         });
 
-        // 🚨 رسالة الواتساب المحدثة بصيغة التأكيد 🚨
         function processAndOpenWhatsApp(phone, patientName, targetNorm) {
             phone = phone.replace(/\D/g,'');
             if (phone.length === 10) phone = '20' + phone; 
@@ -1075,14 +1103,10 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        function showHistoryModal(nameEscaped) {
-            let name = nameEscaped.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#039;/g, "'");
-            document.getElementById('historyPatientName').innerText = name;
-            let tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
-            
-            let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
+        // 🚨 دالة مساعدة لتجميع السجل المالي 🚨
+        function buildFinancialHistoryHtml(name) {
             let targetNorm = normalizeArabicName(name); 
+            let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
             let patientHistory = [];
             
             for (let key in allHistory) {
@@ -1107,9 +1131,10 @@
             });
             
             let totalPaid = 0; 
-            
+            let html = '<table class="history-table"><thead><tr><th>التاريخ</th><th>البيان</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead><tbody>';
+
             if (combined.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات مالية مسجلة لهذا المريض</td></tr>';
+                html += '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات</td></tr>';
             } else {
                 combined.forEach(record => {
                     let amt = parseFloat(record.amount) || 0;
@@ -1122,7 +1147,7 @@
                     let creditHtml = crd > 0 ? `<span style="color:var(--primary-blue);font-weight:bold;">${crd}</span>` : '<span style="color:#ccc;">-</span>';
                     let amountHtml = amt > 0 ? `<span style="color:var(--primary-green);font-weight:bold;">${amt}</span>` : '<span style="color:#ccc;">-</span>';
                     
-                    tbody.innerHTML += `<tr>
+                    html += `<tr>
                         <td>${escapeHtml(record.date)}</td>
                         <td>${escapeHtml(record.type)}</td>
                         <td>${amountHtml}</td>
@@ -1131,7 +1156,7 @@
                     </tr>`;
                 });
 
-                tbody.innerHTML += `
+                html += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
                     <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
                     <td style="color:var(--primary-green); font-weight:900; font-size: 16px;">${totalPaid}</td>
@@ -1139,9 +1164,121 @@
                     <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
                 </tr>`;
             }
-            
-            document.getElementById('historyModal').style.display = 'flex';
+            html += '</tbody></table>';
+            return html;
         }
+
+        // 🚨 الدالة المحدثة لفتح ملف المريض الشامل 🚨
+        window.openPatientHistory = function(idx) {
+            let patient = patientsQueue[idx];
+            let name = patient.name;
+            let safePhone = getSafePhone(patient.phone);
+            let isNutrition = patient.dept === 'تغذية علاجية';
+
+            document.getElementById('historyPatientName').innerText = name;
+            
+            let finHtml = buildFinancialHistoryHtml(name);
+            let modalBody = document.getElementById('historyModalBody');
+            
+            if (isNutrition) {
+                // عرض مخصص لتغذية علاجية (3 أعمدة: مالي - GLP - النظام)
+                document.getElementById('historyModalBox').style.maxWidth = '1000px';
+                modalBody.innerHTML = `
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; text-align: right;">
+                        <div style="flex: 1.5; min-width: 300px;">
+                            <h4 style="color: var(--primary-blue); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">السجل المالي</h4>
+                            <div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                                ${finHtml}
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <h4 style="color: var(--glp-color); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">سجل حقن GLP</h4>
+                            <div id="glpHistoryBox" style="max-height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
+                            </div>
+                        </div>
+                        <div style="flex: 1.5; min-width: 250px;">
+                            <h4 style="color: var(--primary-green); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0; display: flex; justify-content: space-between; align-items: center;">
+                                النظام الحالي
+                                <button onclick="enableDietEdit('${safePhone}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px;"><i class="fa-solid fa-pen"></i> تعديل</button>
+                            </h4>
+                            <div id="dietPlanContainer" style="background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; min-height: 150px; white-space: pre-wrap; font-weight: 600; line-height: 1.6;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                if (safePhone !== 'unknown' && db) {
+                    db.ref('nutrition_data/' + safePhone).once('value').then(snap => {
+                        let data = snap.val() || {};
+                        
+                        // رندر سجل GLP
+                        let glpData = data.glp || {};
+                        let glpHtml = '';
+                        let glpKeys = Object.keys(glpData).sort((a,b) => new Date(b) - new Date(a)); 
+                        if (glpKeys.length === 0) {
+                            glpHtml = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
+                        } else {
+                            glpHtml = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">';
+                            glpKeys.forEach(k => {
+                                glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px;">${k}</td><td style="padding: 8px; font-weight: bold; color: var(--glp-color); direction: ltr;">${glpData[k]}</td></tr>`;
+                            });
+                            glpHtml += '</table>';
+                        }
+                        document.getElementById('glpHistoryBox').innerHTML = glpHtml;
+                        
+                        // رندر النظام الحالي
+                        let dietText = data.diet || '';
+                        window.currentDietData = dietText; 
+                        document.getElementById('dietPlanContainer').innerText = dietText || 'لم يتم تسجيل نظام غذائي بعد...';
+                    }).catch(err => {
+                        document.getElementById('glpHistoryBox').innerHTML = 'خطأ في التحميل';
+                        document.getElementById('dietPlanContainer').innerHTML = 'خطأ في التحميل';
+                    });
+                } else {
+                    document.getElementById('glpHistoryBox').innerHTML = '<p style="text-align:center; font-size:13px; color:var(--danger);">يجب حفظ رقم موبايل صالح للمريض أولاً</p>';
+                    document.getElementById('dietPlanContainer').innerHTML = '<p style="text-align:center; font-size:13px; color:var(--danger);">يجب حفظ رقم موبايل صالح للمريض أولاً</p>';
+                }
+
+            } else {
+                // عرض مخصص للعلاج الطبيعي (سجل مالي فقط)
+                document.getElementById('historyModalBox').style.maxWidth = '650px';
+                modalBody.innerHTML = `
+                    <div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                        ${finHtml}
+                    </div>
+                `;
+            }
+
+            document.getElementById('historyModal').style.display = 'flex';
+        };
+
+        // 🚨 دوال تعديل وحفظ النظام الغذائي 🚨
+        window.enableDietEdit = function(safePhone) {
+            let container = document.getElementById('dietPlanContainer');
+            let currentText = window.currentDietData || '';
+            container.innerHTML = `
+                <textarea id="dietEditArea" style="width: 100%; box-sizing: border-box; height: 120px; border: 2px solid var(--primary-blue); border-radius: 6px; padding: 8px; font-family: 'Cairo'; font-weight: 600; outline: none; resize: vertical; background: var(--card-bg); color: var(--text-dark);">${currentText}</textarea>
+                <div style="text-align: left; margin-top: 8px;">
+                    <button onclick="saveDietPlan('${safePhone}', this)" style="background: var(--primary-green); color: white; border: none; padding: 6px 20px; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; transition: 0.3s;"><i class="fa-solid fa-save"></i> حفظ النظام</button>
+                </div>
+            `;
+            document.getElementById('dietEditArea').focus();
+        };
+
+        window.saveDietPlan = function(safePhone, btnEl) {
+            let newDiet = document.getElementById('dietEditArea').value;
+            btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            db.ref('nutrition_data/' + safePhone + '/diet').set(newDiet).then(() => {
+                window.currentDietData = newDiet;
+                document.getElementById('dietPlanContainer').innerText = newDiet || 'لم يتم تسجيل نظام غذائي بعد...';
+                showToast('تم حفظ النظام بنجاح!', 'success');
+            }).catch(e => {
+                showToast('خطأ في الحفظ، تأكد من الإنترنت!', 'error');
+                btnEl.innerHTML = '<i class="fa-solid fa-save"></i> حفظ النظام';
+            });
+        };
 
         function renderUI() {
             updateStatsCounters();
@@ -1170,7 +1307,8 @@
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
                             <div style="display:inline-flex; align-items:center; gap:6px;">
-                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="showHistoryModal('${jsSafeName}')" title="السجل المالي"></i>
+                                <!-- 🚨 تم تحديث ربط أيقونة المعلومات 🚨 -->
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="openPatientHistory(${gIdx})" title="ملف المريض (مالي / تغذية)"></i>
                                 <span onclick="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')">${safeName}</span>
                             </div>
                         </td>
@@ -1209,7 +1347,8 @@
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
                         <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
                             <div style="display:inline-flex; align-items:center; gap:6px;">
-                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="showHistoryModal('${jsSafeName}')" title="السجل المالي"></i>
+                                <!-- 🚨 تم تحديث ربط أيقونة المعلومات 🚨 -->
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="openPatientHistory(${gIdx})" title="ملف المريض (مالي / تغذية)"></i>
                                 <span onclick="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')">${safeName}</span>
                             </div>
                         </td>
