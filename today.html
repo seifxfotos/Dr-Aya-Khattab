@@ -318,7 +318,8 @@
                     <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
                         <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="flex:1; margin:0; min-width: 80px;">
-                        <input type="text" id="medBuyer" placeholder="المشتري" class="modal-input" style="flex:1; margin:0; min-width: 80px;">
+                        <input type="text" id="medBuyer" placeholder="اسم المريض" class="modal-input" style="flex:1; margin:0; min-width: 80px;" list="medPatientsList">
+                        <datalist id="medPatientsList"></datalist>
                         <select id="medMethod" class="modal-input" style="width: 80px; margin:0;"><option value="كاش">كاش</option><option value="فودافون كاش">فون كاش</option><option value="أنستا باي">أنستا باي</option></select>
                         <input type="number" id="medAmount" placeholder="المبلغ" class="modal-input" style="width: 70px; margin:0;">
                         <button class="btn-add" style="background:var(--primary-green)" onclick="addMedication()"><i class="fa-solid fa-plus"></i></button>
@@ -990,6 +991,25 @@
             });
         }
 
+        function updateMedPatientsList() {
+            const dataList = document.getElementById('medPatientsList');
+            if (!dataList) return;
+            dataList.innerHTML = '';
+            
+            let allNames = new Set();
+            patientsQueue.forEach(p => {
+                if (p.name) {
+                    allNames.add(p.name.trim());
+                }
+            });
+
+            allNames.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name;
+                dataList.appendChild(opt);
+            });
+        }
+
         function addGLP() { 
             let n = escapeHtml(document.getElementById('glpName').value.trim()); 
             let d = document.getElementById('glpDose').value; 
@@ -1386,6 +1406,7 @@
         function renderUI() {
             updateStatsCounters();
             updateGlpPatientsList(); 
+            updateMedPatientsList(); 
             
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${escapeHtml(g.name)}</td><td><span class="badge badge-glp">${escapeHtml(g.dose)}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             let medsHtml = ''; let expsHtml = '';
