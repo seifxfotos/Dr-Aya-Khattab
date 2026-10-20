@@ -198,15 +198,10 @@
         .btn-confirm { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
         .btn-cancel { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
 
-        .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; table-layout: fixed; }
-        .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
+        .history-table { width: 100%; border-collapse: collapse; margin-bottom: 0; box-shadow: none; font-size: 13px; table-layout: auto; }
+        .history-table th, .history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
         .history-table th { background: var(--primary-blue); color: white; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 10; }
         .history-table tr:last-child td { border-bottom: none; }
-        .history-table th:nth-child(1) { width: 25%; }
-        .history-table th:nth-child(2) { width: 35%; }
-        .history-table th:nth-child(3) { width: 15%; }
-        .history-table th:nth-child(4) { width: 12.5%; }
-        .history-table th:nth-child(5) { width: 12.5%; }
     </style>
 </head>
 <body>
@@ -309,7 +304,6 @@
                 <div class="card-panel">
                     <h2 style="color: var(--glp-color);"><i class="fa-solid fa-syringe"></i> برنامج حقن GLP</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <!-- 🚨 تعديل خانة اسم المريض في الـ GLP لتعرض الداتاليست 🚨 -->
                         <input type="text" id="glpName" placeholder="اسم المريض" class="modal-input" style="width: auto; flex:1; margin:0;" list="glpPatientsList">
                         <datalist id="glpPatientsList"></datalist>
                         <select id="glpDose" class="modal-input" style="width: auto; margin:0;"><option value="0.25">جرعة 0.25</option><option value="0.50">جرعة 0.50</option><option value="1">جرعة 1</option></select>
@@ -962,7 +956,6 @@
             }, 2000); 
         }
 
-        // 🚨 دالة لتحديث قائمة الـ GLP بمرضى التغذية العلاجية المحجوزين في اليوم 🚨
         function updateGlpPatientsList() {
             const dataList = document.getElementById('glpPatientsList');
             if (!dataList) return;
@@ -995,11 +988,16 @@
                 let p = patientsQueue.find(x => normalizeArabicName(x.name) === targetNorm);
                 if (p) phone = p.phone;
             }
+            
+            // 🚨 الاعتماد على الاسم كبديل لعدم وجود هاتف 🚨
+            let patientKey = targetNorm; 
             if (phone) {
                 let safePhone = getSafePhone(phone);
-                let todayStr = document.getElementById('todayDate').value;
-                if(db) db.ref(`nutrition_data/${safePhone}/glp/${todayStr}`).set(d);
+                if (safePhone !== "unknown") patientKey = safePhone;
             }
+            
+            let todayStr = document.getElementById('todayDate').value;
+            if(db) db.ref(`nutrition_data/${patientKey}/glp/${todayStr}`).set(d);
 
             renderUI(); 
             scheduleSync(); 
@@ -1149,7 +1147,7 @@
             });
             
             let totalPaid = 0; 
-            let html = '<table class="history-table"><thead><tr><th>التاريخ</th><th>البيان</th><th>المدفوع</th><th>عليه</th><th>له</th></tr></thead><tbody>';
+            let html = '<table class="history-table"><thead><tr><th style="white-space:nowrap;">التاريخ</th><th style="white-space:nowrap;">البيان</th><th style="white-space:nowrap;">المدفوع</th><th style="white-space:nowrap;">عليه</th><th style="white-space:nowrap;">له</th></tr></thead><tbody>';
 
             if (combined.length === 0) {
                 html += '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد معاملات</td></tr>';
@@ -1166,8 +1164,8 @@
                     let amountHtml = amt > 0 ? `<span style="color:var(--primary-green);font-weight:bold;">${amt}</span>` : '<span style="color:#ccc;">-</span>';
                     
                     html += `<tr>
-                        <td>${escapeHtml(record.date)}</td>
-                        <td>${escapeHtml(record.type)}</td>
+                        <td style="white-space:nowrap;">${escapeHtml(record.date)}</td>
+                        <td style="white-space:nowrap;">${escapeHtml(record.type)}</td>
                         <td>${amountHtml}</td>
                         <td>${debtHtml}</td>
                         <td>${creditHtml}</td>
@@ -1176,7 +1174,7 @@
 
                 html += `
                 <tr style="background-color: rgba(0, 147, 208, 0.1); border-top: 2px solid var(--primary-blue);">
-                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px;">إجمالي المدفوع:</td>
+                    <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: 900; color: var(--primary-blue); font-size: 15px; white-space:nowrap;">إجمالي المدفوع:</td>
                     <td style="color:var(--primary-green); font-weight:900; font-size: 16px;">${totalPaid}</td>
                     <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
                     <td style="color:var(--text-dark); font-weight:900; font-size: 16px;">-</td>
@@ -1186,10 +1184,16 @@
             return html;
         }
 
+        // 🚨 فتح ملف المريض (مالي + GLP + نظام غذائي) 🚨
         window.openPatientHistory = function(idx) {
             let patient = patientsQueue[idx];
             let name = patient.name;
+            let targetNorm = normalizeArabicName(name);
             let safePhone = getSafePhone(patient.phone);
+            
+            // الاعتماد على الاسم كمعرف إذا كان الموبايل غير موجود
+            let patientKey = (safePhone !== 'unknown') ? safePhone : targetNorm;
+            
             let isNutrition = patient.dept === 'تغذية علاجية';
 
             document.getElementById('historyPatientName').innerText = name;
@@ -1198,25 +1202,26 @@
             let modalBody = document.getElementById('historyModalBody');
             
             if (isNutrition) {
+                // إعطاء مساحة أكبر لجدول الماليات
                 document.getElementById('historyModalBox').style.maxWidth = '1000px';
                 modalBody.innerHTML = `
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap; text-align: right;">
-                        <div style="flex: 1.5; min-width: 300px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; text-align: right;">
+                        <div style="flex: 2.2; min-width: 350px;">
                             <h4 style="color: var(--primary-blue); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">السجل المالي</h4>
                             <div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
                                 ${finHtml}
                             </div>
                         </div>
-                        <div style="flex: 1; min-width: 200px;">
+                        <div style="flex: 1; min-width: 150px;">
                             <h4 style="color: var(--glp-color); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">سجل حقن GLP</h4>
                             <div id="glpHistoryBox" style="max-height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
                                 <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
                             </div>
                         </div>
-                        <div style="flex: 1.5; min-width: 250px;">
+                        <div style="flex: 1.8; min-width: 250px;">
                             <h4 style="color: var(--primary-green); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0; display: flex; justify-content: space-between; align-items: center;">
                                 النظام الحالي
-                                <button onclick="enableDietEdit('${safePhone}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px;"><i class="fa-solid fa-pen"></i> تعديل</button>
+                                <button onclick="enableDietEdit('${patientKey}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px;"><i class="fa-solid fa-pen"></i> تعديل</button>
                             </h4>
                             <div id="dietPlanContainer" style="background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; min-height: 150px; white-space: pre-wrap; font-weight: 600; line-height: 1.6;">
                                 <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
@@ -1225,34 +1230,37 @@
                     </div>
                 `;
                 
-                if (safePhone !== 'unknown' && db) {
-                    db.ref('nutrition_data/' + safePhone).once('value').then(snap => {
+                // الخانات الافتراضية
+                document.getElementById('glpHistoryBox').innerHTML = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
+                document.getElementById('dietPlanContainer').innerText = 'لا يوجد نظام حالي';
+                window.currentDietData = '';
+
+                if (db) {
+                    db.ref('nutrition_data/' + patientKey).once('value').then(snap => {
                         let data = snap.val() || {};
                         
+                        // رندر سجل GLP
                         let glpData = data.glp || {};
                         let glpHtml = '';
                         let glpKeys = Object.keys(glpData).sort((a,b) => new Date(b) - new Date(a)); 
-                        if (glpKeys.length === 0) {
-                            glpHtml = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
-                        } else {
+                        if (glpKeys.length > 0) {
                             glpHtml = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">';
                             glpKeys.forEach(k => {
                                 glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px;">${k}</td><td style="padding: 8px; font-weight: bold; color: var(--glp-color); direction: ltr;">${glpData[k]}</td></tr>`;
                             });
                             glpHtml += '</table>';
+                            document.getElementById('glpHistoryBox').innerHTML = glpHtml;
                         }
-                        document.getElementById('glpHistoryBox').innerHTML = glpHtml;
                         
+                        // رندر النظام الحالي
                         let dietText = data.diet || '';
                         window.currentDietData = dietText; 
-                        document.getElementById('dietPlanContainer').innerText = dietText || 'لم يتم تسجيل نظام غذائي بعد...';
+                        if(dietText.trim() !== '') {
+                            document.getElementById('dietPlanContainer').innerText = dietText;
+                        }
                     }).catch(err => {
-                        document.getElementById('glpHistoryBox').innerHTML = 'خطأ في التحميل';
-                        document.getElementById('dietPlanContainer').innerHTML = 'خطأ في التحميل';
+                        console.error(err);
                     });
-                } else {
-                    document.getElementById('glpHistoryBox').innerHTML = '<p style="text-align:center; font-size:13px; color:var(--danger);">يجب حفظ رقم موبايل صالح للمريض أولاً</p>';
-                    document.getElementById('dietPlanContainer').innerHTML = '<p style="text-align:center; font-size:13px; color:var(--danger);">يجب حفظ رقم موبايل صالح للمريض أولاً</p>';
                 }
 
             } else {
@@ -1267,24 +1275,24 @@
             document.getElementById('historyModal').style.display = 'flex';
         };
 
-        window.enableDietEdit = function(safePhone) {
+        window.enableDietEdit = function(patientKey) {
             let container = document.getElementById('dietPlanContainer');
             let currentText = window.currentDietData || '';
             container.innerHTML = `
                 <textarea id="dietEditArea" style="width: 100%; box-sizing: border-box; height: 120px; border: 2px solid var(--primary-blue); border-radius: 6px; padding: 8px; font-family: 'Cairo'; font-weight: 600; outline: none; resize: vertical; background: var(--card-bg); color: var(--text-dark);">${currentText}</textarea>
                 <div style="text-align: left; margin-top: 8px;">
-                    <button onclick="saveDietPlan('${safePhone}', this)" style="background: var(--primary-green); color: white; border: none; padding: 6px 20px; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; transition: 0.3s;"><i class="fa-solid fa-save"></i> حفظ النظام</button>
+                    <button onclick="saveDietPlan('${patientKey}', this)" style="background: var(--primary-green); color: white; border: none; padding: 6px 20px; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; transition: 0.3s;"><i class="fa-solid fa-save"></i> حفظ النظام</button>
                 </div>
             `;
             document.getElementById('dietEditArea').focus();
         };
 
-        window.saveDietPlan = function(safePhone, btnEl) {
+        window.saveDietPlan = function(patientKey, btnEl) {
             let newDiet = document.getElementById('dietEditArea').value;
             btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            db.ref('nutrition_data/' + safePhone + '/diet').set(newDiet).then(() => {
+            db.ref('nutrition_data/' + patientKey + '/diet').set(newDiet).then(() => {
                 window.currentDietData = newDiet;
-                document.getElementById('dietPlanContainer').innerText = newDiet || 'لم يتم تسجيل نظام غذائي بعد...';
+                document.getElementById('dietPlanContainer').innerText = newDiet || 'لا يوجد نظام حالي';
                 showToast('تم حفظ النظام بنجاح!', 'success');
             }).catch(e => {
                 showToast('خطأ في الحفظ، تأكد من الإنترنت!', 'error');
@@ -1292,7 +1300,6 @@
             });
         };
 
-        // 🚨 الدالة المحدثة اللي بتضيف الأسماء لقايمة GLP 🚨
         function renderUI() {
             updateStatsCounters();
             updateGlpPatientsList(); 
