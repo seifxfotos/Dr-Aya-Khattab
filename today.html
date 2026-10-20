@@ -418,14 +418,13 @@
     <script>
         window.allPatientNames = [];
 
-        // 🚨 التوحيد الذكي للاسم (مهم جداً للبحث الدقيق) 🚨
         function normalizeArabicName(name) {
             if (!name) return "";
             return String(name)
-                .replace(/[\u064B-\u065F\u0640]/g, "") // إزالة التشكيل والتطويل
-                .replace(/[أإآء]/g, "ا") // توحيد الألف والهمزات
-                .replace(/[يىئ]/g, "ي") // توحيد الياء والألف المقصورة
-                .replace(/ة/g, "ه") // توحيد التاء المربوطة
+                .replace(/[\u064B-\u065F\u0640]/g, "") 
+                .replace(/[أإآء]/g, "ا") 
+                .replace(/[يىئ]/g, "ي") 
+                .replace(/ة/g, "ه") 
                 .replace(/عبد ال/g, "عبدال")
                 .replace(/ابو /g, "ابو")
                 .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
@@ -463,7 +462,6 @@
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
             projectId: "today-2d146",
-            storageBucket: "today-2d146.firebasestorage.app",
             messagingSenderId: "742225764525",
             appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
@@ -1169,14 +1167,15 @@
             return html;
         }
 
-        // 🚨 دالة سحب تاريخ GLP للمريض من قاعدة البيانات كاملة (من أول يوم للسيستم) 🚨
+        // 🚨 دالة سحب تاريخ GLP الكامل من الفايربيز 🚨
         function fetchAndRenderPatientGlpHistory(patientName) {
             let targetNorm = normalizeArabicName(patientName);
             let glpRecords = [];
             let seen = new Set();
             
-            // إضافة جرعات اليوم اللي لسه متسجلتش في الداتابيز
             let todayDate = document.getElementById('todayDate').value;
+            
+            // إضافة جرعات اليوم اللي لسه متسجلتش في الداتابيز عشان متسقطش
             glpQueue.forEach(record => {
                 if (normalizeArabicName(record.name) === targetNorm) {
                     let str = todayDate + ' (اليوم)|' + record.dose;
@@ -1187,12 +1186,12 @@
                 }
             });
 
-            // سحب كل الأيام من الفايربيز (لضمان جلب الداتا من أول يوم للسيستم)
             if(db) {
+                // سحب كل الأيام من الفايربيز مرة واحدة
                 db.ref('clinic_days').once('value').then(snap => {
                     let allDays = snap.val() || {};
                     for (let dateStr in allDays) {
-                        if (dateStr === todayDate) continue; // تم إضافته مسبقاً
+                        if (dateStr === todayDate) continue; 
                         let dayData = allDays[dateStr];
                         if (dayData && dayData.glp && Array.isArray(dayData.glp)) {
                             dayData.glp.forEach(record => {
@@ -1212,12 +1211,11 @@
                     if(box) box.innerHTML = '<p style="color:var(--danger); text-align:center;">خطأ في تحميل السجل</p>';
                 });
             } else {
-                renderGlpTable(glpRecords); // لو مفيش اتصال يعرض اللي في الطابور بس
+                renderGlpTable(glpRecords); 
             }
         }
 
         function renderGlpTable(glpRecords) {
-            // ترتيب من الأحدث للأقدم
             glpRecords.sort((a, b) => {
                 let da = a.date.replace(' (اليوم)', '');
                 let db = b.date.replace(' (اليوم)', '');
@@ -1238,7 +1236,6 @@
             if(box) box.innerHTML = glpHtml;
         }
 
-        // 🚨 فتح ملف المريض وتعديل الواجهة 🚨
         window.openPatientHistory = function(idx) {
             let patient = patientsQueue[idx];
             let name = patient.name;
