@@ -309,7 +309,9 @@
                 <div class="card-panel">
                     <h2 style="color: var(--glp-color);"><i class="fa-solid fa-syringe"></i> برنامج حقن GLP</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <input type="text" id="glpName" placeholder="اسم المريض" class="modal-input" style="width: auto; flex:1; margin:0;">
+                        <!-- 🚨 تعديل خانة اسم المريض في الـ GLP لتعرض الداتاليست 🚨 -->
+                        <input type="text" id="glpName" placeholder="اسم المريض" class="modal-input" style="width: auto; flex:1; margin:0;" list="glpPatientsList">
+                        <datalist id="glpPatientsList"></datalist>
                         <select id="glpDose" class="modal-input" style="width: auto; margin:0;"><option value="0.25">جرعة 0.25</option><option value="0.50">جرعة 0.50</option><option value="1">جرعة 1</option></select>
                         <button class="btn-add btn-glp" onclick="addGLP()"><i class="fa-solid fa-plus"></i></button>
                     </div>
@@ -385,7 +387,6 @@
             </div>
         </div>
 
-        <!-- 🚨 النافذة الجديدة المجمعة (السجل المالي + سجل GLP + النظام الحالي) 🚨 -->
         <div id="historyModal" class="modal-overlay">
             <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s;">
                 <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -961,7 +962,26 @@
             }, 2000); 
         }
 
-        // 🚨 تعديل دالة إضافة GLP عشان تتسجل في الهيستوري بتاع المريض على الفايربيز 🚨
+        // 🚨 دالة لتحديث قائمة الـ GLP بمرضى التغذية العلاجية المحجوزين في اليوم 🚨
+        function updateGlpPatientsList() {
+            const dataList = document.getElementById('glpPatientsList');
+            if (!dataList) return;
+            dataList.innerHTML = '';
+            
+            let nutritionNames = new Set();
+            patientsQueue.forEach(p => {
+                if (p.dept === 'تغذية علاجية' && p.name) {
+                    nutritionNames.add(p.name.trim());
+                }
+            });
+
+            nutritionNames.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name;
+                dataList.appendChild(opt);
+            });
+        }
+
         function addGLP() { 
             let n = escapeHtml(document.getElementById('glpName').value.trim()); 
             let d = document.getElementById('glpDose').value; 
@@ -969,7 +989,6 @@
             glpQueue.push({name: n, dose: d}); 
             document.getElementById('glpName').value = ''; 
             
-            // حفظ جرعة GLP للمريض في الفايربيز
             let targetNorm = normalizeArabicName(n);
             let phone = window.patientPhones[n] || localStorage.getItem('phone_' + targetNorm);
             if (!phone) {
@@ -1103,7 +1122,6 @@
             document.getElementById('medsCashLabel').innerText = medsCash; document.getElementById('medsElecLabel').innerText = medsElec; document.getElementById('totalMedsValue').innerText = totalMeds; document.getElementById('totalRevenueValue').innerText = grandTotal;
         }
 
-        // 🚨 دالة مساعدة لتجميع السجل المالي 🚨
         function buildFinancialHistoryHtml(name) {
             let targetNorm = normalizeArabicName(name); 
             let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
@@ -1168,7 +1186,6 @@
             return html;
         }
 
-        // 🚨 الدالة المحدثة لفتح ملف المريض الشامل 🚨
         window.openPatientHistory = function(idx) {
             let patient = patientsQueue[idx];
             let name = patient.name;
@@ -1181,7 +1198,6 @@
             let modalBody = document.getElementById('historyModalBody');
             
             if (isNutrition) {
-                // عرض مخصص لتغذية علاجية (3 أعمدة: مالي - GLP - النظام)
                 document.getElementById('historyModalBox').style.maxWidth = '1000px';
                 modalBody.innerHTML = `
                     <div style="display: flex; gap: 20px; flex-wrap: wrap; text-align: right;">
@@ -1213,7 +1229,6 @@
                     db.ref('nutrition_data/' + safePhone).once('value').then(snap => {
                         let data = snap.val() || {};
                         
-                        // رندر سجل GLP
                         let glpData = data.glp || {};
                         let glpHtml = '';
                         let glpKeys = Object.keys(glpData).sort((a,b) => new Date(b) - new Date(a)); 
@@ -1228,7 +1243,6 @@
                         }
                         document.getElementById('glpHistoryBox').innerHTML = glpHtml;
                         
-                        // رندر النظام الحالي
                         let dietText = data.diet || '';
                         window.currentDietData = dietText; 
                         document.getElementById('dietPlanContainer').innerText = dietText || 'لم يتم تسجيل نظام غذائي بعد...';
@@ -1242,7 +1256,6 @@
                 }
 
             } else {
-                // عرض مخصص للعلاج الطبيعي (سجل مالي فقط)
                 document.getElementById('historyModalBox').style.maxWidth = '650px';
                 modalBody.innerHTML = `
                     <div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
@@ -1254,7 +1267,6 @@
             document.getElementById('historyModal').style.display = 'flex';
         };
 
-        // 🚨 دوال تعديل وحفظ النظام الغذائي 🚨
         window.enableDietEdit = function(safePhone) {
             let container = document.getElementById('dietPlanContainer');
             let currentText = window.currentDietData || '';
@@ -1280,8 +1292,11 @@
             });
         };
 
+        // 🚨 الدالة المحدثة اللي بتضيف الأسماء لقايمة GLP 🚨
         function renderUI() {
             updateStatsCounters();
+            updateGlpPatientsList(); 
+            
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${escapeHtml(g.name)}</td><td><span class="badge badge-glp">${escapeHtml(g.dose)}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             let medsHtml = ''; let expsHtml = '';
             financialsQueue.forEach((f, i) => {
@@ -1307,7 +1322,6 @@
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
                         <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
                             <div style="display:inline-flex; align-items:center; gap:6px;">
-                                <!-- 🚨 تم تحديث ربط أيقونة المعلومات 🚨 -->
                                 <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="openPatientHistory(${gIdx})" title="ملف المريض (مالي / تغذية)"></i>
                                 <span onclick="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')">${safeName}</span>
                             </div>
@@ -1347,7 +1361,6 @@
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
                         <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
                             <div style="display:inline-flex; align-items:center; gap:6px;">
-                                <!-- 🚨 تم تحديث ربط أيقونة المعلومات 🚨 -->
                                 <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="openPatientHistory(${gIdx})" title="ملف المريض (مالي / تغذية)"></i>
                                 <span onclick="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')">${safeName}</span>
                             </div>
