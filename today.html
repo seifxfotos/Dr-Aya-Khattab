@@ -381,8 +381,9 @@
             </div>
         </div>
 
+        <!-- نافذة عرض بيانات المريض المجمعة -->
         <div id="historyModal" class="modal-overlay">
-            <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s;">
+            <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s; padding: 20px;">
                 <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                     <i class="fa-solid fa-file-medical"></i> ملف المريض: <span id="historyPatientName" style="color: var(--text-dark);"></span>
                 </h3>
@@ -417,6 +418,20 @@
     <script>
         window.allPatientNames = [];
 
+        function normalizeArabicName(name) {
+            if (!name) return "";
+            return String(name)
+                .replace(/[\u064B-\u065F\u0640]/g, "") 
+                .replace(/[أإآء]/g, "ا") 
+                .replace(/[يىئ]/g, "ي") 
+                .replace(/ة/g, "ه") 
+                .replace(/عبد ال/g, "عبدال")
+                .replace(/ابو /g, "ابو")
+                .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
+                .trim()
+                .replace(/\s+/g, " ");
+        }
+
         function mapDoctorName(doc) {
             if (!doc) return "";
             let d = String(doc).trim();
@@ -447,7 +462,6 @@
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
             projectId: "today-2d146",
-            storageBucket: "today-2d146.firebasestorage.app",
             messagingSenderId: "742225764525",
             appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
@@ -695,20 +709,6 @@
                      document.getElementById('visitType').value = 'متابعة'; 
                 }
             }
-        }
-
-        function normalizeArabicName(name) {
-            if (!name) return "";
-            return String(name)
-                .replace(/[\u064B-\u065F]/g, "") 
-                .replace(/[أإآء]/g, "ا") 
-                .replace(/[يىئ]/g, "ي") 
-                .replace(/ة/g, "ه") 
-                .replace(/عبد ال/g, "عبدال")
-                .replace(/ابو /g, "ابو")
-                .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
-                .trim()
-                .replace(/\s+/g, " ");
         }
 
         function showSyncStatus(text) {
@@ -989,7 +989,6 @@
                 if (p) phone = p.phone;
             }
             
-            // 🚨 الاعتماد على الاسم كبديل لعدم وجود هاتف 🚨
             let patientKey = targetNorm; 
             if (phone) {
                 let safePhone = getSafePhone(phone);
@@ -1184,16 +1183,45 @@
             return html;
         }
 
-        // 🚨 فتح ملف المريض (مالي + GLP + نظام غذائي) 🚨
+        // 🚨 دالة سحب تاريخ GLP للمريض من الكاش (بدون الحاجة لرقم الموبايل) 🚨
+        function getPatientGlpHistory(patientName) {
+            let targetNorm = normalizeArabicName(patientName);
+            let glpRecords = {};
+
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('clinic_cache_')) {
+                    let dateStr = key.replace('clinic_cache_', '');
+                    try {
+                        let dayData = JSON.parse(localStorage.getItem(key));
+                        if (dayData && dayData.glp && Array.isArray(dayData.glp)) {
+                            dayData.glp.forEach(record => {
+                                if (normalizeArabicName(record.name) === targetNorm) {
+                                    glpRecords[dateStr] = record.dose;
+                                }
+                            });
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            let todayDate = document.getElementById('todayDate').value;
+            glpQueue.forEach(record => {
+                if (normalizeArabicName(record.name) === targetNorm) {
+                    glpRecords[todayDate] = record.dose;
+                }
+            });
+
+            return glpRecords;
+        }
+
         window.openPatientHistory = function(idx) {
             let patient = patientsQueue[idx];
             let name = patient.name;
             let targetNorm = normalizeArabicName(name);
             let safePhone = getSafePhone(patient.phone);
             
-            // الاعتماد على الاسم كمعرف إذا كان الموبايل غير موجود
             let patientKey = (safePhone !== 'unknown') ? safePhone : targetNorm;
-            
             let isNutrition = patient.dept === 'تغذية علاجية';
 
             document.getElementById('historyPatientName').innerText = name;
@@ -1202,23 +1230,23 @@
             let modalBody = document.getElementById('historyModalBody');
             
             if (isNutrition) {
-                // إعطاء مساحة أكبر لجدول الماليات
+                // 🚨 تعديل المقاسات لتوسيع الـ GLP وتصغير النظام الغذائي 🚨
                 document.getElementById('historyModalBox').style.maxWidth = '1000px';
                 modalBody.innerHTML = `
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; text-align: right;">
-                        <div style="flex: 2.2; min-width: 350px;">
+                        <div style="flex: 2; min-width: 300px;">
                             <h4 style="color: var(--primary-blue); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">السجل المالي</h4>
                             <div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
                                 ${finHtml}
                             </div>
                         </div>
-                        <div style="flex: 1; min-width: 150px;">
+                        <div style="flex: 1.5; min-width: 250px;">
                             <h4 style="color: var(--glp-color); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">سجل حقن GLP</h4>
-                            <div id="glpHistoryBox" style="max-height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
-                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
+                            <div id="glpHistoryBox" style="max-height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 0;">
+                                <i class="fa-solid fa-spinner fa-spin" style="margin: 10px;"></i> جاري التحميل...
                             </div>
                         </div>
-                        <div style="flex: 1.8; min-width: 250px;">
+                        <div style="flex: 1.2; min-width: 200px;">
                             <h4 style="color: var(--primary-green); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0; display: flex; justify-content: space-between; align-items: center;">
                                 النظام الحالي
                                 <button onclick="enableDietEdit('${patientKey}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px;"><i class="fa-solid fa-pen"></i> تعديل</button>
@@ -1230,37 +1258,57 @@
                     </div>
                 `;
                 
-                // الخانات الافتراضية
-                document.getElementById('glpHistoryBox').innerHTML = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
-                document.getElementById('dietPlanContainer').innerText = 'لا يوجد نظام حالي';
-                window.currentDietData = '';
+                // 🚨 استدعاء السجل الكامل لـ GLP من الكاش ومن الفايربيز 🚨
+                let localGlpData = getPatientGlpHistory(name);
 
                 if (db) {
                     db.ref('nutrition_data/' + patientKey).once('value').then(snap => {
                         let data = snap.val() || {};
                         
-                        // رندر سجل GLP
-                        let glpData = data.glp || {};
-                        let glpHtml = '';
-                        let glpKeys = Object.keys(glpData).sort((a,b) => new Date(b) - new Date(a)); 
-                        if (glpKeys.length > 0) {
-                            glpHtml = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">';
-                            glpKeys.forEach(k => {
-                                glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px;">${k}</td><td style="padding: 8px; font-weight: bold; color: var(--glp-color); direction: ltr;">${glpData[k]}</td></tr>`;
-                            });
-                            glpHtml += '</table>';
-                            document.getElementById('glpHistoryBox').innerHTML = glpHtml;
-                        }
+                        let fbGlpData = data.glp || {};
+                        let mergedGlpData = { ...localGlpData, ...fbGlpData };
                         
-                        // رندر النظام الحالي
+                        let glpHtml = '';
+                        let glpKeys = Object.keys(mergedGlpData).sort((a,b) => new Date(b) - new Date(a)); 
+                        if (glpKeys.length === 0) {
+                            glpHtml = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
+                        } else {
+                            glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
+                            glpKeys.forEach(k => {
+                                let displayDate = k === document.getElementById('todayDate').value ? k + ' (اليوم)' : k;
+                                glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 5px;">${escapeHtml(displayDate)}</td><td style="padding: 5px; font-weight: bold; color: var(--glp-color); direction: ltr;">${escapeHtml(mergedGlpData[k])}</td></tr>`;
+                            });
+                            glpHtml += '</tbody></table>';
+                        }
+                        document.getElementById('glpHistoryBox').innerHTML = glpHtml;
+                        
                         let dietText = data.diet || '';
                         window.currentDietData = dietText; 
-                        if(dietText.trim() !== '') {
-                            document.getElementById('dietPlanContainer').innerText = dietText;
-                        }
+                        document.getElementById('dietPlanContainer').innerText = dietText || 'لا يوجد نظام حالي';
                     }).catch(err => {
                         console.error(err);
+                        let glpKeys = Object.keys(localGlpData).sort((a,b) => new Date(b) - new Date(a)); 
+                        if(glpKeys.length > 0) {
+                            let glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
+                            glpKeys.forEach(k => glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 5px;">${escapeHtml(k)}</td><td style="padding: 5px; font-weight: bold; color: var(--glp-color); direction: ltr;">${escapeHtml(localGlpData[k])}</td></tr>`);
+                            glpHtml += '</tbody></table>';
+                            document.getElementById('glpHistoryBox').innerHTML = glpHtml;
+                        } else {
+                            document.getElementById('glpHistoryBox').innerHTML = '<p style="color:var(--danger); text-align:center; margin-top:20px;">خطأ في التحميل</p>';
+                        }
+                        document.getElementById('dietPlanContainer').innerHTML = '<p style="color:var(--danger); text-align:center;">خطأ في التحميل</p>';
                     });
+                } else {
+                    let glpKeys = Object.keys(localGlpData).sort((a,b) => new Date(b) - new Date(a)); 
+                    if(glpKeys.length > 0) {
+                        let glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
+                        glpKeys.forEach(k => glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 5px;">${escapeHtml(k)}</td><td style="padding: 5px; font-weight: bold; color: var(--glp-color); direction: ltr;">${escapeHtml(localGlpData[k])}</td></tr>`);
+                        glpHtml += '</tbody></table>';
+                        document.getElementById('glpHistoryBox').innerHTML = glpHtml;
+                    } else {
+                        document.getElementById('glpHistoryBox').innerHTML = '<p style="color:var(--danger); text-align:center; margin-top:20px;">لا يوجد اتصال</p>';
+                    }
+                    document.getElementById('dietPlanContainer').innerHTML = '<p style="color:var(--danger); text-align:center;">لا يوجد اتصال</p>';
                 }
 
             } else {
@@ -1349,7 +1397,7 @@
                         <td style="text-align:center;">
                             <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
                         </td>
-                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
+                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>`;
                 });
                 html += `</tbody></table></div>`; cont.innerHTML += html;
