@@ -381,8 +381,9 @@
             </div>
         </div>
 
+        <!-- نافذة عرض بيانات المريض -->
         <div id="historyModal" class="modal-overlay">
-            <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s;">
+            <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s; padding: 20px;">
                 <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                     <i class="fa-solid fa-file-medical"></i> ملف المريض: <span id="historyPatientName" style="color: var(--text-dark);"></span>
                 </h3>
@@ -416,6 +417,21 @@
 
     <script>
         window.allPatientNames = [];
+
+        // 🚨 التوحيد الذكي للاسم (مهم جداً للبحث الدقيق) 🚨
+        function normalizeArabicName(name) {
+            if (!name) return "";
+            return String(name)
+                .replace(/[\u064B-\u065F\u0640]/g, "") // إزالة التشكيل والتطويل
+                .replace(/[أإآء]/g, "ا") // توحيد الألف والهمزات
+                .replace(/[يىئ]/g, "ي") // توحيد الياء والألف المقصورة
+                .replace(/ة/g, "ه") // توحيد التاء المربوطة
+                .replace(/عبد ال/g, "عبدال")
+                .replace(/ابو /g, "ابو")
+                .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
+                .trim()
+                .replace(/\s+/g, " ");
+        }
 
         function mapDoctorName(doc) {
             if (!doc) return "";
@@ -697,20 +713,6 @@
             }
         }
 
-        function normalizeArabicName(name) {
-            if (!name) return "";
-            return String(name)
-                .replace(/[\u064B-\u065F]/g, "") 
-                .replace(/[أإآء]/g, "ا") 
-                .replace(/[يىئ]/g, "ي") 
-                .replace(/ة/g, "ه") 
-                .replace(/عبد ال/g, "عبدال")
-                .replace(/ابو /g, "ابو")
-                .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
-                .trim()
-                .replace(/\s+/g, " ");
-        }
-
         function showSyncStatus(text) {
             const indicator = document.getElementById('syncIndicator');
             document.getElementById('syncIndicatorText').innerText = text;
@@ -982,23 +984,6 @@
             glpQueue.push({name: n, dose: d}); 
             document.getElementById('glpName').value = ''; 
             
-            let targetNorm = normalizeArabicName(n);
-            let phone = window.patientPhones[n] || localStorage.getItem('phone_' + targetNorm);
-            if (!phone) {
-                let p = patientsQueue.find(x => normalizeArabicName(x.name) === targetNorm);
-                if (p) phone = p.phone;
-            }
-            
-            // 🚨 الاعتماد على الاسم كبديل لعدم وجود هاتف 🚨
-            let patientKey = targetNorm; 
-            if (phone) {
-                let safePhone = getSafePhone(phone);
-                if (safePhone !== "unknown") patientKey = safePhone;
-            }
-            
-            let todayStr = document.getElementById('todayDate').value;
-            if(db) db.ref(`nutrition_data/${patientKey}/glp/${todayStr}`).set(d);
-
             renderUI(); 
             scheduleSync(); 
         }
@@ -1184,16 +1169,83 @@
             return html;
         }
 
-        // 🚨 فتح ملف المريض (مالي + GLP + نظام غذائي) 🚨
+        // 🚨 دالة سحب تاريخ GLP للمريض من قاعدة البيانات كاملة (من أول يوم للسيستم) 🚨
+        function fetchAndRenderPatientGlpHistory(patientName) {
+            let targetNorm = normalizeArabicName(patientName);
+            let glpRecords = [];
+            let seen = new Set();
+            
+            // إضافة جرعات اليوم اللي لسه متسجلتش في الداتابيز
+            let todayDate = document.getElementById('todayDate').value;
+            glpQueue.forEach(record => {
+                if (normalizeArabicName(record.name) === targetNorm) {
+                    let str = todayDate + ' (اليوم)|' + record.dose;
+                    if(!seen.has(str)) {
+                        seen.add(str);
+                        glpRecords.push({ date: todayDate + ' (اليوم)', dose: record.dose });
+                    }
+                }
+            });
+
+            // سحب كل الأيام من الفايربيز (لضمان جلب الداتا من أول يوم للسيستم)
+            if(db) {
+                db.ref('clinic_days').once('value').then(snap => {
+                    let allDays = snap.val() || {};
+                    for (let dateStr in allDays) {
+                        if (dateStr === todayDate) continue; // تم إضافته مسبقاً
+                        let dayData = allDays[dateStr];
+                        if (dayData && dayData.glp && Array.isArray(dayData.glp)) {
+                            dayData.glp.forEach(record => {
+                                if (normalizeArabicName(record.name) === targetNorm) {
+                                    let str = dateStr + '|' + record.dose;
+                                    if(!seen.has(str)) {
+                                        seen.add(str);
+                                        glpRecords.push({ date: dateStr, dose: record.dose });
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    renderGlpTable(glpRecords);
+                }).catch(err => {
+                    let box = document.getElementById('glpHistoryBox');
+                    if(box) box.innerHTML = '<p style="color:var(--danger); text-align:center;">خطأ في تحميل السجل</p>';
+                });
+            } else {
+                renderGlpTable(glpRecords); // لو مفيش اتصال يعرض اللي في الطابور بس
+            }
+        }
+
+        function renderGlpTable(glpRecords) {
+            // ترتيب من الأحدث للأقدم
+            glpRecords.sort((a, b) => {
+                let da = a.date.replace(' (اليوم)', '');
+                let db = b.date.replace(' (اليوم)', '');
+                return new Date(db) - new Date(da);
+            });
+
+            let glpHtml = '';
+            if (glpRecords.length === 0) {
+                glpHtml = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
+            } else {
+                glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
+                glpRecords.forEach(r => {
+                    glpHtml += `<tr><td style="padding:5px;">${escapeHtml(r.date)}</td><td style="padding:5px; font-weight:bold; color:var(--glp-color); direction:ltr;">${escapeHtml(r.dose)}</td></tr>`;
+                });
+                glpHtml += '</tbody></table>';
+            }
+            let box = document.getElementById('glpHistoryBox');
+            if(box) box.innerHTML = glpHtml;
+        }
+
+        // 🚨 فتح ملف المريض وتعديل الواجهة 🚨
         window.openPatientHistory = function(idx) {
             let patient = patientsQueue[idx];
             let name = patient.name;
             let targetNorm = normalizeArabicName(name);
             let safePhone = getSafePhone(patient.phone);
             
-            // الاعتماد على الاسم كمعرف إذا كان الموبايل غير موجود
             let patientKey = (safePhone !== 'unknown') ? safePhone : targetNorm;
-            
             let isNutrition = patient.dept === 'تغذية علاجية';
 
             document.getElementById('historyPatientName').innerText = name;
@@ -1202,8 +1254,8 @@
             let modalBody = document.getElementById('historyModalBody');
             
             if (isNutrition) {
-                // إعطاء مساحة أكبر لجدول الماليات
                 document.getElementById('historyModalBox').style.maxWidth = '1000px';
+                
                 modalBody.innerHTML = `
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; text-align: right;">
                         <div style="flex: 2.2; min-width: 350px;">
@@ -1212,13 +1264,13 @@
                                 ${finHtml}
                             </div>
                         </div>
-                        <div style="flex: 1; min-width: 150px;">
+                        <div style="flex: 1.4; min-width: 200px;">
                             <h4 style="color: var(--glp-color); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0;">سجل حقن GLP</h4>
-                            <div id="glpHistoryBox" style="max-height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
-                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
+                            <div id="glpHistoryBox" style="max-height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 0;">
+                                <i class="fa-solid fa-spinner fa-spin" style="margin: 10px;"></i> جاري التحميل...
                             </div>
                         </div>
-                        <div style="flex: 1.8; min-width: 250px;">
+                        <div style="flex: 1.4; min-width: 200px;">
                             <h4 style="color: var(--primary-green); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top:0; display: flex; justify-content: space-between; align-items: center;">
                                 النظام الحالي
                                 <button onclick="enableDietEdit('${patientKey}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px;"><i class="fa-solid fa-pen"></i> تعديل</button>
@@ -1229,31 +1281,16 @@
                         </div>
                     </div>
                 `;
+
+                // 🚨 استدعاء السجل الكامل لـ GLP من أول يوم 🚨
+                fetchAndRenderPatientGlpHistory(name);
                 
-                // الخانات الافتراضية
-                document.getElementById('glpHistoryBox').innerHTML = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
                 document.getElementById('dietPlanContainer').innerText = 'لا يوجد نظام حالي';
                 window.currentDietData = '';
 
                 if (db) {
-                    db.ref('nutrition_data/' + patientKey).once('value').then(snap => {
-                        let data = snap.val() || {};
-                        
-                        // رندر سجل GLP
-                        let glpData = data.glp || {};
-                        let glpHtml = '';
-                        let glpKeys = Object.keys(glpData).sort((a,b) => new Date(b) - new Date(a)); 
-                        if (glpKeys.length > 0) {
-                            glpHtml = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">';
-                            glpKeys.forEach(k => {
-                                glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px;">${k}</td><td style="padding: 8px; font-weight: bold; color: var(--glp-color); direction: ltr;">${glpData[k]}</td></tr>`;
-                            });
-                            glpHtml += '</table>';
-                            document.getElementById('glpHistoryBox').innerHTML = glpHtml;
-                        }
-                        
-                        // رندر النظام الحالي
-                        let dietText = data.diet || '';
+                    db.ref('nutrition_data/' + patientKey + '/diet').once('value').then(snap => {
+                        let dietText = snap.val() || '';
                         window.currentDietData = dietText; 
                         if(dietText.trim() !== '') {
                             document.getElementById('dietPlanContainer').innerText = dietText;
@@ -1327,45 +1364,6 @@
                     
                     html += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
                         <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i> ${++sCount}</td>
-                        <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
-                            <div style="display:inline-flex; align-items:center; gap:6px;">
-                                <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="openPatientHistory(${gIdx})" title="ملف المريض (مالي / تغذية)"></i>
-                                <span onclick="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')" oncontextmenu="handleNameInteraction(event, ${gIdx}, '${jsSafeName}')">${safeName}</span>
-                            </div>
-                        </td>
-                        <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-dept-select" style="color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'}); border-color: var(${p.dept==='علاج طبيعي'?'--dept-physio':'--dept-nutrition'});" onchange="updateScheduleField(${gIdx}, 'dept', this.value)"><option ${p.dept==='تغذية علاجية'?'selected':''}>تغذية علاجية</option><option ${p.dept==='علاج طبيعي'?'selected':''}>علاج طبيعي</option></select><select class="inline-type-select" style="color: var(--primary-blue); border-color: var(--primary-blue);" onchange="updateScheduleField(${gIdx}, 'type', this.value)"><option ${p.type==='كشف'?'selected':''}>كشف</option><option ${p.type==='متابعة'?'selected':''}>متابعة</option><option ${p.type==='جلسة'?'selected':''}>جلسة</option><option ${p.type==='مقدم'?'selected':''}>مقدم</option></select></div></td>
-                        <td><div style="display: flex; flex-direction: row; gap: 4px; align-items: center; justify-content: flex-start;"><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'payment', this.value)"><option ${p.payment==='تم الدفع'?'selected':''}>تم الدفع</option><option ${p.payment==='لم يدفع'?'selected':''}>لم يدفع</option><option ${p.payment==='مدفوع مسبقاً'?'selected':''}>مدفوع مسبقاً</option></select><select class="inline-pay-select" onchange="updateScheduleField(${gIdx}, 'method', this.value)"><option ${p.method==='كاش'?'selected':''}>كاش</option><option ${p.method==='فودافون كاش'?'selected':''}>فودافون كاش</option><option ${p.method==='أنستا باي'?'selected':''}>أنستا باي</option></select></div></td>
-                        <td><input type="number" class="inline-amount-input" value="${p.amount}" onchange="updateScheduleField(${gIdx}, 'amount', this.value)"></td>
-                        <td><input type="number" class="inline-amount-input debt-input" value="${p.debt||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'debt', this.value)" title="مبلغ آجل / متبقي لم يدفع"></td>
-                        <td><input type="number" class="inline-amount-input" style="color:var(--primary-blue); border-color:var(--primary-blue);" value="${p.credit||''}" placeholder="0" onchange="updateScheduleField(${gIdx}, 'credit', this.value)" title="رصيد للمريض (متبقي له)"></td>
-                        <td>
-                            <select class="inline-doctor-select" onchange="updateScheduleField(${gIdx}, 'doctor', this.value)">
-                                <option value="" ${!docVal ? 'selected' : ''}>--</option>
-                                <option value="د. منال" ${docVal === 'د. منال' || docVal === 'م' ? 'selected' : ''}>د. منال</option>
-                                <option value="د. ياسمين" ${docVal === 'د. ياسمين' || docVal === 'ي' || docVal === 'ى' ? 'selected' : ''}>د. ياسمين</option>
-                                <option value="د. آية" ${docVal === 'د. آية' || docVal === 'د' ? 'selected' : ''}>د. آية</option>
-                            </select>
-                        </td>
-                        <td style="text-align:center;">
-                            <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
-                        </td>
-                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
-                    </tr>`;
-                });
-                html += `</tbody></table></div>`; cont.innerHTML += html;
-            });
-
-            let depositPats = patientsQueue.filter(p => !validSlots.includes(p.slot));
-            if(depositPats.length > 0) {
-                let dHtml = `<div class="slot-title deposit-title">حجوزات المقدم (بدون موعد اليوم)</div><div class="table-responsive"><table class="schedule-table" style="opacity: 0.9;" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'عام')"><thead><tr><th>-</th><th>الاسم</th><th>القسم/النوع</th><th>الدفع/الوسيلة</th><th>المبلغ</th><th>متبقي عليه</th><th>متبقي لي</th><th>الطبيب</th><th>حضور</th><th>إجراءات</th></tr></thead><tbody>`;
-                depositPats.forEach((p) => {
-                    let gIdx = patientsQueue.indexOf(p);
-                    let safeName = escapeHtml(p.name);
-                    let jsSafeName = safeName.replace(/'/g, "\\'");
-                    let docVal = mapDoctorName(p.doctor);
-                    
-                    dHtml += `<tr class="${p.finished ? 'row-finished' : ''}" draggable="true" ondragstart="handleDragStart(event, ${gIdx})">
-                        <td><i class="fa-solid fa-grip-vertical" style="opacity:0.3; cursor:grab; margin-left:5px"></i></td>
                         <td class="patient-name-cell" title="كليك شمال لفتح الملف - كليك يمين لتعديل الاسم">
                             <div style="display:inline-flex; align-items:center; gap:6px;">
                                 <i class="fa-solid fa-circle-info" style="color:var(--primary-blue); font-size:16px; cursor:pointer;" onclick="openPatientHistory(${gIdx})" title="ملف المريض (مالي / تغذية)"></i>
