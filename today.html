@@ -418,6 +418,7 @@
     <script>
         window.allPatientNames = [];
 
+        // دالة التوحيد والمطابقة الذكية للأسماء
         function normalizeArabicName(name) {
             if (!name) return "";
             return String(name)
@@ -430,6 +431,19 @@
                 .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
                 .trim()
                 .replace(/\s+/g, " ");
+        }
+
+        function isNameMatch(n1, n2) {
+            if (!n1 || !n2) return false;
+            let norm1 = normalizeArabicName(n1);
+            let norm2 = normalizeArabicName(n2);
+            if (norm1 === norm2) return true;
+            let parts1 = norm1.split(' ').filter(Boolean);
+            let parts2 = norm2.split(' ').filter(Boolean);
+            if (parts1.length >= 2 && parts2.length >= 2) {
+                if (parts1[0] === parts2[0] && parts1[1] === parts2[1]) return true;
+            }
+            return false;
         }
 
         function mapDoctorName(doc) {
@@ -583,21 +597,21 @@
                 let clinicNamesMap = new Map();
                 currentClinicList.forEach(cp => {
                     if (cp && cp.name) {
-                        clinicNamesMap.set(cp.name.trim(), cp);
+                        clinicNamesMap.set(normalizeArabicName(cp.name), cp);
                     }
                 });
 
                 currentClinicList.forEach(cp => {
                     if (!cp || !cp.name) return;
-                    const cName = cp.name.trim();
-                    const foundInToday = eligibleTodayPatients.find(tp => tp.name && tp.name.trim() === cName);
+                    const cName = cp.name;
+                    const foundInToday = eligibleTodayPatients.find(tp => isNameMatch(tp.name, cName));
                     
                     if (foundInToday) {
                         cp.visitType = foundInToday.type;
                         cp.category = foundInToday.dept;
                         updatedList.push(cp);
                     } else {
-                        if (!sentFromTodayNames.includes(cName)) {
+                        if (!sentFromTodayNames.some(sentName => isNameMatch(sentName, cName))) {
                             updatedList.push(cp);
                         }
                     }
@@ -606,7 +620,7 @@
                 eligibleTodayPatients.forEach(tp => {
                     const cleanName = (tp.name || '').trim();
                     if (!cleanName) return;
-                    if (!clinicNamesMap.has(cleanName)) {
+                    if (!clinicNamesMap.has(normalizeArabicName(cleanName))) {
                         updatedList.push({
                             id: tp.id || Date.now() + Math.random().toString(36).substring(7),
                             name: cleanName,
@@ -614,7 +628,7 @@
                             visitType: tp.type,
                             entered: false
                         });
-                        if (!sentFromTodayNames.includes(cleanName)) {
+                        if (!sentFromTodayNames.some(sentName => isNameMatch(sentName, cleanName))) {
                             sentFromTodayNames.push(cleanName);
                         }
                     }
@@ -687,14 +701,15 @@
         });
 
         function checkDebtForName(name) {
-            let normName = normalizeArabicName(name);
             let warnSpan = document.getElementById('debtWarning');
             let matchedDebt = 0;
+            let hasHistory = false;
             
             if (window.patientDebts) {
                 for (let key in window.patientDebts) {
-                    if (normalizeArabicName(key) === normName) {
+                    if (isNameMatch(key, name)) {
                         matchedDebt = window.patientDebts[key];
+                        hasHistory = true;
                         break;
                     }
                 }
@@ -705,7 +720,7 @@
                 document.getElementById('visitType').value = 'متابعة';
             } else {
                 warnSpan.innerHTML = '';
-                if (matchedDebt !== undefined && matchedDebt === 0 && window.patientDebts && Object.keys(window.patientDebts).some(k => normalizeArabicName(k) === normName)) {
+                if (hasHistory) {
                      document.getElementById('visitType').value = 'متابعة'; 
                 }
             }
@@ -982,14 +997,23 @@
             glpQueue.push({name: n, dose: d}); 
             document.getElementById('glpName').value = ''; 
             
-            let targetNorm = normalizeArabicName(n);
-            let phone = window.patientPhones[n] || localStorage.getItem('phone_' + targetNorm);
-            if (!phone) {
-                let p = patientsQueue.find(x => normalizeArabicName(x.name) === targetNorm);
-                if (p) phone = p.phone;
+            let phone = '';
+            for (let p of patientsQueue) {
+                if (isNameMatch(p.name, n)) {
+                    phone = p.phone;
+                    break;
+                }
+            }
+            if(!phone && window.patientPhones) {
+                for(let key in window.patientPhones) {
+                    if (isNameMatch(key, n)) {
+                        phone = window.patientPhones[key];
+                        break;
+                    }
+                }
             }
             
-            let patientKey = targetNorm; 
+            let patientKey = normalizeArabicName(n); 
             if (phone) {
                 let safePhone = getSafePhone(phone);
                 if (safePhone !== "unknown") patientKey = safePhone;
@@ -1054,17 +1078,21 @@
 
         function sendWhatsApp(idx) {
             const p = patientsQueue[idx];
-            let targetNorm = normalizeArabicName(p.name);
             let phone = '';
 
             let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
-            let cardPatient = allCardsCache.find(card => normalizeArabicName(card.name) === targetNorm);
+            let cardPatient = allCardsCache.find(card => isNameMatch(card.name, p.name));
             if (cardPatient && cardPatient.phone) {
                 phone = cardPatient.phone;
             }
 
             if (!phone) {
-                phone = window.patientPhones[p.name] || localStorage.getItem('phone_' + targetNorm);
+                for(let key in window.patientPhones) {
+                    if (isNameMatch(key, p.name)) {
+                        phone = window.patientPhones[key];
+                        break;
+                    }
+                }
             }
             
             if (!phone) {
@@ -1075,7 +1103,7 @@
                 document.getElementById('whatsappModal').style.display = 'flex';
                 setTimeout(() => document.getElementById('whatsappNumberInput').focus(), 100);
             } else {
-                processAndOpenWhatsApp(phone, p.name, targetNorm);
+                processAndOpenWhatsApp(phone, p.name, normalizeArabicName(p.name));
             }
         }
 
@@ -1120,18 +1148,17 @@
         }
 
         function buildFinancialHistoryHtml(name) {
-            let targetNorm = normalizeArabicName(name); 
             let allHistory = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
             let patientHistory = [];
             
             for (let key in allHistory) {
-                if (normalizeArabicName(key) === targetNorm) {
+                if (isNameMatch(key, name)) {
                     patientHistory = patientHistory.concat(allHistory[key]);
                 }
             }
             
             let todayDate = document.getElementById('todayDate').value;
-            let todayRecords = patientsQueue.filter(p => normalizeArabicName(p.name) === targetNorm && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
+            let todayRecords = patientsQueue.filter(p => isNameMatch(p.name, name) && (parseFloat(p.amount) > 0 || parseFloat(p.debt) > 0 || parseFloat(p.credit) > 0));
             
             let combined = patientHistory.filter(record => !String(record.date).includes(todayDate));
             
@@ -1183,9 +1210,8 @@
             return html;
         }
 
-        // 🚨 دالة سحب تاريخ GLP للمريض من الكاش (بدون الحاجة لرقم الموبايل) 🚨
+        // سحب تاريخ GLP من الكاش
         function getPatientGlpHistory(patientName) {
-            let targetNorm = normalizeArabicName(patientName);
             let glpRecords = {};
 
             for (let i = 0; i < localStorage.length; i++) {
@@ -1196,7 +1222,7 @@
                         let dayData = JSON.parse(localStorage.getItem(key));
                         if (dayData && dayData.glp && Array.isArray(dayData.glp)) {
                             dayData.glp.forEach(record => {
-                                if (normalizeArabicName(record.name) === targetNorm) {
+                                if (isNameMatch(record.name, patientName)) {
                                     glpRecords[dateStr] = record.dose;
                                 }
                             });
@@ -1207,7 +1233,7 @@
 
             let todayDate = document.getElementById('todayDate').value;
             glpQueue.forEach(record => {
-                if (normalizeArabicName(record.name) === targetNorm) {
+                if (isNameMatch(record.name, patientName)) {
                     glpRecords[todayDate] = record.dose;
                 }
             });
@@ -1218,10 +1244,9 @@
         window.openPatientHistory = function(idx) {
             let patient = patientsQueue[idx];
             let name = patient.name;
-            let targetNorm = normalizeArabicName(name);
             let safePhone = getSafePhone(patient.phone);
             
-            let patientKey = (safePhone !== 'unknown') ? safePhone : targetNorm;
+            let patientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabicName(name);
             let isNutrition = patient.dept === 'تغذية علاجية';
 
             document.getElementById('historyPatientName').innerText = name;
@@ -1230,7 +1255,6 @@
             let modalBody = document.getElementById('historyModalBody');
             
             if (isNutrition) {
-                // 🚨 تعديل المقاسات لتوسيع الـ GLP وتصغير النظام الغذائي 🚨
                 document.getElementById('historyModalBox').style.maxWidth = '1000px';
                 modalBody.innerHTML = `
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; text-align: right;">
@@ -1258,18 +1282,21 @@
                     </div>
                 `;
                 
-                // 🚨 استدعاء السجل الكامل لـ GLP من الكاش ومن الفايربيز 🚨
                 let localGlpData = getPatientGlpHistory(name);
 
                 if (db) {
                     db.ref('nutrition_data/' + patientKey).once('value').then(snap => {
                         let data = snap.val() || {};
-                        
                         let fbGlpData = data.glp || {};
                         let mergedGlpData = { ...localGlpData, ...fbGlpData };
                         
                         let glpHtml = '';
-                        let glpKeys = Object.keys(mergedGlpData).sort((a,b) => new Date(b) - new Date(a)); 
+                        let glpKeys = Object.keys(mergedGlpData).sort((a,b) => {
+                            let da = a.replace(' (اليوم)', '');
+                            let db = b.replace(' (اليوم)', '');
+                            return new Date(db) - new Date(da);
+                        }); 
+                        
                         if (glpKeys.length === 0) {
                             glpHtml = '<p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">لا يوجد جرعات مسجلة</p>';
                         } else {
@@ -1287,7 +1314,11 @@
                         document.getElementById('dietPlanContainer').innerText = dietText || 'لا يوجد نظام حالي';
                     }).catch(err => {
                         console.error(err);
-                        let glpKeys = Object.keys(localGlpData).sort((a,b) => new Date(b) - new Date(a)); 
+                        let glpKeys = Object.keys(localGlpData).sort((a,b) => {
+                            let da = a.replace(' (اليوم)', '');
+                            let db = b.replace(' (اليوم)', '');
+                            return new Date(db) - new Date(da);
+                        }); 
                         if(glpKeys.length > 0) {
                             let glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
                             glpKeys.forEach(k => glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 5px;">${escapeHtml(k)}</td><td style="padding: 5px; font-weight: bold; color: var(--glp-color); direction: ltr;">${escapeHtml(localGlpData[k])}</td></tr>`);
@@ -1299,7 +1330,11 @@
                         document.getElementById('dietPlanContainer').innerHTML = '<p style="color:var(--danger); text-align:center;">خطأ في التحميل</p>';
                     });
                 } else {
-                    let glpKeys = Object.keys(localGlpData).sort((a,b) => new Date(b) - new Date(a)); 
+                    let glpKeys = Object.keys(localGlpData).sort((a,b) => {
+                        let da = a.replace(' (اليوم)', '');
+                        let db = b.replace(' (اليوم)', '');
+                        return new Date(db) - new Date(da);
+                    }); 
                     if(glpKeys.length > 0) {
                         let glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
                         glpKeys.forEach(k => glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 5px;">${escapeHtml(k)}</td><td style="padding: 5px; font-weight: bold; color: var(--glp-color); direction: ltr;">${escapeHtml(localGlpData[k])}</td></tr>`);
@@ -1397,7 +1432,7 @@
                         <td style="text-align:center;">
                             <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
                         </td>
-                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
+                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>`;
                 });
                 html += `</tbody></table></div>`; cont.innerHTML += html;
@@ -1436,7 +1471,7 @@
                         <td style="text-align:center;">
                             <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-green);" ${p.attended ? 'checked' : ''} onchange="updateScheduleField(${gIdx}, 'attended', this.checked)" title="تأكيد الحضور للعيادة">
                         </td>
-                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
+                        <td><div class="action-btns"><button title="تذكير واتساب" onclick="sendWhatsApp(${gIdx})" style="color:#27ae60"><i class="fa-brands fa-whatsapp"></i></button><button title="تم الكشف" onclick="toggleFinished(${gIdx})" style="color:var(--primary-green)"><i class="fa-solid fa-check"></i></button><button title="رفع الدور" onclick="moveRow(${gIdx}, 'up')"><i class="fa-solid fa-arrow-up"></i></button><button title="تنزيل الدور" onclick="moveRow(${gIdx}, 'down')"><i class="fa-solid fa-arrow-down"></i></button><button title="حجز متابعة" onclick="bookFutureAppt(${gIdx}, 'متابعة')" class="btn-book-next"><i class="fa-solid fa-calendar-plus"></i> متابعة</button><button title="حجز جلسة" onclick="bookFutureAppt(${gIdx}, 'جلسة')" class="btn-book-session"><i class="fa-solid fa-bed-pulse"></i> جلسة</button><button title="حذف" onclick="removePatient(${gIdx})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div></td>
                     </tr>`;
                 });
                 dHtml += `</tbody></table></div>`; cont.innerHTML += dHtml;
