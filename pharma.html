@@ -23,8 +23,8 @@
             --border: #333333; --input-bg: #2c2c2c; --primary-blue: #0082b8; --primary-green: #7bb530;
         }
 
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; }
-        .container { max-width: 1500px; margin: 0 auto; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 10px 100px 10px; color: var(--text-dark); transition: 0.3s; }
+        .container { max-width: 99%; margin: 0 auto; } /* الاستفادة من الشاشة كاملة */
 
         .sync-indicator { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background-color: var(--primary-blue); color: white; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: 0.3s; }
         .sync-indicator.show { opacity: 1; visibility: visible; }
@@ -65,14 +65,16 @@
         .btn-add:hover { background-color: #007bb5; }
         .btn-add:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
-        .table-responsive { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1600px; }
-        .schedule-table th, .schedule-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 13px; padding: 12px 6px;}
+        /* تعديلات الجدول لمنع السكرول */
+        .table-responsive { width: 100%; overflow: hidden; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .schedule-table { width: 100%; border-collapse: collapse; table-layout: fixed; } /* Fixed Layout */
+        .schedule-table th, .schedule-table td { padding: 4px 2px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; overflow: hidden; } /* تقليل الـ Padding */
+        .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 12px; padding: 8px 2px;}
         
-        .dual-input-wrapper { display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; }
+        .dual-input-wrapper { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; }
 
-        .inline-input { display: block; width: 100%; min-width: 70px; padding: 8px 4px; border: 1px solid transparent; border-radius: 6px; background-color: transparent; color: var(--text-dark); font-family: 'Cairo'; font-size: 13px; font-weight: 700; text-align: center; transition: 0.3s; box-sizing: border-box; }
+        /* تعديلات الخانات لتناسب المقاس الثابت */
+        .inline-input { display: block; width: 100%; min-width: 0; padding: 4px 2px; border: 1px solid transparent; border-radius: 4px; background-color: transparent; color: var(--text-dark); font-family: 'Cairo'; font-size: 12px; font-weight: 700; text-align: center; transition: 0.3s; box-sizing: border-box; }
         .inline-input:hover:not(:read-only) { border-color: var(--border); background-color: rgba(0, 147, 208, 0.05); }
         .inline-input:focus:not(:read-only) { border-color: var(--warning); background-color: var(--input-bg); outline: none; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
         
@@ -82,12 +84,12 @@
         .discount-input { color: var(--warning); font-weight: 800; }
         .pay-amount { color: #8e44ad; font-weight: 800; border-bottom: 1px dashed var(--border) !important;}
         
-        .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 15px; border: 1px dashed var(--danger) !important;}
+        .debt-input { color: var(--danger) !important; font-weight: 900; font-size: 13px; border: 1px dashed var(--danger) !important;}
         .debt-input:focus { border: 1px solid var(--danger) !important; box-shadow: 0 0 5px rgba(231, 76, 60, 0.3) !important; }
         
         .done-yes { color: var(--primary-green) !important; font-weight: 900; }
         
-        .delete-btn { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; transition: 0.2s; padding: 5px; opacity: 0.8; }
+        .delete-btn { background: none; border: none; color: var(--danger); font-size: 14px; cursor: pointer; transition: 0.2s; padding: 2px; opacity: 0.8; }
         .delete-btn:hover { transform: scale(1.1); opacity: 1; color: #c0392b; }
 
         .loading-text { text-align: center; font-weight: bold; padding: 20px !important; color: var(--primary-blue); }
@@ -316,9 +318,6 @@
             return matches ? parseFloat(matches[0]) : 1;
         }
 
-        // ==========================================
-        // النظام الهجين الفوري (Local + Firebase + Sheet)
-        // ==========================================
         window.masterListsData = {};
         if (db) {
             db.ref('clinic_master_lists').on('value', snap => {
@@ -326,7 +325,6 @@
                 updateDatalists();
             });
 
-            // الاستماع اللحظي لتحديثات المخزون من الفايربيز
             db.ref('pharma_inventory_list').on('value', snap => {
                 let fbData = snap.val();
                 if(fbData) {
@@ -379,7 +377,6 @@
             if(pList) pList.innerHTML = combinedMeds.map(p => `<option value="${escapeHtml(String(p))}">`).join('');
         }
 
-        // الاستماع لخصومات مبيعات اليوم من العيادة
         if (db) {
             db.ref('med_deductions').on('child_added', snap => {
                 let deduction = snap.val();
@@ -446,7 +443,6 @@
         document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
 
-        // 🚨 التحميل الفوري من الـ LocalStorage أولاً لمنع التحميل اللانهائي 🚨
         function initPageData() {
             let cached = localStorage.getItem('clinic_pharma_cache');
             if (cached) {
@@ -455,7 +451,6 @@
                     renderTable();
                 } catch(e){}
             }
-            // سحب الأحدث في الخلفية
             loadDataFromSheet(true);
         }
 
