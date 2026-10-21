@@ -125,7 +125,10 @@
                 <div class="add-grid">
                     <div class="input-group">
                         <label>أسم الشركة <span class="req">*</span></label>
-                        <input type="text" id="companyName" list="companyList" required>
+                        <div style="display: flex; width: 100%;">
+                            <input type="text" id="companyName" list="companyList" required style="border-radius: 0 8px 8px 0; border-left: 0;">
+                            <button type="button" onclick="addMasterItem('companies', 'companyName')" style="background:var(--primary-blue); color:white; border:none; padding:0 12px; border-radius: 8px 0 0 8px; cursor:pointer;" title="إضافة شركة جديدة للقائمة"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                         <datalist id="companyList"></datalist>
                     </div>
                     <div class="input-group">
@@ -134,7 +137,10 @@
                     </div>
                     <div class="input-group">
                         <label>أسم المنتج <span class="req">*</span></label>
-                        <input type="text" id="productName" list="productList" required>
+                        <div style="display: flex; width: 100%;">
+                            <input type="text" id="productName" list="productList" required style="border-radius: 0 8px 8px 0; border-left: 0;">
+                            <button type="button" onclick="addMasterItem('medicines', 'productName')" style="background:var(--primary-blue); color:white; border:none; padding:0 12px; border-radius: 8px 0 0 8px; cursor:pointer;" title="إضافة دواء جديد للقائمة"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                         <datalist id="productList"></datalist>
                     </div>
                     <div class="input-group">
@@ -236,7 +242,6 @@
         let pharmaData = []; 
         let formBaseCost = 0;
 
-        // إعداد الفايربيز (للربط والمزامنة التلقائية مع المبيعات في العيادة)
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -269,6 +274,11 @@
         }
         function hideSyncStatus() {
             document.getElementById('syncIndicator').classList.remove('show');
+        }
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function getSafeValue(item, ...possibleKeys) {
@@ -306,38 +316,68 @@
             return matches ? parseFloat(matches[0]) : 1;
         }
 
-        function updateDatalists() {
-            let companies = [...new Set(pharmaData.map(r => r.companyName).filter(Boolean))];
-            let products = [...new Set(pharmaData.map(r => r.productName).filter(Boolean))];
-            document.getElementById('companyList').innerHTML = companies.map(c => `<option value="${c}">`).join('');
-            document.getElementById('productList').innerHTML = products.map(p => `<option value="${p}">`).join('');
-            
-            // رفع المخزون للفايربيز عشان صفحة (اليوم) تقرأه وتقدر تبيع منه
-            if (db) db.ref('pharma_inventory_list').set(pharmaData);
+        // ==========================================
+        // القوائم المركزية (Master Lists)
+        // ==========================================
+        window.masterListsData = {};
+        if (db) {
+            db.ref('clinic_master_lists').on('value', snap => {
+                window.masterListsData = snap.val() || {};
+                updateDatalists();
+            });
         }
 
-        // الاستماع لمبيعات اليوم لخصم الكميات المتبقية أوتوماتيك
+        window.addMasterItem = function(listName, inputId) {
+            let newVal = prompt("أدخل الاسم الجديد لإضافته للقائمة الدائمة:");
+            if (newVal && newVal.trim() !== "") {
+                newVal = newVal.trim();
+                if(db) {
+                    let key = Date.now();
+                    db.ref(`clinic_master_lists/${listName}/${key}`).set(newVal);
+                }
+                let inputEl = document.getElementById(inputId);
+                if(inputEl) {
+                    inputEl.value = newVal;
+                }
+            }
+        };
+
+        function updateDatalists() {
+            let master = window.masterListsData || {};
+            let fbCompanies = master.companies ? Object.values(master.companies) : [];
+            let fbMeds = master.medicines ? Object.values(master.medicines) : [];
+            
+            let localCompanies = pharmaData.map(r => r.companyName);
+            let localMeds = pharmaData.map(r => r.productName);
+            
+            let combinedCompanies = [...new Set([...localCompanies, ...fbCompanies].filter(Boolean))];
+            let combinedMeds = [...new Set([...localMeds, ...fbMeds].filter(Boolean))];
+
+            let cList = document.getElementById('companyList');
+            if(cList) cList.innerHTML = combinedCompanies.map(c => `<option value="${escapeHtml(String(c))}">`).join('');
+            
+            let pList = document.getElementById('productList');
+            if(pList) pList.innerHTML = combinedMeds.map(p => `<option value="${escapeHtml(String(p))}">`).join('');
+            
+            if (db && pharmaData.length > 0) db.ref('pharma_inventory_list').set(pharmaData);
+        }
+
         if (db) {
             db.ref('med_deductions').on('child_added', snap => {
                 let deduction = snap.val();
                 if(!deduction) return;
                 
-                // هندور على الدواء اللي فيه رصيد متبقي ونخصم منه
                 let idx = pharmaData.findIndex(r => r.productName === deduction.productName && parseFloat(r.remainingCount) >= deduction.qty);
                 if (idx === -1) idx = pharmaData.findIndex(r => r.productName === deduction.productName && parseFloat(r.remainingCount) > 0);
                 
                 if (idx !== -1) {
                     let oldVal = parseFloat(pharmaData[idx].remainingCount) || 0;
                     let newVal = Math.max(0, oldVal - deduction.qty);
-                    
-                    // تحديث الكمية المتبقية فقط
                     pharmaData[idx].remainingCount = newVal;
                     renderTable(); 
-                    
-                    // إرسال التحديث لـ Google Sheets في صمت
                     saveRow(idx, 'remainingCount', newVal);
                 }
-                snap.ref.remove(); // مسح الإشعار بعد الخصم
+                snap.ref.remove(); 
             });
         }
 
@@ -346,11 +386,9 @@
             let count = extractNumber(document.getElementById('productCount').value);
             let discount = parseFloat(document.getElementById('discount').value) || 0;
             
-            // حساب التكلفة بناءً على الكمية الأصلية الإجمالية (مش المتبقية)
             formBaseCost = (price - (price * (discount / 100))) * count;
             applyFormPayments();
             
-            // جعل الكمية المتبقية تساوي العدد الإجمالي افتراضياً عند إضافة طلبية جديدة
             let remEl = document.getElementById('remainingCount');
             if(!remEl.dataset.edited) remEl.value = count;
         }
@@ -519,7 +557,7 @@
         function calcRowBasics(index, field, value) {
             pharmaData[index][field] = value;
             let pr = parseFloat(pharmaData[index].publicPrice) || 0;
-            let c = extractNumber(pharmaData[index].productCount); // حساب المديونية على التوتال
+            let c = extractNumber(pharmaData[index].productCount);
             let disc = parseFloat(pharmaData[index].discount) || 0;
             pharmaData[index].baseCost = (pr - (pr * (disc / 100))) * c;
             applyRowPaymentsLogic(index);
