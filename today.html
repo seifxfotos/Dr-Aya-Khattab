@@ -479,7 +479,9 @@
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146"
+            projectId: "today-2d146",
+            messagingSenderId: "742225764525",
+            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
 
         let db = null;
@@ -491,7 +493,6 @@
         let appInitialized = false;
         window.masterListsData = {};
 
-        // جلب القوائم المركزية وتحديثها أوتوماتيك
         if (db) {
             db.ref('clinic_master_lists').on('value', snap => {
                 window.masterListsData = snap.val() || {};
@@ -499,7 +500,6 @@
             });
         }
 
-        // دالة الحفظ الصامت للأسماء الجديدة في القوائم الدائمة (الالتقاط التلقائي)
         window.ensureInMasterList = function(listName, value) {
             if (!value || !db) return;
             value = value.trim();
@@ -527,7 +527,8 @@
         window.updateAllDatalists = function() {
             let master = window.masterListsData || {};
             let fbMeds = master.medicines ? Object.values(master.medicines) : [];
-            let activeMeds = (window.availableMedsData || []).filter(r => parseFloat(r.remainingCount) > 0).map(r => r.productName);
+            let activeMeds = (window.availableMedsData || []).map(r => r.productName);
+            // 🚨 تم تعديل الشرط هنا لعرض كل الأدوية المسجلة بغض النظر عن خانة المتبقي لتظهر فوراً 🚨
             let uniqueMeds = [...new Set([...fbMeds, ...activeMeds].filter(Boolean))];
             
             const list = document.getElementById('availableMedsList');
@@ -585,7 +586,7 @@
         document.getElementById('medName').addEventListener('change', function() {
             let selectedName = this.value.trim();
             if(window.availableMedsData && selectedName) {
-                let med = window.availableMedsData.find(m => m.productName === selectedName && parseFloat(m.remainingCount) > 0);
+                let med = window.availableMedsData.find(m => m.productName === selectedName);
                 if(med && med.publicPrice) {
                     document.getElementById('medAmount').value = med.publicPrice;
                 }
@@ -1132,7 +1133,6 @@
             
             if(!name || !amt) return; 
 
-            // 🚨 حفظ تلقائي لاسم الدواء في القوائم المركزية 🚨
             if(typeof ensureInMasterList === 'function') {
                 ensureInMasterList('medicines', name);
             }
@@ -1335,7 +1335,6 @@
             return html;
         }
 
-        // سحب تاريخ GLP من الكاش
         function getPatientGlpHistory(patientName) {
             let glpRecords = {};
 
@@ -1372,7 +1371,7 @@
             let safePhone = getSafePhone(patient.phone);
             
             let patientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabicName(name);
-            let isNutrition = patient.dept === 'تغذية علاجية';
+            let isNutrition = true; 
 
             document.getElementById('historyPatientName').innerText = name;
             
@@ -1511,7 +1510,7 @@
         function renderUI() {
             updateStatsCounters();
             updateGlpPatientsList(); 
-            updateAllDatalists(); 
+            updateMedPatientsList(); 
             
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${escapeHtml(g.name)}</td><td><span class="badge badge-glp">${escapeHtml(g.dose)}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             let medsHtml = ''; let expsHtml = '';
