@@ -317,7 +317,11 @@
                 <div class="card-panel">
                     <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="flex:1; margin:0; min-width: 80px;" list="availableMedsList">
+                        
+                        <div style="display: flex; flex:1; min-width: 120px; margin: 0;">
+                            <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="width: 100%; margin:0; border-radius: 0 8px 8px 0; border-left: none;" list="availableMedsList">
+                            <button type="button" onclick="addMasterItem('medicines', 'medName')" style="background:var(--primary-green); color:white; border: 1px solid var(--primary-green); padding:0 12px; border-radius: 8px 0 0 8px; cursor:pointer;" title="إضافة دواء جديد للقائمة الدائمة"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                         <datalist id="availableMedsList"></datalist>
                         
                         <input type="text" id="medBuyer" placeholder="اسم المريض" class="modal-input" style="flex:1; margin:0; min-width: 80px;" list="medPatientsList">
@@ -388,7 +392,6 @@
             </div>
         </div>
 
-        <!-- نافذة عرض بيانات المريض المجمعة -->
         <div id="historyModal" class="modal-overlay">
             <div class="modal-box" id="historyModalBox" style="transition: max-width 0.3s; padding: 20px;">
                 <h3 style="color: var(--primary-blue); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -396,7 +399,6 @@
                 </h3>
                 
                 <div id="historyModalBody">
-                    <!-- سيتم ضخ المحتوى هنا أوتوماتيك من الجافاسكريبت -->
                 </div>
                 
                 <div class="modal-actions" style="margin-top: 20px;">
@@ -424,7 +426,7 @@
 
     <script>
         window.allPatientNames = [];
-        window.availableMedsData = []; // متغير لتخزين بيانات الأدوية لسهولة الوصول للأسعار
+        window.availableMedsData = [];
 
         function normalizeArabicName(name) {
             if (!name) return "";
@@ -464,12 +466,7 @@
 
         function escapeHtml(unsafe) {
             if (typeof unsafe !== 'string') return unsafe;
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function getSafePhone(p) {
@@ -494,21 +491,49 @@
         } catch(e) { console.error("Firebase init error", e); }
 
         let appInitialized = false;
+        window.masterListsData = {};
 
-        // دالة سحب قائمة الأدوية وعرضها
-        function loadAvailableMeds(data) {
-            if(!data) return;
-            // معالجة مشكلة الـ Array/Object في الفايربيز
-            let dataArray = Array.isArray(data) ? data : Object.values(data);
-            window.availableMedsData = dataArray; 
+        if (db) {
+            db.ref('clinic_master_lists').on('value', snap => {
+                window.masterListsData = snap.val() || {};
+                if(typeof updateAllDatalists === 'function') updateAllDatalists();
+            });
+        }
 
-            let activeMeds = dataArray.filter(r => parseFloat(r.remainingCount) > 0).map(r => r.productName);
-            let uniqueMeds = [...new Set(activeMeds.filter(Boolean))];
+        window.addMasterItem = function(listName, inputId) {
+            let newVal = prompt("أدخل الاسم الجديد لإضافته للقائمة الدائمة:");
+            if (newVal && newVal.trim() !== "") {
+                newVal = newVal.trim();
+                if(db) {
+                    let key = Date.now();
+                    db.ref(`clinic_master_lists/${listName}/${key}`).set(newVal);
+                }
+                let inputEl = document.getElementById(inputId);
+                if(inputEl) {
+                    inputEl.value = newVal;
+                    let event = new Event('change');
+                    inputEl.dispatchEvent(event);
+                }
+            }
+        };
+
+        window.updateAllDatalists = function() {
+            let master = window.masterListsData || {};
+            let fbMeds = master.medicines ? Object.values(master.medicines) : [];
+            let activeMeds = (window.availableMedsData || []).filter(r => parseFloat(r.remainingCount) > 0).map(r => r.productName);
+            let uniqueMeds = [...new Set([...fbMeds, ...activeMeds].filter(Boolean))];
             
             const list = document.getElementById('availableMedsList');
             if (list) {
                 list.innerHTML = uniqueMeds.map(m => `<option value="${escapeHtml(String(m))}">`).join('');
             }
+        };
+
+        function loadAvailableMeds(data) {
+            if(!data) return;
+            let dataArray = Array.isArray(data) ? data : Object.values(data);
+            window.availableMedsData = dataArray; 
+            if(typeof updateAllDatalists === 'function') updateAllDatalists();
         }
 
         firebase.auth().onAuthStateChanged((user) => {
@@ -536,13 +561,11 @@
                     updateManualSlotDropdown(); 
                     initDay();
                     
-                    // استدعاء سريع للأدوية من الكاش
                     try {
                         let localPharma = JSON.parse(localStorage.getItem('clinic_pharma_cache'));
                         if(localPharma) loadAvailableMeds(localPharma);
                     } catch(e){}
 
-                    // استدعاء مباشر من الفايربيز للتأكيد
                     if(db) {
                         db.ref('pharma_inventory_list').on('value', snap => {
                             loadAvailableMeds(snap.val());
@@ -552,7 +575,6 @@
             }
         });
 
-        // تسعير الدواء أوتوماتيك بمجرد اختياره من القائمة
         document.getElementById('medName').addEventListener('change', function() {
             let selectedName = this.value.trim();
             if(window.availableMedsData && selectedName) {
@@ -1106,7 +1128,6 @@
             let desc = buyer ? `${name} (${qty}x) (للمريض: ${buyer})` : `${name} (${qty}x)`; 
             financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); 
             
-            // إرسال إشعار خصم المخزون أوتوماتيكيا لصفحة الشركات
             if(db) {
                 db.ref('med_deductions').push({ productName: name, qty: qty, timestamp: Date.now() });
             }
@@ -1302,7 +1323,6 @@
             return html;
         }
 
-        // سحب تاريخ GLP من الكاش
         function getPatientGlpHistory(patientName) {
             let glpRecords = {};
 
