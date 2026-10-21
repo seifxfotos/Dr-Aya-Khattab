@@ -424,6 +424,7 @@
 
     <script>
         window.allPatientNames = [];
+        window.availableMedsData = []; // متغير لتخزين بيانات الأدوية لسهولة الوصول للأسعار
 
         function normalizeArabicName(name) {
             if (!name) return "";
@@ -494,6 +495,22 @@
 
         let appInitialized = false;
 
+        // دالة سحب قائمة الأدوية وعرضها
+        function loadAvailableMeds(data) {
+            if(!data) return;
+            // معالجة مشكلة الـ Array/Object في الفايربيز
+            let dataArray = Array.isArray(data) ? data : Object.values(data);
+            window.availableMedsData = dataArray; 
+
+            let activeMeds = dataArray.filter(r => parseFloat(r.remainingCount) > 0).map(r => r.productName);
+            let uniqueMeds = [...new Set(activeMeds.filter(Boolean))];
+            
+            const list = document.getElementById('availableMedsList');
+            if (list) {
+                list.innerHTML = uniqueMeds.map(m => `<option value="${escapeHtml(String(m))}">`).join('');
+            }
+        }
+
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) {
                 document.getElementById('login-overlay').style.display = 'flex';
@@ -519,18 +536,29 @@
                     updateManualSlotDropdown(); 
                     initDay();
                     
-                    // استدعاء الأدوية المتاحة من صفحة الشركات
+                    // استدعاء سريع للأدوية من الكاش
+                    try {
+                        let localPharma = JSON.parse(localStorage.getItem('clinic_pharma_cache'));
+                        if(localPharma) loadAvailableMeds(localPharma);
+                    } catch(e){}
+
+                    // استدعاء مباشر من الفايربيز للتأكيد
                     if(db) {
                         db.ref('pharma_inventory_list').on('value', snap => {
-                            let data = snap.val() || [];
-                            let activeMeds = data.filter(r => parseFloat(r.remainingCount) > 0).map(r => r.productName);
-                            let uniqueMeds = [...new Set(activeMeds)];
-                            const list = document.getElementById('availableMedsList');
-                            if (list) {
-                                list.innerHTML = uniqueMeds.map(m => `<option value="${escapeHtml(m)}">`).join('');
-                            }
+                            loadAvailableMeds(snap.val());
                         });
                     }
+                }
+            }
+        });
+
+        // تسعير الدواء أوتوماتيك بمجرد اختياره من القائمة
+        document.getElementById('medName').addEventListener('change', function() {
+            let selectedName = this.value.trim();
+            if(window.availableMedsData && selectedName) {
+                let med = window.availableMedsData.find(m => m.productName === selectedName && parseFloat(m.remainingCount) > 0);
+                if(med && med.publicPrice) {
+                    document.getElementById('medAmount').value = med.publicPrice;
                 }
             }
         });
