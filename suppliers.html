@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --primary-blue: #0093D0; --primary-green: #8CC63F; --bg-color: #f4f7f6; 
@@ -103,13 +106,17 @@
             </div>
         </div>
 
+        <!-- فورم الإضافة -->
         <div class="card-panel">
             <h2 style="color: var(--primary-blue);"><i class="fa-solid fa-cart-plus"></i> إضافة جديدة</h2>
             <form id="addForm">
                 <div class="add-grid">
                     <div class="input-group">
                         <label>أسم المورد <span class="req">*</span></label>
-                        <input type="text" id="supplierName" list="supplierNameList" required>
+                        <div style="display: flex; width: 100%;">
+                            <input type="text" id="supplierName" list="supplierNameList" required style="border-radius: 0 8px 8px 0; border-left: 0;">
+                            <button type="button" onclick="addMasterItem('suppliers', 'supplierName')" style="background:var(--primary-blue); color:white; border:none; padding:0 12px; border-radius: 8px 0 0 8px; cursor:pointer;" title="إضافة مورد جديد للقائمة"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                         <datalist id="supplierNameList"></datalist>
                     </div>
                     <div class="input-group">
@@ -118,7 +125,10 @@
                     </div>
                     <div class="input-group">
                         <label>أسم الصنف <span class="req">*</span></label>
-                        <input type="text" id="itemName" list="supplierItemList" required>
+                        <div style="display: flex; width: 100%;">
+                            <input type="text" id="itemName" list="supplierItemList" required style="border-radius: 0 8px 8px 0; border-left: 0;">
+                            <button type="button" onclick="addMasterItem('consumables', 'itemName')" style="background:var(--primary-blue); color:white; border:none; padding:0 12px; border-radius: 8px 0 0 8px; cursor:pointer;" title="إضافة صنف جديد للقائمة"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                         <datalist id="supplierItemList"></datalist>
                     </div>
                     <div class="input-group">
@@ -147,6 +157,7 @@
             </form>
         </div>
 
+        <!-- الجدول -->
         <div class="table-responsive">
             <table class="schedule-table">
                 <thead>
@@ -178,6 +189,15 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHWHZGtgqh2i1fe9zKRP5HlRq4aDJGCXoZnQ7fRlgXONbp4tjIuKpvXGELSQiITgtY/exec';
         let suppliersData = []; 
 
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
+            authDomain: "today-2d146.firebaseapp.com",
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
+            projectId: "today-2d146"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+
         flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
 
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
@@ -204,13 +224,52 @@
         const formatDate = (dateStr) => {
             if(!dateStr) return '';
             try { return dateStr.split('T')[0]; } catch(e) { return dateStr; }
+        }
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        window.masterListsData = {};
+        if (db) {
+            db.ref('clinic_master_lists').on('value', snap => {
+                window.masterListsData = snap.val() || {};
+                updateDatalists();
+            });
+        }
+
+        window.addMasterItem = function(listName, inputId) {
+            let newVal = prompt("أدخل الاسم الجديد لإضافته للقائمة الدائمة:");
+            if (newVal && newVal.trim() !== "") {
+                newVal = newVal.trim();
+                if(db) {
+                    let key = Date.now();
+                    db.ref(`clinic_master_lists/${listName}/${key}`).set(newVal);
+                }
+                let inputEl = document.getElementById(inputId);
+                if(inputEl) {
+                    inputEl.value = newVal;
+                }
+            }
         };
 
         function updateDatalists() {
-            let suppliers = [...new Set(suppliersData.map(r => r.supplierName).filter(Boolean))];
-            let items = [...new Set(suppliersData.map(r => r.itemName).filter(Boolean))];
-            document.getElementById('supplierNameList').innerHTML = suppliers.map(c => `<option value="${c}">`).join('');
-            document.getElementById('supplierItemList').innerHTML = items.map(p => `<option value="${p}">`).join('');
+            let master = window.masterListsData || {};
+            let fbSuppliers = master.suppliers ? Object.values(master.suppliers) : [];
+            let fbItems = master.consumables ? Object.values(master.consumables) : [];
+            
+            let localSuppliers = suppliersData.map(r => r.supplierName);
+            let localItems = suppliersData.map(r => r.itemName);
+            
+            let combinedSuppliers = [...new Set([...localSuppliers, ...fbSuppliers].filter(Boolean))];
+            let combinedItems = [...new Set([...localItems, ...fbItems].filter(Boolean))];
+
+            let sList = document.getElementById('supplierNameList');
+            if(sList) sList.innerHTML = combinedSuppliers.map(c => `<option value="${escapeHtml(String(c))}">`).join('');
+            
+            let iList = document.getElementById('supplierItemList');
+            if(iList) iList.innerHTML = combinedItems.map(p => `<option value="${escapeHtml(String(p))}">`).join('');
         }
 
         document.getElementById('itemCount').addEventListener('input', function() {
