@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    
     <style>
         :root {
             --primary-blue: #0093D0; --primary-green: #8CC63F; --bg-color: #f4f7f6; 
@@ -20,7 +24,7 @@
         }
 
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 20px 100px 20px; color: var(--text-dark); transition: 0.3s; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1500px; margin: 0 auto; }
 
         .sync-indicator { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background-color: var(--primary-blue); color: white; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: 0.3s; }
         .sync-indicator.show { opacity: 1; visibility: visible; }
@@ -62,7 +66,7 @@
         .btn-add:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
         .table-responsive { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        .schedule-table { width: 100%; border-collapse: collapse; min-width: 1600px; }
         .schedule-table th, .schedule-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .schedule-table th { background-color: var(--primary-blue); color: white; font-weight: 700; font-size: 13px; padding: 12px 6px;}
         
@@ -73,6 +77,7 @@
         .inline-input:focus:not(:read-only) { border-color: var(--warning); background-color: var(--input-bg); outline: none; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
         
         .count-input { color: var(--primary-green); font-weight: 800; }
+        .remaining-input { color: var(--danger); font-weight: 900; }
         .price-input { color: var(--primary-blue); font-weight: 800; }
         .discount-input { color: var(--warning); font-weight: 800; }
         .pay-amount { color: #8e44ad; font-weight: 800; border-bottom: 1px dashed var(--border) !important;}
@@ -120,15 +125,25 @@
                 <div class="add-grid">
                     <div class="input-group">
                         <label>أسم الشركة <span class="req">*</span></label>
-                        <input type="text" id="companyName" required>
+                        <input type="text" id="companyName" list="companyList" required>
+                        <datalist id="companyList"></datalist>
+                    </div>
+                    <div class="input-group">
+                        <label>رقم الشركة</label>
+                        <input type="text" id="companyPhone">
                     </div>
                     <div class="input-group">
                         <label>أسم المنتج <span class="req">*</span></label>
-                        <input type="text" id="productName" required>
+                        <input type="text" id="productName" list="productList" required>
+                        <datalist id="productList"></datalist>
                     </div>
                     <div class="input-group">
-                        <label>الكمية / العدد <span class="req">*</span></label>
+                        <label>الكمية (مجمل) <span class="req">*</span></label>
                         <input type="text" id="productCount" class="calc-basic" placeholder="مثال: 10 علب" required>
+                    </div>
+                    <div class="input-group">
+                        <label>الكمية المتبقية <span class="req">*</span></label>
+                        <input type="number" id="remainingCount" required>
                     </div>
                     <div class="input-group">
                         <label>سعر الجمهور <span class="req">*</span></label>
@@ -188,23 +203,25 @@
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th style="width: 10%;">الشركة</th>
+                        <th style="width: 8%;">الشركة</th>
+                        <th style="width: 8%;">رقم الشركة</th>
                         <th style="width: 10%;">المنتج</th>
-                        <th style="width: 7%;">العدد</th>
+                        <th style="width: 6%;">الكمية (مجمل)</th>
+                        <th style="width: 6%;">المتبقي</th>
                         <th style="width: 7%;">سعر الجمهور</th>
                         <th style="width: 5%;">الخصم(%)</th>
-                        <th style="width: 8%;">تاريخ وارد</th>
-                        <th style="width: 11%;">تحصيل 1 (مبلغ/تاريخ)</th>
-                        <th style="width: 11%;">تحصيل 2 (مبلغ/تاريخ)</th>
-                        <th style="width: 11%;">تحصيل 3 (مبلغ/تاريخ)</th>
-                        <th style="width: 8%;">علينا</th>
-                        <th style="width: 6%;">خالص</th>
-                        <th style="width: 4%;"><i class="fa-solid fa-trash"></i></th>
+                        <th style="width: 7%;">تاريخ وارد</th>
+                        <th style="width: 10%;">تحصيل 1</th>
+                        <th style="width: 10%;">تحصيل 2</th>
+                        <th style="width: 10%;">تحصيل 3</th>
+                        <th style="width: 6%;">علينا</th>
+                        <th style="width: 4%;">خالص</th>
+                        <th style="width: 3%;"><i class="fa-solid fa-trash"></i></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
+                        <td colspan="14" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
                     </tr>
                 </tbody>
             </table>
@@ -218,6 +235,18 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKHzASCaDzt-91wJV9-Y2R2r9WEA_c1IhXB9p7qxfTi9mxFUpBVOznkTYvoLbcYytY/exec';
         let pharmaData = []; 
         let formBaseCost = 0;
+
+        // إعداد الفايربيز (للربط والمزامنة التلقائية مع المبيعات في العيادة)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
+            authDomain: "today-2d146.firebaseapp.com",
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
+            projectId: "today-2d146",
+            messagingSenderId: "742225764525",
+            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
 
         flatpickr(".main-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
 
@@ -242,15 +271,10 @@
             document.getElementById('syncIndicator').classList.remove('show');
         }
 
-        // ==========================================
-        // الدوال الذكية المحسنة (لتفادي أي طيران في التواريخ)
-        // ==========================================
         function getSafeValue(item, ...possibleKeys) {
-            // أولاً: بحث مباشر
             for (let key of possibleKeys) {
                 if (item[key] !== undefined && item[key] !== null) return item[key];
             }
-            // ثانياً: بحث عميق بدون مسافات أو (ال) وبتحويل الأرقام العربي
             for (let k in item) {
                 let cleanK = k.replace(/\s+/g, '').replace(/ال/g, '').replace(/١/g,'1').replace(/٢/g,'2').replace(/٣/g,'3');
                 for (let key of possibleKeys) {
@@ -266,7 +290,6 @@
             try { 
                 let str = String(dateStr).trim();
                 let d = new Date(str);
-                // بنترجم التاريخ المحلي عشان نمنع فرق التوقيت تماماً
                 if (!isNaN(d.getTime())) {
                     let year = d.getFullYear();
                     let month = String(d.getMonth() + 1).padStart(2, '0');
@@ -283,16 +306,58 @@
             return matches ? parseFloat(matches[0]) : 1;
         }
 
-        // ==========================================
-        // منطق الحسابات الذكية للواجهة
-        // ==========================================
+        function updateDatalists() {
+            let companies = [...new Set(pharmaData.map(r => r.companyName).filter(Boolean))];
+            let products = [...new Set(pharmaData.map(r => r.productName).filter(Boolean))];
+            document.getElementById('companyList').innerHTML = companies.map(c => `<option value="${c}">`).join('');
+            document.getElementById('productList').innerHTML = products.map(p => `<option value="${p}">`).join('');
+            
+            // رفع المخزون للفايربيز عشان صفحة (اليوم) تقرأه وتقدر تبيع منه
+            if (db) db.ref('pharma_inventory_list').set(pharmaData);
+        }
+
+        // الاستماع لمبيعات اليوم لخصم الكميات المتبقية أوتوماتيك
+        if (db) {
+            db.ref('med_deductions').on('child_added', snap => {
+                let deduction = snap.val();
+                if(!deduction) return;
+                
+                // هندور على الدواء اللي فيه رصيد متبقي ونخصم منه
+                let idx = pharmaData.findIndex(r => r.productName === deduction.productName && parseFloat(r.remainingCount) >= deduction.qty);
+                if (idx === -1) idx = pharmaData.findIndex(r => r.productName === deduction.productName && parseFloat(r.remainingCount) > 0);
+                
+                if (idx !== -1) {
+                    let oldVal = parseFloat(pharmaData[idx].remainingCount) || 0;
+                    let newVal = Math.max(0, oldVal - deduction.qty);
+                    
+                    // تحديث الكمية المتبقية فقط
+                    pharmaData[idx].remainingCount = newVal;
+                    renderTable(); 
+                    
+                    // إرسال التحديث لـ Google Sheets في صمت
+                    saveRow(idx, 'remainingCount', newVal);
+                }
+                snap.ref.remove(); // مسح الإشعار بعد الخصم
+            });
+        }
+
         function calcFormFromBasics() {
             let price = parseFloat(document.getElementById('publicPrice').value) || 0;
             let count = extractNumber(document.getElementById('productCount').value);
             let discount = parseFloat(document.getElementById('discount').value) || 0;
+            
+            // حساب التكلفة بناءً على الكمية الأصلية الإجمالية (مش المتبقية)
             formBaseCost = (price - (price * (discount / 100))) * count;
             applyFormPayments();
+            
+            // جعل الكمية المتبقية تساوي العدد الإجمالي افتراضياً عند إضافة طلبية جديدة
+            let remEl = document.getElementById('remainingCount');
+            if(!remEl.dataset.edited) remEl.value = count;
         }
+
+        document.getElementById('remainingCount').addEventListener('input', function() {
+            this.dataset.edited = true;
+        });
 
         function manualFormOwedUpdate() {
             let typedOwed = parseFloat(document.getElementById('owed').value) || 0;
@@ -325,9 +390,6 @@
         document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
 
-        // ==========================================
-        // تحميل البيانات من الشيت
-        // ==========================================
         function loadData(forceReload = false, silent = false) {
             const tableBody = document.getElementById('tableBody');
             const today = new Date().toDateString();
@@ -339,7 +401,7 @@
                 renderTable();
                 if(!silent) showSyncStatus('تزامن سحابي...', true); 
             } else if (!cachedData && !silent) {
-                tableBody.innerHTML = '<tr><td colspan="12" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات...</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="14" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات...</td></tr>';
             }
 
             fetch(SCRIPT_URL)
@@ -347,7 +409,7 @@
                 .then(data => {
                     if (data.length === 0) {
                         if (!silent) {
-                            tableBody.innerHTML = '<tr><td colspan="12" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
+                            tableBody.innerHTML = '<tr><td colspan="14" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة بعد.</td></tr>';
                             hideSyncStatus();
                         }
                         return;
@@ -359,12 +421,18 @@
                         let p2 = parseFloat(getSafeValue(item, 'دفعة 2', 'pay2')) || 0;
                         let p3 = parseFloat(getSafeValue(item, 'دفعة 3', 'pay3')) || 0;
                         let baseCost = parsedOwed + p1 + p2 + p3;
+                        
+                        let count = getSafeValue(item, 'عدد المنتج', 'productCount') || '';
+                        let rem = getSafeValue(item, 'الكمية المتبقية', 'متبقي', 'remainingCount');
+                        if (rem === '' || rem === undefined) rem = count;
 
                         return {
                             rowNumber: item.rowNumber,
                             companyName: getSafeValue(item, 'أسم الشركة', 'companyName'),
+                            companyPhone: getSafeValue(item, 'رقم الشركة', 'رقم التليفون', 'companyPhone'),
                             productName: getSafeValue(item, 'أسم المنتج', 'productName'),
-                            productCount: getSafeValue(item, 'عدد المنتج', 'productCount'),
+                            productCount: count,
+                            remainingCount: rem,
                             publicPrice: getSafeValue(item, 'سعر المنتج الجمهور', 'publicPrice'),
                             discount: getSafeValue(item, 'نسبة الخصم', 'discount'),
                             dateIn: formatDate(getSafeValue(item, 'تاريخ وارد', 'تاريخ الوارد', 'dateIn')),
@@ -393,14 +461,11 @@
                     } else if (!silent) { hideSyncStatus(); }
                 })
                 .catch(error => {
-                    if (!cachedData && !silent) tableBody.innerHTML = '<tr><td colspan="12" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
+                    if (!cachedData && !silent) tableBody.innerHTML = '<tr><td colspan="14" style="color:var(--danger); text-align:center; padding:20px;">حدث خطأ في الاتصال بالسيرفر.</td></tr>';
                     if (!silent) hideSyncStatus();
                 });
         }
 
-        // ==========================================
-        // رسم الجدول
-        // ==========================================
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -410,8 +475,10 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><input type="text" class="inline-input" value="${row.companyName}" onchange="saveRow(${index}, 'companyName', this.value)"></td>
+                    <td><input type="text" class="inline-input" value="${row.companyPhone}" onchange="saveRow(${index}, 'companyPhone', this.value)"></td>
                     <td><input type="text" class="inline-input" value="${row.productName}" onchange="saveRow(${index}, 'productName', this.value)"></td>
                     <td><input type="text" class="inline-input count-input" value="${row.productCount}" oninput="calcRowBasics(${index}, 'productCount', this.value)" onchange="saveRow(${index})"></td>
+                    <td><input type="number" class="inline-input remaining-input" value="${row.remainingCount}" onchange="saveRow(${index}, 'remainingCount', this.value)"></td>
                     <td><input type="number" class="inline-input price-input" value="${row.publicPrice}" oninput="calcRowBasics(${index}, 'publicPrice', this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="number" class="inline-input discount-input" value="${row.discount}" oninput="calcRowBasics(${index}, 'discount', this.value)" onchange="saveRow(${index})"></td>
                     <td><input type="text" class="inline-input table-date" placeholder="وارد" value="${row.dateIn}" onchange="saveRow(${index}, 'dateIn', this.value)"></td>
@@ -444,6 +511,7 @@
                 tableBody.appendChild(tr);
             });
             flatpickr(".table-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
+            updateDatalists();
         }
 
         loadData();
@@ -451,7 +519,7 @@
         function calcRowBasics(index, field, value) {
             pharmaData[index][field] = value;
             let pr = parseFloat(pharmaData[index].publicPrice) || 0;
-            let c = extractNumber(pharmaData[index].productCount);
+            let c = extractNumber(pharmaData[index].productCount); // حساب المديونية على التوتال
             let disc = parseFloat(pharmaData[index].discount) || 0;
             pharmaData[index].baseCost = (pr - (pr * (disc / 100))) * c;
             applyRowPaymentsLogic(index);
@@ -489,9 +557,6 @@
             else doneField.classList.remove('done-yes');
         }
 
-        // ==========================================
-        // التحديث والحذف اللحظي (بدون فريز للصفحة)
-        // ==========================================
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
@@ -509,12 +574,9 @@
             if (!confirm('هل أنت متأكد من حذف هذا البيان نهائياً؟')) return;
 
             const rowNumToDelete = pharmaData[index].rowNumber;
-            
-            // حذف فوري من الواجهة بدون انتظار السيرفر (Optimistic UI)
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
             renderTable();
-            
             showSyncStatus('جاري الحذف...', true);
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNumber: rowNumToDelete }) })
@@ -529,9 +591,6 @@
             });
         }
 
-        // ==========================================
-        // الإضافة اللحظية السريعة (بدون تعطيل الشاشة)
-        // ==========================================
         const addForm = document.getElementById('addForm');
         addForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
@@ -539,8 +598,10 @@
             const payload = {
                 action: 'add',
                 companyName: document.getElementById('companyName').value,
+                companyPhone: document.getElementById('companyPhone').value,
                 productName: document.getElementById('productName').value,
                 productCount: document.getElementById('productCount').value,
+                remainingCount: document.getElementById('remainingCount').value,
                 publicPrice: document.getElementById('publicPrice').value,
                 discount: document.getElementById('discount').value,
                 dateIn: document.getElementById('dateIn').value,
@@ -554,7 +615,6 @@
                 done: document.getElementById('done').value
             };
 
-            // حساب التكلفة للمنتج الوهمي عشان يترسم صح
             let pr = parseFloat(payload.publicPrice) || 0;
             let c = extractNumber(payload.productCount);
             let disc = parseFloat(payload.discount) || 0;
@@ -571,8 +631,10 @@
             const tempRow = {
                 rowNumber: 'temp_' + Date.now(),
                 companyName: payload.companyName,
+                companyPhone: payload.companyPhone,
                 productName: payload.productName,
                 productCount: payload.productCount,
+                remainingCount: payload.remainingCount,
                 publicPrice: payload.publicPrice,
                 discount: payload.discount,
                 dateIn: payload.dateIn,
@@ -587,13 +649,13 @@
                 done: payload.done
             };
 
-            // رسم الجدول فوراً وتفريغ الفورم للمستخدم عشان يكمل شغل
             pharmaData.push(tempRow);
             renderTable();
             addForm.reset(); 
             formBaseCost = 0; 
             document.getElementById('done').value = 'لا'; 
             document.getElementById('done').style.color = 'var(--text-dark)';
+            delete document.getElementById('remainingCount').dataset.edited;
             
             showSyncStatus('جاري الحفظ سحابياً...', true);
 
@@ -602,7 +664,6 @@
             .then(result => { 
                 showSyncStatus('تمت الإضافة', false); 
                 setTimeout(hideSyncStatus, 2000); 
-                // تحميل صامت في الخلفية لجلب رقم الصف الحقيقي من الشيت
                 loadData(true, true); 
             })
             .catch(error => { 
