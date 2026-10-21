@@ -246,7 +246,9 @@
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146"
+            projectId: "today-2d146",
+            messagingSenderId: "742225764525",
+            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
@@ -279,7 +281,6 @@
             return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        // 🚨 إضافة toLowerCase() هنا برضه لضمان التطابق 🚨
         function isNameMatch(n1, n2) {
             if (!n1 || !n2) return false;
             let norm1 = String(n1).replace(/[\u064B-\u065F\u0640]/g, "").replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
@@ -329,6 +330,7 @@
         }
 
         window.masterListsData = {};
+        let deductionListenerAttached = false;
 
         if (db) {
             db.ref('clinic_master_lists').on('value', snap => {
@@ -443,11 +445,7 @@
                     renderTable();
                 } catch(e){}
             }
-            
-            // سحب الأحدث فقط إذا لم تكن البيانات متوفرة (لتجنب مسح الخصومات اللحظية)
-            if (!cached || pharmaData.length === 0) {
-                loadDataFromSheet(true);
-            }
+            loadDataFromSheet(true);
         }
 
         function loadDataFromSheet(isBackground = false) {
@@ -487,6 +485,15 @@
                                 baseCost: baseCost,
                                 done: getSafeValue(item, 'خالص', 'done') || 'لا'
                             };
+                        });
+
+                        // 🚨 دمج وحماية الكميات المتبقية اللي اتسجلت من الفايربيز 🚨
+                        newDataFormatted.forEach(newRow => {
+                            let existingRow = pharmaData.find(r => r.rowNumber === newRow.rowNumber || (isNameMatch(r.productName, newRow.productName) && isNameMatch(r.companyName, newRow.companyName)));
+                            if (existingRow && existingRow.remainingCount !== undefined && String(existingRow.remainingCount) !== String(newRow.remainingCount)) {
+                                // نحتفظ بالخصم اللي حصل من صفحة Today
+                                newRow.remainingCount = existingRow.remainingCount;
+                            }
                         });
 
                         pharmaData = newDataFormatted;
