@@ -242,6 +242,7 @@
         let pharmaData = []; 
         let formBaseCost = 0;
 
+        // إعداد الفايربيز للربط والمزامنة
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -317,7 +318,7 @@
         }
 
         // ==========================================
-        // القوائم المركزية (Master Lists)
+        // القوائم المركزية (الاستماع التلقائي والإضافة)
         // ==========================================
         window.masterListsData = {};
         if (db) {
@@ -331,14 +332,22 @@
             let newVal = prompt("أدخل الاسم الجديد لإضافته للقائمة الدائمة:");
             if (newVal && newVal.trim() !== "") {
                 newVal = newVal.trim();
-                if(db) {
-                    let key = Date.now();
-                    db.ref(`clinic_master_lists/${listName}/${key}`).set(newVal);
-                }
+                ensureInMasterList(listName, newVal);
                 let inputEl = document.getElementById(inputId);
                 if(inputEl) {
                     inputEl.value = newVal;
                 }
+            }
+        };
+
+        // دالة الحفظ الصامت للقوائم
+        window.ensureInMasterList = function(listName, value) {
+            if (!value || !db) return;
+            value = value.trim();
+            let master = window.masterListsData || {};
+            let currentList = master[listName] ? Object.values(master[listName]) : [];
+            if (!currentList.includes(value)) {
+                db.ref(`clinic_master_lists/${listName}/${Date.now()}`).set(value);
             }
         };
 
@@ -358,10 +367,9 @@
             
             let pList = document.getElementById('productList');
             if(pList) pList.innerHTML = combinedMeds.map(p => `<option value="${escapeHtml(String(p))}">`).join('');
-            
-            if (db && pharmaData.length > 0) db.ref('pharma_inventory_list').set(pharmaData);
         }
 
+        // الاستماع لخصومات مبيعات اليوم
         if (db) {
             db.ref('med_deductions').on('child_added', snap => {
                 let deduction = snap.val();
@@ -373,6 +381,7 @@
                 if (idx !== -1) {
                     let oldVal = parseFloat(pharmaData[idx].remainingCount) || 0;
                     let newVal = Math.max(0, oldVal - deduction.qty);
+                    
                     pharmaData[idx].remainingCount = newVal;
                     renderTable(); 
                     saveRow(idx, 'remainingCount', newVal);
@@ -550,9 +559,10 @@
             });
             flatpickr(".table-date", { locale: "ar", dateFormat: "Y-m-d", disableMobile: "true" });
             updateDatalists();
+            
+            // رفع المخزون للفايربيز
+            if (db && pharmaData.length > 0) db.ref('pharma_inventory_list').set(pharmaData);
         }
-
-        loadData();
 
         function calcRowBasics(index, field, value) {
             pharmaData[index][field] = value;
@@ -598,6 +608,7 @@
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            if (db) db.ref('pharma_inventory_list').set(pharmaData);
             
             let payload = { action: 'update', ...pharmaData[index] };
             showSyncStatus('تحديث...', true);
@@ -614,6 +625,8 @@
             const rowNumToDelete = pharmaData[index].rowNumber;
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            if (db) db.ref('pharma_inventory_list').set(pharmaData);
+            
             renderTable();
             showSyncStatus('جاري الحذف...', true);
 
@@ -652,6 +665,10 @@
                 owed: document.getElementById('owed').value,
                 done: document.getElementById('done').value
             };
+
+            // 🚨 التقاط الأسماء للفايربيز 🚨
+            ensureInMasterList('companies', payload.companyName);
+            ensureInMasterList('medicines', payload.productName);
 
             let pr = parseFloat(payload.publicPrice) || 0;
             let c = extractNumber(payload.productCount);
