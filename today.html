@@ -317,11 +317,17 @@
                 <div class="card-panel">
                     <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="flex:1; margin:0; min-width: 80px;">
+                        <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="flex:1; margin:0; min-width: 80px;" list="availableMedsList">
+                        <datalist id="availableMedsList"></datalist>
+                        
                         <input type="text" id="medBuyer" placeholder="اسم المريض" class="modal-input" style="flex:1; margin:0; min-width: 80px;" list="medPatientsList">
                         <datalist id="medPatientsList"></datalist>
+                        
+                        <input type="number" id="medQty" placeholder="الكمية" class="modal-input" style="width: 55px; margin:0;" value="1" min="1">
+                        
                         <select id="medMethod" class="modal-input" style="width: 80px; margin:0;"><option value="كاش">كاش</option><option value="فودافون كاش">فون كاش</option><option value="أنستا باي">أنستا باي</option></select>
-                        <input type="number" id="medAmount" placeholder="المبلغ" class="modal-input" style="width: 70px; margin:0;">
+                        <input type="number" id="medAmount" placeholder="السعر" class="modal-input" style="width: 70px; margin:0;">
+                        
                         <button class="btn-add" style="background:var(--primary-green)" onclick="addMedication()"><i class="fa-solid fa-plus"></i></button>
                     </div>
                     <div class="table-responsive">
@@ -419,7 +425,6 @@
     <script>
         window.allPatientNames = [];
 
-        // دالة التوحيد والمطابقة الذكية للأسماء
         function normalizeArabicName(name) {
             if (!name) return "";
             return String(name)
@@ -513,6 +518,19 @@
                     checkAndStartTimer(); 
                     updateManualSlotDropdown(); 
                     initDay();
+                    
+                    // استدعاء الأدوية المتاحة من صفحة الشركات
+                    if(db) {
+                        db.ref('pharma_inventory_list').on('value', snap => {
+                            let data = snap.val() || [];
+                            let activeMeds = data.filter(r => parseFloat(r.remainingCount) > 0).map(r => r.productName);
+                            let uniqueMeds = [...new Set(activeMeds)];
+                            const list = document.getElementById('availableMedsList');
+                            if (list) {
+                                list.innerHTML = uniqueMeds.map(m => `<option value="${escapeHtml(m)}">`).join('');
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -1047,7 +1065,33 @@
         }
 
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
-        function addMedication() { let name = escapeHtml(document.getElementById('medName').value.trim()); let buyer = escapeHtml(document.getElementById('medBuyer').value.trim()); let amt = document.getElementById('medAmount').value; let method = document.getElementById('medMethod').value; if(!name || !amt) return; let desc = buyer ? `${name} (للمريض: ${buyer})` : name; financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); document.getElementById('medName').value = ''; document.getElementById('medBuyer').value = ''; document.getElementById('medAmount').value = ''; renderUI(); scheduleSync(); }
+        
+        function addMedication() { 
+            let name = escapeHtml(document.getElementById('medName').value.trim()); 
+            let buyer = escapeHtml(document.getElementById('medBuyer').value.trim()); 
+            let amt = document.getElementById('medAmount').value; 
+            let method = document.getElementById('medMethod').value; 
+            let qty = parseInt(document.getElementById('medQty').value) || 1;
+            
+            if(!name || !amt) return; 
+            
+            let desc = buyer ? `${name} (${qty}x) (للمريض: ${buyer})` : `${name} (${qty}x)`; 
+            financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); 
+            
+            // إرسال إشعار خصم المخزون أوتوماتيكيا لصفحة الشركات
+            if(db) {
+                db.ref('med_deductions').push({ productName: name, qty: qty, timestamp: Date.now() });
+            }
+
+            document.getElementById('medName').value = ''; 
+            document.getElementById('medBuyer').value = ''; 
+            document.getElementById('medAmount').value = ''; 
+            document.getElementById('medQty').value = '1'; 
+            
+            renderUI(); 
+            scheduleSync(); 
+        }
+        
         function addExpense() { let desc = escapeHtml(document.getElementById('expDesc').value.trim()); let amt = document.getElementById('expAmount').value; if(!desc || !amt) return; financialsQueue.push({type: 'مصروف', desc: desc, method: 'كاش', amount: amt}); document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = ''; renderUI(); scheduleSync(); }
         function removeFin(idx) { financialsQueue.splice(idx,1); renderUI(); scheduleSync(); }
 
