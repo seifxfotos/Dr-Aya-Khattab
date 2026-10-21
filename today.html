@@ -428,6 +428,7 @@
         window.allPatientNames = [];
         window.availableMedsData = [];
 
+        // 🚨 إضافة toLowerCase() لمنع حساسية الحروف الإنجليزية 🚨
         function normalizeArabicName(name) {
             if (!name) return "";
             return String(name)
@@ -438,8 +439,7 @@
                 .replace(/عبد ال/g, "عبدال")
                 .replace(/ابو /g, "ابو")
                 .replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "")
-                .trim()
-                .replace(/\s+/g, " ");
+                .trim().toLowerCase();
         }
 
         function isNameMatch(n1, n2) {
@@ -490,6 +490,9 @@
             db = firebase.database(); 
         } catch(e) { console.error("Firebase init error", e); }
 
+        // 🚨 رابط سكريبت جوجل الخاص بصفحة الشركات عشان تودي تبعتله أمر الخصم مباشرة 🚨
+        const PHARMA_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKHzASCaDzt-91wJV9-Y2R2r9WEA_c1IhXB9p7qxfTi9mxFUpBVOznkTYvoLbcYytY/exec';
+
         let appInitialized = false;
         window.masterListsData = {};
 
@@ -528,7 +531,6 @@
             let master = window.masterListsData || {};
             let fbMeds = master.medicines ? Object.values(master.medicines) : [];
             let activeMeds = (window.availableMedsData || []).map(r => r.productName);
-            // 🚨 تم تعديل الشرط هنا لعرض كل الأدوية المسجلة بغض النظر عن خانة المتبقي لتظهر فوراً 🚨
             let uniqueMeds = [...new Set([...fbMeds, ...activeMeds].filter(Boolean))];
             
             const list = document.getElementById('availableMedsList');
@@ -586,7 +588,7 @@
         document.getElementById('medName').addEventListener('change', function() {
             let selectedName = this.value.trim();
             if(window.availableMedsData && selectedName) {
-                let med = window.availableMedsData.find(m => m.productName === selectedName);
+                let med = window.availableMedsData.find(m => isNameMatch(m.productName, selectedName));
                 if(med && med.publicPrice) {
                     document.getElementById('medAmount').value = med.publicPrice;
                 }
@@ -618,11 +620,10 @@
                 });
         }
 
-        const CLINIC_QUEUE_FIREBASE_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/";
         const CLINIC_QUEUE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYqOapiXLj08hR7FH00KeGeFkMt1ZTai9ap0phHx89s5ofQ5-x3-h_P2MXsUE_PuDd/exec";
         let clinicQueueDB = null;
         try {
-            const clinicApp = firebase.initializeApp({ databaseURL: CLINIC_QUEUE_FIREBASE_URL }, "clinicQueueApp");
+            const clinicApp = firebase.initializeApp({ databaseURL: "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/" }, "clinicQueueApp");
             clinicQueueDB = clinicApp.database();
         } catch(e) { console.error("Clinic Queue Firebase init error", e); }
 
@@ -1124,6 +1125,7 @@
 
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         
+        // 🚨 دالة إضافة الأدوية المحدثة بالخصم المباشر (Direct Strike) 🚨
         function addMedication() { 
             let name = escapeHtml(document.getElementById('medName').value.trim()); 
             let buyer = escapeHtml(document.getElementById('medBuyer').value.trim()); 
@@ -1140,8 +1142,28 @@
             let desc = buyer ? `${name} (${qty}x) (للمريض: ${buyer})` : `${name} (${qty}x)`; 
             financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); 
             
+            // 🚨 الخصم اللحظي والمباشر من قاعدة الفايربيز وتحديث جوجل شيت للشركات 🚨
             if(db) {
-                db.ref('med_deductions').push({ productName: name, qty: qty, timestamp: Date.now() });
+                db.ref('pharma_inventory_list').once('value').then(snap => {
+                    let inv = snap.val();
+                    if(inv) {
+                        let invArray = Array.isArray(inv) ? inv : Object.values(inv);
+                        let idx = invArray.findIndex(r => isNameMatch(r.productName, name) && parseFloat(r.remainingCount) >= qty);
+                        if (idx === -1) idx = invArray.findIndex(r => isNameMatch(r.productName, name) && parseFloat(r.remainingCount) > 0);
+                        
+                        if (idx !== -1) {
+                            let oldVal = parseFloat(invArray[idx].remainingCount) || 0;
+                            invArray[idx].remainingCount = Math.max(0, oldVal - qty);
+                            
+                            // تحديث مباشر للفايربيز (عشان يسمع عند السكرتارية فوراً)
+                            db.ref('pharma_inventory_list').set(invArray);
+                            
+                            // إرسال الإجراء لجوجل شيت الخاص بالشركات (عشان يتحفظ هناك للأبد)
+                            let payload = { action: 'update', ...invArray[idx] };
+                            fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                        }
+                    }
+                });
             }
 
             document.getElementById('medName').value = ''; 
@@ -1510,7 +1532,7 @@
         function renderUI() {
             updateStatsCounters();
             updateGlpPatientsList(); 
-            updateMedPatientsList(); 
+            updateAllDatalists(); 
             
             document.getElementById('glpTableBody').innerHTML = glpQueue.map((g,i) => `<tr><td>${escapeHtml(g.name)}</td><td><span class="badge badge-glp">${escapeHtml(g.dose)}</span></td><td><button style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="removeGLP(${i})"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             let medsHtml = ''; let expsHtml = '';
