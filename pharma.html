@@ -227,7 +227,7 @@
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="14" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</td>
+                        <td colspan="14" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات...</td>
                     </tr>
                 </tbody>
             </table>
@@ -329,21 +329,91 @@
 
         window.masterListsData = {};
 
-        if (db) {
-            db.ref('clinic_master_lists').on('value', snap => {
-                window.masterListsData = snap.val() || {};
-                updateDatalists();
-            });
-
-            // 🚨 الفايربيز هو المصدر الأهم والأسرع للبيانات اللحظية 🚨
-            db.ref('pharma_inventory_list').on('value', snap => {
-                let fbData = snap.val();
-                if (fbData && fbData.length > 0) {
-                    pharmaData = Array.isArray(fbData) ? fbData : Object.values(fbData);
-                    localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+        // 🚨 التهيئة الفورية السريعة (بدون تحميل لا نهائي) 🚨
+        function initPageData() {
+            let cached = localStorage.getItem('clinic_pharma_cache');
+            if (cached) {
+                try {
+                    pharmaData = JSON.parse(cached);
                     renderTable();
-                }
-            });
+                } catch(e){}
+            } else {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="14" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات...</td></tr>';
+            }
+
+            if (db) {
+                db.ref('clinic_master_lists').on('value', snap => {
+                    window.masterListsData = snap.val() || {};
+                    updateDatalists();
+                });
+
+                // الاستماع اللحظي للفايربيز
+                db.ref('pharma_inventory_list').on('value', snap => {
+                    let fbData = snap.val();
+                    if(fbData) {
+                        pharmaData = Array.isArray(fbData) ? fbData : Object.values(fbData);
+                        localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+                        renderTable();
+                        hideSyncStatus();
+                    } else {
+                        // لو الفايربيز فاضي تماماً، نسحب من الشيت مرة واحدة
+                        loadDataFromSheetFallback();
+                    }
+                });
+            }
+        }
+
+        function loadDataFromSheetFallback() {
+            showSyncStatus('تزامن مع الأرشيف...', true);
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const newDataFormatted = data.map(item => {
+                            let parsedOwed = parseFloat(getSafeValue(item, 'علينا', 'owed')) || 0;
+                            let p1 = parseFloat(getSafeValue(item, 'دفعة 1', 'pay1')) || 0;
+                            let p2 = parseFloat(getSafeValue(item, 'دفعة 2', 'pay2')) || 0;
+                            let p3 = parseFloat(getSafeValue(item, 'دفعة 3', 'pay3')) || 0;
+                            let baseCost = parsedOwed + p1 + p2 + p3;
+                            
+                            let count = getSafeValue(item, 'عدد المنتج', 'productCount') || '';
+                            let rem = getSafeValue(item, 'الكمية المتبقية', 'متبقي', 'remainingCount');
+                            if (rem === '' || rem === undefined) rem = count;
+
+                            return {
+                                rowNumber: item.rowNumber,
+                                companyName: getSafeValue(item, 'أسم الشركة', 'companyName'),
+                                companyPhone: getSafeValue(item, 'رقم الشركة', 'رقم التليفون', 'companyPhone'),
+                                productName: getSafeValue(item, 'أسم المنتج', 'productName'),
+                                productCount: count,
+                                remainingCount: rem,
+                                publicPrice: getSafeValue(item, 'سعر المنتج الجمهور', 'publicPrice'),
+                                discount: getSafeValue(item, 'نسبة الخصم', 'discount'),
+                                dateIn: formatDate(getSafeValue(item, 'تاريخ وارد', 'تاريخ الوارد', 'dateIn')),
+                                pay1: p1 || '',
+                                collect1: formatDate(getSafeValue(item, 'تاريخ تحصيل 1', 'تاريخ التحصيل 1', 'collect1')),
+                                pay2: p2 || '',
+                                collect2: formatDate(getSafeValue(item, 'تاريخ تحصيل 2', 'تاريخ التحصيل 2', 'collect2')),
+                                pay3: p3 || '',
+                                collect3: formatDate(getSafeValue(item, 'تاريخ تحصيل 3', 'تاريخ التحصيل 3', 'collect3')),
+                                owed: parsedOwed,
+                                baseCost: baseCost,
+                                done: getSafeValue(item, 'خالص', 'done') || 'لا'
+                            };
+                        });
+
+                        pharmaData = newDataFormatted;
+                        localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+                        if(db) db.ref('pharma_inventory_list').set(pharmaData); // نحفظ في الفايربيز عشان منسحبش تاني
+                        renderTable();
+                    } else {
+                        document.getElementById('tableBody').innerHTML = '<tr><td colspan="14" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة.</td></tr>';
+                    }
+                    hideSyncStatus();
+                })
+                .catch(error => {
+                    hideSyncStatus();
+                });
         }
 
         window.ensureInMasterList = function(listName, value) {
@@ -434,78 +504,6 @@
         document.querySelectorAll('.calc-basic').forEach(input => input.addEventListener('input', calcFormFromBasics));
         document.querySelectorAll('.calc-pay').forEach(input => input.addEventListener('input', applyFormPayments));
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
-
-        function initPageData() {
-            // لو الفايربيز فيه بيانات (الرصيد المباشر)، هنعرضها ونعتمد عليها
-            if (db) {
-                db.ref('pharma_inventory_list').once('value').then(snap => {
-                    let fbData = snap.val();
-                    if (fbData && fbData.length > 0) {
-                        pharmaData = Array.isArray(fbData) ? fbData : Object.values(fbData);
-                        localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
-                        renderTable();
-                    } else {
-                        // لو الفايربيز فاضي، نسحب من الشيت ونحدث الفايربيز بيه
-                        loadDataFromSheet(false);
-                    }
-                });
-            } else {
-                loadDataFromSheet(false);
-            }
-        }
-
-        function loadDataFromSheet(isForcedRefresh = false) {
-            if(!isForcedRefresh) showSyncStatus('جاري المزامنة...', true);
-            fetch(SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        const newDataFormatted = data.map(item => {
-                            let parsedOwed = parseFloat(getSafeValue(item, 'علينا', 'owed')) || 0;
-                            let p1 = parseFloat(getSafeValue(item, 'دفعة 1', 'pay1')) || 0;
-                            let p2 = parseFloat(getSafeValue(item, 'دفعة 2', 'pay2')) || 0;
-                            let p3 = parseFloat(getSafeValue(item, 'دفعة 3', 'pay3')) || 0;
-                            let baseCost = parsedOwed + p1 + p2 + p3;
-                            
-                            let count = getSafeValue(item, 'عدد المنتج', 'productCount') || '';
-                            let rem = getSafeValue(item, 'الكمية المتبقية', 'متبقي', 'remainingCount');
-                            if (rem === '' || rem === undefined) rem = count;
-
-                            return {
-                                rowNumber: item.rowNumber,
-                                companyName: getSafeValue(item, 'أسم الشركة', 'companyName'),
-                                companyPhone: getSafeValue(item, 'رقم الشركة', 'رقم التليفون', 'companyPhone'),
-                                productName: getSafeValue(item, 'أسم المنتج', 'productName'),
-                                productCount: count,
-                                remainingCount: rem,
-                                publicPrice: getSafeValue(item, 'سعر المنتج الجمهور', 'publicPrice'),
-                                discount: getSafeValue(item, 'نسبة الخصم', 'discount'),
-                                dateIn: formatDate(getSafeValue(item, 'تاريخ وارد', 'تاريخ الوارد', 'dateIn')),
-                                pay1: p1 || '',
-                                collect1: formatDate(getSafeValue(item, 'تاريخ تحصيل 1', 'تاريخ التحصيل 1', 'collect1')),
-                                pay2: p2 || '',
-                                collect2: formatDate(getSafeValue(item, 'تاريخ تحصيل 2', 'تاريخ التحصيل 2', 'collect2')),
-                                pay3: p3 || '',
-                                collect3: formatDate(getSafeValue(item, 'تاريخ تحصيل 3', 'تاريخ التحصيل 3', 'collect3')),
-                                owed: parsedOwed,
-                                baseCost: baseCost,
-                                done: getSafeValue(item, 'خالص', 'done') || 'لا'
-                            };
-                        });
-
-                        pharmaData = newDataFormatted;
-                        localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
-                        if(db) db.ref('pharma_inventory_list').set(pharmaData);
-                        renderTable();
-                    } else if(!isForcedRefresh) {
-                        document.getElementById('tableBody').innerHTML = '<tr><td colspan="14" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة.</td></tr>';
-                    }
-                    hideSyncStatus();
-                })
-                .catch(error => {
-                    hideSyncStatus();
-                });
-        }
 
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
@@ -603,6 +601,7 @@
             else doneField.classList.remove('done-yes');
         }
 
+        // 🚨 دالة الحفظ مع تزامن الفايربيز المباشر 🚨
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
@@ -611,6 +610,7 @@
             let payload = { action: 'update', ...pharmaData[index] };
             showSyncStatus('تحديث...', true);
             
+            // إرسال لجوجل شيت كـ Backup أرشيفي
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(result => { showSyncStatus('تم الحفظ', false); setTimeout(hideSyncStatus, 1500); })
@@ -719,7 +719,8 @@
             .then(result => { 
                 showSyncStatus('تمت الإضافة', false); 
                 setTimeout(hideSyncStatus, 2000); 
-                loadDataFromSheet(true); 
+                // نسحب تاني في الخلفية عشان نأكد الـ rowNumber الحقيقي من الشيت
+                loadDataFromSheetFallback(); 
             })
             .catch(error => { 
                 showSyncStatus('حدث خطأ', false); 
