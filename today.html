@@ -1191,14 +1191,21 @@
         // 🚨 خصم الكمية من مخزون صفحة الأدوية لحظياً (آمن ضد التعارض) 🚨
         // - بيدور على أول صف لنفس اسم الدواء متبقي منه أكتر من 0 وبينقص منه الكمية المباعة
         // - لو الدوا خالص (المتبقي 0) أو مش موجود في صفحة الأدوية: مفيش أي تعديل
+        function stockMsg(text) {
+            showSyncStatus(text);
+            setTimeout(hideSyncStatus, 2500);
+        }
+
         function deductFromPharmaStock(productName, qty) {
-            if (!db || !productName || !qty) return;
+            if (!db) { console.error('[خصم المخزون] قاعدة البيانات غير متصلة'); return; }
+            if (!productName || !qty) return;
             const target = normalizeArabicName(productName).replace(/\s+/g, ' ');
             let changedRow = null;
 
             db.ref('pharma_inventory_list').transaction(function(current) {
                 changedRow = null;
-                if (!current) return; // مفيش بيانات: إلغاء بدون تعديل
+                // لو النسخة المحلية فاضية نرجّعها زي ما هي، فايربيز هيعيد المحاولة بالبيانات الحقيقية من السيرفر
+                if (current === null || current === undefined) return current;
 
                 const keys = Object.keys(current);
                 for (let i = 0; i < keys.length; i++) {
@@ -1215,7 +1222,17 @@
                 }
                 return; // مفيش صف مناسب: إلغاء بدون تعديل
             }, function(error, committed) {
-                if (error || !committed || !changedRow) return;
+                if (error) {
+                    console.error('[خصم المخزون] خطأ:', error);
+                    stockMsg('تعذر خصم الدوا من المخزون: ' + (error.code || error.message || ''));
+                    return;
+                }
+                if (!committed || !changedRow) {
+                    console.log('[خصم المخزون] لم يتم الخصم: الدوا مش موجود أو خالص:', productName);
+                    stockMsg('لم يتم الخصم: ' + productName + ' غير متوفر في صفحة الأدوية');
+                    return;
+                }
+                stockMsg('تم خصم ' + qty + ' من متبقي ' + productName);
                 // تحديث نسخة الشيت الأرشيفية لو الصف له رقم حقيقي
                 if (PHARMA_SCRIPT_URL && changedRow.rowNumber && !String(changedRow.rowNumber).startsWith('temp_')) {
                     fetch(PHARMA_SCRIPT_URL, {
