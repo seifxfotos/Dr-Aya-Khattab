@@ -1188,6 +1188,44 @@
 
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         
+        // 🚨 خصم الكمية من مخزون صفحة الأدوية لحظياً (آمن ضد التعارض) 🚨
+        // - بيدور على أول صف لنفس اسم الدواء متبقي منه أكتر من 0 وبينقص منه الكمية المباعة
+        // - لو الدوا خالص (المتبقي 0) أو مش موجود في صفحة الأدوية: مفيش أي تعديل
+        function deductFromPharmaStock(productName, qty) {
+            if (!db || !productName || !qty) return;
+            const target = normalizeArabicName(productName).replace(/\s+/g, ' ');
+            let changedRow = null;
+
+            db.ref('pharma_inventory_list').transaction(function(current) {
+                changedRow = null;
+                if (!current) return; // مفيش بيانات: إلغاء بدون تعديل
+
+                const keys = Object.keys(current);
+                for (let i = 0; i < keys.length; i++) {
+                    const row = current[keys[i]];
+                    if (!row) continue;
+                    if (normalizeArabicName(row.productName).replace(/\s+/g, ' ') !== target) continue;
+
+                    const rem = parseFloat(row.remainingCount);
+                    if (isNaN(rem) || rem <= 0) continue; // خالص أو غير رقمي: نكمل للصف اللي بعده
+
+                    row.remainingCount = Math.max(0, rem - qty);
+                    changedRow = Object.assign({}, row);
+                    return current;
+                }
+                return; // مفيش صف مناسب: إلغاء بدون تعديل
+            }, function(error, committed) {
+                if (error || !committed || !changedRow) return;
+                // تحديث نسخة الشيت الأرشيفية لو الصف له رقم حقيقي
+                if (PHARMA_SCRIPT_URL && changedRow.rowNumber && !String(changedRow.rowNumber).startsWith('temp_')) {
+                    fetch(PHARMA_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(Object.assign({ action: 'update' }, changedRow))
+                    }).catch(function() {});
+                }
+            }, false);
+        }
+
         // 🚨 دالة الخصم المباشر (الآمنة) 🚨
         function addMedication() { 
             let rawName = document.getElementById('medName').value.trim(); 
@@ -1199,10 +1237,8 @@
             
             if(!rawName || !amt) return; 
 
-            // إرسال أمر خصم آمن إلى الفايربيز
-            if (db) {
-                db.ref('med_deductions_queue').push({ productName: rawName, qty: qty, timestamp: Date.now() });
-            }
+            // خصم الكمية من المتبقي في صفحة الأدوية لحظياً
+            deductFromPharmaStock(rawName, qty);
 
             if(typeof ensureInMasterList === 'function') {
                 ensureInMasterList('medicines', rawName);
