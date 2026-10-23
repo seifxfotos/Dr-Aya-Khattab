@@ -324,8 +324,10 @@
                         </div>
                         <datalist id="availableMedsList"></datalist>
                         
-                        <input type="text" id="medBuyer" placeholder="اسم المريض" class="modal-input" style="flex:1; margin:0; min-width: 80px;" list="medPatientsList">
-                        <datalist id="medPatientsList"></datalist>
+                        <div style="position: relative; flex:1; min-width: 80px; margin: 0;">
+                            <input type="text" id="medBuyer" placeholder="اسم المريض" class="modal-input" style="width: 100%; margin:0; box-sizing: border-box;" autocomplete="off">
+                            <div id="medBuyerAutocomplete" class="custom-autocomplete" style="min-width: 180px;"></div>
+                        </div>
                         
                         <input type="number" id="medQty" placeholder="الكمية" class="modal-input" style="width: 55px; margin:0;" value="1" min="1">
                         
@@ -788,6 +790,54 @@
         document.addEventListener('click', function(e) {
             if(e.target.id !== 'patientName' && autocompleteDiv) {
                 autocompleteDiv.style.display = 'none';
+            }
+        });
+
+        // 🚨 قائمة أسماء مرضى اليوم في خانة المشتري (مبيعات الأدوية) 🚨
+        const medBuyerEl = document.getElementById('medBuyer');
+        const medBuyerListDiv = document.getElementById('medBuyerAutocomplete');
+
+        function showMedBuyerList(nameStr) {
+            let normName = normalizeArabicName(nameStr);
+            medBuyerListDiv.innerHTML = '';
+
+            // أسماء مرضى اليوم بدون تكرار (وبدون كلمة "مقدم ..." اللي بين الأقواس)
+            let todayNames = [...new Set(
+                patientsQueue
+                    .map(p => (p.name || '').replace(/\s*\(.*\)\s*/g, '').trim())
+                    .filter(Boolean)
+            )];
+
+            let matchedNames = normName
+                ? todayNames.filter(n => normalizeArabicName(n).includes(normName))
+                : todayNames;
+
+            if (matchedNames.length === 0) {
+                medBuyerListDiv.style.display = 'none';
+                return;
+            }
+
+            matchedNames.forEach(match => {
+                let div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerText = match;
+                div.onclick = function(event) {
+                    event.stopPropagation();
+                    medBuyerEl.value = match;
+                    medBuyerListDiv.style.display = 'none';
+                };
+                medBuyerListDiv.appendChild(div);
+            });
+            medBuyerListDiv.style.display = 'block';
+        }
+
+        medBuyerEl.addEventListener('focus', function() { showMedBuyerList(this.value.trim()); });
+        medBuyerEl.addEventListener('click', function() { showMedBuyerList(this.value.trim()); });
+        medBuyerEl.addEventListener('input', function() { showMedBuyerList(this.value.trim()); });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.id !== 'medBuyer' && medBuyerListDiv) {
+                medBuyerListDiv.style.display = 'none';
             }
         });
 
