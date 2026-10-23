@@ -1201,9 +1201,11 @@
             if (!productName || !qty) return;
             const target = normalizeArabicName(productName).replace(/\s+/g, ' ');
             let changedRow = null;
+            let changedKey = null;
 
             db.ref('pharma_inventory_list').transaction(function(current) {
                 changedRow = null;
+                changedKey = null;
                 // لو النسخة المحلية فاضية نرجّعها زي ما هي، فايربيز هيعيد المحاولة بالبيانات الحقيقية من السيرفر
                 if (current === null || current === undefined) return current;
 
@@ -1218,10 +1220,11 @@
 
                     row.remainingCount = Math.max(0, rem - qty);
                     changedRow = Object.assign({}, row);
+                    changedKey = keys[i];
                     return current;
                 }
                 return; // مفيش صف مناسب: إلغاء بدون تعديل
-            }, function(error, committed) {
+            }, function(error, committed, snapshot) {
                 if (error) {
                     console.error('[خصم المخزون] خطأ:', error);
                     stockMsg('تعذر خصم الدوا من المخزون: ' + (error.code || error.message || ''));
@@ -1232,7 +1235,10 @@
                     stockMsg('لم يتم الخصم: ' + productName + ' غير متوفر في صفحة الأدوية');
                     return;
                 }
-                stockMsg('تم خصم ' + qty + ' من متبقي ' + productName);
+                let serverRem = '';
+                try { serverRem = snapshot.child(String(changedKey)).child('remainingCount').val(); } catch (e) {}
+                console.log('[خصم المخزون] تم الحفظ في Firebase:', changedKey, changedRow, 'المتبقي على السيرفر:', serverRem);
+                stockMsg('تم خصم ' + qty + ' من ' + productName + ' - المتبقي الآن ' + serverRem);
                 // تحديث نسخة الشيت الأرشيفية لو الصف له رقم حقيقي
                 if (PHARMA_SCRIPT_URL && changedRow.rowNumber && !String(changedRow.rowNumber).startsWith('temp_')) {
                     fetch(PHARMA_SCRIPT_URL, {
