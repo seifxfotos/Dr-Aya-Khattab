@@ -718,48 +718,62 @@
         window.patientDebts = {};
         window.patientPhones = {}; 
 
-        document.getElementById('patientName').addEventListener('input', function(e) {
-            let name = this.value.trim();
+        // 🚨 ميزة البحث الذكي وإظهار قائمة المرضى فور الضغط (Focus/Click) 🚨
+        const patientNameInput = document.getElementById('patientName');
+        
+        function handlePatientAutocomplete(e) {
+            let name = patientNameInput.value.trim();
             let normName = normalizeArabicName(name);
-            
             let autocompleteDiv = document.getElementById('customAutocomplete');
-            autocompleteDiv.innerHTML = '';
+            
+            let matchedNames = [];
             
             if (!name) {
-                autocompleteDiv.style.display = 'none';
+                // لو الحقل فاضي (اليوزر لسه دايس)، نعرض أسماء المرضى بتوع كشف اليوم
+                matchedNames = patientsQueue.map(p => p.name);
             } else {
-                let matchedNames = [];
+                // لو بيكتب، ندور في التاريخ القديم ومرضى اليوم
                 let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
                 let cacheNames = allCardsCache.map(p => p.name);
-                let combinedNames = [...new Set([...(window.allPatientNames || []), ...cacheNames])];
+                let todayNames = patientsQueue.map(p => p.name);
+                let combinedNames = [...new Set([...(window.allPatientNames || []), ...cacheNames, ...todayNames])];
 
                 combinedNames.forEach(origName => {
                     if (origName && normalizeArabicName(origName).includes(normName)) {
                         matchedNames.push(origName);
                     }
                 });
+            }
 
-                if (matchedNames.length > 0) {
-                    matchedNames.slice(0, 8).forEach(match => {
-                        let div = document.createElement('div');
-                        div.className = 'autocomplete-item';
-                        div.innerText = match;
-                        div.onclick = function(event) {
-                            event.stopPropagation();
-                            document.getElementById('patientName').value = match;
-                            autocompleteDiv.style.display = 'none';
-                            checkDebtForName(match);
-                        };
-                        autocompleteDiv.appendChild(div);
-                    });
-                    autocompleteDiv.style.display = 'block';
-                } else {
-                    autocompleteDiv.style.display = 'none';
-                }
+            autocompleteDiv.innerHTML = '';
+            
+            // إزالة التكرار
+            matchedNames = [...new Set(matchedNames.filter(Boolean))];
+
+            if (matchedNames.length > 0) {
+                matchedNames.slice(0, 10).forEach(match => {
+                    let div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    div.innerText = match;
+                    div.onclick = function(event) {
+                        event.stopPropagation();
+                        patientNameInput.value = match;
+                        autocompleteDiv.style.display = 'none';
+                        checkDebtForName(match);
+                    };
+                    autocompleteDiv.appendChild(div);
+                });
+                autocompleteDiv.style.display = 'block';
+            } else {
+                autocompleteDiv.style.display = 'none';
             }
             
             checkDebtForName(name);
-        });
+        }
+
+        patientNameInput.addEventListener('input', handlePatientAutocomplete);
+        patientNameInput.addEventListener('focus', handlePatientAutocomplete);
+        patientNameInput.addEventListener('click', handlePatientAutocomplete);
 
         document.addEventListener('click', function(e) {
             let autocompleteDiv = document.getElementById('customAutocomplete');
@@ -1115,7 +1129,6 @@
 
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         
-        // 🚨 دالة الخصم المباشر (Direct Firebase Strike) 🚨
         function addMedication() { 
             let rawName = document.getElementById('medName').value.trim(); 
             let name = escapeHtml(rawName); 
@@ -1126,43 +1139,26 @@
             
             if(!rawName || !amt) return; 
 
-            // 🚨 الدخول المباشر لقاعدة الفايربيز وتعديل الرصيد 🚨
-            if (db) {
-                db.ref('pharma_inventory_list').once('value').then(snap => {
-                    let inv = snap.val();
-                    if (inv) {
-                        let invArray = Array.isArray(inv) ? inv : Object.values(inv);
-                        
-                        // ندور على الدواء اللي فيه رصيد يغطي المبيعة
-                        let idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
-                        
-                        // لو ملقيناش، ندور على أي رصيد للدواء ده (أكبر من صفر) عشان منعملش سالب
-                        if (idx === -1) {
-                            idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
-                        }
-                        
-                        // لو لقينا رصيد، هنخصم منه ونرفع التعديل
-                        if (idx !== -1) {
-                            let oldVal = parseFloat(invArray[idx].remainingCount) || 0;
-                            invArray[idx].remainingCount = Math.max(0, oldVal - qty);
-                            
-                            // 1. التحديث الفوري للفايربيز (صفحة الشركات هتشوفه لو مفتوحة)
-                            db.ref('pharma_inventory_list').set(invArray);
-                            
-                            // 2. إرسال التحديث الصامت لجوجل شيت لضمان حفظه للأبد
-                            let payload = { action: 'update', ...invArray[idx] };
-                            fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
-                        }
-                    }
-                });
-            }
-
             if(typeof ensureInMasterList === 'function') {
                 ensureInMasterList('medicines', rawName);
             }
             
             let desc = buyer ? `${name} (${qty}x) (للمريض: ${buyer})` : `${name} (${qty}x)`; 
             financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); 
+            
+            if (window.availableMedsData && window.availableMedsData.length > 0 && db) {
+                let idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
+                if (idx === -1) idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
+
+                if (idx !== -1) {
+                    let oldVal = parseFloat(window.availableMedsData[idx].remainingCount) || 0;
+                    window.availableMedsData[idx].remainingCount = Math.max(0, oldVal - qty);
+                    
+                    db.ref('pharma_inventory_list').set(window.availableMedsData);
+                    let payload = { action: 'update', ...window.availableMedsData[idx] };
+                    fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
+                }
+            }
 
             document.getElementById('medName').value = ''; 
             document.getElementById('medBuyer').value = ''; 
