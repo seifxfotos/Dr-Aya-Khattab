@@ -1124,7 +1124,7 @@
 
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         
-        // 🚨 دالة الخصم المباشر الآمنة (Direct Firebase Strike) 🚨
+        // 🚨 دالة الخصم المباشر (Direct Firebase Strike) 🚨
         function addMedication() { 
             let rawName = document.getElementById('medName').value.trim(); 
             let name = escapeHtml(rawName); 
@@ -1135,22 +1135,36 @@
             
             if(!rawName || !amt) return; 
 
-            // الخصم المباشر من مخزون الفايربيز
-            if (window.availableMedsData && window.availableMedsData.length > 0) {
-                let idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
-                if (idx === -1) idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
-
-                if (idx !== -1) {
-                    let oldVal = parseFloat(window.availableMedsData[idx].remainingCount) || 0;
-                    window.availableMedsData[idx].remainingCount = Math.max(0, oldVal - qty);
-
-                    // تحديث المخزن في الفايربيز فوراً
-                    if(db) db.ref('pharma_inventory_list').set(window.availableMedsData);
-
-                    // تحديث الشيت الدائم الخاص بالشركات
-                    let payload = { action: 'update', ...window.availableMedsData[idx] };
-                    fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
-                }
+            // 🚨 الدخول المباشر لقاعدة الفايربيز وتعديل الرصيد 🚨
+            if (db) {
+                db.ref('pharma_inventory_list').once('value').then(snap => {
+                    let inv = snap.val();
+                    if (inv) {
+                        let invArray = Array.isArray(inv) ? inv : Object.values(inv);
+                        
+                        // ندور على الدواء اللي فيه رصيد يغطي المبيعة
+                        let idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
+                        
+                        // لو ملقيناش، ندور على أي رصيد للدواء ده (أكبر من صفر) عشان منعملش سالب
+                        if (idx === -1) {
+                            idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
+                        }
+                        
+                        // لو لقينا رصيد، هنخصم منه ونرفع التعديل
+                        if (idx !== -1) {
+                            let oldVal = parseFloat(invArray[idx].remainingCount) || 0;
+                            invArray[idx].remainingCount = Math.max(0, oldVal - qty);
+                            
+                            // 1. التحديث الفوري للفايربيز
+                            db.ref('pharma_inventory_list').set(invArray);
+                            
+                            // 2. إرسال التحديث الصامت لجوجل شيت لضمان حفظه للأبد
+                            let payload = { action: 'update', ...invArray[idx] };
+                            fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
+                        }
+                        // لو الرصيد صفر أساساً (أو الدواء مش موجود)، المبيعة هتتسجل عادي في العيادة، ومفيش أي خصم هيحصل في المخزن (بدون إيرور).
+                    }
+                });
             }
 
             if(typeof ensureInMasterList === 'function') {
