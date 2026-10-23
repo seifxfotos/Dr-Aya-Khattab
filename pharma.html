@@ -356,6 +356,35 @@
 
         window.masterListsData = {};
 
+        // ====== تنظيف قائمة أسماء الأدوية الدائمة (اللي بتظهر كاختيارات في صفحة تودي) ======
+        function normMed(n) {
+            return String(n || '').replace(/[\u064B-\u065F\u0640]/g, '').replace(/[أإآء]/g, 'ا').replace(/[يىئ]/g, 'ي').replace(/ة/g, 'ه').replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+
+        // يمسح من القائمة الدائمة أي اسم دوا مش موجود في المخزون الحالي
+        // (لو مررت اسم معين بيمسح الاسم ده بس لو مفيش صف تاني بنفس الاسم)
+        function pruneMasterMedicines(onlyName) {
+            if (!db || !firebaseSynced) return;
+            const master = (window.masterListsData && window.masterListsData.medicines) || {};
+            const active = new Set(pharmaData.map(r => normMed(r.productName)).filter(Boolean));
+            const onlyNorm = onlyName ? normMed(onlyName) : null;
+            Object.keys(master).forEach(key => {
+                const n = normMed(master[key]);
+                if (!n || active.has(n)) return;
+                if (onlyNorm && n !== onlyNorm) return;
+                db.ref('clinic_master_lists/medicines/' + key).remove().catch(e => console.error('[pharma] prune error:', e));
+            });
+        }
+
+        // تنظيف لمرة واحدة للأسماء القديمة اللي اتمسحت قبل التعديل ده (زي test)
+        function maybeOneTimeCleanup() {
+            if (localStorage.getItem('master_meds_pruned_v1')) return;
+            if (!firebaseSynced || !pharmaData.length) return;
+            if (!window.masterListsData || !window.masterListsData.medicines) return;
+            pruneMasterMedicines();
+            localStorage.setItem('master_meds_pruned_v1', '1');
+        }
+
         // 🚨 التهيئة الفورية السريعة (بدون تحميل لا نهائي) 🚨
         function initPageData() {
             let cached = localStorage.getItem('clinic_pharma_cache');
@@ -372,6 +401,7 @@
                 db.ref('clinic_master_lists').on('value', snap => {
                     window.masterListsData = snap.val() || {};
                     updateDatalists();
+                    maybeOneTimeCleanup();
                 }, err => { console.error('[pharma] master lists error:', err); });
 
                 // الاستماع اللحظي للفايربيز
@@ -385,6 +415,7 @@
                         hideSyncStatus();
                         const now = new Date();
                         setFbStatus('ok', 'متصل بـ Firebase - آخر تحديث: ' + now.toLocaleTimeString('en-GB'));
+                        maybeOneTimeCleanup();
                     } else {
                         // لو الفايربيز فاضي تماماً، نسحب من الشيت مرة واحدة
                         setFbStatus('wait', 'Firebase فاضي - جاري السحب من الشيت');
@@ -675,9 +706,13 @@
             }
 
             const rowNumToDelete = pharmaData[index].rowNumber;
+            const deletedProductName = pharmaData[index].productName;
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
             if (db) db.ref('pharma_inventory_list').set(pharmaData);
+
+            // لو مفيش صف تاني بنفس اسم الدوا: نشيله من اختيارات صفحة تودي
+            pruneMasterMedicines(deletedProductName);
             
             renderTable();
             showSyncStatus('جاري الحذف...', true);
