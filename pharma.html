@@ -241,15 +241,12 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKHzASCaDzt-91wJV9-Y2R2r9WEA_c1IhXB9p7qxfTi9mxFUpBVOznkTYvoLbcYytY/exec';
         let pharmaData = []; 
         let formBaseCost = 0;
-        let pendingDeductions = [];
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146",
-            messagingSenderId: "742225764525",
-            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
+            projectId: "today-2d146"
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
@@ -332,56 +329,20 @@
 
         window.masterListsData = {};
 
-        // 🚨 طابور الانتظار للخصم اللحظي 🚨
         if (db) {
             db.ref('clinic_master_lists').on('value', snap => {
                 window.masterListsData = snap.val() || {};
                 updateDatalists();
             });
 
-            db.ref('med_deductions_queue').on('child_added', snap => {
-                let deduction = snap.val();
-                if(deduction) {
-                    deduction.key = snap.key;
-                    pendingDeductions.push(deduction);
-                    processDeductions();
+            // 🚨 الفايربيز هو المصدر الأهم والأسرع للبيانات اللحظية 🚨
+            db.ref('pharma_inventory_list').on('value', snap => {
+                let fbData = snap.val();
+                if (fbData && fbData.length > 0) {
+                    pharmaData = Array.isArray(fbData) ? fbData : Object.values(fbData);
+                    localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+                    renderTable();
                 }
-            });
-        }
-
-        function processDeductions() {
-            if (pharmaData.length === 0 || pendingDeductions.length === 0) return;
-            
-            let hasChanges = false;
-            let processedKeys = [];
-            
-            pendingDeductions.forEach(deduction => {
-                // البحث في الأدوية اللي فيها رصيد
-                let idx = pharmaData.findIndex(r => isNameMatch(r.productName, deduction.productName) && parseFloat(r.remainingCount) >= deduction.qty);
-                // لو ملقاش، يدور على أي رصيد متاح
-                if (idx === -1) idx = pharmaData.findIndex(r => isNameMatch(r.productName, deduction.productName) && parseFloat(r.remainingCount) > 0);
-                
-                if (idx !== -1) {
-                    let oldVal = parseFloat(pharmaData[idx].remainingCount) || 0;
-                    pharmaData[idx].remainingCount = Math.max(0, oldVal - deduction.qty);
-                    hasChanges = true;
-                    
-                    // إرسال التعديل فوراً للشيت
-                    let payload = { action: 'update', ...pharmaData[idx] };
-                    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
-                }
-                processedKeys.push(deduction.key);
-            });
-            
-            if (hasChanges) {
-                localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
-                renderTable();
-            }
-            
-            // مسح الأوامر اللي اتنفذت من الفايربيز
-            processedKeys.forEach(key => {
-                if (db) db.ref('med_deductions_queue/' + key).remove();
-                pendingDeductions = pendingDeductions.filter(d => d.key !== key);
             });
         }
 
@@ -475,19 +436,26 @@
         document.querySelectorAll('.calc-manual').forEach(input => input.addEventListener('input', manualFormOwedUpdate));
 
         function initPageData() {
-            let cached = localStorage.getItem('clinic_pharma_cache');
-            if (cached) {
-                try {
-                    pharmaData = JSON.parse(cached);
-                    renderTable();
-                    processDeductions(); 
-                } catch(e){}
+            // لو الفايربيز فيه بيانات (الرصيد المباشر)، هنعرضها ونعتمد عليها
+            if (db) {
+                db.ref('pharma_inventory_list').once('value').then(snap => {
+                    let fbData = snap.val();
+                    if (fbData && fbData.length > 0) {
+                        pharmaData = Array.isArray(fbData) ? fbData : Object.values(fbData);
+                        localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+                        renderTable();
+                    } else {
+                        // لو الفايربيز فاضي، نسحب من الشيت ونحدث الفايربيز بيه
+                        loadDataFromSheet(false);
+                    }
+                });
+            } else {
+                loadDataFromSheet(false);
             }
-            loadDataFromSheet(true);
         }
 
-        function loadDataFromSheet(isBackground = false) {
-            if(!isBackground) showSyncStatus('جاري المزامنة...', true);
+        function loadDataFromSheet(isForcedRefresh = false) {
+            if(!isForcedRefresh) showSyncStatus('جاري المزامنة...', true);
             fetch(SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
@@ -527,11 +495,9 @@
 
                         pharmaData = newDataFormatted;
                         localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+                        if(db) db.ref('pharma_inventory_list').set(pharmaData);
                         renderTable();
-                        
-                        // 🚨 نشغل طابور الخصم بعد ما الداتا تحمل عشان ميمسحش القديم 🚨
-                        processDeductions();
-                    } else if(!isBackground) {
+                    } else if(!isForcedRefresh) {
                         document.getElementById('tableBody').innerHTML = '<tr><td colspan="14" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة.</td></tr>';
                     }
                     hideSyncStatus();
@@ -640,6 +606,7 @@
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            if (db) db.ref('pharma_inventory_list').set(pharmaData);
             
             let payload = { action: 'update', ...pharmaData[index] };
             showSyncStatus('تحديث...', true);
@@ -656,6 +623,7 @@
             const rowNumToDelete = pharmaData[index].rowNumber;
             pharmaData.splice(index, 1);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            if (db) db.ref('pharma_inventory_list').set(pharmaData);
             
             renderTable();
             showSyncStatus('جاري الحذف...', true);
@@ -735,6 +703,7 @@
 
             pharmaData.push(tempRow);
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
+            if (db) db.ref('pharma_inventory_list').set(pharmaData);
 
             renderTable();
             addForm.reset(); 
