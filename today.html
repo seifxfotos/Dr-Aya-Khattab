@@ -425,6 +425,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
+        // رابط سكربت صفحة الأدوية عشان صفحة تودي تبعتله أمر الخصم مباشرة
         const PHARMA_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKHzASCaDzt-91wJV9-Y2R2r9WEA_c1IhXB9p7qxfTi9mxFUpBVOznkTYvoLbcYytY/exec';
 
         window.allPatientNames = [];
@@ -480,7 +481,9 @@
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146"
+            projectId: "today-2d146",
+            messagingSenderId: "742225764525",
+            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
 
         let db = null;
@@ -496,14 +499,6 @@
             db.ref('clinic_master_lists').on('value', snap => {
                 window.masterListsData = snap.val() || {};
                 if(typeof updateAllDatalists === 'function') updateAllDatalists();
-            });
-            
-            db.ref('pharma_inventory_list').on('value', snap => {
-                let data = snap.val();
-                if(data) {
-                    window.availableMedsData = Array.isArray(data) ? data : Object.values(data);
-                    if(typeof updateAllDatalists === 'function') updateAllDatalists();
-                }
             });
         }
 
@@ -574,6 +569,17 @@
                     checkAndStartTimer(); 
                     updateManualSlotDropdown(); 
                     initDay();
+                    
+                    try {
+                        let localPharma = JSON.parse(localStorage.getItem('clinic_pharma_cache'));
+                        if(localPharma) loadAvailableMeds(localPharma);
+                    } catch(e){}
+
+                    if(db) {
+                        db.ref('pharma_inventory_list').on('value', snap => {
+                            loadAvailableMeds(snap.val());
+                        });
+                    }
                 }
             }
         });
@@ -602,7 +608,10 @@
             const email = user + "@clinic.com";
 
             firebase.auth().signInWithEmailAndPassword(email, pass)
-                .then(() => {})
+                .then(() => {
+                    btn.innerHTML = "دخول <i class='fa-solid fa-arrow-left'></i>";
+                    btn.disabled = false;
+                })
                 .catch((error) => {
                     err.style.display = "block";
                     btn.innerHTML = "دخول <i class='fa-solid fa-arrow-left'></i>";
@@ -615,7 +624,7 @@
         try {
             const clinicApp = firebase.initializeApp({ databaseURL: "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/" }, "clinicQueueApp");
             clinicQueueDB = clinicApp.database();
-        } catch(e) {}
+        } catch(e) { console.error("Clinic Queue Firebase init error", e); }
 
         function getActualTodayDateStr() {
             const today = new Date();
@@ -704,7 +713,7 @@
 
                 localStorage.setItem(`sent_from_today_${actualToday}`, JSON.stringify(currentEligibleNames));
                 pushClinicQueueList(actualToday, updatedList);
-            }).catch(err => {});
+            }).catch(err => console.error("Smart Sync Error:", err));
         }
 
         let unsubscribeFirebase = null;
@@ -719,36 +728,30 @@
         window.patientPhones = {}; 
 
         // 🚨 ميزة البحث الذكي وإظهار قائمة المرضى فور الضغط (Focus/Click) 🚨
-        const patientNameInput = document.getElementById('patientName');
-        
-        function handlePatientAutocomplete(e) {
-            let name = patientNameInput.value.trim();
-            let normName = normalizeArabicName(name);
-            let autocompleteDiv = document.getElementById('customAutocomplete');
-            
-            let matchedNames = [];
-            
-            if (!name) {
-                // لو الحقل فاضي (اليوزر لسه دايس)، نعرض أسماء المرضى بتوع كشف اليوم
-                matchedNames = patientsQueue.map(p => p.name);
-            } else {
-                // لو بيكتب، ندور في التاريخ القديم ومرضى اليوم
-                let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
-                let cacheNames = allCardsCache.map(p => p.name);
-                let todayNames = patientsQueue.map(p => p.name);
-                let combinedNames = [...new Set([...(window.allPatientNames || []), ...cacheNames, ...todayNames])];
+        const patientInputEl = document.getElementById('patientName');
+        const autocompleteDiv = document.getElementById('customAutocomplete');
 
+        function showAutocompleteList(nameStr) {
+            let normName = normalizeArabicName(nameStr);
+            autocompleteDiv.innerHTML = '';
+            let matchedNames = [];
+
+            let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
+            let cacheNames = allCardsCache.map(p => p.name);
+            let todayNames = patientsQueue.map(p => p.name); 
+            
+            let combinedNames = [...new Set([...(window.allPatientNames || []), ...cacheNames, ...todayNames])].filter(Boolean);
+
+            if (!nameStr) {
+                // لو الحقل فاضي (اليوزر لسه دايس)، نعرض أسماء المرضى بتوع كشف اليوم
+                matchedNames = [...new Set(todayNames)].filter(Boolean);
+            } else {
                 combinedNames.forEach(origName => {
                     if (origName && normalizeArabicName(origName).includes(normName)) {
                         matchedNames.push(origName);
                     }
                 });
             }
-
-            autocompleteDiv.innerHTML = '';
-            
-            // إزالة التكرار
-            matchedNames = [...new Set(matchedNames.filter(Boolean))];
 
             if (matchedNames.length > 0) {
                 matchedNames.slice(0, 10).forEach(match => {
@@ -757,7 +760,7 @@
                     div.innerText = match;
                     div.onclick = function(event) {
                         event.stopPropagation();
-                        patientNameInput.value = match;
+                        patientInputEl.value = match;
                         autocompleteDiv.style.display = 'none';
                         checkDebtForName(match);
                     };
@@ -767,16 +770,22 @@
             } else {
                 autocompleteDiv.style.display = 'none';
             }
-            
-            checkDebtForName(name);
         }
 
-        patientNameInput.addEventListener('input', handlePatientAutocomplete);
-        patientNameInput.addEventListener('focus', handlePatientAutocomplete);
-        patientNameInput.addEventListener('click', handlePatientAutocomplete);
+        patientInputEl.addEventListener('input', function() {
+            showAutocompleteList(this.value.trim());
+            checkDebtForName(this.value.trim());
+        });
+
+        patientInputEl.addEventListener('focus', function() {
+            showAutocompleteList(this.value.trim());
+        });
+
+        patientInputEl.addEventListener('click', function() {
+            showAutocompleteList(this.value.trim());
+        });
 
         document.addEventListener('click', function(e) {
-            let autocompleteDiv = document.getElementById('customAutocomplete');
             if(e.target.id !== 'patientName' && autocompleteDiv) {
                 autocompleteDiv.style.display = 'none';
             }
@@ -1037,7 +1046,7 @@
             if (db) {
                 db.ref('clinic_days/' + date).set({ 
                     schedule: patientsQueue, glp: glpQueue, financials: financialsQueue, timestamp: firebase.database.ServerValue.TIMESTAMP 
-                }).catch(error => {});
+                }).catch(error => { console.error("Firebase Rule Error:", error); });
             }
 
             syncTodayWithClinicSmart();
@@ -1129,6 +1138,7 @@
 
         function removeGLP(idx) { glpQueue.splice(idx,1); renderUI(); scheduleSync(); }
         
+        // 🚨 دالة الخصم المباشر (الآمنة) 🚨
         function addMedication() { 
             let rawName = document.getElementById('medName').value.trim(); 
             let name = escapeHtml(rawName); 
@@ -1139,26 +1149,17 @@
             
             if(!rawName || !amt) return; 
 
+            // إرسال أمر خصم آمن إلى الفايربيز
+            if (db) {
+                db.ref('med_deductions_queue').push({ productName: rawName, qty: qty, timestamp: Date.now() });
+            }
+
             if(typeof ensureInMasterList === 'function') {
                 ensureInMasterList('medicines', rawName);
             }
             
             let desc = buyer ? `${name} (${qty}x) (للمريض: ${buyer})` : `${name} (${qty}x)`; 
             financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); 
-            
-            if (window.availableMedsData && window.availableMedsData.length > 0 && db) {
-                let idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
-                if (idx === -1) idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
-
-                if (idx !== -1) {
-                    let oldVal = parseFloat(window.availableMedsData[idx].remainingCount) || 0;
-                    window.availableMedsData[idx].remainingCount = Math.max(0, oldVal - qty);
-                    
-                    db.ref('pharma_inventory_list').set(window.availableMedsData);
-                    let payload = { action: 'update', ...window.availableMedsData[idx] };
-                    fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
-                }
-            }
 
             document.getElementById('medName').value = ''; 
             document.getElementById('medBuyer').value = ''; 
