@@ -246,9 +246,7 @@
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146",
-            messagingSenderId: "742225764525",
-            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
+            projectId: "today-2d146"
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
@@ -330,7 +328,6 @@
         }
 
         window.masterListsData = {};
-        let deductionListenerAttached = false;
 
         if (db) {
             db.ref('clinic_master_lists').on('value', snap => {
@@ -487,12 +484,14 @@
                             };
                         });
 
-                        // 🚨 دمج وحماية الكميات المتبقية اللي اتسجلت من الفايربيز 🚨
+                        // 🚨 حماية الخصم اللحظي من المسح بواسطة البيانات القديمة لجوجل شيت 🚨
                         newDataFormatted.forEach(newRow => {
-                            let existingRow = pharmaData.find(r => r.rowNumber === newRow.rowNumber || (isNameMatch(r.productName, newRow.productName) && isNameMatch(r.companyName, newRow.companyName)));
-                            if (existingRow && existingRow.remainingCount !== undefined && String(existingRow.remainingCount) !== String(newRow.remainingCount)) {
-                                // نحتفظ بالخصم اللي حصل من صفحة Today
-                                newRow.remainingCount = existingRow.remainingCount;
+                            let existingRow = pharmaData.find(r => r.rowNumber === newRow.rowNumber);
+                            if (existingRow) {
+                                // لو الرصيد اللي في الكاش (الفايربيز) أقل من الشيت، معناه حصل خصم فوري، هنحتفظ بالخصم ده
+                                if (parseFloat(existingRow.remainingCount) < parseFloat(newRow.remainingCount)) {
+                                    newRow.remainingCount = existingRow.remainingCount;
+                                }
                             }
                         });
 
