@@ -262,6 +262,7 @@
         let saveTimeout = null;
         let confirmActionCallback = null;
         let showMedicalSheetFlag = false; 
+        let indexedKey = null; // مفتاح الكرت الحالي في فهرس الأسماء (cards_names_index) عشان نشيل القديم لو الاسم/الرقم اتغير
 
         localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
 
@@ -295,6 +296,28 @@
             if(!p) return "unknown";
             let eng = convertToEnglishNumbers(p);
             return eng.replace(/\D/g, ''); 
+        }
+
+        // 🚨 مفتاح الكرت في فهرس الأسماء: رقم الموبايل + بصمة الاسم (عشان اتنين بنفس الرقم ميمسحوش بعض) 🚨
+        function cardIndexKey(phone, name) {
+            let digits = convertToEnglishNumbers(String(phone || '')).replace(/\D/g, '');
+            let norm = normalizeArabicText(String(name || '')).replace(/\s+/g, ' ');
+            let h = 0;
+            for (let i = 0; i < norm.length; i++) { h = ((h << 5) - h + norm.charCodeAt(i)) | 0; }
+            return (digits || 'x') + '_' + Math.abs(h);
+        }
+
+        // تعبئة الفهرس لأول مرة بس (لو فاضي) من قائمة الكروت اللي في الشيت
+        function seedCardsIndex(list) {
+            try {
+                if (!Array.isArray(list)) return;
+                let obj = {};
+                list.forEach(p => {
+                    if (p && p.name) obj[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') };
+                });
+                if (Object.keys(obj).length === 0) return;
+                db.ref('cards_names_index').transaction(cur => cur ? undefined : obj);
+            } catch (e) { console.error('[فهرس الكروت] تعذر التعبئة:', e); }
         }
 
         function showToast(message, type = 'success') {
@@ -338,6 +361,7 @@
                 cardTypes: {0: 'تغذية علاجية'}
             };
             lastSavedStateString = ""; 
+            indexedKey = null;
             showMedicalSheetFlag = false; 
             renderPatientToDOM();
             showToast("تم فتح استمارة جديدة", "info");
@@ -676,6 +700,17 @@
             if(idx > -1) cache[idx] = payload; else cache.push(payload);
             await localforage.setItem('patients_cache', cache);
 
+            // 🚨 تحديث فهرس الأسماء اللحظي (صفحة تودي بتسمع له) 🚨
+            try {
+                let newKey = cardIndexKey(payload.phone, payload.name);
+                db.ref('cards_names_index/' + newKey).set({ name: payload.name, phone: String(payload.phone || '') })
+                    .catch(e => console.error('[فهرس الكروت] تعذر الحفظ:', e));
+                if (indexedKey && indexedKey !== newKey) {
+                    db.ref('cards_names_index/' + indexedKey).remove().catch(e => console.error('[فهرس الكروت] تعذر مسح القديم:', e));
+                }
+                indexedKey = newKey;
+            } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
+
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
                 
@@ -847,6 +882,12 @@
                 let safePhone = getSafePhone(phone);
                 db.ref('patients_files_data/' + safePhone).remove();
 
+                // 🚨 مسح الاسم من فهرس الأسماء فوراً (بيختفي من صفحة تودي لحظياً) 🚨
+                try {
+                    db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove().catch(e => console.error('[فهرس الكروت] تعذر المسح:', e));
+                    if (indexedKey) db.ref('cards_names_index/' + indexedKey).remove().catch(() => {});
+                } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
+
                 showToast("تم الحذف بنجاح!", "success");
                 createNewPatient();
                 fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' }).catch(e => console.log("Cloud sync delayed"));
@@ -857,7 +898,10 @@
             try {
                 let res = await fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH");
                 let data = await res.json();
-                if(data.status === 'found') await localforage.setItem('patients_cache', data.data);
+                if(data.status === 'found') {
+                    await localforage.setItem('patients_cache', data.data);
+                    seedCardsIndex(data.data); // تعبئة الفهرس لأول مرة فقط لو فاضي
+                }
             } catch(e) {}
         }
 
@@ -959,6 +1003,7 @@
             }
 
             lastSavedStateString = JSON.stringify(currentPatient); 
+            indexedKey = cardIndexKey(currentPatient.phone, currentPatient.name);
             showMedicalSheetFlag = false; 
             renderPatientToDOM();
             setSaveStatus('saved');
@@ -966,7 +1011,7 @@
 
         function closeModal() { document.getElementById('patientModal').style.display = "none"; }
         function toggleTheme(e) { document.body.classList.toggle('dark-mode', e.checked); localStorage.setItem('theme', e.checked ? 'dark' : 'light'); }
-        function convertToEnglishNumbers(str) { const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return str.split('').map(c => ar.indexOf(c) !== -1 ? ar.indexOf(c) : c).join(''); }
+        function convertToEnglishNumbers(str) { const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return String(str).split('').map(c => ar.indexOf(c) !== -1 ? ar.indexOf(c) : c).join(''); }
         function normalizeArabicText(text) { return text ? text.toString().replace(/[أإآء]/g, 'ا').replace(/ة/g, 'ه').replace(/[يىئ]/g, 'ي').replace(/[\u064B-\u065F]/g, '').trim().toLowerCase() : ""; }
         function escapeHtml(text) { return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ""; }
     </script> 
