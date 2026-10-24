@@ -8,17 +8,20 @@
         document.head.appendChild(faLink);
     }
 
-    // 2. تحميل مكتبات الفايربيس تلقائياً في الخلفية
+    // 2. التحقق من وجود Firebase (استخدام النسخة الموحدة مع الصفحة لتجنب التعليق)
     function loadFirebaseSDK(callback) {
-        if (typeof firebase !== 'undefined') {
+        if (typeof firebase !== 'undefined' && firebase.apps) {
+            // الفايربيز موجود بالفعل في الصفحة الأصلية (مثال today و pharma)، استخدمه مباشرة
             callback();
             return;
         }
+        
+        // إذا لم يكن موجوداً (صفحة جديدة)، قم بتحميل النسخة المتوافقة
         const scriptApp = document.createElement('script');
-        scriptApp.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+        scriptApp.src = "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js";
         scriptApp.onload = function() {
             const scriptDb = document.createElement('script');
-            scriptDb.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
+            scriptDb.src = "https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js";
             scriptDb.onload = callback;
             document.head.appendChild(scriptDb);
         };
@@ -26,18 +29,16 @@
     }
 
     loadFirebaseSDK(function() {
-        // 3. إضافة تصميم الشات (CSS) مع تعديل المسافات لتجنب زر المحفظة
+        // 3. إضافة تصميم الشات (CSS) 
         if (!document.getElementById('clinic-chat-styles')) {
             const style = document.createElement('style');
             style.id = 'clinic-chat-styles';
             style.innerHTML = `
-                /* تم رفع الأيقونة لتكون bottom: 145px */
                 .chat-toggle-btn { position: fixed; bottom: 145px; right: 25px; z-index: 99999; background: linear-gradient(135deg, var(--primary-blue, #0093D0), var(--primary-green, #8CC63F)); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); font-size: 24px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
                 .chat-toggle-btn:hover { transform: scale(1.1); }
                 .chat-badge { position: absolute; top: -5px; right: -5px; background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulseBadge 1.5s infinite; }
                 @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-                /* تم رفع نافذة الشات لتكون bottom: 215px */
                 .chat-box-wrapper { position: fixed; bottom: 215px; right: 25px; width: 380px; max-width: 90vw; height: 500px; background: var(--chat-bg, #e5ded8); border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 99999; display: none; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: bottom right; }
                 :root[data-theme="dark"] .chat-box-wrapper { --chat-bg: #0b141a; }
                 .chat-box-wrapper.fullscreen { bottom: 0 !important; right: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; border-radius: 0; z-index: 999999; }
@@ -93,7 +94,7 @@
             document.head.appendChild(style);
         }
 
-        // 4. إضافة هيكل الشات (HTML) في الصفحة إذا لم يكن موجوداً
+        // 4. إضافة هيكل الشات (HTML) 
         if (!document.getElementById('chatBox')) {
             const chatHTML = `
                 <button class="chat-toggle-btn" onclick="toggleChat()" title="محادثة عيادة د.آية">
@@ -132,23 +133,22 @@
             document.body.appendChild(div);
         }
 
-        // 5. ربط الفايربيس وتفعيل وظائف الشات (ككيان منفصل حتى لا يتعارض مع Today)
+        // 5. ربط الفايربيس (إعادة استخدام المشروع نفسه)
         const chatFirebaseConfig = {
             apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
             authDomain: "clinic-system-fe2e4.firebaseapp.com",
             databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
             projectId: "clinic-system-fe2e4",
-            storageBucket: "clinic-system-fe2e4.firebasestorage.app",
-            messagingSenderId: "528745148277",
-            appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
         };
 
         let chatApp;
         try {
+            // محاولة استخدام النسخة الموجودة في الصفحة لتجنب تكرار الاتصال
             chatApp = firebase.app('ClinicChatApp');
         } catch (e) {
             chatApp = firebase.initializeApp(chatFirebaseConfig, 'ClinicChatApp');
         }
+        
         const database = chatApp.database();
         const chatRef = database.ref('clinic_chat');
 
@@ -234,6 +234,9 @@
                 initialLoadDone = true;
                 renderMessages(window.chatMessagesData);
                 checkAndMarkSeen();
+            }, (error) => {
+                // التعامل مع الأخطاء بشكل سلس
+                document.getElementById('chatMessages').innerHTML = '<div style="text-align:center; color:var(--danger); margin-top:80px; font-weight: bold;">تعذر الاتصال بالسيرفر!</div>';
             });
         }
 
