@@ -572,7 +572,10 @@
                     updateManualSlotDropdown(); 
                     initDay();
 
-                    loadCardsNamesFromCache().then(() => refreshCardsNames(true));
+                    try {
+                        startCardsIndexListener();
+                        loadCardsNamesFromCache().then(() => refreshCardsNames(true)).catch(e => console.error('[الكروت]', e));
+                    } catch (e) { console.error('[الكروت] خطأ:', e); }
                     
                     try {
                         let localPharma = JSON.parse(localStorage.getItem('clinic_pharma_cache'));
@@ -738,7 +741,9 @@
         // 🚨 أسماء المرضى بتتقرا من كروت المرضى الحالية بس (نفس مخزن صفحة الكروت) 🚨
         // أي كرت يتمسح من صفحة الكروت بيختفي من هنا تلقائياً
         const CARDS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
-        const cardsStore = localforage.createInstance({ name: 'ClinicApp', storeName: 'patients_cache' });
+        let cardsStore = null;
+        try { cardsStore = localforage.createInstance({ name: 'ClinicApp', storeName: 'patients_cache' }); }
+        catch (e) { console.error('[الكروت] localforage مش متاح:', e); }
         window.cardsPatientNames = [];
         window.cardsIndexNames = [];
         window.cardsIndexActive = false;
@@ -767,22 +772,29 @@
         }
 
         // 🚨 الاستماع اللحظي لفهرس أسماء الكروت (أي كرت يتحفظ أو يتمسح يظهر هنا فوراً) 🚨
-        if (db) {
+        // بيشتغل بعد تسجيل الدخول (عشان صلاحيات Firebase) ومحاط بـ try/catch عشان ميأثرش على باقي الصفحة
+        let cardsIndexListenerStarted = false;
+        function startCardsIndexListener() {
+            if (cardsIndexListenerStarted || !db) return;
+            cardsIndexListenerStarted = true;
             db.ref('cards_names_index').on('value', snap => {
-                const v = snap.val();
-                if (v) {
-                    window.cardsIndexNames = Object.values(v).map(x => x && x.name).filter(Boolean);
-                    window.cardsIndexActive = true;
-                } else {
-                    window.cardsIndexNames = [];
-                    window.cardsIndexActive = false;
-                }
-                if (document.activeElement === patientInputEl && autocompleteDiv.style.display !== 'none') showAutocompleteList(patientInputEl.value.trim());
-            }, err => console.error('[فهرس الكروت] خطأ في القراءة:', err));
+                try {
+                    const v = snap.val();
+                    if (v) {
+                        window.cardsIndexNames = Object.values(v).map(x => x && x.name).filter(Boolean);
+                        window.cardsIndexActive = true;
+                    } else {
+                        window.cardsIndexNames = [];
+                        window.cardsIndexActive = false;
+                    }
+                    if (document.activeElement === patientInputEl && autocompleteDiv.style.display !== 'none') showAutocompleteList(patientInputEl.value.trim());
+                } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
+            }, err => { console.error('[فهرس الكروت] خطأ في القراءة:', err); cardsIndexListenerStarted = false; });
         }
 
         async function loadCardsNamesFromCache() {
             try {
+                if (!cardsStore) return;
                 let cache = await cardsStore.getItem('patients_cache') || [];
                 window.cardsPatientNames = cache.map(p => p && p.name).filter(Boolean);
             } catch (e) { console.error('[الكروت] تعذر قراءة الكاش:', e); }
@@ -797,7 +809,7 @@
                 let res = await fetch(CARDS_SCRIPT_URL + "?query=ALL_DATA_FETCH");
                 let data = await res.json();
                 if (data && data.status === 'found' && Array.isArray(data.data)) {
-                    await cardsStore.setItem('patients_cache', data.data);
+                    if (cardsStore) await cardsStore.setItem('patients_cache', data.data);
                     window.cardsPatientNames = data.data.map(p => p && p.name).filter(Boolean);
                     seedCardsIndex(data.data); // لو الفهرس فاضي بيتعبى مرة واحدة
                 }
@@ -1659,15 +1671,4 @@
                     }); 
                     if(glpKeys.length > 0) {
                         let glpHtml = '<table class="schedule-table" style="margin-bottom:0; box-shadow:none;"><thead><tr><th style="padding:5px;">التاريخ</th><th style="padding:5px;">الجرعة</th></tr></thead><tbody>';
-                        glpKeys.forEach(k => glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="padding: 5px;">${escapeHtml(k)}</td><td style="padding: 5px; font-weight: bold; color: var(--glp-color); direction: ltr;">${escapeHtml(localGlpData[k])}</td></tr>`);
-                        glpHtml += '</tbody></table>';
-                        document.getElementById('glpHistoryBox').innerHTML = glpHtml;
-                    } else {
-                        document.getElementById('glpHistoryBox').innerHTML = '<p style="color:var(--danger); text-align:center; margin-top:20px;">لا يوجد اتصال</p>';
-                    }
-                    document.getElementById('dietPlanContainer').innerHTML = '<p style="color:var(--danger); text-align:center;">لا يوجد اتصال</p>';
-                }
-
-            } else {
-                document.getElementById('historyModalBox').style.maxWidth = '650px';
-            
+                        glpKeys.forEach(k => glpHtml += `<tr style="border-bottom: 1px solid var(--border);"><td style="
