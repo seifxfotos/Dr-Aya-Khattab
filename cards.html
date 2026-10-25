@@ -59,8 +59,8 @@
         .btn-print { background-color: #e67e22; }
         .btn-save { background-color: #27ae60; color: white;} 
         .btn-save:hover { background-color: #2ecc71;}
-        .btn-merge { background-color: #f39c12; color: white;}
-        .btn-merge:hover { background-color: #e67e22;}
+        .btn-merge { background-color: #f39c12; color: white; }
+        .btn-merge:hover { background-color: #e67e22; }
 
         .paper-sheet { background-color: var(--sheet-bg); max-width: 1100px; margin: 0 auto; padding: 25px 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 2px solid var(--primary-blue); border-top: 10px solid var(--primary-green); margin-bottom: 20px; }
         .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -227,6 +227,7 @@
         <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل...">
         <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
+        <!-- 🚨 الزرار المضاف للدمج والتنظيف -->
         <button class="btn btn-merge" onclick="mergeDuplicateCards()"><i class="fa-solid fa-broom"></i> تنظيف التكرارات</button>
         <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
@@ -256,7 +257,7 @@
         
         let currentPatient = {
             name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-            sessions: Array(12).fill({d: '', ws: '', n: ''}),
+            sessions: [],
             files: [],
             cardTypes: {} 
         };
@@ -277,7 +278,8 @@
             if(!currentPatient.cardTypes) currentPatient.cardTypes = {};
             if(!currentPatient.cardTypes[0]) currentPatient.cardTypes[0] = 'تغذية علاجية';
             
-            renderPatientToDOM(); 
+            // 🚨 عشان نضمن إن الصفحة تفتح ومفيهاش شاشة سودة من أول لحظة 🚨
+            createNewPatient(); 
             silentPreFetchAll();
 
             const autoSearch = localStorage.getItem('clinic_auto_search_name');
@@ -313,6 +315,7 @@
                 .trim().toLowerCase() : ""; 
         }
 
+        // 🚨 دالة المقارنة لدمج الكروت المكررة 🚨
         function isNameMatch(n1, n2) {
             if (!n1 || !n2) return false;
             let norm1 = normalizeArabicText(n1);
@@ -334,7 +337,7 @@
             return (digits || 'x') + '_' + Math.abs(h);
         }
 
-        function seedCardsIndex(list) {
+        function seedCardsIndex(list, force = false) {
             try {
                 if (!Array.isArray(list)) return;
                 let obj = {};
@@ -342,7 +345,11 @@
                     if (p && p.name) obj[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') };
                 });
                 if (Object.keys(obj).length === 0) return;
-                db.ref('cards_names_index').transaction(cur => cur ? undefined : obj);
+                if (force) {
+                    db.ref('cards_names_index').set(obj);
+                } else {
+                    db.ref('cards_names_index').transaction(cur => cur ? undefined : obj);
+                }
             } catch (e) { console.error('[فهرس الكروت] تعذر التعبئة:', e); }
         }
 
@@ -379,10 +386,11 @@
             closeConfirmModal();
         });
 
+        // 🚨 دالة الكارت الجديد (آمنة من التكرار) 🚨
         function createNewPatient() {
             currentPatient = {
                 name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-                sessions: Array(12).fill({d: '', ws: '', n: ''}),
+                sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})),
                 files: [],
                 cardTypes: {0: 'تغذية علاجية'}
             };
@@ -407,14 +415,33 @@
             handleInput();
         };
 
+        // 🚨 دالة الرسم المؤمنة (مستحيل تطلع شاشة سودة تانية) 🚨
         function renderPatientToDOM() {
             const container = document.getElementById('cardsRenderContainer');
+            if (!container) return;
             let fullHtml = '';
+            
+            // حماية للفايربيز لما بيحول الـ Array لـ Object في الكروت القديمة
+            if (!Array.isArray(currentPatient.sessions)) {
+                let tempArr = [];
+                if (currentPatient.sessions && typeof currentPatient.sessions === 'object') {
+                    Object.keys(currentPatient.sessions).forEach(k => {
+                        if(!isNaN(parseInt(k))) tempArr[parseInt(k)] = currentPatient.sessions[k];
+                    });
+                }
+                currentPatient.sessions = tempArr;
+            }
+            
+            // نأكد إن كل الخانات الفاضية فيها Data Object
+            for(let i=0; i<currentPatient.sessions.length; i++) {
+                if(!currentPatient.sessions[i]) currentPatient.sessions[i] = {d: '', ws: '', n: ''};
+            }
             
             let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
             while(currentPatient.sessions.length < totalNeeded) { currentPatient.sessions.push({d: '', ws: '', n: ''}); }
             
             let numCards = currentPatient.sessions.length / 12;
+            if (isNaN(numCards) || numCards < 1) numCards = 1;
 
             for(let c = 0; c < numCards; c++) {
                 fullHtml += buildCardHtml(c);
@@ -481,7 +508,7 @@
             updateStateFromDOM();
             if (currentPatient.sessions.length <= 12) return;
             let last12 = currentPatient.sessions.slice(-12);
-            let hasData = last12.some(s => s.d || s.ws || s.n);
+            let hasData = last12.some(s => s && (s.d || s.ws || s.n));
             if (hasData) {
                 showCustomConfirm('<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير', 'الكرت الأخير جواه بيانات جلسات متسجلة، متأكد إنك عايز تمسحه؟', () => { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); });
             } else { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); }
@@ -688,8 +715,9 @@
             
             let safePhoneVal = getSafePhone(currentPatient.phone);
             
+            // 🚨 منع الأوتو سيف من حفظ بيانات ناقصة وتدمير الشيت 🚨
             if(!currentPatient.name || safePhoneVal === "unknown" || safePhoneVal.length < 10) {
-                if(!isSilent) showToast("يجب إدخال الاسم ورقم موبايل صحيح (10 أرقام على الأقل) للحفظ", "error");
+                if(!isSilent) showToast("الاسم ورقم موبايل صحيح (10 أرقام على الأقل) مطلوبان للحفظ", "error");
                 setSaveStatus('unsaved');
                 return;
             }
@@ -700,6 +728,7 @@
                 return;
             }
 
+            // 🚨 حماية من تسجيل مريض متسجل قبل كده بنفس الاسم والرقم 🚨
             if (!isSilent && lastSavedStateString === "") {
                 let cache = await localforage.getItem('patients_cache') || [];
                 let found = cache.find(p => {
@@ -759,6 +788,7 @@
             }
         }
 
+        // 🚨 دالة التنظيف (بتدمج الأرقام الناقصة مع الكاملة وتمسح الزيادة) 🚨
         window.mergeDuplicateCards = async function() {
             let cache = await localforage.getItem('patients_cache') || [];
             if (cache.length === 0) return showToast("لا توجد بيانات لفحصها!", "info");
@@ -799,6 +829,7 @@
                         if (!p1.job && p2.job) p1.job = p2.job;
                         if (!p1.age && p2.age) p1.age = p2.age;
 
+                        // 🚨 حماية تحويل البيانات لمصفوفة قبل ما يدمج عشان ميضربش 🚨
                         let p1Sess = Array.isArray(p1.sessions) ? p1.sessions : (typeof p1.sessions === 'object' && p1.sessions ? Object.values(p1.sessions) : []);
                         let p2Sess = Array.isArray(p2.sessions) ? p2.sessions : (typeof p2.sessions === 'object' && p2.sessions ? Object.values(p2.sessions) : []);
 
@@ -830,13 +861,7 @@
 
             let newCache = cache.filter(p => !toDelete.includes(p));
             await localforage.setItem('patients_cache', newCache);
-            
-            // تحديث الفهرس بعد الحذف
-            let newIndex = {};
-            newCache.forEach(p => {
-                if (p && p.name) newIndex[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') };
-            });
-            db.ref('cards_names_index').set(newIndex);
+            seedCardsIndex(newCache, true); 
 
             for (let p of toDelete) {
                 try {
@@ -851,7 +876,7 @@
             }
             
             showToast(`تم تنظيف ودمج ${mergedCount} كارت متكرر بنجاح!`, "success");
-            createNewPatient();
+            setTimeout(createNewPatient, 1500);
         };
 
         function exportToPDF() {
@@ -1008,9 +1033,9 @@
                 db.ref('patients_files_data/' + safePhone).remove();
 
                 try {
-                    db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove().catch(e => {});
+                    db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove().catch(e => console.error('[فهرس الكروت] تعذر المسح:', e));
                     if (indexedKey) db.ref('cards_names_index/' + indexedKey).remove().catch(() => {});
-                } catch (e) {}
+                } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
 
                 showToast("تم الحذف بنجاح!", "success");
                 createNewPatient();
@@ -1024,7 +1049,7 @@
                 let data = await res.json();
                 if(data.status === 'found') {
                     await localforage.setItem('patients_cache', data.data);
-                    seedCardsIndex(data.data); 
+                    seedCardsIndex(data.data); // تعبئة الفهرس لأول مرة
                 }
             } catch(e) {}
         }
@@ -1078,21 +1103,20 @@
             document.getElementById('patientModal').style.display = "flex";
         }
 
-        function selectPatient(index) { 
-            loadPatientData(globalSearchResults[index]); 
-            closeModal(); 
-        }
+        function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
-        // 🚨 دالة تحميل بيانات الكارت (معالجة الجلسات لحل خطأ المصفوفات تماماً) 🚨
+        // 🚨 تصليح دالة تحميل الكارت عشان لو الجلسات جاية Object من الفايربيز يحولها المصفوفة سليمة 🚨
         function loadPatientData(data) {
             currentPatient = { ...currentPatient, ...data };
             
             if (currentPatient.sessions && !Array.isArray(currentPatient.sessions)) {
-                let arr = [];
-                Object.keys(currentPatient.sessions).forEach(k => {
-                    if(!isNaN(parseInt(k))) arr[parseInt(k)] = currentPatient.sessions[k];
-                });
-                currentPatient.sessions = arr.filter(Boolean);
+                let tempArr = [];
+                if (typeof currentPatient.sessions === 'object') {
+                    Object.keys(currentPatient.sessions).forEach(k => {
+                        if(!isNaN(parseInt(k))) tempArr[parseInt(k)] = currentPatient.sessions[k];
+                    });
+                }
+                currentPatient.sessions = tempArr;
             }
 
             if(!currentPatient.sessions) currentPatient.sessions = [];
@@ -1148,7 +1172,6 @@
 
         function closeModal() { document.getElementById('patientModal').style.display = "none"; }
         function toggleTheme(e) { document.body.classList.toggle('dark-mode', e.checked); localStorage.setItem('theme', e.checked ? 'dark' : 'light'); }
-        function convertToEnglishNumbers(str) { const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return String(str).split('').map(c => ar.indexOf(c) !== -1 ? ar.indexOf(c) : c).join(''); }
     </script> 
     <script src="chat-widget.js"></script>
 </body>
