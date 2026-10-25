@@ -59,8 +59,8 @@
         .btn-print { background-color: #e67e22; }
         .btn-save { background-color: #27ae60; color: white;} 
         .btn-save:hover { background-color: #2ecc71;}
-        .btn-merge { background-color: #f39c12; color: white; }
-        .btn-merge:hover { background-color: #e67e22; }
+        .btn-merge { background-color: #f39c12; color: white;}
+        .btn-merge:hover { background-color: #e67e22;}
 
         .paper-sheet { background-color: var(--sheet-bg); max-width: 1100px; margin: 0 auto; padding: 25px 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 2px solid var(--primary-blue); border-top: 10px solid var(--primary-green); margin-bottom: 20px; }
         .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -235,7 +235,7 @@
     </div>
 
     <div id="cardsRenderContainer">
-        <!-- سيتم رسم الكروت هنا بواسطة الجافاسكريبت -->
+        <!-- سيتم رسم الكروت هنا بواسطة الجافاسكريبت بناءً على الـ State -->
     </div>
 
     <script>
@@ -254,8 +254,13 @@
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
-        let currentPatient = {};
-        let globalSearchResults = [];
+        let currentPatient = {
+            name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
+            sessions: Array(12).fill({d: '', ws: '', n: ''}),
+            files: [],
+            cardTypes: {} 
+        };
+
         let lastSavedStateString = "";
         let saveTimeout = null;
         let confirmActionCallback = null;
@@ -269,9 +274,10 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeSwitch').checked = true;
             }
+            if(!currentPatient.cardTypes) currentPatient.cardTypes = {};
+            if(!currentPatient.cardTypes[0]) currentPatient.cardTypes[0] = 'تغذية علاجية';
             
-            // تهيئة إجبارية لأي بيانات تالفة قبل الفتح
-            createNewPatient(); 
+            renderPatientToDOM(); 
             silentPreFetchAll();
 
             const autoSearch = localStorage.getItem('clinic_auto_search_name');
@@ -328,7 +334,7 @@
             return (digits || 'x') + '_' + Math.abs(h);
         }
 
-        function seedCardsIndex(list, force = false) {
+        function seedCardsIndex(list) {
             try {
                 if (!Array.isArray(list)) return;
                 let obj = {};
@@ -336,11 +342,7 @@
                     if (p && p.name) obj[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') };
                 });
                 if (Object.keys(obj).length === 0) return;
-                if (force) {
-                    db.ref('cards_names_index').set(obj);
-                } else {
-                    db.ref('cards_names_index').transaction(cur => cur ? undefined : obj);
-                }
+                db.ref('cards_names_index').transaction(cur => cur ? undefined : obj);
             } catch (e) { console.error('[فهرس الكروت] تعذر التعبئة:', e); }
         }
 
@@ -377,12 +379,10 @@
             closeConfirmModal();
         });
 
-        // إنشاء كارت جديد (مع التأمين ضد الأخطاء)
         function createNewPatient() {
             currentPatient = {
-                id: Date.now().toString(36) + Math.random().toString(36).substr(2),
                 name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-                sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})),
+                sessions: Array(12).fill({d: '', ws: '', n: ''}),
                 files: [],
                 cardTypes: {0: 'تغذية علاجية'}
             };
@@ -407,96 +407,60 @@
             handleInput();
         };
 
-        // 🚨 دالة الرسم المؤمنة (مستحيل تطلع شاشة سودة مهما كانت الداتا اللي جاية بايظة) 🚨
         function renderPatientToDOM() {
-            try {
-                const container = document.getElementById('cardsRenderContainer');
-                if (!container) return;
+            const container = document.getElementById('cardsRenderContainer');
+            let fullHtml = '';
+            
+            let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
+            while(currentPatient.sessions.length < totalNeeded) { currentPatient.sessions.push({d: '', ws: '', n: ''}); }
+            
+            let numCards = currentPatient.sessions.length / 12;
 
-                if (!currentPatient) createNewPatient();
-                
-                // تصليح أخطاء الفايربيز لو المصفوفة اتحولت لكائن
-                if (!currentPatient.sessions || typeof currentPatient.sessions !== 'object') {
-                    currentPatient.sessions = Array.from({length: 12}, () => ({d: '', ws: '', n: ''}));
-                }
-                if (!Array.isArray(currentPatient.sessions)) {
-                    let arr = [];
-                    Object.keys(currentPatient.sessions).forEach(k => {
-                        if(!isNaN(parseInt(k))) arr[parseInt(k)] = currentPatient.sessions[k];
-                    });
-                    currentPatient.sessions = Array.from({length: Math.max(12, arr.length)}, (_, i) => arr[i] || {d: '', ws: '', n: ''});
-                }
-                if (!currentPatient.cardTypes) currentPatient.cardTypes = {0: 'تغذية علاجية'};
-
-                let fullHtml = '';
-                
-                let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
-                while(currentPatient.sessions.length < totalNeeded) { 
-                    currentPatient.sessions.push({d: '', ws: '', n: ''}); 
-                }
-                
-                let numCards = currentPatient.sessions.length / 12;
-                if (isNaN(numCards) || numCards < 1) numCards = 1;
-
-                for(let c = 0; c < numCards; c++) {
-                    fullHtml += buildCardHtml(c);
-                }
-
-                let hasNotes = currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '';
-                
-                if (hasNotes || showMedicalSheetFlag) {
-                    let emptyClass = (!currentPatient.medical_notes || currentPatient.medical_notes.trim() === '') ? 'empty-notes' : '';
-                    fullHtml += `
-                        <div class="paper-sheet medical-sheet ${emptyClass}" id="medicalSheetWrapper" style="margin-top:20px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-green); padding-bottom:10px; margin-bottom: 10px;">
-                                <h3 style="color: var(--primary-blue); margin:0;">التشخيص والملاحظات الطبية</h3>
-                                <button class="btn btn-delete no-print" style="padding: 5px 10px; font-size: 13px;" onclick="removeMedicalSheet()"><i class="fa-solid fa-xmark"></i> إزالة الملف</button>
-                            </div>
-                            <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
-                        </div>
-                    `;
-                }
-
-                let extraCardBtns = `<button class="btn btn-new" style="background: #27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>`;
-                if (currentPatient.sessions.length > 12) {
-                    extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
-                }
-
-                fullHtml += `
-                    <div class="no-print" style="max-width: 1100px; margin: 20px auto; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                        ${extraCardBtns}
-                        ${!(hasNotes || showMedicalSheetFlag) ? `<button class="btn btn-medical" style="background: var(--primary-blue);" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>` : ''}
-                    </div>
-                `;
-
-                fullHtml += `
-                    <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
-                        <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
-                        <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
-                        <button id="uploadBtn" class="btn btn-new" style="margin: 0 auto; padding: 10px 25px; font-size: 16px;" onclick="document.getElementById('fileUploader').click()">
-                            <i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع
-                        </button>
-                        <div class="file-list" id="filesListContainer"></div>
-                    </div>
-                `;
-
-                container.innerHTML = fullHtml;
-                renderFilesList();
-                attachDoubleClickListener();
-
-            } catch(e) {
-                console.error("Rendering Error:", e);
-                // حماية نهائية لو حصل أي خطأ نعيد بناء كارت فاضي بدل الشاشة السوداء
-                currentPatient = {
-                    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-                    name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-                    sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})),
-                    files: [],
-                    cardTypes: {0: 'تغذية علاجية'}
-                };
-                document.getElementById('cardsRenderContainer').innerHTML = buildCardHtml(0);
-                showToast("تم إصلاح خطأ في بيانات الكارت، الرجاء المحاولة مرة أخرى.", "info");
+            for(let c = 0; c < numCards; c++) {
+                fullHtml += buildCardHtml(c);
             }
+
+            let hasNotes = currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '';
+            
+            if (hasNotes || showMedicalSheetFlag) {
+                let emptyClass = (!currentPatient.medical_notes || currentPatient.medical_notes.trim() === '') ? 'empty-notes' : '';
+                fullHtml += `
+                    <div class="paper-sheet medical-sheet ${emptyClass}" id="medicalSheetWrapper" style="margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-green); padding-bottom:10px; margin-bottom: 10px;">
+                            <h3 style="color: var(--primary-blue); margin:0;">التشخيص والملاحظات الطبية</h3>
+                            <button class="btn btn-delete no-print" style="padding: 5px 10px; font-size: 13px;" onclick="removeMedicalSheet()"><i class="fa-solid fa-xmark"></i> إزالة الملف</button>
+                        </div>
+                        <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
+                    </div>
+                `;
+            }
+
+            let extraCardBtns = `<button class="btn btn-new" style="background: #27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>`;
+            if (currentPatient.sessions.length > 12) {
+                extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
+            }
+
+            fullHtml += `
+                <div class="no-print" style="max-width: 1100px; margin: 20px auto; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    ${extraCardBtns}
+                    ${!(hasNotes || showMedicalSheetFlag) ? `<button class="btn btn-medical" style="background: var(--primary-blue);" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>` : ''}
+                </div>
+            `;
+
+            fullHtml += `
+                <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
+                    <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
+                    <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
+                    <button id="uploadBtn" class="btn btn-new" style="margin: 0 auto; padding: 10px 25px; font-size: 16px;" onclick="document.getElementById('fileUploader').click()">
+                        <i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع
+                    </button>
+                    <div class="file-list" id="filesListContainer"></div>
+                </div>
+            `;
+
+            container.innerHTML = fullHtml;
+            renderFilesList();
+            attachDoubleClickListener();
         }
 
         window.addExtraCard = function() {
@@ -517,7 +481,7 @@
             updateStateFromDOM();
             if (currentPatient.sessions.length <= 12) return;
             let last12 = currentPatient.sessions.slice(-12);
-            let hasData = last12.some(s => s && (s.d || s.ws || s.n));
+            let hasData = last12.some(s => s.d || s.ws || s.n);
             if (hasData) {
                 showCustomConfirm('<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير', 'الكرت الأخير جواه بيانات جلسات متسجلة، متأكد إنك عايز تمسحه؟', () => { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); });
             } else { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); }
@@ -764,7 +728,7 @@
             let payload = { ...currentPatient, sessions: cleanedSessions };
 
             let cache = await localforage.getItem('patients_cache') || [];
-            let idx = cache.findIndex(p => p.id === payload.id);
+            let idx = cache.findIndex(p => p.phone === payload.phone);
             if(idx > -1) cache[idx] = payload; else cache.push(payload);
             await localforage.setItem('patients_cache', cache);
 
@@ -776,7 +740,7 @@
                     db.ref('cards_names_index/' + indexedKey).remove().catch(e => console.error('[فهرس الكروت] تعذر مسح القديم:', e));
                 }
                 indexedKey = newKey;
-            } catch (e) {}
+            } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
 
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -866,7 +830,13 @@
 
             let newCache = cache.filter(p => !toDelete.includes(p));
             await localforage.setItem('patients_cache', newCache);
-            seedCardsIndex(newCache, true); 
+            
+            // تحديث الفهرس بعد الحذف
+            let newIndex = {};
+            newCache.forEach(p => {
+                if (p && p.name) newIndex[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') };
+            });
+            db.ref('cards_names_index').set(newIndex);
 
             for (let p of toDelete) {
                 try {
@@ -1113,8 +1083,8 @@
             closeModal(); 
         }
 
+        // 🚨 دالة تحميل بيانات الكارت (معالجة الجلسات لحل خطأ المصفوفات تماماً) 🚨
         function loadPatientData(data) {
-            if (!data.id) data.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
             currentPatient = { ...currentPatient, ...data };
             
             if (currentPatient.sessions && !Array.isArray(currentPatient.sessions)) {
