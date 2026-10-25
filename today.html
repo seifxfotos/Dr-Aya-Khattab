@@ -429,7 +429,6 @@
     <script>
         const PHARMA_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKHzASCaDzt-91wJV9-Y2R2r9WEA_c1IhXB9p7qxfTi9mxFUpBVOznkTYvoLbcYytY/exec';
 
-        window.allPatientNames = [];
         window.availableMedsData = [];
 
         function convertToEnglishNumbers(str) { const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return String(str).split('').map(c => ar.indexOf(c) !== -1 ? ar.indexOf(c) : c).join(''); }
@@ -495,6 +494,7 @@
 
         let appInitialized = false;
         window.masterListsData = {};
+        window.globalAllPatientsData = [];
 
         if (db) {
             db.ref('clinic_master_lists').on('value', snap => {
@@ -510,16 +510,13 @@
                 }
             });
 
+            // 🚨 تحديث قائمة الأسماء بشكل لحظي من الفايربيز 🚨
             db.ref('cards_names_index').on('value', snap => {
                 let data = snap.val();
                 if(data) {
-                    window.allPatientNames = [];
-                    Object.values(data).forEach(p => {
-                        window.allPatientNames.push(p.name);
-                        if (p.phone) window.patientPhones[p.name] = p.phone; 
-                    });
+                    window.globalAllPatientsData = Object.values(data);
                 } else {
-                    window.allPatientNames = [];
+                    window.globalAllPatientsData = [];
                 }
             });
         }
@@ -726,54 +723,78 @@
         let patientsQueue = []; let glpQueue = []; let financialsQueue = [];
 
         window.patientDebts = {};
-        window.patientPhones = {}; 
 
-        // 🚨 ميزة البحث الشامل (الاسم ورقم الموبايل) 🚨
+        // 🚨 محرك البحث الصاروخي الشامل (الاسم + الموبايل) 🚨
         const patientInputEl = document.getElementById('patientName');
         const autocompleteDiv = document.getElementById('customAutocomplete');
 
-        function showAutocompleteList(nameStr) {
-            let normName = normalizeArabicName(nameStr);
-            let phoneQuery = convertToEnglishNumbers(nameStr || '').replace(/\D/g, ''); 
+        function showAutocompleteList(searchStr) {
+            let normName = normalizeArabicName(searchStr);
+            let phoneQuery = convertToEnglishNumbers(searchStr || '').replace(/\D/g, ''); 
             autocompleteDiv.innerHTML = '';
             
-            let todayNames = patientsQueue.map(p => p.name); 
-            let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
-            let histNames = Object.keys(histCache);
-            
-            let combinedNames = [...new Set([...(window.allPatientNames || []), ...histNames, ...todayNames])].filter(Boolean);
+            let matchedPatients = []; 
 
-            let matchedNames = [];
-            if (!nameStr) {
-                matchedNames = combinedNames;
-            } else {
-                combinedNames.forEach(origName => {
-                    let phone = window.patientPhones && window.patientPhones[origName] ? window.patientPhones[origName] : '';
-                    if (origName && normalizeArabicName(origName).includes(normName)) {
-                        matchedNames.push(origName);
-                    } else if (phoneQuery && phone && phone.includes(phoneQuery)) {
-                        matchedNames.push(origName);
-                    }
+            // 1. من مرضى اليوم
+            patientsQueue.forEach(p => {
+                if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
+            });
+
+            // 2. من الفايربيز (الكروت الجديدة) - لحظياً 🚀
+            if (window.globalAllPatientsData) {
+                window.globalAllPatientsData.forEach(p => {
+                    if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
                 });
             }
 
-            if (matchedNames.length > 0) {
-                matchedNames.slice(0, 15).forEach(match => { // أقصى حد 15
+            // 3. من الشيت القديم (التاريخ)
+            let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
+            Object.keys(histCache).forEach(n => {
+                matchedPatients.push({name: n, phone: ''});
+            });
+
+            // تصفية المتكررين مع إعطاء الأولوية للي معاه رقم موبايل
+            let uniqueMap = new Map();
+            matchedPatients.forEach(p => {
+                let norm = normalizeArabicName(p.name);
+                if (!uniqueMap.has(norm)) {
+                    uniqueMap.set(norm, {name: p.name, phone: p.phone}); 
+                } else {
+                    if (p.phone && !uniqueMap.get(norm).phone) {
+                        uniqueMap.get(norm).phone = p.phone;
+                    }
+                }
+            });
+
+            let allUnique = Array.from(uniqueMap.values());
+            let filtered = [];
+
+            if (!searchStr) {
+                filtered = allUnique;
+            } else {
+                filtered = allUnique.filter(p => {
+                    let matchName = normalizeArabicName(p.name).includes(normName);
+                    let matchPhone = phoneQuery && p.phone && String(p.phone).includes(phoneQuery);
+                    return matchName || matchPhone;
+                });
+            }
+
+            if (filtered.length > 0) {
+                filtered.slice(0, 15).forEach(p => {
                     let div = document.createElement('div');
                     div.className = 'autocomplete-item';
                     
-                    let pPhone = (window.patientPhones && window.patientPhones[match]) ? window.patientPhones[match] : '';
-                    if(pPhone) {
-                        div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>${escapeHtml(match)}</span><span style="font-size:12px; color:var(--primary-blue); direction:ltr;">${escapeHtml(pPhone)}</span></div>`;
+                    if(p.phone) {
+                        div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>${escapeHtml(p.name)}</span><span style="font-size:12px; color:var(--primary-blue); direction:ltr;">${escapeHtml(p.phone)}</span></div>`;
                     } else {
-                        div.innerText = match;
+                        div.innerText = p.name;
                     }
                     
                     div.onclick = function(event) {
                         event.stopPropagation();
-                        patientInputEl.value = match;
+                        patientInputEl.value = p.name;
                         autocompleteDiv.style.display = 'none';
-                        checkDebtForName(match);
+                        checkDebtForName(p.name);
                     };
                     autocompleteDiv.appendChild(div);
                 });
@@ -1153,13 +1174,9 @@
             document.getElementById('glpName').value = ''; 
             
             let phone = '';
-            if (window.patientPhones) {
-                for(let key in window.patientPhones) {
-                    if (isNameMatch(key, n)) {
-                        phone = window.patientPhones[key];
-                        break;
-                    }
-                }
+            if (window.globalAllPatientsData) {
+                let found = window.globalAllPatientsData.find(pd => isNameMatch(pd.name, n));
+                if(found && found.phone) phone = found.phone;
             }
             
             let patientKey = normalizeArabicName(n); 
@@ -1277,13 +1294,9 @@
             const p = patientsQueue[idx];
             let phone = '';
 
-            if (window.patientPhones) {
-                for (let key in window.patientPhones) {
-                    if (isNameMatch(key, p.name)) {
-                        phone = window.patientPhones[key];
-                        break;
-                    }
-                }
+            if (window.globalAllPatientsData) {
+                let found = window.globalAllPatientsData.find(pd => isNameMatch(pd.name, p.name));
+                if(found && found.phone) phone = found.phone;
             }
             
             if (!phone) {
