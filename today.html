@@ -726,24 +726,25 @@
         window.patientDebts = {};
         window.patientPhones = {}; 
 
-        // 🚨 ميزة البحث الذكي الشامل (تحديث للقراءة من جميع الأرشيفات) 🚨
+        // 🚨 ميزة البحث الشامل (كل الأسماء هتظهر هنا من جميع المصادر) 🚨
         const patientInputEl = document.getElementById('patientName');
         const autocompleteDiv = document.getElementById('customAutocomplete');
 
         function showAutocompleteList(nameStr) {
             let normName = normalizeArabicName(nameStr);
             autocompleteDiv.innerHTML = '';
-            let matchedNames = [];
-
+            
             let todayNames = patientsQueue.map(p => p.name); 
             let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
             let histNames = Object.keys(histCache);
+            let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
+            let cacheNames = allCardsCache.map(p => p.name);
             
-            let combinedNames = [...new Set([...(window.allPatientNames || []), ...histNames, ...todayNames])].filter(Boolean);
+            let combinedNames = [...new Set([...(window.allPatientNames || []), ...histNames, ...cacheNames, ...todayNames])].filter(Boolean);
 
+            let matchedNames = [];
             if (!nameStr) {
-                // لو الحقل فاضي نعرض أسماء المرضى المتاحة بحد أقصى 20 اسم
-                matchedNames = [...new Set([...todayNames, ...combinedNames])].filter(Boolean);
+                matchedNames = combinedNames;
             } else {
                 combinedNames.forEach(origName => {
                     if (origName && normalizeArabicName(origName).includes(normName)) {
@@ -753,7 +754,7 @@
             }
 
             if (matchedNames.length > 0) {
-                matchedNames.slice(0, 15).forEach(match => { // أقصى حد للنتائج 15
+                matchedNames.slice(0, 15).forEach(match => { // أقصى حد 15 اسم عشان متبقاش طويلة جداً
                     let div = document.createElement('div');
                     div.className = 'autocomplete-item';
                     div.innerText = match;
@@ -771,18 +772,9 @@
             }
         }
 
-        patientInputEl.addEventListener('input', function() {
-            showAutocompleteList(this.value.trim());
-            checkDebtForName(this.value.trim());
-        });
-
-        patientInputEl.addEventListener('focus', function() {
-            showAutocompleteList(this.value.trim());
-        });
-
-        patientInputEl.addEventListener('click', function() {
-            showAutocompleteList(this.value.trim());
-        });
+        patientInputEl.addEventListener('input', function() { showAutocompleteList(this.value.trim()); checkDebtForName(this.value.trim()); });
+        patientInputEl.addEventListener('focus', function() { showAutocompleteList(this.value.trim()); });
+        patientInputEl.addEventListener('click', function() { showAutocompleteList(this.value.trim()); });
 
         document.addEventListener('click', function(e) {
             if(e.target.id !== 'patientName' && autocompleteDiv) {
@@ -1023,7 +1015,6 @@
                         localStorage.setItem('clinic_all_history', JSON.stringify(result.data)); 
                         
                         window.patientDebts = {};
-                        window.patientPhones = {};
                         
                         Object.keys(result.data).forEach(name => {
                             let hist = result.data[name];
@@ -1124,6 +1115,25 @@
             });
         }
 
+        function updateMedPatientsList() {
+            const dataList = document.getElementById('medPatientsList');
+            if (!dataList) return;
+            dataList.innerHTML = '';
+            
+            let allNames = new Set();
+            patientsQueue.forEach(p => {
+                if (p.name) {
+                    allNames.add(p.name.trim());
+                }
+            });
+
+            allNames.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name;
+                dataList.appendChild(opt);
+            });
+        }
+
         function addGLP() { 
             let n = escapeHtml(document.getElementById('glpName').value.trim()); 
             let d = document.getElementById('glpDose').value; 
@@ -1132,12 +1142,10 @@
             document.getElementById('glpName').value = ''; 
             
             let phone = '';
-            for (let p of patientsQueue) {
-                if (isNameMatch(p.name, n)) {
-                    phone = p.phone;
-                    break;
-                }
-            }
+            let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
+            let cardPatient = allCardsCache.find(card => isNameMatch(card.name, n));
+            if (cardPatient && cardPatient.phone) phone = cardPatient.phone;
+            
             if(!phone && window.patientPhones) {
                 for(let key in window.patientPhones) {
                     if (isNameMatch(key, n)) {
@@ -1171,28 +1179,6 @@
             let qty = parseInt(document.getElementById('medQty').value) || 1;
             
             if(!rawName || !amt) return; 
-
-            if (db) {
-                db.ref('pharma_inventory_list').once('value').then(snap => {
-                    let inv = snap.val();
-                    if (inv) {
-                        let invArray = Array.isArray(inv) ? inv : Object.values(inv);
-                        let idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
-                        
-                        if (idx === -1) {
-                            idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
-                        }
-                        
-                        if (idx !== -1) {
-                            let oldVal = parseFloat(invArray[idx].remainingCount) || 0;
-                            invArray[idx].remainingCount = Math.max(0, oldVal - qty);
-                            db.ref('pharma_inventory_list').set(invArray);
-                            let payload = { action: 'update', ...invArray[idx] };
-                            fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
-                        }
-                    }
-                });
-            }
 
             if(typeof ensureInMasterList === 'function') {
                 ensureInMasterList('medicines', rawName);
@@ -1262,8 +1248,14 @@
             const p = patientsQueue[idx];
             let phone = '';
 
-            if (window.patientPhones) {
-                for (let key in window.patientPhones) {
+            let allCardsCache = JSON.parse(localStorage.getItem('clinic_all_patients_cache')) || [];
+            let cardPatient = allCardsCache.find(card => isNameMatch(card.name, p.name));
+            if (cardPatient && cardPatient.phone) {
+                phone = cardPatient.phone;
+            }
+
+            if (!phone) {
+                for(let key in window.patientPhones) {
                     if (isNameMatch(key, p.name)) {
                         phone = window.patientPhones[key];
                         break;
