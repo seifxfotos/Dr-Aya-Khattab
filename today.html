@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
+    <!-- مكاتب مساعدة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -495,8 +498,14 @@
         let appInitialized = false;
         window.masterListsData = {};
         window.globalAllPatientsData = [];
+        window.localPatientsCache = [];
+        window.patientPhones = {}; 
 
-        if (db) {
+        localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
+
+        function attachFirebaseListeners() {
+            if (!db) return;
+            
             db.ref('clinic_master_lists').on('value', snap => {
                 window.masterListsData = snap.val() || {};
                 if(typeof updateAllDatalists === 'function') updateAllDatalists();
@@ -510,15 +519,23 @@
                 }
             });
 
-            // 🚨 تحديث قائمة الأسماء بشكل لحظي من الفايربيز 🚨
             db.ref('cards_names_index').on('value', snap => {
                 let data = snap.val();
                 if(data) {
                     window.globalAllPatientsData = Object.values(data);
+                    window.globalAllPatientsData.forEach(p => {
+                        if (p.name && p.phone) window.patientPhones[p.name] = p.phone; 
+                    });
                 } else {
                     window.globalAllPatientsData = [];
                 }
             });
+        }
+        
+        function refreshLocalCache() {
+            localforage.getItem('patients_cache').then(cache => {
+                if(cache) window.localPatientsCache = cache;
+            }).catch(e => console.log(e));
         }
 
         window.ensureInMasterList = function(listName, value) {
@@ -576,6 +593,8 @@
                 
                 if(!appInitialized){
                     appInitialized = true;
+                    attachFirebaseListeners();
+                    refreshLocalCache();
                     initDatePickers(); 
                     smartSelectDepartment(); 
                     checkAndStartTimer(); 
@@ -740,20 +759,26 @@
                 if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
             });
 
-            // 2. من الفايربيز (الكروت الجديدة) - لحظياً 🚀
+            // 2. من الفايربيز (الكروت الجديدة)
             if (window.globalAllPatientsData) {
                 window.globalAllPatientsData.forEach(p => {
                     if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
                 });
             }
 
-            // 3. من الشيت القديم (التاريخ)
+            // 3. من اللوكال ستوريدج (الكروت اللي اتسجلت حالا على الجهاز)
+            if (window.localPatientsCache) {
+                window.localPatientsCache.forEach(p => {
+                    if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
+                });
+            }
+
+            // 4. من الشيت القديم
             let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
             Object.keys(histCache).forEach(n => {
-                matchedPatients.push({name: n, phone: ''});
+                matchedPatients.push({name: n, phone: window.patientPhones[n] || ''});
             });
 
-            // تصفية المتكررين مع إعطاء الأولوية للي معاه رقم موبايل
             let uniqueMap = new Map();
             matchedPatients.forEach(p => {
                 let norm = normalizeArabicName(p.name);
@@ -805,8 +830,8 @@
         }
 
         patientInputEl.addEventListener('input', function() { showAutocompleteList(this.value.trim()); checkDebtForName(this.value.trim()); });
-        patientInputEl.addEventListener('focus', function() { showAutocompleteList(this.value.trim()); });
-        patientInputEl.addEventListener('click', function() { showAutocompleteList(this.value.trim()); });
+        patientInputEl.addEventListener('focus', function() { refreshLocalCache(); showAutocompleteList(this.value.trim()); });
+        patientInputEl.addEventListener('click', function() { refreshLocalCache(); showAutocompleteList(this.value.trim()); });
 
         document.addEventListener('click', function(e) {
             if(e.target.id !== 'patientName' && autocompleteDiv) {
@@ -822,10 +847,13 @@
             medBuyerListDiv.innerHTML = '';
 
             let todayNames = [...new Set(
-                patientsQueue
-                    .map(p => (p.name || '').replace(/\s*\(.*\)\s*/g, '').trim())
-                    .filter(Boolean)
+                patientsQueue.map(p => (p.name || '').replace(/\s*\(.*\)\s*/g, '').trim()).filter(Boolean)
             )];
+
+            if (window.localPatientsCache) {
+                window.localPatientsCache.forEach(p => { if(p.name) todayNames.push(p.name.trim()); });
+            }
+            todayNames = [...new Set(todayNames)];
 
             let matchedNames = normName
                 ? todayNames.filter(n => normalizeArabicName(n).includes(normName))
