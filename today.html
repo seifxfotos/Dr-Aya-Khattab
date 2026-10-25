@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
-    <!-- تم إضافة المكتبة الناقصة هنا لحل مشكلة توقف تسجيل الدخول -->
+    <!-- مكاتب مساعدة -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -568,7 +568,11 @@
             let master = window.masterListsData || {};
             let fbMeds = master.medicines ? Object.values(master.medicines) : [];
             let activeMeds = (window.availableMedsData || []).map(r => r.productName);
-            let uniqueMeds = [...new Set([...fbMeds, ...activeMeds].filter(Boolean))];
+            
+            // دمج القائمتين مع فلترة مسح كلمة "GLP 1" اللي اتكتبت بالغلط
+            let combined = [...fbMeds, ...activeMeds].filter(Boolean).filter(m => String(m).trim() !== "GLP 1");
+            
+            let uniqueMeds = [...new Set(combined)];
             
             const list = document.getElementById('availableMedsList');
             if (list) {
