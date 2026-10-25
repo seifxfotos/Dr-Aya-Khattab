@@ -508,7 +508,6 @@
                 }
             });
 
-            // 🚨 استماع لحظي لأسماء وأرقام المرضى من الفايربيز بدون كاش 🚨
             db.ref('cards_names_index').on('value', snap => {
                 let data = snap.val();
                 if(data) {
@@ -558,13 +557,6 @@
                 list.innerHTML = uniqueMeds.map(m => `<option value="${escapeHtml(String(m))}">`).join('');
             }
         };
-
-        function loadAvailableMeds(data) {
-            if(!data) return;
-            let dataArray = Array.isArray(data) ? data : Object.values(data);
-            window.availableMedsData = dataArray; 
-            if(typeof updateAllDatalists === 'function') updateAllDatalists();
-        }
 
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) {
@@ -734,7 +726,7 @@
         window.patientDebts = {};
         window.patientPhones = {}; 
 
-        // 🚨 ميزة البحث الذكي للقوائم مع دعم اللحظية من الفايربيز 🚨
+        // 🚨 ميزة البحث الذكي الشامل (تحديث للقراءة من جميع الأرشيفات) 🚨
         const patientInputEl = document.getElementById('patientName');
         const autocompleteDiv = document.getElementById('customAutocomplete');
 
@@ -744,13 +736,14 @@
             let matchedNames = [];
 
             let todayNames = patientsQueue.map(p => p.name); 
+            let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
+            let histNames = Object.keys(histCache);
             
-            // استخدام allPatientNames اللي جاية لحظياً من الفايربيز
-            let combinedNames = [...new Set([...(window.allPatientNames || []), ...todayNames])].filter(Boolean);
+            let combinedNames = [...new Set([...(window.allPatientNames || []), ...histNames, ...todayNames])].filter(Boolean);
 
             if (!nameStr) {
-                // لو الحقل فاضي نعرض أسماء المرضى بتوع كشف اليوم
-                matchedNames = [...new Set(todayNames)].filter(Boolean);
+                // لو الحقل فاضي نعرض أسماء المرضى المتاحة بحد أقصى 20 اسم
+                matchedNames = [...new Set([...todayNames, ...combinedNames])].filter(Boolean);
             } else {
                 combinedNames.forEach(origName => {
                     if (origName && normalizeArabicName(origName).includes(normName)) {
@@ -760,7 +753,7 @@
             }
 
             if (matchedNames.length > 0) {
-                matchedNames.slice(0, 10).forEach(match => {
+                matchedNames.slice(0, 15).forEach(match => { // أقصى حد للنتائج 15
                     let div = document.createElement('div');
                     div.className = 'autocomplete-item';
                     div.innerText = match;
@@ -797,7 +790,6 @@
             }
         });
 
-        // قائمة أسماء مرضى اليوم في خانة المشتري (مبيعات الأدوية)
         const medBuyerEl = document.getElementById('medBuyer');
         const medBuyerListDiv = document.getElementById('medBuyerAutocomplete');
 
@@ -1180,26 +1172,34 @@
             
             if(!rawName || !amt) return; 
 
+            if (db) {
+                db.ref('pharma_inventory_list').once('value').then(snap => {
+                    let inv = snap.val();
+                    if (inv) {
+                        let invArray = Array.isArray(inv) ? inv : Object.values(inv);
+                        let idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
+                        
+                        if (idx === -1) {
+                            idx = invArray.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
+                        }
+                        
+                        if (idx !== -1) {
+                            let oldVal = parseFloat(invArray[idx].remainingCount) || 0;
+                            invArray[idx].remainingCount = Math.max(0, oldVal - qty);
+                            db.ref('pharma_inventory_list').set(invArray);
+                            let payload = { action: 'update', ...invArray[idx] };
+                            fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
+                        }
+                    }
+                });
+            }
+
             if(typeof ensureInMasterList === 'function') {
                 ensureInMasterList('medicines', rawName);
             }
             
             let desc = buyer ? `${name} (${qty}x) (للمريض: ${buyer})` : `${name} (${qty}x)`; 
             financialsQueue.push({type: 'دواء', desc: desc, method: method, amount: amt}); 
-            
-            if (window.availableMedsData && window.availableMedsData.length > 0 && db) {
-                let idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) >= qty);
-                if (idx === -1) idx = window.availableMedsData.findIndex(r => isNameMatch(r.productName, rawName) && parseFloat(r.remainingCount) > 0);
-
-                if (idx !== -1) {
-                    let oldVal = parseFloat(window.availableMedsData[idx].remainingCount) || 0;
-                    window.availableMedsData[idx].remainingCount = Math.max(0, oldVal - qty);
-                    
-                    db.ref('pharma_inventory_list').set(window.availableMedsData);
-                    let payload = { action: 'update', ...window.availableMedsData[idx] };
-                    fetch(PHARMA_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(e => console.log(e));
-                }
-            }
 
             document.getElementById('medName').value = ''; 
             document.getElementById('medBuyer').value = ''; 
@@ -1714,8 +1714,6 @@
         }
         function openPatientCard(patientName) { const cleanName = patientName.replace(/\s*\(.*\)\s*/g, ''); localStorage.setItem('clinic_auto_search_name', cleanName); window.open('cards.html', '_blank'); } function showEditNameModal(idx) { const modal = document.getElementById('editNameModal'); const input = document.getElementById('editNameInput'); input.value = patientsQueue[idx].name; modal.style.display = 'flex'; input.focus(); const confirmBtn = document.getElementById('editNameConfirmBtn'); const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', () => { const newName = input.value.trim(); if (newName) { updateScheduleField(idx, 'name', newName); } modal.style.display = 'none'; }); input.onkeyup = function(e) { if (e.key === 'Enter') { newConfirmBtn.click(); } }; } function handleNameInteraction(event, idx, name) { event.preventDefault(); if (event.type === 'click') { openPatientCard(name); } else if (event.type === 'contextmenu') { showEditNameModal(idx); } }
     </script> 
-    
-    <!-- استدعاء ملف الشات الخارجي المخصص -->
     <script src="chat-widget.js"></script>
 </body>
 </html>
