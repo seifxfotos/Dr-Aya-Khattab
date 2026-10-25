@@ -8,9 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
-    <!-- مكاتب مساعدة -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -604,15 +601,43 @@
             }
         });
 
-        document.getElementById('medName').addEventListener('change', function() {
+        // ==========================================
+        //  تحديث مبيعات الأدوية (الكمية ضرب السعر)
+        // ==========================================
+        window.currentMedUnitPrice = 0;
+
+        document.getElementById('medName').addEventListener('input', function() {
             let selectedName = this.value.trim();
-            if(window.availableMedsData && selectedName) {
+            let amtInput = document.getElementById('medAmount');
+            let qtyInput = document.getElementById('medQty');
+            let qty = parseInt(qtyInput.value) || 1;
+
+            if (!selectedName) {
+                amtInput.value = '';
+                window.currentMedUnitPrice = 0;
+                return;
+            }
+
+            if(window.availableMedsData) {
                 let med = window.availableMedsData.find(m => isNameMatch(m.productName, selectedName));
                 if(med && med.publicPrice) {
-                    document.getElementById('medAmount').value = med.publicPrice;
+                    window.currentMedUnitPrice = parseFloat(med.publicPrice) || 0;
+                    amtInput.value = window.currentMedUnitPrice * qty;
                 }
             }
         });
+
+        document.getElementById('medQty').addEventListener('input', function() {
+            let qty = parseInt(this.value) || 1;
+            if (qty < 1) qty = 1;
+            let amtInput = document.getElementById('medAmount');
+            let medName = document.getElementById('medName').value.trim();
+            
+            if (window.currentMedUnitPrice > 0 && medName !== '') {
+                amtInput.value = window.currentMedUnitPrice * qty;
+            }
+        });
+        // ==========================================
 
         function executeLogin() {
             const user = document.getElementById('loginUsername').value;
@@ -743,7 +768,6 @@
 
         window.patientDebts = {};
 
-        // 🚨 محرك البحث الصاروخي الشامل (الاسم + الموبايل) 🚨
         const patientInputEl = document.getElementById('patientName');
         const autocompleteDiv = document.getElementById('customAutocomplete');
 
@@ -754,26 +778,22 @@
             
             let matchedPatients = []; 
 
-            // 1. من مرضى اليوم
             patientsQueue.forEach(p => {
                 if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
             });
 
-            // 2. من الفايربيز (الكروت الجديدة)
             if (window.globalAllPatientsData) {
                 window.globalAllPatientsData.forEach(p => {
                     if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
                 });
             }
 
-            // 3. من اللوكال ستوريدج (الكروت اللي اتسجلت حالا على الجهاز)
             if (window.localPatientsCache) {
                 window.localPatientsCache.forEach(p => {
                     if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
                 });
             }
 
-            // 4. من الشيت القديم
             let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
             Object.keys(histCache).forEach(n => {
                 matchedPatients.push({name: n, phone: window.patientPhones[n] || ''});
@@ -1265,6 +1285,7 @@
             document.getElementById('medBuyer').value = ''; 
             document.getElementById('medAmount').value = ''; 
             document.getElementById('medQty').value = '1'; 
+            window.currentMedUnitPrice = 0;
             
             renderUI(); 
             scheduleSync(); 
