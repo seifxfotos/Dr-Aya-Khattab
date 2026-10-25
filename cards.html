@@ -256,6 +256,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
         let currentPatient = {
+            id: '', 
             name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
             sessions: Array(12).fill({d: '', ws: '', n: ''}),
             files: [],
@@ -275,10 +276,7 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeSwitch').checked = true;
             }
-            if(!currentPatient.cardTypes) currentPatient.cardTypes = {};
-            if(!currentPatient.cardTypes[0]) currentPatient.cardTypes[0] = 'تغذية علاجية';
-            
-            renderPatientToDOM(); 
+            createNewPatient(); 
             silentPreFetchAll();
 
             const autoSearch = localStorage.getItem('clinic_auto_search_name');
@@ -314,7 +312,6 @@
                 .trim().toLowerCase() : ""; 
         }
 
-        // 🚨 دالة المطابقة الذكية للأسماء 🚨
         function isNameMatch(n1, n2) {
             if (!n1 || !n2) return false;
             let norm1 = normalizeArabicText(n1);
@@ -387,6 +384,7 @@
 
         function createNewPatient() {
             currentPatient = {
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2),
                 name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
                 sessions: Array(12).fill({d: '', ws: '', n: ''}),
                 files: [],
@@ -691,8 +689,12 @@
 
         async function forceSave(isSilent = false) {
             updateStateFromDOM();
-            if(!currentPatient.name || !currentPatient.phone) {
-                if(!isSilent) showToast("الاسم ورقم الموبايل مطلوبان للحفظ", "error");
+            
+            let safePhoneVal = getSafePhone(currentPatient.phone);
+            
+            // 🚨 منع الأوتو-سيف المزعج أثناء الكتابة للأرقام الناقصة 🚨
+            if(!currentPatient.name || safePhoneVal === "unknown" || safePhoneVal.length < 10) {
+                if(!isSilent) showToast("يجب إدخال الاسم ورقم موبايل صحيح (10 أرقام على الأقل) للحفظ", "error");
                 setSaveStatus('unsaved');
                 return;
             }
@@ -703,14 +705,12 @@
                 return;
             }
 
-            // 🚨 المنع الاستباقي للتكرار أثناء حفظ مريض جديد 🚨
+            // 🚨 منع تسجيل كارت مكرر لنفس الشخص يدوياً 🚨
             if (!isSilent && lastSavedStateString === "") {
                 let cache = await localforage.getItem('patients_cache') || [];
-                let safeCurrentPhone = getSafePhone(currentPatient.phone);
-                
                 let found = cache.find(p => {
                     let safePPhone = getSafePhone(p.phone);
-                    return safePPhone !== "unknown" && safePPhone === safeCurrentPhone && isNameMatch(p.name, currentPatient.name);
+                    return safePPhone !== "unknown" && safePPhone === safePhoneVal && isNameMatch(p.name, currentPatient.name);
                 });
                 
                 if (found) {
@@ -733,8 +733,9 @@
 
             let payload = { ...currentPatient, sessions: cleanedSessions };
 
+            // 🚨 البحث بـ ID عشان المريض لو غير رقم موبايله ميكريتش كارت جديد في الكاش 🚨
             let cache = await localforage.getItem('patients_cache') || [];
-            let idx = cache.findIndex(p => p.phone === payload.phone);
+            let idx = cache.findIndex(p => p.id === payload.id);
             if(idx > -1) cache[idx] = payload; else cache.push(payload);
             await localforage.setItem('patients_cache', cache);
 
@@ -765,12 +766,12 @@
             }
         }
 
-        // 🚨 دالة دمج الكروت المكررة ذكياً 🚨
+        // 🚨 دالة التنظيف الذكية لحذف التكرارات المضروبة في الأرقام الناقصة 🚨
         window.mergeDuplicateCards = async function() {
             let cache = await localforage.getItem('patients_cache') || [];
             if (cache.length === 0) return showToast("لا توجد بيانات لفحصها!", "info");
 
-            showToast("جاري فحص ودمج الكروت المتكررة...", "info");
+            showToast("جاري فحص وتنظيف الكروت المتكررة...", "info");
             
             let toDelete = [];
             let toUpdate = [];
@@ -781,7 +782,6 @@
                 if (!p1 || toDelete.includes(p1)) continue;
 
                 let safePhone1 = getSafePhone(p1.phone);
-                if (safePhone1 === "unknown") continue; 
 
                 for (let j = i + 1; j < cache.length; j++) {
                     let p2 = cache[j];
@@ -789,9 +789,28 @@
 
                     let safePhone2 = getSafePhone(p2.phone);
                     
-                    // دمج لو نفس الرقم والاسم متطابق (عشان نفرق بين الأم وبنتها مثلاً)
-                    if (safePhone1 === safePhone2 && isNameMatch(p1.name, p2.name)) {
-                        // نقل الجلسات
+                    // الشرط: نفس الاسم + (نفس الرقم أو واحد فيهم جزء من التاني)
+                    let isSamePerson = false;
+                    if (isNameMatch(p1.name, p2.name)) {
+                        if (safePhone1 === safePhone2 && safePhone1 !== "unknown") isSamePerson = true;
+                        else if (safePhone1 !== 'unknown' && safePhone2 !== 'unknown' && (safePhone1.includes(safePhone2) || safePhone2.includes(safePhone1))) {
+                            isSamePerson = true;
+                        }
+                    }
+
+                    if (isSamePerson) {
+                        // تحديث الرقم للأطول (الرقم الكامل الصحيح)
+                        if (safePhone2.length > safePhone1.length) {
+                            p1.phone = p2.phone;
+                            safePhone1 = safePhone2; 
+                        }
+
+                        // نقل البيانات الناقصة
+                        if (!p1.address && p2.address) p1.address = p2.address;
+                        if (!p1.job && p2.job) p1.job = p2.job;
+                        if (!p1.age && p2.age) p1.age = p2.age;
+
+                        // دمج الجلسات
                         let p2Sessions = (p2.sessions || []).filter(s => s.d || s.ws || s.n);
                         let p1Sessions = (p1.sessions || []).filter(s => s.d || s.ws || s.n);
                         p1.sessions = p1Sessions.concat(p2Sessions);
@@ -819,19 +838,19 @@
                 return showToast("ممتاز! لا توجد كروت مكررة للمرضى.", "success");
             }
 
-            // تحديث الكاش
+            // 1. تحديث الكاش
             let newCache = cache.filter(p => !toDelete.includes(p));
             await localforage.setItem('patients_cache', newCache);
-            seedCardsIndex(newCache, true); // إجبار الفايربيز يمسح الأسماء المكررة فوراً
+            seedCardsIndex(newCache, true); // إجبار الفايربيز يمسح الأسماء المكررة فوراً من كل الأجهزة
 
-            // مسح من جوجل شيت
+            // 2. مسح الأرقام المضروبة من جوجل شيت
             for (let p of toDelete) {
                 try {
                     fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(p.phone) + "&name=" + encodeURIComponent(p.name), { method: 'GET', mode: 'no-cors' });
                 } catch(e) {}
             }
 
-            // تحديث الكارت المدمج
+            // 3. رفع الكارت السليم والكامل لجوجل شيت
             for (let p of toUpdate) {
                 try {
                     fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(p), mode: 'no-cors' });
@@ -1012,7 +1031,7 @@
                 let data = await res.json();
                 if(data.status === 'found') {
                     await localforage.setItem('patients_cache', data.data);
-                    seedCardsIndex(data.data); // تعبئة الفهرس لأول مرة
+                    seedCardsIndex(data.data); 
                 }
             } catch(e) {}
         }
@@ -1069,6 +1088,9 @@
         function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
         function loadPatientData(data) {
+            // نأكد إن عنده ID لو مكانش عنده عشان الأوتو سيف
+            if (!data.id) data.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
             currentPatient = { ...currentPatient, ...data };
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
