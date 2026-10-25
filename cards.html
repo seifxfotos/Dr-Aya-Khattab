@@ -227,7 +227,6 @@
         <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل...">
         <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
-        <!-- 🚨 زرار دمج الكروت المتكررة 🚨 -->
         <button class="btn btn-merge" onclick="mergeDuplicateCards()"><i class="fa-solid fa-broom"></i> تنظيف التكرارات</button>
         <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
@@ -236,7 +235,7 @@
     </div>
 
     <div id="cardsRenderContainer">
-        <!-- سيتم رسم الكروت هنا بواسطة الجافاسكريبت بناءً على الـ State -->
+        <!-- سيتم رسم الكروت هنا بواسطة الجافاسكريبت -->
     </div>
 
     <script>
@@ -258,9 +257,9 @@
         let currentPatient = {
             id: '', 
             name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-            sessions: Array(12).fill({d: '', ws: '', n: ''}),
+            sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})),
             files: [],
-            cardTypes: {} 
+            cardTypes: {0: 'تغذية علاجية'} 
         };
 
         let lastSavedStateString = "";
@@ -276,6 +275,8 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeSwitch').checked = true;
             }
+            
+            // 🚨 استدعاء كريت نيو كارد عشان تمنع الشاشة السوداء في بداية الفتح 🚨
             createNewPatient(); 
             silentPreFetchAll();
 
@@ -382,11 +383,12 @@
             closeConfirmModal();
         });
 
+        // 🚨 تصليح دالة الكارت الجديد لاستخدام المصفوفات الصحيحة ومنع التشابك 🚨
         function createNewPatient() {
             currentPatient = {
                 id: Date.now().toString(36) + Math.random().toString(36).substr(2),
                 name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-                sessions: Array(12).fill({d: '', ws: '', n: ''}),
+                sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})),
                 files: [],
                 cardTypes: {0: 'تغذية علاجية'}
             };
@@ -394,7 +396,6 @@
             indexedKey = null;
             showMedicalSheetFlag = false; 
             renderPatientToDOM();
-            showToast("تم فتح استمارة جديدة", "info");
         }
 
         window.syncCardNames = function() {
@@ -411,14 +412,23 @@
             handleInput();
         };
 
+        // 🚨 تصليح دالة الرسم لمنع شاشة السواد 🚨
         function renderPatientToDOM() {
             const container = document.getElementById('cardsRenderContainer');
             let fullHtml = '';
             
+            // حماية أساسية لو الداتا جاية متلغبطة من الفايربيز
+            if (!currentPatient.sessions || !Array.isArray(currentPatient.sessions)) {
+                currentPatient.sessions = Array.from({length: 12}, () => ({d: '', ws: '', n: ''}));
+            }
+
             let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
-            while(currentPatient.sessions.length < totalNeeded) { currentPatient.sessions.push({d: '', ws: '', n: ''}); }
+            while(currentPatient.sessions.length < totalNeeded) { 
+                currentPatient.sessions.push({d: '', ws: '', n: ''}); 
+            }
             
             let numCards = currentPatient.sessions.length / 12;
+            if (isNaN(numCards) || numCards < 1) numCards = 1; // حماية إضافية
 
             for(let c = 0; c < numCards; c++) {
                 fullHtml += buildCardHtml(c);
@@ -692,7 +702,6 @@
             
             let safePhoneVal = getSafePhone(currentPatient.phone);
             
-            // 🚨 منع الأوتو-سيف المزعج أثناء الكتابة للأرقام الناقصة 🚨
             if(!currentPatient.name || safePhoneVal === "unknown" || safePhoneVal.length < 10) {
                 if(!isSilent) showToast("يجب إدخال الاسم ورقم موبايل صحيح (10 أرقام على الأقل) للحفظ", "error");
                 setSaveStatus('unsaved');
@@ -705,7 +714,6 @@
                 return;
             }
 
-            // 🚨 منع تسجيل كارت مكرر لنفس الشخص يدوياً 🚨
             if (!isSilent && lastSavedStateString === "") {
                 let cache = await localforage.getItem('patients_cache') || [];
                 let found = cache.find(p => {
@@ -733,7 +741,6 @@
 
             let payload = { ...currentPatient, sessions: cleanedSessions };
 
-            // 🚨 البحث بـ ID عشان المريض لو غير رقم موبايله ميكريتش كارت جديد في الكاش 🚨
             let cache = await localforage.getItem('patients_cache') || [];
             let idx = cache.findIndex(p => p.id === payload.id);
             if(idx > -1) cache[idx] = payload; else cache.push(payload);
@@ -766,7 +773,6 @@
             }
         }
 
-        // 🚨 دالة التنظيف الذكية لحذف التكرارات المضروبة في الأرقام الناقصة 🚨
         window.mergeDuplicateCards = async function() {
             let cache = await localforage.getItem('patients_cache') || [];
             if (cache.length === 0) return showToast("لا توجد بيانات لفحصها!", "info");
@@ -789,7 +795,6 @@
 
                     let safePhone2 = getSafePhone(p2.phone);
                     
-                    // الشرط: نفس الاسم + (نفس الرقم أو واحد فيهم جزء من التاني)
                     let isSamePerson = false;
                     if (isNameMatch(p1.name, p2.name)) {
                         if (safePhone1 === safePhone2 && safePhone1 !== "unknown") isSamePerson = true;
@@ -799,29 +804,29 @@
                     }
 
                     if (isSamePerson) {
-                        // تحديث الرقم للأطول (الرقم الكامل الصحيح)
                         if (safePhone2.length > safePhone1.length) {
                             p1.phone = p2.phone;
                             safePhone1 = safePhone2; 
                         }
 
-                        // نقل البيانات الناقصة
                         if (!p1.address && p2.address) p1.address = p2.address;
                         if (!p1.job && p2.job) p1.job = p2.job;
                         if (!p1.age && p2.age) p1.age = p2.age;
 
-                        // دمج الجلسات
-                        let p2Sessions = (p2.sessions || []).filter(s => s.d || s.ws || s.n);
-                        let p1Sessions = (p1.sessions || []).filter(s => s.d || s.ws || s.n);
-                        p1.sessions = p1Sessions.concat(p2Sessions);
+                        // 🚨 حماية تحويل البيانات إلى مصفوفة قبل الدمج 🚨
+                        let p1Sess = Array.isArray(p1.sessions) ? p1.sessions : (typeof p1.sessions === 'object' && p1.sessions ? Object.values(p1.sessions) : []);
+                        let p2Sess = Array.isArray(p2.sessions) ? p2.sessions : (typeof p2.sessions === 'object' && p2.sessions ? Object.values(p2.sessions) : []);
+
+                        let p2SessionsFilter = p2Sess.filter(s => s && (s.d || s.ws || s.n));
+                        let p1SessionsFilter = p1Sess.filter(s => s && (s.d || s.ws || s.n));
                         
-                        // نقل الملاحظات الطبية
+                        p1.sessions = p1SessionsFilter.concat(p2SessionsFilter);
+                        
                         if (p2.medical_notes) {
                             if (!p1.medical_notes) p1.medical_notes = p2.medical_notes;
                             else if (!p1.medical_notes.includes(p2.medical_notes)) p1.medical_notes += "\n" + p2.medical_notes;
                         }
 
-                        // نقل المرفقات
                         if (p2.files && p2.files.length > 0) {
                             if (!p1.files) p1.files = [];
                             p1.files = p1.files.concat(p2.files);
@@ -838,19 +843,16 @@
                 return showToast("ممتاز! لا توجد كروت مكررة للمرضى.", "success");
             }
 
-            // 1. تحديث الكاش
             let newCache = cache.filter(p => !toDelete.includes(p));
             await localforage.setItem('patients_cache', newCache);
-            seedCardsIndex(newCache, true); // إجبار الفايربيز يمسح الأسماء المكررة فوراً من كل الأجهزة
+            seedCardsIndex(newCache, true); 
 
-            // 2. مسح الأرقام المضروبة من جوجل شيت
             for (let p of toDelete) {
                 try {
                     fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(p.phone) + "&name=" + encodeURIComponent(p.name), { method: 'GET', mode: 'no-cors' });
                 } catch(e) {}
             }
 
-            // 3. رفع الكارت السليم والكامل لجوجل شيت
             for (let p of toUpdate) {
                 try {
                     fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(p), mode: 'no-cors' });
@@ -1087,11 +1089,20 @@
 
         function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
+        // 🚨 دالة تحميل الكارت مع إصلاح الأوبجكت اللي راجع من الفايربيز 🚨
         function loadPatientData(data) {
-            // نأكد إن عنده ID لو مكانش عنده عشان الأوتو سيف
             if (!data.id) data.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
-
             currentPatient = { ...currentPatient, ...data };
+            
+            // 🚨 إصلاح مشكلة الأوبجكت للفايربيز اللي بتخلي الشاشة سودة 🚨
+            if (currentPatient.sessions && !Array.isArray(currentPatient.sessions)) {
+                let arr = [];
+                Object.keys(currentPatient.sessions).forEach(k => {
+                    arr[parseInt(k)] = currentPatient.sessions[k];
+                });
+                currentPatient.sessions = arr;
+            }
+
             if(!currentPatient.sessions) currentPatient.sessions = [];
             if(!currentPatient.files) currentPatient.files = [];
             
@@ -1118,7 +1129,7 @@
                 let isNutrition = false;
 
                 cardSessions.forEach(s => {
-                    if(!s.d && !s.ws && !s.n) return;
+                    if(!s || (!s.d && !s.ws && !s.n)) return; // تفادي الأخطاء لو الخانة فاضية
                     let wsStr = String(s.ws || '').trim();
                     let nStr = String(s.n || '').trim();
 
@@ -1127,7 +1138,7 @@
                 });
 
                 if (!isPhysio && !isNutrition) {
-                    let filledN = cardSessions.filter(s => String(s.n).trim() !== '');
+                    let filledN = cardSessions.filter(s => s && String(s.n).trim() !== '');
                     let numsOnly = filledN.filter(s => /^[0-9\.\s]+$/.test(String(s.n).trim())).length;
                     if (filledN.length > 0 && numsOnly >= filledN.length / 2) isNutrition = true;
                 }
