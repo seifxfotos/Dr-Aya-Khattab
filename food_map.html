@@ -95,7 +95,7 @@
         }
         .nav-links a:hover { background: rgba(255,255,255,0.3); }
 
-        /* Custom Toggle Switch (Matches Image) */
+        /* Custom Toggle Switch */
         .theme-switch {
             position: relative;
             display: inline-block;
@@ -113,7 +113,7 @@
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #3b4c5a; /* اللون الكحلي/الرمادي المطلوب */
+            background-color: #3b4c5a;
             transition: .4s;
             border-radius: 34px;
             display: flex;
@@ -182,7 +182,8 @@
         }
         .input-group input:focus { border-color: var(--primary-blue); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
         
-        .custom-autocomplete { 
+        /* Custom UI Dropdown (UL/LI) */
+        ul.custom-autocomplete { 
             position: absolute; 
             top: calc(100% + 2px); 
             left: 0; 
@@ -192,22 +193,25 @@
             border-radius: 8px; 
             max-height: 250px; 
             overflow-y: auto; 
-            z-index: 9999; 
+            z-index: 99999; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
             display: none; 
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        .autocomplete-item { 
+        li.autocomplete-item { 
             padding: 12px 15px; 
             cursor: pointer; 
             border-bottom: 1px solid var(--border); 
             font-size: 15px; 
             font-weight: 700; 
             color: var(--text-dark);
+            margin: 0;
         }
-        .autocomplete-item:hover { background: var(--primary-blue); color: white; }
+        li.autocomplete-item:hover { background: var(--primary-blue); color: white; }
 
-        /* Dark mode overrides for specific elements */
-        body.dark-mode .autocomplete-item:hover { background: #333333; }
+        body.dark-mode li.autocomplete-item:hover { background: #333333; }
         body.dark-mode #patientInfo, body.dark-mode #newPatientSection { background: #1a1a1a !important; border-color: #333333 !important; }
 
         /* Grid Layouts */
@@ -303,16 +307,13 @@
                 <label class="theme-switch" dir="ltr">
                     <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
                     <span class="slider">
-                        <!-- أيقونة الشمس -->
                         <svg class="icon sun-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path fill="#FDE047" d="M12 2.5l1.6 2.5 2.9-.6.9 2.8 2.8.9-.6 2.9 2.5 1.6-2.5 1.6.6 2.9-2.8.9-.9 2.8-2.9-.6-1.6 2.5-1.6-2.5-2.9.6-.9-2.8-2.8-.9.6-2.9-2.5-1.6 2.5-1.6-.6-2.9 2.8-.9.9-2.8 2.9.6L12 2.5z"/>
                             <circle cx="12" cy="12" r="4.5" fill="#FDE047"/>
                         </svg>
-                        <!-- أيقونة القمر -->
                         <svg class="icon moon-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path fill="#FDE047" d="M20.742 13.045a8.088 8.088 0 0 1-2.077.271c-2.135 0-4.14-.83-5.646-2.336a8.025 8.025 0 0 1-2.064-7.723A1 1 0 0 0 9.73 2.034a10.014 10.014 0 0 0-4.489 2.582c-3.898 3.898-3.898 10.243 0 14.143a9.937 9.937 0 0 0 7.072 2.93 9.93 9.93 0 0 0 7.07-2.93 10.008 10.008 0 0 0 2.46-4.294 1 1 0 0 0-1.101-1.42z"/>
                         </svg>
-                        <!-- الدائرة البيضاء المنزلقة -->
                         <span class="slider-circle"></span>
                     </span>
                 </label>
@@ -332,7 +333,7 @@
                 <label style="font-weight: bold; margin-bottom: 5px; display: block; color: var(--primary-blue);">البحث في الأنظمة المحفوظة:</label>
                 <div class="input-group" style="margin-bottom: 0;">
                     <input type="text" id="savedPatientSearch" placeholder="ابحث عن مريض له دايت مسجل..." autocomplete="off">
-                    <div id="savedPatientAutocomplete" class="custom-autocomplete"></div>
+                    <ul id="savedPatientAutocomplete" class="custom-autocomplete"></ul>
                 </div>
             </div>
 
@@ -340,11 +341,11 @@
                 <i class="fa-solid fa-user-plus"></i> عمل نظام لمريض جديد
             </button>
             
-            <div id="newPatientSection" style="display: none; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid var(--border);">
+            <div id="newPatientSection" style="display: none; margin-bottom: 15px; padding: 15px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border);">
                 <label style="font-weight: bold; margin-bottom: 5px; display: block; color: var(--primary-green);">اختر مريض من كروت العيادة:</label>
                 <div class="input-group" style="margin-bottom: 0;">
                     <input type="text" id="allPatientSearch" placeholder="اكتب اسم المريض للبحث في الكروت..." autocomplete="off">
-                    <div id="allPatientAutocomplete" class="custom-autocomplete"></div>
+                    <ul id="allPatientAutocomplete" class="custom-autocomplete"></ul>
                 </div>
             </div>
 
@@ -469,7 +470,6 @@
             }
         }
         
-        // Initial setup
         if(localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
             if(themeToggle) themeToggle.checked = true;
@@ -482,13 +482,13 @@
         // ==========================================
         flatpickr("#dietDate", {
             locale: "ar",
-            defaultDate: new Date(), // يضمن استخدام التوقيت المحلي بدقة (يوم 29)
+            defaultDate: new Date(), 
             dateFormat: "Y-m-d",
-            disableMobile: "true" // لمنع ظهور تقويم الموبايل الافتراضي وإجبار ظهور التقويم المخصص
+            disableMobile: "true" 
         });
 
         // ==========================================
-        // Firebase Initialization & Search Setup
+        // Firebase Configuration (Exact match)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
@@ -512,25 +512,30 @@
         }
         db = firebase.database();
 
-        // Load ALL patients for new diets
+        // ==========================================
+        // Load Patients Data Robustly
+        // ==========================================
         db.ref('cards_names_index').on('value', snap => {
             let data = snap.val();
             allPatients = [];
             if(data) {
-                // الحل الجذري: التعامل مع كافة أشكال الداتا في الفايربيز لاستخراج الاسم
-                for(let key in data) {
-                    let val = data[key];
+                // التعامل مع شكل البيانات مهما كان (Array أو Object أو Strings مباشرة)
+                let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
+                
+                for(let [key, val] of entries) {
+                    if(!val) continue;
+                    
                     if (typeof val === 'string') {
                         allPatients.push({ key: key, name: val });
-                    } else if (typeof val === 'object' && val !== null) {
-                        let objName = val.name || val.patientName || val.Name || key;
-                        allPatients.push({ key: val.key || key, name: objName, ...val });
+                    } else if (typeof val === 'object') {
+                        let objName = val.name || val.Name || val.patientName || val.fullName || val.patient_name || "مريض بدون اسم";
+                        allPatients.push({ key: val.key || key, name: objName, phone: val.phone || '' });
                     }
                 }
+                console.log("تم تحميل " + allPatients.length + " مريض من كروت العيادة.");
             }
         });
 
-        // Load patients WITH saved diets
         db.ref('nutrition_data').on('value', snap => {
             let data = snap.val();
             if(data) {
@@ -544,6 +549,9 @@
             }
         });
 
+        // ==========================================
+        // Autocomplete Custom UI Logic (UL / LI)
+        // ==========================================
         const savedInput = document.getElementById('savedPatientSearch');
         const savedAuto = document.getElementById('savedPatientAutocomplete');
         
@@ -551,46 +559,62 @@
         const allAuto = document.getElementById('allPatientAutocomplete');
 
         function normalizeArabic(text) {
+            if(!text) return "";
             return String(text).replace(/[\u064B-\u065F\u0640]/g, "")
                 .replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
         }
 
-        // Listeners for Saved Patients Search
-        savedInput.addEventListener('input', function() { showAuto(this.value, savedPatients, savedAuto, savedInput); });
-        savedInput.addEventListener('focus', function() { showAuto(this.value, savedPatients, savedAuto, savedInput); });
-        savedInput.addEventListener('click', function() { showAuto(this.value, savedPatients, savedAuto, savedInput); });
+        // Attach events
+        [savedInput, allInput].forEach(el => {
+            el.addEventListener('input', handleSearch);
+            el.addEventListener('focus', handleSearch);
+            el.addEventListener('click', handleSearch);
+            
+            // Hide menu when clicking outside, delayed to allow mousedown on LI to fire first
+            el.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if(el === savedInput) savedAuto.style.display = 'none';
+                    if(el === allInput) allAuto.style.display = 'none';
+                }, 200);
+            });
+        });
 
-        // Listeners for All Patients Search
-        allInput.addEventListener('input', function() { showAuto(this.value, allPatients, allAuto, allInput); });
-        allInput.addEventListener('focus', function() { showAuto(this.value, allPatients, allAuto, allInput); });
-        allInput.addEventListener('click', function() { showAuto(this.value, allPatients, allAuto, allInput); });
+        function handleSearch(e) {
+            if(e.target === savedInput) {
+                renderList(this.value, savedPatients, savedAuto, savedInput);
+            } else {
+                renderList(this.value, allPatients, allAuto, allInput);
+            }
+        }
 
-        function showAuto(query, list, div, inputEl) {
-            div.innerHTML = '';
+        function renderList(query, list, ulEl, inputEl) {
+            ulEl.innerHTML = '';
             let normQ = normalizeArabic(query);
-            let matches = list.filter(p => p.name);
+            let matches = list.filter(p => p.name && p.name.trim() !== "");
             
             if (normQ) {
                 matches = matches.filter(p => normalizeArabic(p.name).includes(normQ));
             }
             
-            matches = matches.slice(0, 15);
+            matches = matches.slice(0, 30); // عرض لحد 30 اسم
             
             if(matches.length > 0) {
                 matches.forEach(p => {
-                    let item = document.createElement('div');
-                    item.className = 'autocomplete-item';
-                    item.innerText = p.name;
-                    item.onclick = () => {
+                    let li = document.createElement('li');
+                    li.className = 'autocomplete-item';
+                    li.innerText = p.name;
+                    // استخدام mousedown بدلا من click حتى لا يختفي الـ ul بسبب blur الـ input
+                    li.onmousedown = (e) => {
+                        e.preventDefault();
                         inputEl.value = p.name;
                         selectPatient(p);
-                        div.style.display = 'none';
+                        ulEl.style.display = 'none';
                     };
-                    div.appendChild(item);
+                    ulEl.appendChild(li);
                 });
-                div.style.display = 'block';
+                ulEl.style.display = 'block';
             } else {
-                div.style.display = 'none';
+                ulEl.style.display = 'none';
             }
         }
 
@@ -598,9 +622,11 @@
             selectedPatientName = p.name;
             let safePhone = p.phone ? String(p.phone).replace(/\D/g, '') : 'unknown';
             
-            if (p.key) { // Coming from savedPatients
+            if (p.key && savedPatients.find(x => x.key === p.key)) { 
+                // From saved list
                 selectedPatientKey = p.key;
-            } else { // Coming from allPatients
+            } else { 
+                // From general cards list
                 selectedPatientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabic(p.name);
             }
             
@@ -608,17 +634,11 @@
             document.getElementById('printPatientName').innerText = p.name;
             document.getElementById('patientInfo').style.display = 'block';
             
-            // Clear inputs and hide the "New Patient" section to keep UI clean
             savedInput.value = '';
             allInput.value = '';
             document.getElementById('newPatientSection').style.display = 'none';
-            document.getElementById('resultPanel').style.display = 'none'; // hide previous results
+            document.getElementById('resultPanel').style.display = 'none'; 
         }
-
-        document.addEventListener('click', (e) => {
-            if(e.target.id !== 'savedPatientSearch') savedAuto.style.display = 'none';
-            if(e.target.id !== 'allPatientSearch') allAuto.style.display = 'none';
-        });
 
         function toggleNewPatientSearch() {
             const sec = document.getElementById('newPatientSection');
@@ -659,26 +679,26 @@
         // Diabetic Exchange List Database (Mock from PDF)
         // ==========================================
         const exchangeDB = {
-            starch: [ // 15g C, 3g P, 80 kcal
+            starch: [ 
                 "نص رغيف بلدي", "شريحة توست أسمر", "3 معالق شوفان", "3 معالق رز مسلوق", "نص كوباية مكرونة مسلوقة", 
                 "بطاطساية مسلوقة صغيرة", "نص كوباية ذرة حلوة", "3 بقسماط سن", "ربع رغيف شامي"
             ],
-            meat: [ // Lean: 7g P, 3g F, 55 kcal (Averaged)
+            meat: [ 
                 "بيضة مسلوقة", "حتة لحمة مسلوقة/مشوية (30 جم)", "ربع فرخة مشوية (صدر)", "حتة جبنة قريش (50 جم)", 
                 "نص سمكة مشوية (30 جم)", "معلقتين تونة متصفية", "شريحة جبنة لايت", "3 بياض بيض"
             ],
-            veg: [ // 5g C, 2g P, 25 kcal
+            veg: [ 
                 "طبق سلطة خضرا وسط", "نص كوباية خضار سوتيه", "طبق سبانخ مطبوخة", "نص كوباية فاصوليا خضرا",
                 "نص كوباية كوسة مطبوخة", "خياريتين كبار", "نص كوباية بروكلي مسلوق"
             ],
-            fruit: [ // 15g C, 60 kcal
+            fruit: [ 
                 "تفاحاية صغيرة", "نص موزة كبيرة", "برتقالاية", "شريحة بطيخ", "نص كوباية فراولة", 
                 "3 بلاحات (تمر)", "خوخاية", "شريحة كانتلوب", "شوية عنب (15 حباية)"
             ],
-            milk: [ // Skim: 12g C, 8g P, 90 kcal
+            milk: [ 
                 "كوباية لبن خالي الدسم", "علبة زبادي خالي الدسم (200 جم)", "كوباية لبن رايب لايت"
             ],
-            fat: [ // 5g F, 45 kcal
+            fat: [ 
                 "معلقة صغيرة زيت زيتون", "معلقة صغيرة زبدة بلدي", "6 حبات لوز ني", "10 حبات سوداني", 
                 "معلقة صغيرة طحينة", "شريحة أفوكادو", "معلقة صغيرة زبدة فول سوداني"
             ]
@@ -740,7 +760,7 @@
             let targetPro = (kcal * (proP / 100)) / 4;
             let targetFat = (kcal * (fatP / 100)) / 9;
 
-            // Base Needs (Healthy Defaults: Milk, Fruit, Veg)
+            // Base Needs
             let remCarb = targetCarb - (24 + 45 + 15);
             let remPro = targetPro - (16 + 0 + 6);
             let remFat = targetFat - 0;
@@ -754,7 +774,7 @@
 
             let fatServings = Math.max(0, Math.round(remFat / 5));
             
-            // Distribute across meals: [Starch, Meat, Veg, Fruit, Milk, Fat]
+            // Distribute across meals
             const dist = {
                 B: [Math.ceil(starchServings*0.25), Math.ceil(meatServings*0.3), 0, 1, 1, Math.floor(fatServings*0.2)],
                 S: [0, 0, 0, 1, 0, Math.floor(fatServings*0.2)],
@@ -774,7 +794,7 @@
                     S: buildMealContent(dist.S),
                     L: buildMealContent(dist.L),
                     D: buildMealContent(dist.D),
-                    profile: dist // save profile for swapping
+                    profile: dist 
                 };
                 currentGeneratedPlan.push(dayData);
 
