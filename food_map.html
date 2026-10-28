@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الدايت - د. آية خطاب</title>
     
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
     <!-- Bootstrap & Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <!-- Flatpickr for Date -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
@@ -26,7 +32,7 @@
         body {
             background-color: var(--bg-light);
             color: var(--text-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Cairo', sans-serif; /* هنا تم إصلاح الخط ليكون متناسق مع الموقع */
             transition: all 0.3s ease;
         }
 
@@ -63,7 +69,8 @@
         body.dark-mode label, 
         body.dark-mode h5, 
         body.dark-mode p,
-        body.dark-mode h2 {
+        body.dark-mode h2,
+        body.dark-mode .fw-bold {
             color: #ffffff !important;
         }
         body.dark-mode input.form-control {
@@ -147,6 +154,7 @@
             border-bottom: 1px solid #eee;
             font-size: 15px;
             color: #333;
+            transition: 0.2s background;
         }
         body.dark-mode .custom-dropdown-list li {
             border-bottom: 1px solid #333 !important;
@@ -157,7 +165,7 @@
             color: #000 !important;
         }
 
-        /* Flatpickr Dark Mode Fixes */
+        /* Flatpickr Dark Mode & Arabic Fixes */
         body.dark-mode .flatpickr-calendar {
             background: #1e1e1e !important;
             border-color: #333 !important;
@@ -171,8 +179,8 @@
         body.dark-mode .flatpickr-day:hover {
             background: #333 !important;
         }
-        .flatpickr-month { height: 40px !important; overflow: visible !important; }
-        .flatpickr-current-month { height: auto !important; padding-top: 5px; }
+        .flatpickr-month { height: 45px !important; overflow: visible !important; }
+        .flatpickr-current-month { height: auto !important; padding-top: 5px; font-family: 'Cairo', sans-serif; }
     </style>
 </head>
 <body>
@@ -182,7 +190,7 @@
     <div class="header-banner">
         <div>
             <h2 class="m-0 fw-bold">نظام الدايت</h2>
-            <p class="m-0 mt-1" style="font-size: 14px;">بناء أنظمة متوازنة دقيقة</p>
+            <p class="m-0 mt-1" style="font-size: 15px;">بناء أنظمة متوازنة دقيقة</p>
         </div>
         <div class="d-flex align-items-center gap-3">
             <label class="theme-switch">
@@ -192,7 +200,7 @@
                     <i class="fas fa-moon"></i>
                 </span>
             </label>
-            <a href="https://drayakhattab.com/cards" class="btn btn-outline-light fw-bold">كروت المرضى</a>
+            <a href="https://drayakhattab.com/cards" class="btn btn-outline-light fw-bold" style="border-width: 2px;">كروت المرضى</a>
         </div>
     </div>
 
@@ -209,7 +217,7 @@
         <input type="text" class="form-control mb-4" placeholder="ابحث عن مريض له دايت مسجل...">
 
         <!-- New Patient Button/Section -->
-        <button class="btn btn-success fw-bold w-100 mb-3" style="background-color: #88c249; border: none;"><i class="fas fa-user-plus"></i> عمل نظام لمريض جديد</button>
+        <button class="btn fw-bold w-100 mb-4" style="background-color: #88c249; color: white; border: none; padding: 10px; font-size: 16px;"><i class="fas fa-user-plus"></i> عمل نظام لمريض جديد</button>
         
         <label class="fw-bold mb-2" style="color: #88c249 !important;">اختر مريض من كروت العيادة:</label>
         <div class="custom-dropdown-container">
@@ -224,26 +232,26 @@
         <hr>
         <div class="row g-3">
             <div class="col-md-3">
-                <label class="mb-2">السعرات الحرارية (Kcal)</label>
+                <label class="mb-2 fw-bold">السعرات الحرارية (Kcal)</label>
                 <input type="number" id="calories" class="form-control" placeholder="مثال: 1500">
             </div>
             <div class="col-md-3">
-                <label class="mb-2">الكاربوهيدرات (%)</label>
+                <label class="mb-2 fw-bold">الكاربوهيدرات (%)</label>
                 <input type="number" id="carbs" class="form-control" placeholder="مثال: 50">
             </div>
             <div class="col-md-3">
-                <label class="mb-2">البروتين (%)</label>
+                <label class="mb-2 fw-bold">البروتين (%)</label>
                 <input type="number" id="protein" class="form-control" placeholder="مثال: 20">
             </div>
             <div class="col-md-3">
-                <label class="mb-2">الدهون (%)</label>
+                <label class="mb-2 fw-bold">الدهون (%)</label>
                 <input type="number" id="fat" class="form-control" placeholder="مثال: 30">
             </div>
         </div>
         <div class="mt-4">
-            <button class="btn btn-info text-white fw-bold" onclick="generateDiet()"><i class="fas fa-magic"></i> توليد النظام التلقائي</button>
+            <button class="btn btn-info text-white fw-bold" onclick="generateDiet()" style="padding: 10px 25px;"><i class="fas fa-magic"></i> توليد النظام التلقائي</button>
         </div>
-        <div id="errorMsg" class="text-danger mt-2 fw-bold" style="display: none;">مجموع النسب يجب أن يكون 100% بالظبط!</div>
+        <div id="errorMsg" class="text-danger mt-3 fw-bold" style="display: none; background: #ffe6e6; padding: 10px; border-radius: 5px; border: 1px solid #ffcccc;">⚠️ مجموع النسب يجب أن يكون 100% بالظبط!</div>
     </div>
 </div>
 
@@ -299,4 +307,74 @@
         filtered.forEach(name => {
             const li = document.createElement('li');
             li.textContent = name;
-            li.onclick = (e
+            li.onclick = (e) => {
+                searchInput.value = name;
+                dropdownList.style.display = 'none';
+                e.stopPropagation();
+            };
+            dropdownList.appendChild(li);
+        });
+        dropdownList.style.display = 'block';
+    }
+
+    searchInput.addEventListener('focus', () => renderList(searchInput.value));
+    searchInput.addEventListener('click', () => renderList(searchInput.value));
+    searchInput.addEventListener('input', () => renderList(searchInput.value));
+
+    document.addEventListener('click', (e) => {
+        if (e.target !== searchInput && e.target !== dropdownList) {
+            dropdownList.style.display = 'none';
+        }
+    });
+
+    // Date & Dark Mode
+    flatpickr("#dietDate", {
+        locale: "ar",
+        defaultDate: new Date(),
+        dateFormat: "Y-m-d"
+    });
+
+    const toggle = document.getElementById('darkModeToggle');
+    
+    function applyTheme(isDark) {
+        if(isDark) {
+            document.body.classList.add('dark-mode');
+            toggle.checked = true;
+        } else {
+            document.body.classList.remove('dark-mode');
+            toggle.checked = false;
+        }
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+        applyTheme(true);
+    }
+
+    toggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            applyTheme(true);
+            localStorage.setItem('theme', 'dark');
+        } else {
+            applyTheme(false);
+            localStorage.setItem('theme', 'light');
+        }
+    });
+
+    // Diet Validation
+    function generateDiet() {
+        const c = parseInt(document.getElementById('carbs').value) || 0;
+        const p = parseInt(document.getElementById('protein').value) || 0;
+        const f = parseInt(document.getElementById('fat').value) || 0;
+        const total = c + p + f;
+
+        const err = document.getElementById('errorMsg');
+        if (total !== 100 && total > 0) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+            alert("تم توليد النظام بنجاح (سيتم دمج خوارزمية الوجبات هنا)");
+        }
+    }
+</script>
+</body>
+</html>
