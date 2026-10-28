@@ -12,9 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <!-- Firebase (الإصدار الثامن المتوافق مع باقي موقعك) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
         :root {
@@ -488,7 +489,7 @@
         });
 
         // ==========================================
-        // Firebase Configuration (Exact match)
+        // Firebase Configuration (Exact match v8)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
@@ -501,7 +502,7 @@
         };
         
         let db;
-        let allPatients = []; // From cards_names_index or cards
+        let allPatients = []; // From cards_names_index / cards
         let savedPatients = []; // From nutrition_data
         
         let selectedPatientKey = "";
@@ -511,37 +512,46 @@
             firebase.initializeApp(firebaseConfig); 
         }
         db = firebase.database();
+        
+        // محاولة استعادة الجلسة لو الداتا بيز مقفولة بـ Rules
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) console.log("تم تفعيل جلسة الفايربيز بنجاح.");
+        });
 
         // ==========================================
-        // Load Patients Data Robustly
+        // Load Patients Data Robustly & Reactively
         // ==========================================
-        // دالة مخصصة عشان تقرأ الداتا من أي نود في الفايربيز (سواء مسجلين في cards أو غيره)
-        function extractPatientsData(snap) {
+        function extractAndRender(snap) {
             let data = snap.val();
-            if(data) {
-                let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
-                for(let [key, val] of entries) {
-                    if(!val) continue;
-                    
-                    if (typeof val === 'string') {
-                        if (!allPatients.find(p => p.key === key)) allPatients.push({ key: key, name: val });
-                    } else if (typeof val === 'object') {
-                        let objName = val.name || val.Name || val.patientName || val.fullName || val.patient_name;
-                        if (objName) {
-                            if (!allPatients.find(p => p.key === (val.key || key))) {
-                                allPatients.push({ key: val.key || key, name: objName, phone: val.phone || val.Phone || '' });
-                            }
-                        }
-                    }
+            if(!data) return;
+            
+            let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
+            let addedNew = false;
+            
+            for(let [key, val] of entries) {
+                if(!val) continue;
+                let k = val.key || key;
+                let objName = typeof val === 'string' ? val : (val.name || val.Name || val.patientName || val.fullName || val.patient_name);
+                
+                if (objName && !allPatients.find(p => p.key === k)) {
+                    allPatients.push({ key: k, name: objName, phone: val.phone || val.Phone || '' });
+                    addedNew = true;
                 }
-                console.log("تم تحديث الكروت بنجاح، العدد الحالي: " + allPatients.length);
+            }
+            
+            // التحديث اللحظي: لو إنت دايس على الخانة والداتا جت، تتحدث فوراً قدام عينك
+            if (addedNew) {
+                const allInput = document.getElementById('allPatientSearch');
+                const allAuto = document.getElementById('allPatientAutocomplete');
+                if (allAuto.style.display === 'block') {
+                    renderList(allInput.value, allPatients, allAuto, allInput);
+                }
             }
         }
 
-        // هنبحث في أشهر الأماكن اللي ممكن تكون الكروت متسجلة فيها عشان نضمن إنها تظهر
-        db.ref('cards_names_index').on('value', extractPatientsData, err => console.error("Firebase Auth Error:", err));
-        db.ref('cards').on('value', extractPatientsData);
-        db.ref('patients').on('value', extractPatientsData);
+        // مسح ذكي في أكتر من مكان لضمان سحب كل الكروت
+        db.ref('cards_names_index').on('value', extractAndRender);
+        db.ref('cards').on('value', extractAndRender);
 
         // جلب الأنظمة المحفوظة
         db.ref('nutrition_data').on('value', snap => {
@@ -552,6 +562,12 @@
                     name: data[k].patientName || k,
                     hasDiet: !!data[k].saved_diet
                 })).filter(p => p.hasDiet);
+                
+                const savedInput = document.getElementById('savedPatientSearch');
+                const savedAuto = document.getElementById('savedPatientAutocomplete');
+                if (savedAuto.style.display === 'block') {
+                    renderList(savedInput.value, savedPatients, savedAuto, savedInput);
+                }
             } else {
                 savedPatients = [];
             }
@@ -576,7 +592,7 @@
         [savedInput, allInput].forEach(el => {
             el.addEventListener('input', handleSearch);
             
-            // فتح القائمة فوراً عند الضغط أو التركيز
+            // فتح القائمة فوراً عند الضغط
             el.addEventListener('focus', function() {
                 if(this === savedInput) renderList(this.value, savedPatients, savedAuto, savedInput);
                 if(this === allInput) renderList(this.value, allPatients, allAuto, allInput);
@@ -604,7 +620,7 @@
         function renderList(query, list, ulEl, inputEl) {
             ulEl.innerHTML = '';
             
-            // الحل الجذري: لو مفيش بيانات جاية من الفايربيز أو لسه بتحمل، تظهر رسالة للمستخدم بدال ما تختفي
+            // رسالة ذكية لو النت بطيء أو الداتا لسه بتيجي
             if (!list || list.length === 0) {
                 let li = document.createElement('li');
                 li.className = 'autocomplete-item';
@@ -624,14 +640,14 @@
                 matches = matches.filter(p => normalizeArabic(p.name).includes(normQ));
             }
             
-            matches = matches.slice(0, 30); // عرض لحد 30 اسم
+            matches = matches.slice(0, 30);
             
             if(matches.length > 0) {
                 matches.forEach(p => {
                     let li = document.createElement('li');
                     li.className = 'autocomplete-item';
                     li.innerText = p.name;
-                    // استخدام mousedown لضمان تنفيذ الأمر قبل إخفاء القائمة
+                    // mousedown بتمنع مشكلة الـ blur
                     li.onmousedown = (e) => {
                         e.preventDefault();
                         inputEl.value = p.name;
@@ -679,7 +695,7 @@
             if(sec.style.display === 'block') {
                 const searchField = document.getElementById('allPatientSearch');
                 searchField.focus();
-                // تنفيذ القائمة فوراً عند فتح الخانة
+                // تنفيذ القائمة فوراً عند الفتح
                 renderList(searchField.value, allPatients, document.getElementById('allPatientAutocomplete'), searchField);
             }
         }
