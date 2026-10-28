@@ -124,7 +124,6 @@
             </div>
         </div>
 
-        <!-- 🚨 شريط حالة الاتصال بـ Firebase (للتأكد إن الصفحة بتستقبل التحديثات اللحظية) 🚨 -->
         <div id="fbStatus" class="fb-status wait"><i class="fa-solid fa-circle-notch fa-spin"></i> <span id="fbStatusText">جاري الاتصال بـ Firebase...</span></div>
 
         <div class="card-panel">
@@ -249,7 +248,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKHzASCaDzt-91wJV9-Y2R2r9WEA_c1IhXB9p7qxfTi9mxFUpBVOznkTYvoLbcYytY/exec';
         let pharmaData = []; 
         let formBaseCost = 0;
-        let firebaseSynced = false; // بيبقى true أول ما نستلم البيانات الحقيقية من Firebase
+        let firebaseSynced = false; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
@@ -260,7 +259,6 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
 
-        // ====== شريط حالة Firebase ======
         let currentAuthLabel = 'جاري التحقق من تسجيل الدخول...';
         function setFbStatus(kind, text) {
             const box = document.getElementById('fbStatus');
@@ -356,13 +354,10 @@
 
         window.masterListsData = {};
 
-        // ====== تنظيف قائمة أسماء الأدوية الدائمة (اللي بتظهر كاختيارات في صفحة تودي) ======
         function normMed(n) {
             return String(n || '').replace(/[\u064B-\u065F\u0640]/g, '').replace(/[أإآء]/g, 'ا').replace(/[يىئ]/g, 'ي').replace(/ة/g, 'ه').replace(/\s+/g, ' ').trim().toLowerCase();
         }
 
-        // يمسح من القائمة الدائمة أي اسم دوا مش موجود في المخزون الحالي
-        // (لو مررت اسم معين بيمسح الاسم ده بس لو مفيش صف تاني بنفس الاسم)
         function pruneMasterMedicines(onlyName) {
             if (!db || !firebaseSynced) return;
             const master = (window.masterListsData && window.masterListsData.medicines) || {};
@@ -376,7 +371,6 @@
             });
         }
 
-        // تنظيف لمرة واحدة للأسماء القديمة اللي اتمسحت قبل التعديل ده (زي test)
         function maybeOneTimeCleanup() {
             if (localStorage.getItem('master_meds_pruned_v1')) return;
             if (!firebaseSynced || !pharmaData.length) return;
@@ -385,7 +379,6 @@
             localStorage.setItem('master_meds_pruned_v1', '1');
         }
 
-        // 🚨 التهيئة الفورية السريعة (بدون تحميل لا نهائي) 🚨
         function initPageData() {
             let cached = localStorage.getItem('clinic_pharma_cache');
             if (cached) {
@@ -404,25 +397,28 @@
                     maybeOneTimeCleanup();
                 }, err => { console.error('[pharma] master lists error:', err); });
 
-                // الاستماع اللحظي للفايربيز
                 db.ref('pharma_inventory_list').on('value', snap => {
                     let fbData = snap.val();
                     if(fbData) {
                         pharmaData = Array.isArray(fbData) ? fbData : Object.values(fbData);
                         localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
                         firebaseSynced = true;
-                        renderTable();
+                        
+                        // عدم عمل ريندر إذا كان هناك حقل مفتوح للتعديل لعدم تشتيت الدكتور
+                        let activeEl = document.activeElement;
+                        if (!activeEl || !activeEl.classList.contains('inline-input')) {
+                            renderTable();
+                        }
+                        
                         hideSyncStatus();
                         const now = new Date();
                         setFbStatus('ok', 'متصل بـ Firebase - آخر تحديث: ' + now.toLocaleTimeString('en-GB'));
                         maybeOneTimeCleanup();
                     } else {
-                        // لو الفايربيز فاضي تماماً، نسحب من الشيت مرة واحدة
                         setFbStatus('wait', 'Firebase فاضي - جاري السحب من الشيت');
                         loadDataFromSheetFallback();
                     }
                 }, err => {
-                    // 🚨 هنا بيظهر لو Firebase رفض القراءة (غالباً صلاحيات أو عدم تسجيل دخول) 🚨
                     console.error('[pharma] Firebase read error:', err);
                     setFbStatus('err', 'فشل القراءة من Firebase (' + (err.code || err.message) + ') - الأرقام المعروضة قديمة!');
                 });
@@ -470,7 +466,7 @@
 
                         pharmaData = newDataFormatted;
                         localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
-                        if(db) db.ref('pharma_inventory_list').set(pharmaData); // نحفظ في الفايربيز عشان منسحبش تاني
+                        if(db) db.ref('pharma_inventory_list').set(pharmaData); 
                         renderTable();
                     } else {
                         document.getElementById('tableBody').innerHTML = '<tr><td colspan="14" style="text-align:center; opacity:0.5; padding:20px;">لا توجد بيانات مسجلة.</td></tr>';
@@ -667,21 +663,18 @@
             else doneField.classList.remove('done-yes');
         }
 
-        // 🚨 دالة الحفظ: بتكتب الصف المعدل بس في Firebase (مش القائمة كلها) عشان متمسحش خصومات تودي 🚨
         function saveRow(index, field, value) {
             if (field) pharmaData[index][field] = value; 
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
 
             if (db) {
                 if (firebaseSynced) {
-                    // نكتب الصف ده بس
                     db.ref('pharma_inventory_list/' + index).set(pharmaData[index])
                     .catch(err => {
                         console.error('[pharma] Firebase write error:', err);
                         setFbStatus('err', 'فشل الحفظ في Firebase (' + (err.code || err.message) + ')');
                     });
                 } else {
-                    // لسه ماستلمناش البيانات الحقيقية من Firebase: ممنوع نكتب فوقها بأرقام قديمة
                     console.warn('[pharma] لم يتم الحفظ في Firebase: الصفحة لسه ماتزامنتش');
                     setFbStatus('err', 'الصفحة غير متزامنة مع Firebase - التعديل اتحفظ في الشيت بس');
                 }
@@ -690,7 +683,6 @@
             let payload = { action: 'update', ...pharmaData[index] };
             showSyncStatus('تحديث...', true);
             
-            // إرسال لجوجل شيت كـ Backup أرشيفي
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(result => { showSyncStatus('تم الحفظ', false); setTimeout(hideSyncStatus, 1500); })
@@ -711,7 +703,6 @@
             localStorage.setItem('clinic_pharma_cache', JSON.stringify(pharmaData));
             if (db) db.ref('pharma_inventory_list').set(pharmaData);
 
-            // لو مفيش صف تاني بنفس اسم الدوا: نشيله من اختيارات صفحة تودي
             pruneMasterMedicines(deletedProductName);
             
             renderTable();
@@ -813,7 +804,6 @@
             .then(result => { 
                 showSyncStatus('تمت الإضافة', false); 
                 setTimeout(hideSyncStatus, 2000); 
-                // نسحب تاني في الخلفية عشان نأكد الـ rowNumber الحقيقي من الشيت
                 loadDataFromSheetFallback(); 
             })
             .catch(error => { 
