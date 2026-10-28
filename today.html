@@ -505,6 +505,7 @@
 
         localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
 
+        // === الإصلاح الجوهري هنا: إعادة تفعيل استدعاء السعر عند تحديث Firebase ===
         function attachFirebaseListeners() {
             if (!db) return;
             
@@ -518,6 +519,13 @@
                 if(data) {
                     window.availableMedsData = Array.isArray(data) ? data : Object.values(data);
                     if(typeof updateAllDatalists === 'function') updateAllDatalists();
+                    
+                    // التحديث اللحظي لحقل السعر لو الدكتور فاتحه بيكتب دواء
+                    let currentMedName = document.getElementById('medName');
+                    if (currentMedName && currentMedName.value.trim() !== '') {
+                        let event = new Event('input');
+                        currentMedName.dispatchEvent(event);
+                    }
                 }
             });
 
@@ -777,7 +785,6 @@
 
         window.patientDebts = {};
 
-        // 🚨 محرك البحث الصاروخي الشامل (الاسم + الموبايل) 🚨
         const patientInputEl = document.getElementById('patientName');
         const autocompleteDiv = document.getElementById('customAutocomplete');
 
@@ -788,32 +795,27 @@
             
             let matchedPatients = []; 
 
-            // 1. من مرضى اليوم
             patientsQueue.forEach(p => {
                 if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
             });
 
-            // 2. من الفايربيز (الكروت الجديدة) - لحظياً 🚀
             if (window.globalAllPatientsData) {
                 window.globalAllPatientsData.forEach(p => {
                     if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
                 });
             }
 
-            // 3. من اللوكال ستوريدج (الكروت اللي اتسجلت حالا على الجهاز)
             if (window.localPatientsCache) {
                 window.localPatientsCache.forEach(p => {
                     if (p.name) matchedPatients.push({name: p.name, phone: p.phone || ''});
                 });
             }
 
-            // 4. من الشيت القديم (التاريخ)
             let histCache = JSON.parse(localStorage.getItem('clinic_all_history') || '{}');
             Object.keys(histCache).forEach(n => {
                 matchedPatients.push({name: n, phone: window.patientPhones[n] || ''});
             });
 
-            // تصفية المتكررين مع إعطاء الأولوية للي معاه رقم موبايل
             let uniqueMap = new Map();
             matchedPatients.forEach(p => {
                 let norm = normalizeArabicName(p.name);
