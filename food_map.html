@@ -192,7 +192,7 @@
             border-radius: 8px; 
             max-height: 250px; 
             overflow-y: auto; 
-            z-index: 1000; 
+            z-index: 9999; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
             display: none; 
         }
@@ -299,7 +299,7 @@
             </div>
             <div class="nav-links">
                 <a href="today.html">إدارة اليوم</a>
-                <a href="cards_names_index.html">كروت المرضى</a>
+                <a href="https://drayakhattab.com/cards">كروت المرضى</a>
                 <label class="theme-switch" dir="ltr">
                     <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
                     <span class="slider">
@@ -494,7 +494,10 @@
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
             databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146"
+            projectId: "today-2d146",
+            storageBucket: "today-2d146.firebasestorage.app",
+            messagingSenderId: "742225764525",
+            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
         
         let db;
@@ -512,8 +515,18 @@
         // Load ALL patients for new diets
         db.ref('cards_names_index').on('value', snap => {
             let data = snap.val();
+            allPatients = [];
             if(data) {
-                allPatients = Object.values(data);
+                // الحل الجذري: التعامل مع كافة أشكال الداتا في الفايربيز لاستخراج الاسم
+                for(let key in data) {
+                    let val = data[key];
+                    if (typeof val === 'string') {
+                        allPatients.push({ key: key, name: val });
+                    } else if (typeof val === 'object' && val !== null) {
+                        let objName = val.name || val.patientName || val.Name || key;
+                        allPatients.push({ key: val.key || key, name: objName, ...val });
+                    }
+                }
             }
         });
 
@@ -545,10 +558,12 @@
         // Listeners for Saved Patients Search
         savedInput.addEventListener('input', function() { showAuto(this.value, savedPatients, savedAuto, savedInput); });
         savedInput.addEventListener('focus', function() { showAuto(this.value, savedPatients, savedAuto, savedInput); });
+        savedInput.addEventListener('click', function() { showAuto(this.value, savedPatients, savedAuto, savedInput); });
 
         // Listeners for All Patients Search
         allInput.addEventListener('input', function() { showAuto(this.value, allPatients, allAuto, allInput); });
         allInput.addEventListener('focus', function() { showAuto(this.value, allPatients, allAuto, allInput); });
+        allInput.addEventListener('click', function() { showAuto(this.value, allPatients, allAuto, allInput); });
 
         function showAuto(query, list, div, inputEl) {
             div.innerHTML = '';
