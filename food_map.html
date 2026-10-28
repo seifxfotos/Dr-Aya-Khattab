@@ -7,6 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Flatpickr (Custom Calendar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -27,11 +32,24 @@
         /* Dark Mode Variables */
         body.dark-mode {
             --bg-color: #000000; 
-            --card-bg: #121212;
+            --card-bg: #1e1e1e;
             --text-dark: #e1e8ed; 
             --border: #333333; 
-            --input-bg: #1a1a1a;
+            --input-bg: #2a2a2a;
         }
+        
+        /* Flatpickr Dark Mode Overrides */
+        body.dark-mode .flatpickr-calendar { background: #1e1e1e; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        body.dark-mode .flatpickr-day { color: #e1e8ed; }
+        body.dark-mode .flatpickr-day:hover, body.dark-mode .flatpickr-day.selected { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
+        body.dark-mode .flatpickr-month, body.dark-mode .flatpickr-weekday, body.dark-mode .flatpickr-current-month .flatpickr-monthDropdown-months { color: #e1e8ed; fill: #e1e8ed; }
+        body.dark-mode .flatpickr-current-month input.cur-year { color: #e1e8ed; }
+
+        /* إصلاح قص الحروف العربية في النتيجة (Flatpickr Arabic Font Fixes) */
+        .flatpickr-month { height: 50px !important; overflow: visible !important; }
+        .flatpickr-current-month { height: auto !important; line-height: 1.5 !important; padding-top: 8px !important; }
+        .flatpickr-current-month .flatpickr-monthDropdown-months { height: auto !important; line-height: inherit !important; padding: 2px !important; appearance: none; }
+        .flatpickr-current-month input.cur-year { height: auto !important; line-height: inherit !important; }
 
         body { 
             font-family: 'Cairo', sans-serif; 
@@ -307,7 +325,7 @@
             
             <div class="input-group">
                 <label>تاريخ النظام</label>
-                <input type="date" id="dietDate">
+                <input type="text" id="dietDate" placeholder="اختر التاريخ..." style="background: var(--input-bg); color: var(--text-dark); cursor: pointer; caret-color: transparent;">
             </div>
             
             <div id="existingPatientSection" style="margin-bottom: 15px;">
@@ -460,9 +478,14 @@
         }
 
         // ==========================================
-        // Date Initialization
+        // Date Initialization (Custom Calendar Flatpickr)
         // ==========================================
-        document.getElementById('dietDate').valueAsDate = new Date();
+        flatpickr("#dietDate", {
+            locale: "ar",
+            defaultDate: new Date(), // يضمن استخدام التوقيت المحلي بدقة (يوم 29)
+            dateFormat: "Y-m-d",
+            disableMobile: "true" // لمنع ظهور تقويم الموبايل الافتراضي وإجبار ظهور التقويم المخصص
+        });
 
         // ==========================================
         // Firebase Initialization & Search Setup
