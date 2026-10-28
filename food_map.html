@@ -1,242 +1,676 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-495M9DXM4W"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-495M9DXM4W');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Map</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <title>مولد أنظمة الدايت - د. آية خطاب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    
     <style>
-        :root { --brand-blue: #00aee5; --brand-green: #7cc033; --bg-body: #f0f2f5; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg-body); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 450px; padding: 25px; background: #fff; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .logo-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .icon { cursor: pointer; color: var(--brand-blue); transition: 0.3s; }
-        .icon:hover { transform: scale(1.1); }
+        :root {
+            --primary-blue: #0093D0; 
+            --primary-green: #8CC63F; 
+            --bg-color: #f4f7f6; 
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50; 
+            --danger: #e74c3c; 
+            --warning: #f39c12;
+            --border: #e1e8ed; 
+            --input-bg: #ffffff;
+        }
+
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text-dark); 
+        }
+
+        .container { max-width: 1250px; margin: 0 auto; }
+
+        /* Header */
+        .header-section { 
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            flex-wrap: wrap; 
+            gap: 15px;
+        }
+        .header-section h1 { margin: 0; font-size: 24px; font-weight: 800; }
         
-        #searchOverlay { display: none; margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 15px; }
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            font-weight: 700; 
+            padding: 8px 15px; 
+            background: rgba(255,255,255,0.2); 
+            border-radius: 8px; 
+            margin-right: 10px; 
+            transition: 0.3s; 
+            border: 1px solid transparent; 
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.3); }
+
+        /* Cards & Panels */
+        .card-panel { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 25px; 
+            border: 1px solid var(--border);
+        }
+        .card-panel h2 { 
+            margin-top: 0; 
+            font-size: 18px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 10px;
+            color: var(--primary-blue);
+        }
+
+        /* Search & Inputs */
+        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 15px; }
+        .input-group label { font-weight: 700; margin-bottom: 5px; font-size: 14px; color: var(--text-dark); }
+        .input-group input, .input-group select { 
+            padding: 10px 15px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            font-family: 'Cairo'; 
+            font-size: 15px; 
+            outline: none; 
+            transition: 0.3s; 
+            background-color: var(--input-bg); 
+            color: var(--text-dark); 
+            width: 100%; 
+            box-sizing: border-box;
+            font-weight: 600;
+        }
+        .input-group input:focus { border-color: var(--primary-blue); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
         
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        button { width: 100%; padding: 14px; background: var(--brand-green); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 16px; }
+        .custom-autocomplete { 
+            position: absolute; 
+            top: calc(100% + 2px); 
+            left: 0; 
+            right: 0; 
+            background: var(--card-bg); 
+            border: 2px solid var(--primary-blue); 
+            border-radius: 8px; 
+            max-height: 250px; 
+            overflow-y: auto; 
+            z-index: 1000; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            display: none; 
+        }
+        .autocomplete-item { 
+            padding: 12px 15px; 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border); 
+            font-size: 15px; 
+            font-weight: 700; 
+        }
+        .autocomplete-item:hover { background: var(--primary-blue); color: white; }
+
+        /* Grid Layouts */
+        .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        @media (max-width: 800px) { .grid-4col { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .grid-4col { grid-template-columns: 1fr; } }
+
+        /* Buttons */
+        .btn-main { 
+            background-color: var(--primary-blue); 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-family: 'Cairo'; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn-main:hover { background-color: #007bb5; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,147,208,0.3); }
+        .btn-green { background-color: var(--primary-green); }
+        .btn-green:hover { background-color: #7ab033; box-shadow: 0 5px 15px rgba(140,198,63,0.3);}
+
+        /* Diet Table */
+        .diet-table-wrapper { width: 100%; overflow-x: auto; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .diet-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .diet-table th, .diet-table td { padding: 15px; border: 1px solid var(--border); vertical-align: top; }
+        .diet-table th { background-color: var(--primary-blue); color: white; font-weight: 800; font-size: 16px; text-align: center; width: 22%;}
+        .diet-table th:first-child { width: 12%; }
+        .diet-table td { font-size: 14px; font-weight: 600; line-height: 1.7; transition: 0.2s; cursor: pointer; }
+        .diet-table td:first-child { font-weight: 800; color: var(--primary-blue); text-align: center; vertical-align: middle; font-size: 16px; background: #f8fbfd;}
         
-        /* ========================================= */
-        /* إعدادات الطباعة الاحترافية (التعديل الجديد) */
-        /* ========================================= */
-        @page {
-            size: A4 portrait;
-            margin: 0; /* السطر ده هو السحر اللي بيمسح التاريخ والرابط ورقم الصفحة */
+        .diet-table td:hover:not(:first-child) { 
+            background-color: #f0f9ff; 
+            box-shadow: inset 0 0 0 2px var(--primary-blue);
         }
         
+        .meal-item { margin-bottom: 5px; position: relative; padding-right: 15px;}
+        .meal-item::before { content: "•"; color: var(--primary-green); position: absolute; right: 0; font-weight: bold; font-size: 18px; top: -2px;}
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px);}
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 95%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .modal-box h3 { margin-top: 0; color: var(--primary-blue); border-bottom: 2px solid var(--border); padding-bottom: 10px;}
+        .alt-option { padding: 15px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; font-weight: 600; line-height: 1.6;}
+        .alt-option:hover { border-color: var(--primary-green); background: #f9fdf5; }
+        .modal-close { background: var(--danger); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 10px;}
+
+        /* Notification */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: 0.4s; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.success { background: var(--primary-green); }
+        .toast.error { background: var(--danger); }
+
+        /* Print Styles */
+        .print-header { display: none; text-align: center; margin-bottom: 20px; }
+        .print-header h1 { color: var(--primary-blue); font-size: 32px; margin: 0; font-weight: 900;}
+        .print-header p { color: var(--text-dark); font-size: 16px; margin: 5px 0; font-weight: 700;}
+        
         @media print {
-            body {
-                background: white;
-                padding: 2cm; /* هامش داخلي عشان الكلام ميكونش لازق في حرف الورقة */
-                display: block; /* إلغاء التوسيط عشان الورقة تتبدأ من فوق صح */
-                height: auto;
-            }
-            .container { 
-                box-shadow: none; 
-                padding: 0; 
-                width: 100%; 
-                max-width: 100%;
-                margin: 0;
-            }
-            /* إخفاء الأيقونات والأزرار وأي حاجة مش عايزينها تظهر في الورقة */
-            .logo-box .icon, .print-hide, button { 
-                display: none !important; 
-            }
-            /* توسيط اللوجو في الطباعة فقط */
-            .logo-box {
-                justify-content: center;
-                margin-bottom: 40px;
-            }
-            /* إجبار المحتوى على صفحة واحدة ومنع الصفحة الثانية الفاضية */
-            html, body {
-                page-break-after: avoid;
-                page-break-before: avoid;
-            }
-            #output {
-                page-break-inside: avoid;
-            }
+            body { background: white; padding: 0; margin: 0; }
+            .header-section, .search-panel, .calculator-panel, .action-buttons, .theme-switch-wrapper, .modal-overlay { display: none !important; }
+            .container { max-width: 100%; padding: 0; margin: 0; }
+            .card-panel { box-shadow: none; border: none; padding: 0; margin: 0;}
+            .card-panel h2 { display: none; }
+            .print-header { display: block; border-bottom: 3px solid var(--primary-green); padding-bottom: 15px; margin-bottom: 20px;}
+            .diet-table th { background-color: var(--primary-blue) !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .diet-table td:first-child { background: #f8fbfd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .diet-table { border: 2px solid #000; page-break-inside: avoid;}
+            .diet-table th, .diet-table td { border: 1px solid #000; padding: 10px; font-size: 12px;}
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="logo-box">
-        <!-- أيقونة البحث -->
-        <div class="icon" onclick="toggleSearch()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <div>
+                <h1><i class="fa-solid fa-apple-whole"></i> نظام الدايت الذكي</h1>
+                <span style="font-size: 14px; opacity: 0.9;">بناء أنظمة متوازنة دقيقة بناءً على The Diabetic Exchange List</span>
+            </div>
+            <div class="nav-links">
+                <a href="today.html">إدارة اليوم</a>
+                <a href="pharma.html">الأدوية</a>
+            </div>
         </div>
-        <img src="Logo_Dr_Aya.webp" width="100" alt="Logo">
-        <!-- أيقونة القائمة / التعديل -->
-        <div class="icon" onclick="showAllPatients()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+
+        <!-- Search Panel -->
+        <div class="card-panel search-panel">
+            <h2><i class="fa-solid fa-magnifying-glass"></i> البحث عن مريض</h2>
+            <div class="input-group" style="margin-bottom: 0;">
+                <input type="text" id="patientSearch" placeholder="أدخل اسم المريض لاستدعاء أو حفظ النظام..." autocomplete="off">
+                <div id="patientAutocomplete" class="custom-autocomplete"></div>
+            </div>
+            <div id="patientInfo" style="margin-top: 15px; display: none; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px solid var(--primary-blue);">
+                <strong style="color: var(--primary-blue); font-size: 18px;" id="lblPatientName">اسم المريض</strong>
+                <button onclick="loadPreviousDiet()" class="btn-main" style="padding: 6px 15px; font-size: 13px; float: left;"><i class="fa-solid fa-clock-rotate-left"></i> استدعاء آخر نظام</button>
+                <div style="clear: both;"></div>
+            </div>
         </div>
-    </div>
 
-    <!-- صندوق البحث وقائمة النتائج -->
-    <div id="searchOverlay">
-        <div id="searchArea">
-            <input type="text" id="searchName" placeholder="بحث باسم العميل...">
-            <button onclick="searchPatient()" style="background:var(--brand-blue)">بحث</button>
-        </div>
-        <div id="resultsArea" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- فورم إدخال البيانات -->
-    <div id="inputForm">
-        <input type="text" id="name" placeholder="اسم العميل">
-        <input type="number" id="bmi" placeholder="BMI">
-        <input type="number" id="fat" placeholder="الدهون %">
-        <input type="text" id="macros" placeholder="الماكروز">
-        <select id="dietType">
-            <option value="متوازن">متوازن</option>
-            <option value="كيتو">كيتو</option>
-        </select>
-        <button id="saveBtn" onclick="processDiet()">تسجيل بيانات العميل</button>
-    </div>
-
-    <!-- شاشة الطباعة والنتائج -->
-    <div id="output" style="display:none;">
-        <h3 class="print-hide">بيانات العميل</h3>
-        <div id="dietResult"></div>
-        <button onclick="window.print()" style="margin-top: 15px;">طباعة</button>
-        <button onclick="location.reload()" style="background:#999; margin-top: 10px;">رجوع</button>
-    </div>
-</div>
-
-<script>
-    const url = 'https://script.google.com/macros/s/AKfycbzp8zxrVmZXYcUvtXhJflZ3hViIszrQPP3G1ghX-CB5DeNV7s9wQ7edGojlQ_EtreV7/exec'; // حط رابط السكربت بتاعك هنا يا هندسة
-
-    function toggleSearch() { 
-        const el = document.getElementById('searchOverlay'); 
-        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-        document.getElementById('searchArea').style.display = 'block';
-        document.getElementById('resultsArea').innerHTML = '';
-    }
-
-    async function showAllPatients() {
-        document.getElementById('searchOverlay').style.display = 'block';
-        document.getElementById('searchArea').style.display = 'none'; 
-        document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
-        try {
-            const res = await fetch(url + '?action=all');
-            const list = await res.json();
-            renderResults(list);
-        } catch (e) {
-            document.getElementById('resultsArea').innerHTML = '<p style="color:red; text-align:center;">خطأ في الاتصال</p>';
-        }
-    }
-
-    async function searchPatient() {
-        const name = document.getElementById('searchName').value;
-        if (!name) return;
-        document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">جاري البحث...</p>';
-        try {
-            const res = await fetch(url + '?name=' + encodeURIComponent(name));
-            const data = await res.json();
-            if(data.error) {
-                document.getElementById('resultsArea').innerHTML = '<p style="text-align:center; color:red;">الاسم غير موجود</p>';
-            } else {
-                renderResults(Array.isArray(data) ? data : [data]);
-            }
-        } catch (e) {
-            document.getElementById('resultsArea').innerHTML = '<p style="color:red; text-align:center;">خطأ في الاتصال</p>';
-        }
-    }
-
-    function renderResults(data) {
-        if(data.length === 0) {
-            document.getElementById('resultsArea').innerHTML = '<p style="text-align:center;">لا توجد بيانات</p>';
-            return;
-        }
-        document.getElementById('resultsArea').innerHTML = data.map(p => 
-            `<div style="padding:10px; border-bottom:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:bold;">${p.name}</span>
-                <div style="display:flex; gap:5px;">
-                    <button onclick='fillForm(${JSON.stringify(p)})' style="width:auto; padding:5px 10px; background:#00aee5; font-size:12px;">تعديل</button>
-                    <button onclick="deletePatient('${p.name}')" style="width:auto; padding:5px 10px; background:#ff4444; font-size:12px;">حذف</button>
+        <!-- Calculator Panel -->
+        <div class="card-panel calculator-panel">
+            <h2><i class="fa-solid fa-calculator"></i> محددات النظام (الماكروز)</h2>
+            <div class="grid-4col">
+                <div class="input-group">
+                    <label>السعرات الحرارية (Kcal)</label>
+                    <input type="number" id="inpCalories" placeholder="مثال: 1500" min="500" max="5000">
                 </div>
-            </div>`).join('');
-    }
+                <div class="input-group">
+                    <label>الكاربوهيدرات (%)</label>
+                    <input type="number" id="inpCarb" placeholder="مثال: 50" min="0" max="100" onblur="autoFillMacros()">
+                </div>
+                <div class="input-group">
+                    <label>البروتين (%)</label>
+                    <input type="number" id="inpProtein" placeholder="مثال: 20" min="0" max="100">
+                </div>
+                <div class="input-group">
+                    <label>الدهون (%)</label>
+                    <input type="number" id="inpFat" placeholder="مثال: 30" min="0" max="100">
+                </div>
+            </div>
+            <div style="text-align: left; margin-top: 10px;">
+                <button onclick="generateDiet()" class="btn-main"><i class="fa-solid fa-wand-magic-sparkles"></i> توليد النظام التلقائي</button>
+            </div>
+        </div>
 
-    function fillForm(p) {
-        document.getElementById('name').value = p.name; 
-        document.getElementById('bmi').value = p.bmi;
-        document.getElementById('fat').value = p.fat; 
-        document.getElementById('macros').value = p.macros;
-        document.getElementById('dietType').value = p.dietType;
-        document.getElementById('searchOverlay').style.display = 'none';
-    }
-
-    async function deletePatient(name) {
-        if(!confirm("هل أنت متأكد من حذف بيانات: " + name + "؟")) return;
-        try {
-            await fetch(url + '?action=delete&name=' + encodeURIComponent(name));
-            alert("تم الحذف بنجاح"); 
-            showAllPatients(); 
-        } catch(e) {
-            alert("خطأ أثناء الحذف");
-        }
-    }
-
-    async function processDiet() {
-        const btn = document.getElementById('saveBtn'); 
-        const name = document.getElementById('name').value;
-        const bmi = document.getElementById('bmi').value;
-        const fat = document.getElementById('fat').value;
-        const macros = document.getElementById('macros').value;
-        const dietType = document.getElementById('dietType').value;
-
-        if(!name) { alert("يرجى كتابة اسم العميل أولاً"); return; }
-
-        btn.innerText = "جاري الحفظ..."; 
-        btn.disabled = true;
-        
-        const query = `?action=save&name=${encodeURIComponent(name)}&bmi=${bmi}&fat=${fat}&macros=${encodeURIComponent(macros)}&dietType=${encodeURIComponent(dietType)}`;
-        
-        try {
-            const res = await fetch(url + query);
-            const resultText = await res.text(); 
+        <!-- Result Panel -->
+        <div class="card-panel" id="resultPanel" style="display: none;">
             
-            if (resultText === "success") {
-                showResult(name, "تم الحفظ بنجاح!");
-            } else {
-                alert("حدث خطأ أثناء الحفظ");
-                btn.innerText = "تسجيل بيانات العميل"; 
-                btn.disabled = false;
+            <div class="print-header">
+                <h1>عيادة د. آية خطاب</h1>
+                <p>استشاري التغذية العلاجية والسمنة والنحافة</p>
+                <p style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    اسم المريض: <strong id="printPatientName">_________</strong> | السعرات: <strong id="printCalories">_________</strong> kcal
+                </p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;" class="action-buttons">
+                <h2 style="border: none; margin: 0; padding: 0;"><i class="fa-solid fa-calendar-week"></i> خطة الـ 7 أيام</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="saveDietToFirebase()" class="btn-main btn-green"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ للمريض</button>
+                    <button onclick="window.print()" class="btn-main" style="background: #34495e;"><i class="fa-solid fa-print"></i> طباعة / PDF</button>
+                </div>
+            </div>
+            
+            <div class="diet-table-wrapper">
+                <table class="diet-table">
+                    <thead>
+                        <tr>
+                            <th>اليوم</th>
+                            <th>الإفطار</th>
+                            <th>سناك</th>
+                            <th>الغداء</th>
+                            <th>العشاء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dietTableBody">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+                <p style="text-align: center; font-size: 13px; color: var(--text-dark); margin-top: 15px; opacity: 0.8;" class="action-buttons">
+                    <i class="fa-solid fa-circle-info"></i> اضغط على أي وجبة في الجدول لتغييرها ببدائل أخرى مطابقة في السعرات.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swap Modal -->
+    <div id="swapModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3><i class="fa-solid fa-shuffle"></i> بدائل الوجبة</h3>
+            <p style="font-size: 14px; margin-bottom: 15px;">اختر بديلاً يطابق نفس القيمة الغذائية المخصصة لهذه الوجبة:</p>
+            <div id="altOptionsContainer">
+                <!-- Options injected via JS -->
+            </div>
+            <button class="modal-close" onclick="closeSwapModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">تمت العملية بنجاح!</div>
+
+    <script>
+        // ==========================================
+        // 1. Firebase Initialization & Search Setup
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
+            authDomain: "today-2d146.firebaseapp.com",
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
+            projectId: "today-2d146"
+        };
+        
+        let db;
+        let allPatients = [];
+        let selectedPatientKey = "";
+        let selectedPatientName = "";
+
+        if (!firebase.apps.length) { 
+            firebase.initializeApp(firebaseConfig); 
+        }
+        db = firebase.database();
+
+        // Fetch patients for autocomplete
+        db.ref('cards_names_index').on('value', snap => {
+            let data = snap.val();
+            if(data) {
+                allPatients = Object.values(data);
             }
-        } catch (e) {
-            alert("خطأ في الاتصال بالسيرفر");
-            btn.innerText = "تسجيل بيانات العميل"; 
-            btn.disabled = false;
+        });
+
+        const searchInput = document.getElementById('patientSearch');
+        const autocompleteDiv = document.getElementById('patientAutocomplete');
+
+        function normalizeArabic(text) {
+            return String(text).replace(/[\u064B-\u065F\u0640]/g, "")
+                .replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
         }
-    }
 
-    function showResult(n, info) {
-        document.getElementById('dietResult').innerHTML = `
-            <p><strong>العميل:</strong> ${n}</p>
-            <p style="color:var(--brand-green); font-weight:bold;" class="print-hide">${info}</p>
-            <label>النظام الغذائي:</label>
-            <div style="padding:15px; background:#fff; border:2px solid #eee; border-radius:10px; margin-top:10px;">
-                جاري تحميل النظام...
-            </div>`;
+        searchInput.addEventListener('input', function() {
+            const query = normalizeArabic(this.value);
+            showAutocomplete(query);
+        });
+
+        searchInput.addEventListener('focus', function() {
+            const query = normalizeArabic(this.value);
+            showAutocomplete(query);
+        });
+
+        function showAutocomplete(query) {
+            autocompleteDiv.innerHTML = '';
             
-        document.getElementById('inputForm').style.display = 'none';
-        document.getElementById('searchOverlay').style.display = 'none';
-        document.getElementById('output').style.display = 'block';
-    }
-</script>
+            // فلترة المرضى وعرضهم بمجرد الضغط أو الكتابة
+            let matches = allPatients.filter(p => p.name);
+            if (query) {
+                matches = matches.filter(p => normalizeArabic(p.name).includes(query));
+            }
+            
+            matches = matches.slice(0, 15); // عرض أول 15 نتيجة
+            
+            if(matches.length > 0) {
+                matches.forEach(p => {
+                    let div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    div.innerText = p.name;
+                    div.onclick = () => {
+                        searchInput.value = p.name;
+                        selectedPatientName = p.name;
+                        // Use safe phone or normalized name as key (matching today.html logic)
+                        let safePhone = p.phone ? String(p.phone).replace(/\D/g, '') : 'unknown';
+                        selectedPatientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabic(p.name);
+                        
+                        document.getElementById('lblPatientName').innerText = p.name;
+                        document.getElementById('printPatientName').innerText = p.name;
+                        document.getElementById('patientInfo').style.display = 'block';
+                        autocompleteDiv.style.display = 'none';
+                    };
+                    autocompleteDiv.appendChild(div);
+                });
+                autocompleteDiv.style.display = 'block';
+            } else {
+                autocompleteDiv.style.display = 'none';
+            }
+        }
 
+        document.addEventListener('click', (e) => {
+            if(e.target.id !== 'patientSearch') autocompleteDiv.style.display = 'none';
+        });
+
+        // ==========================================
+        // 2. Diabetic Exchange List Database (Mock from PDF)
+        // ==========================================
+        const exchangeDB = {
+            starch: [ // 15g C, 3g P, 80 kcal
+                "نص رغيف بلدي", "شريحة توست أسمر", "3 معالق شوفان", "3 معالق رز مسلوق", "نص كوباية مكرونة مسلوقة", 
+                "بطاطساية مسلوقة صغيرة", "نص كوباية ذرة حلوة", "3 بقسماط سن", "ربع رغيف شامي"
+            ],
+            meat: [ // Lean: 7g P, 3g F, 55 kcal (Averaged)
+                "بيضة مسلوقة", "حتة لحمة مسلوقة/مشوية (30 جم)", "ربع فرخة مشوية (صدر)", "حتة جبنة قريش (50 جم)", 
+                "نص سمكة مشوية (30 جم)", "معلقتين تونة متصفية", "شريحة جبنة لايت", "3 بياض بيض"
+            ],
+            veg: [ // 5g C, 2g P, 25 kcal
+                "طبق سلطة خضرا وسط", "نص كوباية خضار سوتيه", "طبق سبانخ مطبوخة", "نص كوباية فاصوليا خضرا",
+                "نص كوباية كوسة مطبوخة", "خياريتين كبار", "نص كوباية بروكلي مسلوق"
+            ],
+            fruit: [ // 15g C, 60 kcal
+                "تفاحاية صغيرة", "نص موزة كبيرة", "برتقالاية", "شريحة بطيخ", "نص كوباية فراولة", 
+                "3 بلاحات (تمر)", "خوخاية", "شريحة كانتلوب", "شوية عنب (15 حباية)"
+            ],
+            milk: [ // Skim: 12g C, 8g P, 90 kcal
+                "كوباية لبن خالي الدسم", "علبة زبادي خالي الدسم (200 جم)", "كوباية لبن رايب لايت"
+            ],
+            fat: [ // 5g F, 45 kcal
+                "معلقة صغيرة زيت زيتون", "معلقة صغيرة زبدة بلدي", "6 حبات لوز ني", "10 حبات سوداني", 
+                "معلقة صغيرة طحينة", "شريحة أفوكادو", "معلقة صغيرة زبدة فول سوداني"
+            ]
+        };
+
+        // ==========================================
+        // 3. Smart Heuristic Algorithm & Auto-Fill
+        // ==========================================
+        function autoFillMacros() {
+            const cVal = parseFloat(document.getElementById('inpCarb').value) || 0;
+            const pInput = document.getElementById('inpProtein');
+            const fInput = document.getElementById('inpFat');
+            
+            let pVal = parseFloat(pInput.value) || 0;
+            let fVal = parseFloat(fInput.value) || 0;
+
+            // التحقق من أن المجموع لا يتخطى 100%
+            if (cVal + pVal + fVal > 100) {
+                showToast("انتبه: مجموع النسب معدي 100%!", "error");
+                return;
+            }
+
+            if (cVal > 0 && cVal <= 100) {
+                if (!pInput.value && !fInput.value) {
+                    let rem = 100 - cVal;
+                    pInput.value = (rem / 2).toFixed(0);
+                    fInput.value = (rem / 2).toFixed(0);
+                }
+            }
+        }
+
+        let currentGeneratedPlan = []; // Stores the macro profile for each cell
+
+        function generateDiet() {
+            const kcal = parseFloat(document.getElementById('inpCalories').value);
+            let carbP = parseFloat(document.getElementById('inpCarb').value);
+            let proP = parseFloat(document.getElementById('inpProtein').value);
+            let fatP = parseFloat(document.getElementById('inpFat').value);
+
+            if (!kcal || !carbP || !proP || !fatP) {
+                showToast("الرجاء إدخال جميع القيم (السعرات والنسب)", "error");
+                return;
+            }
+            
+            let totalMacros = Math.round(carbP + proP + fatP);
+            if (totalMacros > 100) {
+                showToast("خطأ: مجموع النسب (كارب، بروتين، دهون) معدي الـ 100%! ظبط الأرقام.", "error");
+                return;
+            }
+            if (totalMacros !== 100) {
+                showToast("مجموع النسب المئوية يجب أن يكون 100%", "error");
+                return;
+            }
+
+            document.getElementById('printCalories').innerText = kcal;
+
+            // Grams
+            let targetCarb = (kcal * (carbP / 100)) / 4;
+            let targetPro = (kcal * (proP / 100)) / 4;
+            let targetFat = (kcal * (fatP / 100)) / 9;
+
+            // Base Needs (Healthy Defaults)
+            let milkServings = 2;   // 24C, 16P, 0F
+            let fruitServings = 3;  // 45C, 0P, 0F
+            let vegServings = 3;    // 15C, 6P, 0F
+
+            // Subtract base from targets
+            let remCarb = targetCarb - (24 + 45 + 15);
+            let remPro = targetPro - (16 + 0 + 6);
+            let remFat = targetFat - 0;
+
+            // Calculate Starch (15g C, 3g P)
+            let starchServings = Math.max(0, Math.round(remCarb / 15));
+            remPro -= (starchServings * 3);
+
+            // Calculate Meat (Lean: 7g P, 3g F)
+            let meatServings = Math.max(0, Math.round(remPro / 7));
+            remFat -= (meatServings * 3);
+
+            // Calculate Fat (5g F)
+            let fatServings = Math.max(0, Math.round(remFat / 5));
+
+            // Distribution Profiles [Starch, Meat, Veg, Fruit, Milk, Fat]
+            // Total daily profile: [starchServings, meatServings, vegServings, fruitServings, milkServings, fatServings]
+            
+            // Distribute across meals: BreakFast(B), Snack(S), Lunch(L), Dinner(D)
+            const dist = {
+                B: [Math.ceil(starchServings*0.25), Math.ceil(meatServings*0.3), 0, 1, 1, Math.floor(fatServings*0.2)],
+                S: [0, 0, 0, 1, 0, Math.floor(fatServings*0.2)],
+                L: [Math.ceil(starchServings*0.45), Math.ceil(meatServings*0.4), 2, 0, 0, Math.ceil(fatServings*0.4)],
+                D: [Math.floor(starchServings*0.3), Math.floor(meatServings*0.3), 1, 1, 1, Math.floor(fatServings*0.2)]
+            };
+
+            currentGeneratedPlan = [];
+            const tbody = document.getElementById('dietTableBody');
+            tbody.innerHTML = '';
+            const days = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+
+            for (let i = 0; i < 7; i++) {
+                let dayData = {
+                    day: days[i],
+                    B: buildMealContent(dist.B),
+                    S: buildMealContent(dist.S),
+                    L: buildMealContent(dist.L),
+                    D: buildMealContent(dist.D),
+                    profile: dist // save profile for swapping
+                };
+                currentGeneratedPlan.push(dayData);
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${days[i]}</td>
+                    <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
+                    <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
+                    <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
+                    <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            document.getElementById('resultPanel').style.display = 'block';
+            showToast("تم توليد النظام بنجاح!", "success");
+        }
+
+        // Helper: Convert serving array to HTML text
+        function buildMealContent(servingsArr) {
+            // servingsArr = [Starch, Meat, Veg, Fruit, Milk, Fat]
+            const categories = ['starch', 'meat', 'veg', 'fruit', 'milk', 'fat'];
+            let items = [];
+            
+            servingsArr.forEach((amount, index) => {
+                if (amount > 0) {
+                    let catDb = exchangeDB[categories[index]];
+                    // Pick a random item from the category
+                    let randItem = catDb[Math.floor(Math.random() * catDb.length)];
+                    items.push(`<div class="meal-item">${amount}x ${randItem}</div>`);
+                }
+            });
+
+            return items.length > 0 ? items.join('') : '<div style="color:#ccc; text-align:center;">-</div>';
+        }
+
+        // ==========================================
+        // 4. Meal Swapping Logic
+        // ==========================================
+        let currentSwapDay = null;
+        let currentSwapMeal = null;
+
+        function openSwapModal(dayIndex, mealType) {
+            currentSwapDay = dayIndex;
+            currentSwapMeal = mealType;
+            const profile = currentGeneratedPlan[dayIndex].profile[mealType];
+            
+            const container = document.getElementById('altOptionsContainer');
+            container.innerHTML = '';
+
+            // Generate 3 unique alternatives
+            for (let i = 0; i < 3; i++) {
+                let altHtml = buildMealContent(profile);
+                let div = document.createElement('div');
+                div.className = 'alt-option';
+                div.innerHTML = altHtml;
+                div.onclick = () => confirmSwap(altHtml);
+                container.appendChild(div);
+            }
+
+            document.getElementById('swapModal').style.display = 'flex';
+        }
+
+        function closeSwapModal() {
+            document.getElementById('swapModal').style.display = 'none';
+        }
+
+        function confirmSwap(newHtml) {
+            currentGeneratedPlan[currentSwapDay][currentSwapMeal] = newHtml;
+            
+            // Re-render row
+            const tbody = document.getElementById('dietTableBody');
+            const row = tbody.children[currentSwapDay];
+            
+            let cellIndex = { 'B': 1, 'S': 2, 'L': 3, 'D': 4 }[currentSwapMeal];
+            row.children[cellIndex].innerHTML = newHtml;
+
+            closeSwapModal();
+            showToast("تم تغيير الوجبة بنجاح!", "success");
+        }
+
+        // ==========================================
+        // 5. Firebase Save & Load
+        // ==========================================
+        function saveDietToFirebase() {
+            if (!selectedPatientKey) {
+                showToast("برجاء اختيار المريض أولاً من خانة البحث", "error");
+                return;
+            }
+
+            const kcal = document.getElementById('inpCalories').value;
+            const planData = {
+                calories: kcal,
+                date: new Date().toISOString().split('T')[0],
+                plan: currentGeneratedPlan
+            };
+
+            db.ref(`nutrition_data/${selectedPatientKey}/saved_diet`).set(planData)
+                .then(() => showToast("تم الحفظ في ملف المريض بنجاح!", "success"))
+                .catch(e => showToast("حدث خطأ أثناء الحفظ", "error"));
+        }
+
+        function loadPreviousDiet() {
+            if (!selectedPatientKey) return;
+
+            db.ref(`nutrition_data/${selectedPatientKey}/saved_diet`).once('value').then(snap => {
+                let data = snap.val();
+                if (data && data.plan) {
+                    currentGeneratedPlan = data.plan;
+                    document.getElementById('inpCalories').value = data.calories || '';
+                    document.getElementById('printCalories').innerText = data.calories || '';
+                    
+                    const tbody = document.getElementById('dietTableBody');
+                    tbody.innerHTML = '';
+                    currentGeneratedPlan.forEach((dayData, i) => {
+                        let tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${dayData.day}</td>
+                            <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
+                            <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
+                            <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
+                            <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    document.getElementById('resultPanel').style.display = 'block';
+                    showToast("تم استدعاء النظام السابق", "success");
+                } else {
+                    showToast("لا يوجد نظام محفوظ مسبقاً لهذا المريض", "warning");
+                }
+            });
+        }
+
+        // ==========================================
+        // Utilities
+        // ==========================================
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+    </script>
 </body>
 </html>
