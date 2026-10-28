@@ -21,11 +21,6 @@
             --bg-light: #f8f9fa;
             --card-light: #ffffff;
             --text-light: #333333;
-            
-            /* Dark Mode Colors */
-            --bg-dark: #000000;
-            --card-dark: #1e1e1e;
-            --text-dark: #ffffff;
         }
 
         body {
@@ -35,24 +30,13 @@
             transition: all 0.3s ease;
         }
 
-        body.dark-mode {
-            background-color: var(--bg-dark);
-            color: var(--text-dark);
-        }
-
         .card {
             background-color: var(--card-light);
             border: none;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
             margin-bottom: 20px;
-            overflow: visible !important; /* Fix clipping */
-        }
-
-        body.dark-mode .card {
-            background-color: var(--card-dark);
-            box-shadow: 0 2px 10px rgba(255,255,255,0.05);
+            overflow: visible !important;
         }
 
         .header-banner {
@@ -64,6 +48,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* Dark Mode Overrides (Force Styles) */
+        body.dark-mode {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+        body.dark-mode .card {
+            background-color: #1e1e1e !important;
+            box-shadow: 0 2px 10px rgba(255,255,255,0.05) !important;
+            border: 1px solid #333 !important;
+        }
+        body.dark-mode label, 
+        body.dark-mode h5, 
+        body.dark-mode p,
+        body.dark-mode h2 {
+            color: #ffffff !important;
+        }
+        body.dark-mode input.form-control {
+            background-color: #2a2a2a !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        body.dark-mode input.form-control::placeholder {
+            color: #aaaaaa !important;
         }
 
         /* Toggle Switch */
@@ -104,17 +113,6 @@
         .fa-sun { color: #f1c40f; font-size: 14px; z-index: 1; margin-left: 2px;}
         .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1; margin-right: 2px;}
 
-        input.form-control {
-            background-color: #fff;
-            color: #333;
-            border: 1px solid #ccc;
-        }
-        body.dark-mode input.form-control {
-            background-color: #2a2a2a;
-            color: #fff;
-            border: 1px solid #444;
-        }
-
         /* Custom Dropdown for Firebase Names */
         .custom-dropdown-container {
             position: relative;
@@ -135,12 +133,13 @@
             margin: 0;
             padding: 0;
             list-style: none;
-            z-index: 999999 !important; /* FORCE ON TOP */
+            z-index: 999999 !important;
             box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
             display: none;
         }
         body.dark-mode .custom-dropdown-list {
-            background: #1e1e1e;
+            background: #1e1e1e !important;
+            border: 1px solid #444 !important;
         }
         .custom-dropdown-list li {
             padding: 12px 15px;
@@ -150,32 +149,30 @@
             color: #333;
         }
         body.dark-mode .custom-dropdown-list li {
-            border-bottom: 1px solid #333;
-            color: #fff;
+            border-bottom: 1px solid #333 !important;
+            color: #ffffff !important;
         }
         .custom-dropdown-list li:hover {
-            background: #0dcaf0;
-            color: #000;
+            background: #0dcaf0 !important;
+            color: #000 !important;
         }
 
         /* Flatpickr Dark Mode Fixes */
         body.dark-mode .flatpickr-calendar {
-            background: #1e1e1e;
-            border-color: #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background: #1e1e1e !important;
+            border-color: #333 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
         }
         body.dark-mode .flatpickr-day, 
         body.dark-mode .flatpickr-month, 
         body.dark-mode .flatpickr-weekday {
-            color: #fff;
+            color: #ffffff !important;
         }
         body.dark-mode .flatpickr-day:hover {
-            background: #333;
+            background: #333 !important;
         }
-        /* Fix Arabic Font Clipping */
         .flatpickr-month { height: 40px !important; overflow: visible !important; }
         .flatpickr-current-month { height: auto !important; padding-top: 5px; }
-
     </style>
 </head>
 <body>
@@ -201,14 +198,20 @@
 
     <!-- Management Card -->
     <div class="card p-4">
-        <h5 class="fw-bold" style="color: var(--primary);"><i class="fas fa-search"></i> إدارة النظام </h5>
+        <h5 class="fw-bold" style="color: var(--primary);"><i class="fas fa-search"></i> إدارة أنظمة الدايت</h5>
         <hr>
         
         <label class="fw-bold mb-2">تاريخ النظام</label>
-        <input type="text" id="dietDate" class="form-control mb-3" placeholder="اختر التاريخ">
+        <input type="text" id="dietDate" class="form-control mb-4" placeholder="اختر التاريخ">
 
-        <!-- New Patient Input with Custom Dropdown -->
-        <label class="fw-bold mb-2" style="color: #88c249;">اختر مريض من كروت العيادة:</label>
+        <!-- Search Saved Diets -->
+        <label class="fw-bold mb-2" style="color: var(--primary) !important;">البحث في الأنظمة المحفوظة:</label>
+        <input type="text" class="form-control mb-4" placeholder="ابحث عن مريض له دايت مسجل...">
+
+        <!-- New Patient Button/Section -->
+        <button class="btn btn-success fw-bold w-100 mb-3" style="background-color: #88c249; border: none;"><i class="fas fa-user-plus"></i> عمل نظام لمريض جديد</button>
+        
+        <label class="fw-bold mb-2" style="color: #88c249 !important;">اختر مريض من كروت العيادة:</label>
         <div class="custom-dropdown-container">
             <input type="text" id="newPatientSearch" class="form-control" placeholder="اضغط هنا لإظهار واختيار اسم المريض..." autocomplete="off">
             <ul id="firebaseNamesList" class="custom-dropdown-list"></ul>
@@ -221,35 +224,34 @@
         <hr>
         <div class="row g-3">
             <div class="col-md-3">
-                <label>السعرات الحرارية (Kcal)</label>
+                <label class="mb-2">السعرات الحرارية (Kcal)</label>
                 <input type="number" id="calories" class="form-control" placeholder="مثال: 1500">
             </div>
             <div class="col-md-3">
-                <label>الكاربوهيدرات (%)</label>
+                <label class="mb-2">الكاربوهيدرات (%)</label>
                 <input type="number" id="carbs" class="form-control" placeholder="مثال: 50">
             </div>
             <div class="col-md-3">
-                <label>البروتين (%)</label>
+                <label class="mb-2">البروتين (%)</label>
                 <input type="number" id="protein" class="form-control" placeholder="مثال: 20">
             </div>
             <div class="col-md-3">
-                <label>الدهون (%)</label>
+                <label class="mb-2">الدهون (%)</label>
                 <input type="number" id="fat" class="form-control" placeholder="مثال: 30">
             </div>
         </div>
-        <div class="mt-3">
+        <div class="mt-4">
             <button class="btn btn-info text-white fw-bold" onclick="generateDiet()"><i class="fas fa-magic"></i> توليد النظام التلقائي</button>
         </div>
         <div id="errorMsg" class="text-danger mt-2 fw-bold" style="display: none;">مجموع النسب يجب أن يكون 100% بالظبط!</div>
     </div>
-
 </div>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 <script>
-    // --- 1. Firebase Config ---
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
         authDomain: "today-2d146.firebaseapp.com",
@@ -264,18 +266,16 @@
         firebase.initializeApp(firebaseConfig);
     }
 
-    // --- 2. Custom Dropdown Logic ---
+    // Custom Dropdown Logic
     const searchInput = document.getElementById('newPatientSearch');
     const dropdownList = document.getElementById('firebaseNamesList');
     let patientsArray = [];
 
-    // Fetch data exactly once or listen to changes
     firebase.database().ref('cards_names_index').on('value', (snapshot) => {
         patientsArray = [];
         const data = snapshot.val();
         if (data) {
             Object.values(data).forEach(val => {
-                // Handle different DB structures safely
                 if (typeof val === 'string') {
                     patientsArray.push(val);
                 } else if (typeof val === 'object') {
@@ -283,9 +283,7 @@
                     else if (val.patientName) patientsArray.push(val.patientName);
                 }
             });
-            // Remove duplicates & empty
             patientsArray = [...new Set(patientsArray)].filter(n => n && n.trim() !== '');
-            console.log("Firebase Names Loaded Successfully:", patientsArray); // للـ Debugging
         }
     });
 
@@ -301,65 +299,4 @@
         filtered.forEach(name => {
             const li = document.createElement('li');
             li.textContent = name;
-            li.onclick = (e) => {
-                searchInput.value = name;
-                dropdownList.style.display = 'none';
-                e.stopPropagation();
-            };
-            dropdownList.appendChild(li);
-        });
-        dropdownList.style.display = 'block';
-    }
-
-    // Events to trigger the dropdown
-    searchInput.addEventListener('focus', () => renderList(searchInput.value));
-    searchInput.addEventListener('click', () => renderList(searchInput.value));
-    searchInput.addEventListener('input', () => renderList(searchInput.value));
-
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-        if (e.target !== searchInput && e.target !== dropdownList) {
-            dropdownList.style.display = 'none';
-        }
-    });
-
-    // --- 3. Date & Dark Mode ---
-    flatpickr("#dietDate", {
-        locale: "ar",
-        defaultDate: new Date(),
-        dateFormat: "Y-m-d"
-    });
-
-    const toggle = document.getElementById('darkModeToggle');
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        toggle.checked = true;
-    }
-    toggle.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    });
-
-    // --- 4. Diet Validation Logic ---
-    function generateDiet() {
-        const c = parseInt(document.getElementById('carbs').value) || 0;
-        const p = parseInt(document.getElementById('protein').value) || 0;
-        const f = parseInt(document.getElementById('fat').value) || 0;
-        const total = c + p + f;
-
-        const err = document.getElementById('errorMsg');
-        if (total !== 100 && total > 0) {
-            err.style.display = 'block';
-        } else {
-            err.style.display = 'none';
-            alert("تم توليد النظام بنجاح (سيتم دمج خوارزمية الوجبات هنا)");
-        }
-    }
-</script>
-</body>
-</html>
+            li.onclick = (e
