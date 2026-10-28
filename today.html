@@ -321,9 +321,8 @@
                     <h2 style="color: var(--primary-green);"><i class="fa-solid fa-pills"></i> مبيعات الأدوية</h2>
                     <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
                         
-                        <div style="display: flex; flex:1; min-width: 120px; margin: 0;">
-                            <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="width: 100%; margin:0; border-radius: 0 8px 8px 0; border-left: none;" list="availableMedsList">
-                            <button type="button" onclick="addMasterItem('medicines', 'medName')" style="background:var(--primary-green); color:white; border: 1px solid var(--primary-green); padding:0 12px; border-radius: 8px 0 0 8px; cursor:pointer;" title="إضافة دواء جديد للقائمة الدائمة"><i class="fa-solid fa-plus"></i></button>
+                        <div style="flex:1; min-width: 120px; margin: 0;">
+                            <input type="text" id="medName" placeholder="اسم الدواء" class="modal-input" style="width: 100%; margin:0; border-radius: 8px; box-sizing: border-box;" list="availableMedsList">
                         </div>
                         <datalist id="availableMedsList"></datalist>
                         
@@ -505,7 +504,6 @@
 
         localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
 
-        // === الإصلاح الجوهري هنا: إعادة تفعيل استدعاء السعر عند تحديث Firebase ===
         function attachFirebaseListeners() {
             if (!db) return;
             
@@ -517,10 +515,11 @@
             db.ref('pharma_inventory_list').on('value', snap => {
                 let data = snap.val();
                 if(data) {
-                    window.availableMedsData = Array.isArray(data) ? data : Object.values(data);
+                    let rawArray = Array.isArray(data) ? data : Object.values(data);
+                    window.availableMedsData = rawArray.filter(Boolean); 
+                    
                     if(typeof updateAllDatalists === 'function') updateAllDatalists();
                     
-                    // التحديث اللحظي لحقل السعر لو الدكتور فاتحه بيكتب دواء
                     let currentMedName = document.getElementById('medName');
                     if (currentMedName && currentMedName.value.trim() !== '') {
                         let event = new Event('input');
@@ -577,9 +576,7 @@
             let fbMeds = master.medicines ? Object.values(master.medicines) : [];
             let activeMeds = (window.availableMedsData || []).map(r => r.productName);
             
-            // دمج القائمتين مع فلترة مسح كلمة "GLP 1" اللي اتكتبت بالغلط
             let combined = [...fbMeds, ...activeMeds].filter(Boolean).filter(m => String(m).trim() !== "GLP 1");
-            
             let uniqueMeds = [...new Set(combined)];
             
             const list = document.getElementById('availableMedsList');
@@ -618,9 +615,6 @@
             }
         });
 
-        // ==========================================
-        //  تحديث مبيعات الأدوية (الكمية ضرب السعر)
-        // ==========================================
         window.currentMedUnitPrice = 0;
 
         document.getElementById('medName').addEventListener('input', function() {
@@ -636,10 +630,18 @@
             }
 
             if(window.availableMedsData) {
-                let med = window.availableMedsData.find(m => isNameMatch(m.productName, selectedName));
+                let normSelected = normalizeArabicName(selectedName);
+                let med = window.availableMedsData.find(m => m.productName && normalizeArabicName(m.productName) === normSelected);
+                
+                if (!med) {
+                    med = window.availableMedsData.find(m => m.productName && isNameMatch(m.productName, selectedName));
+                }
+
                 if(med && med.publicPrice) {
                     window.currentMedUnitPrice = parseFloat(med.publicPrice) || 0;
                     amtInput.value = window.currentMedUnitPrice * qty;
+                } else {
+                    window.currentMedUnitPrice = 0;
                 }
             }
         });
@@ -654,7 +656,6 @@
                 amtInput.value = window.currentMedUnitPrice * qty;
             }
         });
-        // ==========================================
 
         function executeLogin() {
             const user = document.getElementById('loginUsername').value;
