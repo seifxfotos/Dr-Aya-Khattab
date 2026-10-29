@@ -12,10 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
-    <!-- Firebase (الإصدار الثامن الأساسي المتوافق مع باقي موقعك) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     
     <style>
         :root {
@@ -30,6 +29,7 @@
             --input-bg: #ffffff;
         }
 
+        /* Dark Mode Variables */
         body.dark-mode {
             --bg-color: #000000; 
             --card-bg: #1e1e1e;
@@ -38,54 +38,208 @@
             --input-bg: #2a2a2a;
         }
         
+        /* Flatpickr Dark Mode Overrides */
         body.dark-mode .flatpickr-calendar { background: #1e1e1e; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         body.dark-mode .flatpickr-day { color: #e1e8ed; }
         body.dark-mode .flatpickr-day:hover, body.dark-mode .flatpickr-day.selected { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
         body.dark-mode .flatpickr-month, body.dark-mode .flatpickr-weekday, body.dark-mode .flatpickr-current-month .flatpickr-monthDropdown-months { color: #e1e8ed; fill: #e1e8ed; }
         body.dark-mode .flatpickr-current-month input.cur-year { color: #e1e8ed; }
 
+        /* إصلاح قص الحروف العربية في النتيجة (Flatpickr Arabic Font Fixes) */
         .flatpickr-month { height: 50px !important; overflow: visible !important; }
         .flatpickr-current-month { height: auto !important; line-height: 1.5 !important; padding-top: 8px !important; }
         .flatpickr-current-month .flatpickr-monthDropdown-months { height: auto !important; line-height: inherit !important; padding: 2px !important; appearance: none; }
         .flatpickr-current-month input.cur-year { height: auto !important; line-height: inherit !important; }
 
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-dark); transition: background-color 0.3s, color 0.3s; }
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text-dark); 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         .container { max-width: 1250px; margin: 0 auto; }
 
-        .header-section { background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 15px; }
+        /* Header */
+        .header-section { 
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            flex-wrap: wrap; 
+            gap: 15px;
+        }
         .header-section h1 { margin: 0; font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 8px;}
-        .nav-links a { color: white; text-decoration: none; font-weight: 700; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 8px; margin-right: 10px; transition: 0.3s; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; font-family: 'Cairo'; }
+        
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            font-weight: 700; 
+            padding: 8px 15px; 
+            background: rgba(255,255,255,0.2); 
+            border-radius: 8px; 
+            margin-right: 10px; 
+            transition: 0.3s; 
+            border: 1px solid transparent; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cairo';
+        }
         .nav-links a:hover { background: rgba(255,255,255,0.3); }
 
-        .theme-switch { position: relative; display: inline-block; width: 64px; height: 34px; margin-right: 10px; vertical-align: middle; }
-        .theme-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3b4c5a; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 7px; box-sizing: border-box; }
-        .slider-circle { position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; z-index: 3; }
-        .theme-switch input:checked + .slider .slider-circle { transform: translateX(30px); }
-        .icon { width: 17px; height: 17px; z-index: 1; }
+        /* Custom Toggle Switch */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 64px;
+            height: 34px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .theme-switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #3b4c5a;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7px;
+            box-sizing: border-box;
+        }
+        .slider-circle {
+            position: absolute;
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            z-index: 3;
+        }
+        .theme-switch input:checked + .slider .slider-circle {
+            transform: translateX(30px);
+        }
+        .icon {
+            width: 17px;
+            height: 17px;
+            z-index: 1;
+        }
 
-        .card-panel { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border); transition: background-color 0.3s, border-color 0.3s; }
-        .card-panel h2 { margin-top: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; color: var(--primary-blue); }
+        /* Cards & Panels */
+        .card-panel { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 25px; 
+            border: 1px solid var(--border);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .card-panel h2 { 
+            margin-top: 0; 
+            font-size: 18px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 10px;
+            color: var(--primary-blue);
+        }
 
-        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 15px; overflow: visible !important; }
+        /* Search & Inputs */
+        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 15px; }
         .input-group label { font-weight: 700; margin-bottom: 5px; font-size: 14px; color: var(--text-dark); }
-        .input-group input { padding: 10px 15px; border: 2px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 15px; outline: none; transition: 0.3s; background-color: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box; font-weight: 600; }
+        .input-group input { 
+            padding: 10px 15px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            font-family: 'Cairo'; 
+            font-size: 15px; 
+            outline: none; 
+            transition: 0.3s; 
+            background-color: var(--input-bg); 
+            color: var(--text-dark); 
+            width: 100%; 
+            box-sizing: border-box;
+            font-weight: 600;
+        }
         .input-group input:focus { border-color: var(--primary-blue); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
         
-        ul.custom-autocomplete { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--card-bg); border: 2px solid var(--primary-blue); border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 99999; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; list-style: none; padding: 0; margin: 0; }
-        li.autocomplete-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0; }
+        /* Custom UI Dropdown (UL/LI) */
+        ul.custom-autocomplete { 
+            position: absolute; 
+            top: calc(100% + 2px); 
+            left: 0; 
+            right: 0; 
+            background: var(--card-bg); 
+            border: 2px solid var(--primary-blue); 
+            border-radius: 8px; 
+            max-height: 250px; 
+            overflow-y: auto; 
+            z-index: 99999; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            display: none; 
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li.autocomplete-item { 
+            padding: 12px 15px; 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border); 
+            font-size: 15px; 
+            font-weight: 700; 
+            color: var(--text-dark);
+            margin: 0;
+        }
         li.autocomplete-item:hover { background: var(--primary-blue); color: white; }
+
         body.dark-mode li.autocomplete-item:hover { background: #333333; }
         body.dark-mode #patientInfo, body.dark-mode #newPatientSection { background: #1a1a1a !important; border-color: #333333 !important; }
 
+        /* Grid Layouts */
         .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         @media (max-width: 800px) { .grid-4col { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 500px) { .grid-4col { grid-template-columns: 1fr; } }
 
-        .btn-main { background-color: var(--primary-blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+        /* Buttons */
+        .btn-main { 
+            background-color: var(--primary-blue); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            font-size: 15px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-family: 'Cairo'; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            justify-content: center;
+        }
         .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); filter: brightness(1.1);}
         .btn-green { background-color: var(--primary-green); }
         
+        /* Diet Table */
         .diet-table-wrapper { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .diet-table { width: 100%; border-collapse: collapse; min-width: 800px; }
         .diet-table th, .diet-table td { padding: 15px; border: 1px solid var(--border); vertical-align: top; }
@@ -93,7 +247,11 @@
         .diet-table th:first-child { width: 12%; }
         .diet-table td { font-size: 14px; font-weight: 600; line-height: 1.7; transition: 0.2s; cursor: pointer; color: var(--text-dark); }
         .diet-table td:first-child { font-weight: 800; color: var(--primary-blue); text-align: center; vertical-align: middle; font-size: 16px; background: #f8fbfd;}
-        .diet-table td:hover:not(:first-child) { box-shadow: inset 0 0 0 2px var(--primary-blue); }
+        
+        .diet-table td:hover:not(:first-child) { 
+            box-shadow: inset 0 0 0 2px var(--primary-blue);
+        }
+
         body.dark-mode .diet-table th { background-color: #222222; }
         body.dark-mode .diet-table td:first-child { background: #1a1a1a; color: #4fa3d1; }
         body.dark-mode .diet-table td:hover:not(:first-child) { background-color: #222222; }
@@ -101,17 +259,20 @@
         .meal-item { margin-bottom: 5px; position: relative; padding-right: 15px;}
         .meal-item::before { content: "•"; color: var(--primary-green); position: absolute; right: 0; font-weight: bold; font-size: 18px; top: -2px;}
 
+        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px);}
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 95%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); color: var(--text-dark);}
         .modal-box h3 { margin-top: 0; color: var(--primary-blue); border-bottom: 2px solid var(--border); padding-bottom: 10px;}
         .alt-option { padding: 15px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; font-weight: 600; line-height: 1.6;}
         .alt-option:hover { border-color: var(--primary-green); background: rgba(140, 198, 63, 0.1); }
 
+        /* Notification */
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: 0.4s; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.success { background: var(--primary-green); }
         .toast.error { background: var(--danger); }
 
+        /* Print Styles */
         .print-header { display: none; text-align: center; margin-bottom: 20px; }
         .print-header h1 { color: var(--primary-blue); font-size: 32px; margin: 0; font-weight: 900;}
         .print-header p { color: #2c3e50; font-size: 16px; margin: 5px 0; font-weight: 700;}
@@ -183,11 +344,12 @@
             <div id="newPatientSection" style="display: none; margin-bottom: 15px; padding: 15px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border);">
                 <label style="font-weight: bold; margin-bottom: 5px; display: block; color: var(--primary-green);">اختر مريض من كروت العيادة:</label>
                 <div class="input-group" style="margin-bottom: 0;">
-                    <input type="text" id="allPatientSearch" placeholder="اضغط للبحث واختيار مريض..." autocomplete="off">
+                    <input type="text" id="allPatientSearch" placeholder="اكتب اسم المريض للبحث في الكروت..." autocomplete="off">
                     <ul id="allPatientAutocomplete" class="custom-autocomplete"></ul>
                 </div>
             </div>
 
+            <!-- Patient Info Display -->
             <div id="patientInfo" style="display: none; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px solid var(--primary-blue);">
                 <strong style="color: var(--primary-blue); font-size: 18px;" id="lblPatientName">اسم المريض</strong>
                 <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -225,6 +387,7 @@
 
         <!-- Result Panel -->
         <div class="card-panel" id="resultPanel" style="display: none;">
+            
             <div class="print-header">
                 <h1>عيادة د. آية خطاب</h1>
                 <p>استشاري التغذية العلاجية والسمنة والنحافة</p>
@@ -234,6 +397,7 @@
                     السعرات: <strong id="printCalories">_________</strong> kcal
                 </p>
             </div>
+
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;" class="action-buttons">
                 <h2 style="border: none; margin: 0; padding: 0;"><i class="fa-solid fa-calendar-week"></i> خطة الـ 7 أيام</h2>
                 <div style="display: flex; gap: 10px;">
@@ -241,14 +405,21 @@
                     <button onclick="window.print()" class="btn-main" style="background: #34495e;"><i class="fa-solid fa-print"></i> طباعة / PDF</button>
                 </div>
             </div>
+            
             <div class="diet-table-wrapper">
                 <table class="diet-table">
                     <thead>
                         <tr>
-                            <th>اليوم</th><th>الإفطار</th><th>سناك</th><th>الغداء</th><th>العشاء</th>
+                            <th>اليوم</th>
+                            <th>الإفطار</th>
+                            <th>سناك</th>
+                            <th>الغداء</th>
+                            <th>العشاء</th>
                         </tr>
                     </thead>
-                    <tbody id="dietTableBody"></tbody>
+                    <tbody id="dietTableBody">
+                        <!-- Rows injected via JS -->
+                    </tbody>
                 </table>
                 <p style="text-align: center; font-size: 13px; margin-top: 15px; opacity: 0.8;" class="action-buttons">
                     <i class="fa-solid fa-circle-info"></i> اضغط على أي وجبة في الجدول لتغييرها ببدائل أخرى مطابقة في السعرات.
@@ -257,16 +428,19 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Swap Modal -->
     <div id="swapModal" class="modal-overlay">
         <div class="modal-box">
             <h3><i class="fa-solid fa-shuffle"></i> بدائل الوجبة</h3>
             <p style="font-size: 14px; margin-bottom: 15px;">اختر بديلاً يطابق نفس القيمة الغذائية المخصصة لهذه الوجبة:</p>
-            <div id="altOptionsContainer"></div>
+            <div id="altOptionsContainer">
+                <!-- Options injected via JS -->
+            </div>
             <button class="btn-main" style="width: 100%; background: #95a5a6; margin-top: 10px;" onclick="closeSwapModal()">إلغاء</button>
         </div>
     </div>
 
+    <!-- Delete Confirm Modal -->
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-box" style="text-align: center;">
             <h3 style="color: var(--danger); border-bottom: none;"><i class="fa-solid fa-triangle-exclamation" style="font-size: 40px;"></i></h3>
@@ -282,6 +456,9 @@
     <div id="toast" class="toast">تمت العملية بنجاح!</div>
 
     <script>
+        // ==========================================
+        // Theme Management (Dark Mode)
+        // ==========================================
         const themeToggle = document.getElementById('themeToggle');
         function toggleTheme() {
             if(themeToggle.checked) {
@@ -300,6 +477,9 @@
             if(themeToggle) themeToggle.checked = false;
         }
 
+        // ==========================================
+        // Date Initialization (Custom Calendar Flatpickr)
+        // ==========================================
         flatpickr("#dietDate", {
             locale: "ar",
             defaultDate: new Date(), 
@@ -307,6 +487,9 @@
             disableMobile: "true" 
         });
 
+        // ==========================================
+        // Firebase Configuration (Exact match)
+        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
             authDomain: "today-2d146.firebaseapp.com",
@@ -317,98 +500,91 @@
             appId: "1:742225764525:web:c2d49bdb5357d441a86624"
         };
         
-        if (!firebase.apps.length) { 
-            firebase.initializeApp(firebaseConfig); 
-        }
-        let db = firebase.database();
-        let allPatients = []; 
+        let db;
+        let allPatients = [];
         let savedPatients = []; 
+        
+        let clinicMasterData = {};
+        let cardsIndexData = {};
+        
         let selectedPatientKey = "";
         let selectedPatientName = "";
 
-        // ===============================================
-        // الدالة الأهم: سحب الداتا الفوري عند الضغط مع كشف الأخطاء
-        // ===============================================
-        function forceFetchPatients() {
-            const allAuto = document.getElementById('allPatientAutocomplete');
-            const searchInput = document.getElementById('allPatientSearch');
-            
-            allAuto.innerHTML = '<li class="autocomplete-item" style="color: #0093D0; font-weight: bold; text-align: center;">جاري سحب الكروت من الفايربيز... ⏳</li>';
-            allAuto.style.display = 'block';
-
-            // محاولة سحب الداتا من مجلد الكروت (cards) أو (cards_names_index)
-            db.ref('cards').once('value')
-            .then(snap => {
-                let data = snap.val();
-                if(!data) {
-                    return db.ref('cards_names_index').once('value'); // تجربة مسار تاني لو الأول فاضي
-                }
-                return snap;
-            })
-            .then(snap => {
-                let data = snap.val();
-                if(!data) {
-                    allAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">لم يتم العثور على أي كروت مسجلة في قاعدة البيانات ⚠️</li>';
-                    return;
-                }
-                
-                allPatients = [];
-                let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
-                for(let [key, val] of entries) {
-                    if(!val) continue;
-                    let k = val.key || key;
-                    let objName = typeof val === 'string' ? val : (val.name || val.Name || val.patientName || val.fullName);
-                    if (objName) allPatients.push({ key: k, name: objName, phone: val.phone || '' });
-                }
-
-                if(allPatients.length > 0) {
-                    renderList(searchInput.value, allPatients, allAuto, searchInput);
-                } else {
-                    allAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">الكروت موجودة لكن بدون أسماء! ⚠️</li>';
-                }
-            })
-            .catch(err => {
-                // الكود ده هيعرضلك الخطأ بالظبط باللون الأحمر لو الفايربيز رافض
-                allAuto.innerHTML = `<li class="autocomplete-item" style="color: #e74c3c; font-size: 13px; text-align: center;">
-                    <strong>الفايربيز رفض يدينا الداتا ❌</strong><br>
-                    السبب: ${err.message}<br>
-                    <span style="color: #7f8c8d; font-size: 12px;">(غالباً محتاج تسجل دخول في الموقع الأول)</span>
-                </li>`;
-            });
+        if (!firebase.apps.length) { 
+            firebase.initializeApp(firebaseConfig); 
         }
-
-        function forceFetchSaved() {
-            const savedAuto = document.getElementById('savedPatientAutocomplete');
-            const savedInput = document.getElementById('savedPatientSearch');
-            
-            savedAuto.innerHTML = '<li class="autocomplete-item" style="color: #0093D0; font-weight: bold; text-align: center;">جاري البحث في الأنظمة المسجلة... ⏳</li>';
-            savedAuto.style.display = 'block';
-
-            db.ref('nutrition_data').once('value')
-            .then(snap => {
-                let data = snap.val();
-                if(data) {
-                    savedPatients = Object.keys(data).map(k => ({
-                        key: k, name: data[k].patientName || k, hasDiet: !!data[k].saved_diet
-                    })).filter(p => p.hasDiet);
-                    
-                    if(savedPatients.length > 0) {
-                        renderList(savedInput.value, savedPatients, savedAuto, savedInput);
-                    } else {
-                        savedAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">لا يوجد أي مريض له دايت محفوظ حتى الآن ⚠️</li>';
-                    }
-                } else {
-                    savedAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">لا يوجد أي مريض له دايت محفوظ حتى الآن ⚠️</li>';
-                }
-            })
-            .catch(err => {
-                savedAuto.innerHTML = `<li class="autocomplete-item" style="color: #e74c3c; font-size: 13px; text-align: center;">خطأ في الصلاحيات ❌<br>${err.message}</li>`;
-            });
-        }
-
+        db = firebase.database();
 
         // ==========================================
-        // Autocomplete UI Logic
+        // Deep Scan Extraction (المسح العميق)
+        // ==========================================
+        // الدالة دي بتخترق أي فولدر جوه الداتا بيز عشان تجيب منه الاسم
+        function deepExtractPatients(data) {
+            if (!data || typeof data !== 'object') return;
+            
+            let n = data.name || data.Name || data.patientName || data.patient_name || data.fullName || data.title;
+            
+            // لو لقينا اسم مريض، هنضيفه
+            if (n && typeof n === 'string' && n.trim() !== '') {
+                if (!allPatients.find(p => p.name === n)) {
+                    allPatients.push({
+                        key: data.key || data.id || n,
+                        name: n,
+                        phone: data.phone || data.Phone || ''
+                    });
+                }
+            }
+            
+            // هنكمل غوص جوه باقي الفولدرات
+            for (let k in data) {
+                if (typeof data[k] === 'object') {
+                    deepExtractPatients(data[k]);
+                }
+            }
+        }
+
+        // تجميع كل الأسماء من المجلدات المختلفة
+        function rebuildAllPatients() {
+            allPatients = [];
+            deepExtractPatients(clinicMasterData);
+            deepExtractPatients(cardsIndexData);
+            
+            // لو الخانة مفتوحة قدام الدكتورة دلوقتي، نحدثها فوراً
+            const allAuto = document.getElementById('allPatientAutocomplete');
+            const allInput = document.getElementById('allPatientSearch');
+            if (allAuto && allAuto.style.display === 'block') {
+                renderList(allInput.value, allPatients, allAuto, allInput);
+            }
+        }
+
+        // هنسحب مجلد العيادة الرئيسي
+        db.ref('clinic_master_lists').on('value', snap => {
+            clinicMasterData = snap.val() || {};
+            rebuildAllPatients();
+        });
+        
+        // هنسحب مجلد الكروت القديم للضمان
+        db.ref('cards_names_index').on('value', snap => {
+            cardsIndexData = snap.val() || {};
+            rebuildAllPatients();
+        });
+
+        // سحب الدايت المحفوظ
+        db.ref('nutrition_data').on('value', snap => {
+            let data = snap.val();
+            if(data) {
+                savedPatients = Object.keys(data).map(k => ({
+                    key: k,
+                    name: data[k].patientName || k,
+                    hasDiet: !!data[k].saved_diet
+                })).filter(p => p.hasDiet);
+            } else {
+                savedPatients = [];
+            }
+        });
+
+        // ==========================================
+        // Autocomplete Custom UI Logic (UL / LI)
         // ==========================================
         const savedInput = document.getElementById('savedPatientSearch');
         const savedAuto = document.getElementById('savedPatientAutocomplete');
@@ -418,44 +594,57 @@
 
         function normalizeArabic(text) {
             if(!text) return "";
-            return String(text).replace(/[\u064B-\u065F\u0640]/g, "").replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
+            return String(text).replace(/[\u064B-\u065F\u0640]/g, "")
+                .replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
         }
 
-        // تفاعلات خانة الكروت
-        allInput.addEventListener('focus', forceFetchPatients);
-        allInput.addEventListener('click', forceFetchPatients);
-        allInput.addEventListener('input', function() {
-            if(allPatients.length === 0) forceFetchPatients();
-            else renderList(this.value, allPatients, allAuto, this);
+        // Attach events
+        [savedInput, allInput].forEach(el => {
+            el.addEventListener('input', handleSearch);
+            el.addEventListener('click', handleSearch);
+            el.addEventListener('focus', handleSearch);
+            
+            el.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if(el === savedInput) savedAuto.style.display = 'none';
+                    if(el === allInput) allAuto.style.display = 'none';
+                }, 200);
+            });
         });
 
-        // تفاعلات خانة الأنظمة المحفوظة
-        savedInput.addEventListener('focus', forceFetchSaved);
-        savedInput.addEventListener('click', forceFetchSaved);
-        savedInput.addEventListener('input', function() {
-            if(savedPatients.length === 0) forceFetchSaved();
-            else renderList(this.value, savedPatients, savedAuto, this);
-        });
-
-        document.addEventListener('click', (e) => {
-            if (e.target !== savedInput && e.target !== savedAuto) savedAuto.style.display = 'none';
-            if (e.target !== allInput && e.target !== allAuto) allAuto.style.display = 'none';
-        });
+        function handleSearch(e) {
+            if(e.target === savedInput) {
+                renderList(this.value, savedPatients, savedAuto, savedInput);
+            } else {
+                renderList(this.value, allPatients, allAuto, allInput);
+            }
+        }
 
         function renderList(query, list, ulEl, inputEl) {
             ulEl.innerHTML = '';
             
+            // لو لسه الداتا بتسحب من الفايربيز أو مفيش كروت
+            if (!list || list.length === 0) {
+                ulEl.innerHTML = '<li class="autocomplete-item" style="color: #e74c3c; text-align: center; pointer-events: none;">لا توجد كروت أو جاري التحميل...</li>';
+                ulEl.style.display = 'block';
+                return;
+            }
+
             let normQ = normalizeArabic(query);
             let matches = list.filter(p => p.name && p.name.trim() !== "");
             
-            if (normQ) matches = matches.filter(p => normalizeArabic(p.name).includes(normQ));
-            matches = matches.slice(0, 30);
+            if (normQ) {
+                matches = matches.filter(p => normalizeArabic(p.name).includes(normQ));
+            }
+            
+            matches = matches.slice(0, 50); // عرض لحد 50 اسم
             
             if(matches.length > 0) {
                 matches.forEach(p => {
                     let li = document.createElement('li');
                     li.className = 'autocomplete-item';
                     li.innerText = p.name;
+                    // استخدام mousedown بدلا من click حتى لا يختفي الـ ul بسبب blur الـ input
                     li.onmousedown = (e) => {
                         e.preventDefault();
                         inputEl.value = p.name;
@@ -466,7 +655,7 @@
                 });
                 ulEl.style.display = 'block';
             } else {
-                ulEl.innerHTML = '<li class="autocomplete-item" style="color: #7f8c8d; text-align: center; pointer-events: none;">لا يوجد اسم مطابق بالبحث</li>';
+                ulEl.innerHTML = '<li class="autocomplete-item" style="color: #7f8c8d; text-align: center; pointer-events: none;">لا يوجد اسم مطابق</li>';
                 ulEl.style.display = 'block';
             }
         }
@@ -474,8 +663,12 @@
         function selectPatient(p) {
             selectedPatientName = p.name;
             let safePhone = p.phone ? String(p.phone).replace(/\D/g, '') : 'unknown';
-            if (p.key && savedPatients.find(x => x.key === p.key)) selectedPatientKey = p.key;
-            else selectedPatientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabic(p.name);
+            
+            if (p.key && savedPatients.find(x => x.key === p.key)) { 
+                selectedPatientKey = p.key;
+            } else { 
+                selectedPatientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabic(p.name);
+            }
             
             document.getElementById('lblPatientName').innerText = p.name;
             document.getElementById('printPatientName').innerText = p.name;
@@ -493,15 +686,24 @@
             if(sec.style.display === 'block') {
                 const searchField = document.getElementById('allPatientSearch');
                 searchField.focus();
-                forceFetchPatients();
+                renderList(searchField.value, allPatients, document.getElementById('allPatientAutocomplete'), searchField);
             }
         }
 
-        function showDeleteModal() { document.getElementById('deleteModal').style.display = 'flex'; }
-        function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+        // ==========================================
+        // Delete Functionality
+        // ==========================================
+        function showDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
 
         function deleteDiet() {
             if(!selectedPatientKey) return;
+            
             db.ref(`nutrition_data/${selectedPatientKey}`).remove()
             .then(() => {
                 showToast("تم مسح المريض والنظام بنجاح!", "success");
@@ -514,23 +716,52 @@
             .catch(() => showToast("حدث خطأ أثناء المسح", "error"));
         }
 
+
+        // ==========================================
+        // Diabetic Exchange List Database (Mock from PDF)
+        // ==========================================
         const exchangeDB = {
-            starch: [ "نص رغيف بلدي", "شريحة توست أسمر", "3 معالق شوفان", "3 معالق رز مسلوق", "نص كوباية مكرونة مسلوقة", "بطاطساية مسلوقة صغيرة", "نص كوباية ذرة حلوة", "3 بقسماط سن", "ربع رغيف شامي" ],
-            meat: [ "بيضة مسلوقة", "حتة لحمة مسلوقة/مشوية (30 جم)", "ربع فرخة مشوية (صدر)", "حتة جبنة قريش (50 جم)", "نص سمكة مشوية (30 جم)", "معلقتين تونة متصفية", "شريحة جبنة لايت", "3 بياض بيض" ],
-            veg: [ "طبق سلطة خضرا وسط", "نص كوباية خضار سوتيه", "طبق سبانخ مطبوخة", "نص كوباية فاصوليا خضرا", "نص كوباية كوسة مطبوخة", "خياريتين كبار", "نص كوباية بروكلي مسلوق" ],
-            fruit: [ "تفاحاية صغيرة", "نص موزة كبيرة", "برتقالاية", "شريحة بطيخ", "نص كوباية فراولة", "3 بلاحات (تمر)", "خوخاية", "شريحة كانتلوب", "شوية عنب (15 حباية)" ],
-            milk: [ "كوباية لبن خالي الدسم", "علبة زبادي خالي الدسم (200 جم)", "كوباية لبن رايب لايت" ],
-            fat: [ "معلقة صغيرة زيت زيتون", "معلقة صغيرة زبدة بلدي", "6 حبات لوز ني", "10 حبات سوداني", "معلقة صغيرة طحينة", "شريحة أفوكادو", "معلقة صغيرة زبدة فول سوداني" ]
+            starch: [ 
+                "نص رغيف بلدي", "شريحة توست أسمر", "3 معالق شوفان", "3 معالق رز مسلوق", "نص كوباية مكرونة مسلوقة", 
+                "بطاطساية مسلوقة صغيرة", "نص كوباية ذرة حلوة", "3 بقسماط سن", "ربع رغيف شامي"
+            ],
+            meat: [ 
+                "بيضة مسلوقة", "حتة لحمة مسلوقة/مشوية (30 جم)", "ربع فرخة مشوية (صدر)", "حتة جبنة قريش (50 جم)", 
+                "نص سمكة مشوية (30 جم)", "معلقتين تونة متصفية", "شريحة جبنة لايت", "3 بياض بيض"
+            ],
+            veg: [ 
+                "طبق سلطة خضرا وسط", "نص كوباية خضار سوتيه", "طبق سبانخ مطبوخة", "نص كوباية فاصوليا خضرا",
+                "نص كوباية كوسة مطبوخة", "خياريتين كبار", "نص كوباية بروكلي مسلوق"
+            ],
+            fruit: [ 
+                "تفاحاية صغيرة", "نص موزة كبيرة", "برتقالاية", "شريحة بطيخ", "نص كوباية فراولة", 
+                "3 بلاحات (تمر)", "خوخاية", "شريحة كانتلوب", "شوية عنب (15 حباية)"
+            ],
+            milk: [ 
+                "كوباية لبن خالي الدسم", "علبة زبادي خالي الدسم (200 جم)", "كوباية لبن رايب لايت"
+            ],
+            fat: [ 
+                "معلقة صغيرة زيت زيتون", "معلقة صغيرة زبدة بلدي", "6 حبات لوز ني", "10 حبات سوداني", 
+                "معلقة صغيرة طحينة", "شريحة أفوكادو", "معلقة صغيرة زبدة فول سوداني"
+            ]
         };
 
+        // ==========================================
+        // Smart Heuristic Algorithm & Auto-Fill
+        // ==========================================
         function autoFillMacros() {
             const cVal = parseFloat(document.getElementById('inpCarb').value) || 0;
             const pInput = document.getElementById('inpProtein');
             const fInput = document.getElementById('inpFat');
+            
             let pVal = parseFloat(pInput.value) || 0;
             let fVal = parseFloat(fInput.value) || 0;
 
-            if (cVal + pVal + fVal > 100) { showToast("انتبه: مجموع النسب معدي 100%!", "error"); return; }
+            if (cVal + pVal + fVal > 100) {
+                showToast("انتبه: مجموع النسب معدي 100%!", "error");
+                return;
+            }
+
             if (cVal > 0 && cVal <= 100) {
                 if (!pInput.value && !fInput.value) {
                     let rem = 100 - cVal;
@@ -548,27 +779,44 @@
             let proP = parseFloat(document.getElementById('inpProtein').value);
             let fatP = parseFloat(document.getElementById('inpFat').value);
 
-            if (!kcal || !carbP || !proP || !fatP) { showToast("الرجاء إدخال جميع القيم", "error"); return; }
+            if (!kcal || !carbP || !proP || !fatP) {
+                showToast("الرجاء إدخال جميع القيم (السعرات والنسب)", "error");
+                return;
+            }
+            
             let totalMacros = Math.round(carbP + proP + fatP);
-            if (totalMacros !== 100) { showToast("مجموع النسب المئوية يجب أن يكون 100% بالظبط", "error"); return; }
+            if (totalMacros > 100) {
+                showToast("خطأ: مجموع النسب معدي الـ 100%! ظبط الأرقام.", "error");
+                return;
+            }
+            if (totalMacros !== 100) {
+                showToast("مجموع النسب المئوية يجب أن يكون 100% بالظبط", "error");
+                return;
+            }
 
             document.getElementById('printCalories').innerText = kcal;
             document.getElementById('printDate').innerText = document.getElementById('dietDate').value;
 
+            // Grams Calculation
             let targetCarb = (kcal * (carbP / 100)) / 4;
             let targetPro = (kcal * (proP / 100)) / 4;
             let targetFat = (kcal * (fatP / 100)) / 9;
 
+            // Base Needs
             let remCarb = targetCarb - (24 + 45 + 15);
             let remPro = targetPro - (16 + 0 + 6);
             let remFat = targetFat - 0;
 
+            // Calculate Portions
             let starchServings = Math.max(0, Math.round(remCarb / 15));
             remPro -= (starchServings * 3);
+
             let meatServings = Math.max(0, Math.round(remPro / 7));
             remFat -= (meatServings * 3);
+
             let fatServings = Math.max(0, Math.round(remFat / 5));
             
+            // Distribute across meals
             const dist = {
                 B: [Math.ceil(starchServings*0.25), Math.ceil(meatServings*0.3), 0, 1, 1, Math.floor(fatServings*0.2)],
                 S: [0, 0, 0, 1, 0, Math.floor(fatServings*0.2)],
@@ -582,14 +830,27 @@
             const days = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
             for (let i = 0; i < 7; i++) {
-                let dayData = { day: days[i], B: buildMealContent(dist.B), S: buildMealContent(dist.S), L: buildMealContent(dist.L), D: buildMealContent(dist.D), profile: dist };
+                let dayData = {
+                    day: days[i],
+                    B: buildMealContent(dist.B),
+                    S: buildMealContent(dist.S),
+                    L: buildMealContent(dist.L),
+                    D: buildMealContent(dist.D),
+                    profile: dist 
+                };
                 currentGeneratedPlan.push(dayData);
+
                 let tr = document.createElement('tr');
-                tr.innerHTML = `<td>${days[i]}</td>
-                    <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td><td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
-                    <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td><td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>`;
+                tr.innerHTML = `
+                    <td>${days[i]}</td>
+                    <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
+                    <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
+                    <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
+                    <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>
+                `;
                 tbody.appendChild(tr);
             }
+
             document.getElementById('resultPanel').style.display = 'block';
             showToast("تم توليد النظام بنجاح!", "success");
         }
@@ -597,6 +858,7 @@
         function buildMealContent(servingsArr) {
             const categories = ['starch', 'meat', 'veg', 'fruit', 'milk', 'fat'];
             let items = [];
+            
             servingsArr.forEach((amount, index) => {
                 if (amount > 0) {
                     let catDb = exchangeDB[categories[index]];
@@ -607,64 +869,117 @@
             return items.length > 0 ? items.join('') : '<div style="color:#ccc; text-align:center;">-</div>';
         }
 
-        let currentSwapDay = null; let currentSwapMeal = null;
+        // ==========================================
+        // Meal Swapping Logic
+        // ==========================================
+        let currentSwapDay = null;
+        let currentSwapMeal = null;
+
         function openSwapModal(dayIndex, mealType) {
-            currentSwapDay = dayIndex; currentSwapMeal = mealType;
+            currentSwapDay = dayIndex;
+            currentSwapMeal = mealType;
             const profile = currentGeneratedPlan[dayIndex].profile[mealType];
+            
             const container = document.getElementById('altOptionsContainer');
             container.innerHTML = '';
+
             for (let i = 0; i < 3; i++) {
                 let altHtml = buildMealContent(profile);
                 let div = document.createElement('div');
-                div.className = 'alt-option'; div.innerHTML = altHtml;
+                div.className = 'alt-option';
+                div.innerHTML = altHtml;
                 div.onclick = () => confirmSwap(altHtml);
                 container.appendChild(div);
             }
+
             document.getElementById('swapModal').style.display = 'flex';
         }
-        function closeSwapModal() { document.getElementById('swapModal').style.display = 'none'; }
-        function confirmSwap(newHtml) {
-            currentGeneratedPlan[currentSwapDay][currentSwapMeal] = newHtml;
-            const row = document.getElementById('dietTableBody').children[currentSwapDay];
-            let cellIndex = { 'B': 1, 'S': 2, 'L': 3, 'D': 4 }[currentSwapMeal];
-            row.children[cellIndex].innerHTML = newHtml;
-            closeSwapModal(); showToast("تم تغيير الوجبة بنجاح!", "success");
+
+        function closeSwapModal() {
+            document.getElementById('swapModal').style.display = 'none';
         }
 
+        function confirmSwap(newHtml) {
+            currentGeneratedPlan[currentSwapDay][currentSwapMeal] = newHtml;
+            
+            const tbody = document.getElementById('dietTableBody');
+            const row = tbody.children[currentSwapDay];
+            let cellIndex = { 'B': 1, 'S': 2, 'L': 3, 'D': 4 }[currentSwapMeal];
+            row.children[cellIndex].innerHTML = newHtml;
+
+            closeSwapModal();
+            showToast("تم تغيير الوجبة بنجاح!", "success");
+        }
+
+        // ==========================================
+        // Firebase Save & Load
+        // ==========================================
         function saveDietToFirebase() {
-            if (!selectedPatientKey) { showToast("برجاء اختيار المريض", "error"); return; }
+            if (!selectedPatientKey) {
+                showToast("برجاء اختيار المريض أولاً من خانة البحث", "error");
+                return;
+            }
+
+            const kcal = document.getElementById('inpCalories').value;
+            const date = document.getElementById('dietDate').value;
+            const planData = {
+                calories: kcal,
+                date: date,
+                plan: currentGeneratedPlan
+            };
+
             db.ref(`nutrition_data/${selectedPatientKey}`).update({
                 patientName: selectedPatientName,
-                saved_diet: { calories: document.getElementById('inpCalories').value, date: document.getElementById('dietDate').value, plan: currentGeneratedPlan }
-            }).then(() => showToast("تم الحفظ بنجاح!", "success")).catch(e => showToast("حدث خطأ أثناء الحفظ", "error"));
+                saved_diet: planData
+            })
+            .then(() => showToast("تم الحفظ بنجاح!", "success"))
+            .catch(e => showToast("حدث خطأ أثناء الحفظ", "error"));
         }
 
         function loadPreviousDiet() {
             if (!selectedPatientKey) return;
+
             db.ref(`nutrition_data/${selectedPatientKey}/saved_diet`).once('value').then(snap => {
                 let data = snap.val();
                 if (data && data.plan) {
                     currentGeneratedPlan = data.plan;
+                    
                     document.getElementById('inpCalories').value = data.calories || '';
                     document.getElementById('printCalories').innerText = data.calories || '';
-                    if (data.date) { document.getElementById('dietDate').value = data.date; document.getElementById('printDate').innerText = data.date; }
                     
-                    const tbody = document.getElementById('dietTableBody'); tbody.innerHTML = '';
+                    if (data.date) {
+                        document.getElementById('dietDate').value = data.date;
+                        document.getElementById('printDate').innerText = data.date;
+                    }
+                    
+                    const tbody = document.getElementById('dietTableBody');
+                    tbody.innerHTML = '';
                     currentGeneratedPlan.forEach((dayData, i) => {
                         let tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${dayData.day}</td><td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
-                            <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td><td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
-                            <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>`;
+                        tr.innerHTML = `
+                            <td>${dayData.day}</td>
+                            <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
+                            <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
+                            <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
+                            <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>
+                        `;
                         tbody.appendChild(tr);
                     });
-                    document.getElementById('resultPanel').style.display = 'block'; showToast("تم الاستدعاء!", "success");
-                } else { showToast("لا يوجد نظام محفوظ مسبقاً", "warning"); }
+                    document.getElementById('resultPanel').style.display = 'block';
+                    showToast("تم استدعاء النظام بنجاح!", "success");
+                } else {
+                    showToast("لا يوجد نظام محفوظ مسبقاً لهذا المريض", "warning");
+                }
             });
         }
+
         function showToast(msg, type = "success") {
-            const toast = document.getElementById('toast'); toast.innerText = msg; toast.className = 'toast show ' + type;
-            setTimeout(() => { toast.classList.remove('show'); }, 5000);
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
+
     </script>
 </body>
 </html>
