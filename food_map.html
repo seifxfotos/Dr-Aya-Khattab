@@ -12,52 +12,80 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
-    <!-- Firebase -->
+    <!-- Firebase (الإصدار الثامن الأساسي المتوافق مع باقي موقعك) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        :root { --primary-blue: #0093D0; --primary-green: #8CC63F; --bg-color: #f4f7f6; --card-bg: #ffffff; --text-dark: #2c3e50; --danger: #e74c3c; --warning: #f39c12; --border: #e1e8ed; --input-bg: #ffffff; }
-        body.dark-mode { --bg-color: #000000; --card-bg: #1e1e1e; --text-dark: #e1e8ed; --border: #333333; --input-bg: #2a2a2a; }
+        :root {
+            --primary-blue: #0093D0; 
+            --primary-green: #8CC63F; 
+            --bg-color: #f4f7f6; 
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50; 
+            --danger: #e74c3c; 
+            --warning: #f39c12;
+            --border: #e1e8ed; 
+            --input-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-color: #000000; 
+            --card-bg: #1e1e1e;
+            --text-dark: #e1e8ed; 
+            --border: #333333; 
+            --input-bg: #2a2a2a;
+        }
+        
         body.dark-mode .flatpickr-calendar { background: #1e1e1e; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         body.dark-mode .flatpickr-day { color: #e1e8ed; }
         body.dark-mode .flatpickr-day:hover, body.dark-mode .flatpickr-day.selected { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
         body.dark-mode .flatpickr-month, body.dark-mode .flatpickr-weekday, body.dark-mode .flatpickr-current-month .flatpickr-monthDropdown-months { color: #e1e8ed; fill: #e1e8ed; }
         body.dark-mode .flatpickr-current-month input.cur-year { color: #e1e8ed; }
+
         .flatpickr-month { height: 50px !important; overflow: visible !important; }
         .flatpickr-current-month { height: auto !important; line-height: 1.5 !important; padding-top: 8px !important; }
         .flatpickr-current-month .flatpickr-monthDropdown-months { height: auto !important; line-height: inherit !important; padding: 2px !important; appearance: none; }
         .flatpickr-current-month input.cur-year { height: auto !important; line-height: inherit !important; }
+
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-dark); transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1250px; margin: 0 auto; }
+
         .header-section { background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 15px; }
         .header-section h1 { margin: 0; font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 8px;}
         .nav-links a { color: white; text-decoration: none; font-weight: 700; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 8px; margin-right: 10px; transition: 0.3s; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; font-family: 'Cairo'; }
         .nav-links a:hover { background: rgba(255,255,255,0.3); }
+
         .theme-switch { position: relative; display: inline-block; width: 64px; height: 34px; margin-right: 10px; vertical-align: middle; }
         .theme-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3b4c5a; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 7px; box-sizing: border-box; }
         .slider-circle { position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; z-index: 3; }
         .theme-switch input:checked + .slider .slider-circle { transform: translateX(30px); }
         .icon { width: 17px; height: 17px; z-index: 1; }
+
         .card-panel { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border); transition: background-color 0.3s, border-color 0.3s; }
         .card-panel h2 { margin-top: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; color: var(--primary-blue); }
+
         .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 15px; overflow: visible !important; }
         .input-group label { font-weight: 700; margin-bottom: 5px; font-size: 14px; color: var(--text-dark); }
         .input-group input { padding: 10px 15px; border: 2px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 15px; outline: none; transition: 0.3s; background-color: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box; font-weight: 600; }
         .input-group input:focus { border-color: var(--primary-blue); box-shadow: 0 0 8px rgba(0, 147, 208, 0.2); }
+        
         ul.custom-autocomplete { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--card-bg); border: 2px solid var(--primary-blue); border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 99999; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; list-style: none; padding: 0; margin: 0; }
         li.autocomplete-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0; }
         li.autocomplete-item:hover { background: var(--primary-blue); color: white; }
         body.dark-mode li.autocomplete-item:hover { background: #333333; }
         body.dark-mode #patientInfo, body.dark-mode #newPatientSection { background: #1a1a1a !important; border-color: #333333 !important; }
+
         .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         @media (max-width: 800px) { .grid-4col { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 500px) { .grid-4col { grid-template-columns: 1fr; } }
+
         .btn-main { background-color: var(--primary-blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
         .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); filter: brightness(1.1);}
         .btn-green { background-color: var(--primary-green); }
+        
         .diet-table-wrapper { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .diet-table { width: 100%; border-collapse: collapse; min-width: 800px; }
         .diet-table th, .diet-table td { padding: 15px; border: 1px solid var(--border); vertical-align: top; }
@@ -69,20 +97,25 @@
         body.dark-mode .diet-table th { background-color: #222222; }
         body.dark-mode .diet-table td:first-child { background: #1a1a1a; color: #4fa3d1; }
         body.dark-mode .diet-table td:hover:not(:first-child) { background-color: #222222; }
+        
         .meal-item { margin-bottom: 5px; position: relative; padding-right: 15px;}
         .meal-item::before { content: "•"; color: var(--primary-green); position: absolute; right: 0; font-weight: bold; font-size: 18px; top: -2px;}
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px);}
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 95%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); color: var(--text-dark);}
         .modal-box h3 { margin-top: 0; color: var(--primary-blue); border-bottom: 2px solid var(--border); padding-bottom: 10px;}
         .alt-option { padding: 15px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; font-weight: 600; line-height: 1.6;}
         .alt-option:hover { border-color: var(--primary-green); background: rgba(140, 198, 63, 0.1); }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: 0.4s; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.success { background: var(--primary-green); }
         .toast.error { background: var(--danger); }
+
         .print-header { display: none; text-align: center; margin-bottom: 20px; }
         .print-header h1 { color: var(--primary-blue); font-size: 32px; margin: 0; font-weight: 900;}
         .print-header p { color: #2c3e50; font-size: 16px; margin: 5px 0; font-weight: 700;}
+        
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay { display: none !important; }
@@ -294,7 +327,7 @@
         let selectedPatientName = "";
 
         // ===============================================
-        // الدالة الأهم: سحب الداتا الفوري من المجلد الصحيح
+        // الدالة الأهم: سحب الداتا الفوري عند الضغط مع كشف الأخطاء
         // ===============================================
         function forceFetchPatients() {
             const allAuto = document.getElementById('allPatientAutocomplete');
@@ -303,36 +336,43 @@
             allAuto.innerHTML = '<li class="autocomplete-item" style="color: #0093D0; font-weight: bold; text-align: center;">جاري سحب الكروت من الفايربيز... ⏳</li>';
             allAuto.style.display = 'block';
 
-            // الكود دلوقتي هيقرأ الأسماء من مجلد clinic_master_lists
-            db.ref('clinic_master_lists').once('value')
+            // محاولة سحب الداتا من مجلد الكروت (cards) أو (cards_names_index)
+            db.ref('cards').once('value')
             .then(snap => {
                 let data = snap.val();
                 if(!data) {
-                    allAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">لا يوجد بيانات مسجلة في clinic_master_lists ⚠️</li>';
+                    return db.ref('cards_names_index').once('value'); // تجربة مسار تاني لو الأول فاضي
+                }
+                return snap;
+            })
+            .then(snap => {
+                let data = snap.val();
+                if(!data) {
+                    allAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">لم يتم العثور على أي كروت مسجلة في قاعدة البيانات ⚠️</li>';
                     return;
                 }
                 
                 allPatients = [];
                 let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
-                
                 for(let [key, val] of entries) {
                     if(!val) continue;
                     let k = val.key || key;
-                    // البحث عن الاسم بأي صيغة ممكنة جوه المجلد
-                    let objName = typeof val === 'string' ? val : (val.name || val.Name || val.patientName || val.fullName || val.patient_name || val.title);
+                    let objName = typeof val === 'string' ? val : (val.name || val.Name || val.patientName || val.fullName);
                     if (objName) allPatients.push({ key: k, name: objName, phone: val.phone || '' });
                 }
 
                 if(allPatients.length > 0) {
                     renderList(searchInput.value, allPatients, allAuto, searchInput);
                 } else {
-                    allAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">الكروت موجودة لكن بدون حقل "اسم" واضح! ⚠️</li>';
+                    allAuto.innerHTML = '<li class="autocomplete-item" style="color: #f39c12; text-align: center;">الكروت موجودة لكن بدون أسماء! ⚠️</li>';
                 }
             })
             .catch(err => {
+                // الكود ده هيعرضلك الخطأ بالظبط باللون الأحمر لو الفايربيز رافض
                 allAuto.innerHTML = `<li class="autocomplete-item" style="color: #e74c3c; font-size: 13px; text-align: center;">
                     <strong>الفايربيز رفض يدينا الداتا ❌</strong><br>
-                    السبب: ${err.message}
+                    السبب: ${err.message}<br>
+                    <span style="color: #7f8c8d; font-size: 12px;">(غالباً محتاج تسجل دخول في الموقع الأول)</span>
                 </li>`;
             });
         }
@@ -366,6 +406,7 @@
             });
         }
 
+
         // ==========================================
         // Autocomplete UI Logic
         // ==========================================
@@ -380,6 +421,7 @@
             return String(text).replace(/[\u064B-\u065F\u0640]/g, "").replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
         }
 
+        // تفاعلات خانة الكروت
         allInput.addEventListener('focus', forceFetchPatients);
         allInput.addEventListener('click', forceFetchPatients);
         allInput.addEventListener('input', function() {
@@ -387,6 +429,7 @@
             else renderList(this.value, allPatients, allAuto, this);
         });
 
+        // تفاعلات خانة الأنظمة المحفوظة
         savedInput.addEventListener('focus', forceFetchSaved);
         savedInput.addEventListener('click', forceFetchSaved);
         savedInput.addEventListener('input', function() {
@@ -536,4 +579,92 @@
             currentGeneratedPlan = [];
             const tbody = document.getElementById('dietTableBody');
             tbody.innerHTML = '';
-            const
+            const days = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+
+            for (let i = 0; i < 7; i++) {
+                let dayData = { day: days[i], B: buildMealContent(dist.B), S: buildMealContent(dist.S), L: buildMealContent(dist.L), D: buildMealContent(dist.D), profile: dist };
+                currentGeneratedPlan.push(dayData);
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td>${days[i]}</td>
+                    <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td><td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
+                    <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td><td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>`;
+                tbody.appendChild(tr);
+            }
+            document.getElementById('resultPanel').style.display = 'block';
+            showToast("تم توليد النظام بنجاح!", "success");
+        }
+
+        function buildMealContent(servingsArr) {
+            const categories = ['starch', 'meat', 'veg', 'fruit', 'milk', 'fat'];
+            let items = [];
+            servingsArr.forEach((amount, index) => {
+                if (amount > 0) {
+                    let catDb = exchangeDB[categories[index]];
+                    let randItem = catDb[Math.floor(Math.random() * catDb.length)];
+                    items.push(`<div class="meal-item">${amount}x ${randItem}</div>`);
+                }
+            });
+            return items.length > 0 ? items.join('') : '<div style="color:#ccc; text-align:center;">-</div>';
+        }
+
+        let currentSwapDay = null; let currentSwapMeal = null;
+        function openSwapModal(dayIndex, mealType) {
+            currentSwapDay = dayIndex; currentSwapMeal = mealType;
+            const profile = currentGeneratedPlan[dayIndex].profile[mealType];
+            const container = document.getElementById('altOptionsContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                let altHtml = buildMealContent(profile);
+                let div = document.createElement('div');
+                div.className = 'alt-option'; div.innerHTML = altHtml;
+                div.onclick = () => confirmSwap(altHtml);
+                container.appendChild(div);
+            }
+            document.getElementById('swapModal').style.display = 'flex';
+        }
+        function closeSwapModal() { document.getElementById('swapModal').style.display = 'none'; }
+        function confirmSwap(newHtml) {
+            currentGeneratedPlan[currentSwapDay][currentSwapMeal] = newHtml;
+            const row = document.getElementById('dietTableBody').children[currentSwapDay];
+            let cellIndex = { 'B': 1, 'S': 2, 'L': 3, 'D': 4 }[currentSwapMeal];
+            row.children[cellIndex].innerHTML = newHtml;
+            closeSwapModal(); showToast("تم تغيير الوجبة بنجاح!", "success");
+        }
+
+        function saveDietToFirebase() {
+            if (!selectedPatientKey) { showToast("برجاء اختيار المريض", "error"); return; }
+            db.ref(`nutrition_data/${selectedPatientKey}`).update({
+                patientName: selectedPatientName,
+                saved_diet: { calories: document.getElementById('inpCalories').value, date: document.getElementById('dietDate').value, plan: currentGeneratedPlan }
+            }).then(() => showToast("تم الحفظ بنجاح!", "success")).catch(e => showToast("حدث خطأ أثناء الحفظ", "error"));
+        }
+
+        function loadPreviousDiet() {
+            if (!selectedPatientKey) return;
+            db.ref(`nutrition_data/${selectedPatientKey}/saved_diet`).once('value').then(snap => {
+                let data = snap.val();
+                if (data && data.plan) {
+                    currentGeneratedPlan = data.plan;
+                    document.getElementById('inpCalories').value = data.calories || '';
+                    document.getElementById('printCalories').innerText = data.calories || '';
+                    if (data.date) { document.getElementById('dietDate').value = data.date; document.getElementById('printDate').innerText = data.date; }
+                    
+                    const tbody = document.getElementById('dietTableBody'); tbody.innerHTML = '';
+                    currentGeneratedPlan.forEach((dayData, i) => {
+                        let tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${dayData.day}</td><td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
+                            <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td><td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
+                            <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                    document.getElementById('resultPanel').style.display = 'block'; showToast("تم الاستدعاء!", "success");
+                } else { showToast("لا يوجد نظام محفوظ مسبقاً", "warning"); }
+            });
+        }
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast'); toast.innerText = msg; toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.classList.remove('show'); }, 5000);
+        }
+    </script>
+</body>
+</html>
