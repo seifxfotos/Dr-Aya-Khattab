@@ -232,12 +232,17 @@
         const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbzYqOapiXLj08hR7FH00KeGeFkMt1ZTai9ap0phHx89s5ofQ5-x3-h_P2MXsUE_PuDd/exec"; 
         const FIREBASE_DB_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/"; 
 
-        let firebaseDB = null;
-        if (FIREBASE_DB_URL) {
+let firebaseDB = null;
+try {
+    if (FIREBASE_DB_URL) {
+        if (!firebase.apps.length) {
             firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
-            firebaseDB = firebase.database();
         }
-
+        firebaseDB = firebase.database();
+    }
+} catch (error) {
+    console.error("Firebase Init Error: ", error);
+}
         // المتغيرات الشاملة (Central State)
         let globalPatientsList = []; 
         let currentlyDisplayedPatients = [];
