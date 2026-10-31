@@ -448,31 +448,37 @@ try {
         }
 
         // --- دالة التشغيل الرئيسية ---
-        function init() {
-            applyThemeToLogo(currentSavedTheme); updateZoomUI();
-            const today = getTodayKey();
-            const dateEl = document.getElementById('todayDate'); if(dateEl) dateEl.innerText = today;
-            const view = new URLSearchParams(window.location.search).get('view');
+function init() {
+    try {
+        const today = getTodayKey();
+        const dateEl = document.getElementById('todayDate');
+        if(dateEl) dateEl.innerText = today;
+        
+        const view = new URLSearchParams(window.location.search).get('view');
+        if (view === 'display') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'none'; document.getElementById('display-view').style.display = 'block'; }
+        else if (view === 'doctor') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('display-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'block'; }
 
-            // ترتيب الشاشات بناءً على الرابط
-            if (view === 'display') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'none'; document.getElementById('display-view').style.display = 'block'; document.body.classList.add('is-display-view'); } 
-            else if (view === 'doctor') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('display-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'block'; }
-
-            // المركزية اللحظية: كل الأجهزة بتسمع من فايربيز بشكل مستمر
-            if (firebaseDB) {
-                firebaseDB.ref(`daily_queues/${today}`).on('value', (snapshot) => {
+        if (firebaseDB) {
+            firebaseDB.ref(`daily_queues/${today}`).on('value', (snapshot) => {
+                try {
                     const rawVal = snapshot.val();
                     globalPatientsList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
-                    
-                    // تحديث الشاشة المفتوحة أياً كانت (ريسبشن - دكتور - عرض)
                     if (view === 'display') renderDisplayView(globalPatientsList);
                     else if (view === 'doctor') renderDoctorView(globalPatientsList);
                     else renderAdminView(globalPatientsList);
-                });
-            } else {
-                alert("لم يتم الاتصال بالسيرفر المركزي!");
-            }
+                } catch(err) {
+                    document.getElementById('admin-patient-list').innerHTML = `<div style="color:var(--danger); text-align:center; padding:20px;"><b>خطأ في واجهة العرض:</b> <br> ${err.message}</div>`;
+                }
+            }, (error) => {
+                document.getElementById('admin-patient-list').innerHTML = `<div style="color:var(--danger); text-align:center; padding:20px;"><b>مرفوض (مشكلة صلاحيات Firebase):</b> <br> ${error.message}</div>`;
+            });
+        } else {
+            document.getElementById('admin-patient-list').innerHTML = '<div style="color:var(--danger); text-align:center; padding:20px;"><b>خطأ:</b> قاعدة البيانات لم تتصل من الأساس.</div>';
         }
+    } catch(e) {
+        document.getElementById('admin-patient-list').innerHTML = `<div style="color:var(--danger); text-align:center; padding:20px;"><b>خطأ عام:</b> <br> ${e.message}</div>`;
+    }
+}
         
         init();
     </script>
