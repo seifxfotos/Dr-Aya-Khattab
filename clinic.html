@@ -5,75 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة انتظار العيادة - د. آية خطاب</title>
     
+    <!-- خط كايرو ومكتبة الأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
+        /* المتغيرات الأساسية للوضع النهاري (Light Mode) */
         :root { --primary-blue: #0093D0; --primary-green: #8CC63F; --bg-color: #f4f7f6; --card-bg: #ffffff; --text-dark: #2c3e50; --danger: #e74c3c; --border: #e1e8ed; --input-bg: #ffffff; --card-shadow: 0 8px 20px rgba(0,0,0,0.04); --header-gradient: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); --modal-overlay: rgba(0,0,0,0.5); }
+        /* المتغيرات الأساسية للوضع الليلي (Dark Mode) */
         :root[data-theme="dark"] { --bg-color: #121212; --card-bg: #1e1e1e; --text-dark: #e0e0e0; --border: #333333; --input-bg: #2c2c2c; --primary-blue: #0082b8; --primary-green: #7bb530; --card-shadow: 0 8px 20px rgba(0,0,0,0.4); --header-gradient: linear-gradient(135deg, #005a80, #5c8526); --modal-overlay: rgba(0,0,0,0.8); }
 
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s; }
-        .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: var(--card-bg); padding: 8px 12px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; align-items: center; }
+
+        .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: var(--card-bg); padding: 8px 12px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; align-items: center; transition: 0.3s; }
         body.is-display-view .theme-switch-wrapper { display: none !important; }
         .theme-switch { display: inline-block; position: relative; width: 60px; height: 32px; }
         .theme-switch input { display: none; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
-        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; z-index: 2; }
+        .slider .fa-sun { color: #ffeb3b; font-size: 14px; z-index: 1;}
+        .slider .fa-moon { color: #f1c40f; font-size: 14px; z-index: 1;}
+        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; z-index: 2; }
         input:checked + .slider { background-color: #34495e; }
         input:checked + .slider:before { transform: translateX(28px); }
 
         .container { max-width: 900px; margin: 30px auto; padding: 20px; }
-        .header-section { background: var(--header-gradient); color: white; padding: 25px 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-panel { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: var(--card-shadow); margin-bottom: 25px; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 30px; }
-        .input-group input, .input-group select { padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 15px; font-weight: 700; outline: none; background-color: var(--input-bg); color: var(--text-dark); }
-        .input-group input { flex: 2; }
-        .input-group select { flex: 1; }
-        .btn-add { background-color: var(--primary-blue); color: white; border: none; padding: 14px 25px; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: 'Cairo'; }
-        
-        .patient-item-admin { background: var(--card-bg); padding: 15px 20px; margin-bottom: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); border-right: 4px solid var(--primary-green); }
-        .patient-name-container { display: flex; align-items: center; gap: 10px; }
-        .clickable-name { font-size: 18px; font-weight: 700; color: var(--text-dark); cursor: pointer; }
-        .num-circle { background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-weight: 800; }
-        
-        .badge-tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-        .badge-nutrition { background: rgba(140, 198, 63, 0.15); color: #5a8522; }
-        .badge-physio { background: rgba(230, 126, 34, 0.15); color: #d35400; }
-        .badge-kashf { background: rgba(0, 147, 208, 0.15); color: var(--primary-blue); }
-        .badge-motabaa { background: rgba(155, 89, 182, 0.15); color: #8e44ad; }
+        .header-section { background: var(--header-gradient); color: white; padding: 25px 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 15px; }
+        .header-section h1 { margin: 0; font-size: 24px; font-weight: 800; }
+        .header-subtitle { font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 5px; }
+        .stats-counter { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; font-size: 15px; font-weight: 700; display: flex; gap: 15px; border: 1px solid rgba(255,255,255,0.4); flex-wrap: wrap; }
+        .date-picker-placeholder { font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; border: 1px solid white; color: white; text-align: center; }
 
-        .action-btns { display: flex; gap: 6px; }
-        .action-btns button { background: var(--input-bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-dark); font-family: 'Cairo'; font-weight: 600; }
+        .card-panel { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: var(--card-shadow); margin-bottom: 25px; transition: 0.3s; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .input-group input, .input-group select { padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 15px; font-weight: 700; outline: none; background-color: var(--input-bg); color: var(--text-dark); transition: 0.3s; }
+        .input-group input { flex: 2; min-width: 200px; }
+        .input-group select { flex: 1; min-width: 140px; cursor: pointer; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0,147,208,0.1); }
+        
+        .btn-add { background-color: var(--primary-blue); color: white; border: none; padding: 14px 25px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; }
+        .btn-add:hover { background-color: #007bb5; }
+
+        .patient-item-admin { background: var(--card-bg); padding: 15px 20px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); border-right: 4px solid var(--primary-green); transition: 0.2s; flex-wrap: wrap; gap: 10px; }
+        .patient-name-container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .clickable-name { font-size: 18px; font-weight: 700; color: var(--text-dark); cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .clickable-name:hover { color: var(--primary-blue); text-decoration: underline; }
+        .patient-name-container span.num-circle { background: var(--bg-color); color: var(--primary-blue); width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 14px; font-weight: 800; transition: 0.3s; }
+        
+        /* شارات القسم ونوع الحجز */
+        .badge-tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-nutrition { background: rgba(140, 198, 63, 0.15); color: #5a8522; border: 1px solid rgba(140, 198, 63, 0.4); }
+        :root[data-theme="dark"] .badge-nutrition { color: #a3e048; }
+        .badge-physio { background: rgba(230, 126, 34, 0.15); color: #d35400; border: 1px solid rgba(230, 126, 34, 0.4); }
+        :root[data-theme="dark"] .badge-physio { color: #f39c12; }
+        .badge-kashf { background: rgba(0, 147, 208, 0.15); color: var(--primary-blue); border: 1px solid rgba(0, 147, 208, 0.35); }
+        .badge-motabaa { background: rgba(155, 89, 182, 0.15); color: #8e44ad; border: 1px solid rgba(155, 89, 182, 0.35); }
+        :root[data-theme="dark"] .badge-motabaa { color: #c39bd3; }
+
+        .patient-item-admin.entered { opacity: 0.5; background: var(--bg-color); border-right-color: #95a5a6; }
+        .patient-item-admin.entered .clickable-name { text-decoration: line-through; color: #7f8c8d; }
+        .patient-item-admin.entered span.num-circle { background: var(--border); color: #7f8c8d; }
+
+        .patient-item-admin.current-inside { border-right-color: var(--primary-blue); background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.08)); opacity: 1; }
+        .patient-item-admin.current-inside .clickable-name { color: var(--primary-blue); }
+        .patient-item-admin.current-inside span.num-circle { background: var(--primary-blue); color: white; }
+
+        .action-btns { display: flex; gap: 6px; align-items: center; }
+        .action-btns button { background: var(--input-bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-dark); transition: 0.2s; font-size: 14px; font-family: 'Cairo'; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .action-btns button:hover { background: var(--bg-color); border-color: #ccc; }
+        .btn-delete { color: var(--danger) !important; }
+        .btn-enter { color: var(--primary-blue) !important; }
+        .btn-undo { color: #f39c12 !important; }
+        
         .buttons-grid { display: flex; gap: 15px; margin-top: 20px; }
-        .btn-open-display { background-color: var(--primary-green); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 700; cursor: pointer; flex: 1; font-family: 'Cairo'; }
+        .btn-open-display { background-color: var(--primary-green); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; flex: 1; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-open-doctor { background-color: var(--primary-blue); }
 
+        .zoom-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; padding: 15px; background: var(--card-bg); border-radius: 8px; box-shadow: var(--card-shadow); border: 1px solid var(--border); transition: 0.3s; }
+        .zoom-btn { background: var(--input-bg); border: 2px solid var(--primary-blue); color: var(--primary-blue); border-radius: 5px; cursor: pointer; padding: 5px 12px; font-size: 16px; font-weight: bold;}
+
+        /* شاشة العرض */
         #display-view { display: none; height: 100vh; width: 100vw; background-color: var(--bg-color); box-sizing: border-box; overflow: hidden; }
-        #zoom-wrapper { transform-origin: top center; width: 100%; height: 100%; padding: 40px; box-sizing: border-box; }
-        .patient-list-display { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; }
-        .patient-card { background: var(--card-bg); padding: 20px 30px; font-size: 34px; font-weight: 800; border-radius: 12px; display: flex; align-items: center; gap: 30px; border-right: 12px solid var(--primary-green); color: var(--text-dark); }
-        .patient-card.active-patient { border-right-color: var(--primary-blue); background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.05)); }
-        .patient-number { background: var(--primary-green); color: white; min-width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 32px; font-weight: 800; }
+        #zoom-wrapper { transform-origin: top center; transition: transform 0.3s ease; width: 100%; height: 100%; padding: 40px; box-sizing: border-box; }
+        .display-header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; position: relative;}
+        .display-header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 4px; background: linear-gradient(to left, var(--primary-green), var(--primary-blue)); border-radius: 10px; }
+        .display-logo { height: 110px; width: auto; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); }
+        
+        .patient-list-display { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; position: relative;}
+        .patient-card { background: var(--card-bg); padding: 20px 30px; font-size: 34px; font-weight: 800; border-radius: 12px; box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 30px; border-right: 12px solid var(--primary-green); color: var(--text-dark); position: relative; overflow: hidden; transition: all 0.5s ease-in-out; }
+        .patient-card.entering { animation: slideIn 0.5s ease-out; }
+        .patient-card.exiting { opacity: 0; transform: translateX(-50px) scale(0.9); }
+        .patient-card.active-patient { border-right-color: var(--primary-blue); transform: scale(1.02); box-shadow: 0 15px 35px rgba(0, 147, 208, 0.2); background: linear-gradient(to left, var(--card-bg), rgba(0, 147, 208, 0.05)); padding: 25px 30px; }
+        .patient-card.active-patient .patient-number { background: var(--primary-blue); transform: scale(1.1); box-shadow: 0 4px 15px rgba(0, 147, 208, 0.3); }
+        .patient-card.active-patient::after { content: "القادم"; position: absolute; left: 35px; font-size: 20px; background: var(--primary-blue); color: white; padding: 6px 18px; border-radius: 30px; font-weight: 700; animation: pulse 2s infinite; }
+        .patient-number { background: var(--primary-green); color: white; min-width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 32px; font-weight: 800; transition: 0.3s; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(0, 147, 208, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 147, 208, 0); } }
+
+        /* شاشة الطبيب */
         #doctor-view { display: none; }
+        .doc-status-indicator { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid rgba(255,255,255,0.4); }
+
+        /* Custom Modals */
+        .custom-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--modal-overlay); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .custom-modal-box { background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: var(--card-shadow); width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border); animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .custom-modal-icon { font-size: 40px; margin-bottom: 15px; color: var(--primary-blue); }
+        .custom-modal-title { margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: var(--text-dark); }
+        .custom-modal-message { font-size: 16px; margin-bottom: 20px; color: var(--text-dark); opacity: 0.8;}
+        .custom-modal-input { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 12px; border: 2px solid var(--border); border-radius: 8px; font-family: 'Cairo'; font-size: 16px; color: var(--text-dark); background: var(--input-bg); outline: none; }
+        .custom-modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        .btn-modal-cancel, .btn-modal-confirm { padding: 12px 25px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size:16px; flex: 1; border: none; }
+        .btn-modal-cancel { background: var(--border); color: var(--text-dark); }
+        .btn-modal-confirm { background: var(--primary-blue); color: white; }
+        .danger-modal .custom-modal-icon { color: var(--danger); }
+        .danger-modal .btn-modal-confirm { background: var(--danger); }
     </style>
 </head>
 <body>
 
+    <!-- التنبيهات المخصصة -->
+    <div id="custom-modal-overlay" class="custom-modal-overlay">
+        <div id="custom-modal-box" class="custom-modal-box">
+            <div id="custom-modal-icon" class="custom-modal-icon"><i class="fa-solid fa-circle-question"></i></div>
+            <h3 id="custom-modal-title" class="custom-modal-title">تنبيه</h3>
+            <p id="custom-modal-message" class="custom-modal-message"></p>
+            <input type="text" id="custom-modal-input" class="custom-modal-input" style="display: none;" />
+            <div class="custom-modal-actions">
+                <button id="custom-modal-cancel" class="btn-modal-cancel">إلغاء</button>
+                <button id="custom-modal-confirm" class="btn-modal-confirm">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
-            <div class="slider round"></div>
+            <div class="slider round"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></div>
         </label>
     </div>
 
+    <!-- شاشة السكرتارية (الإدارة) -->
     <div id="admin-view" class="container">
         <div class="header-section">
             <div>
                 <h1>إدارة العيادة اليومية</h1>
-                <div style="font-size: 14px; opacity: 0.9;">تنظيم الحجوزات، السكرتارية</div>
+                <div class="header-subtitle">تنظيم الحجوزات، السكرتارية</div>
+            </div>
+            <div class="stats-counter">
+                <span>العدد الكلي: <span id="statKashf">0</span></span>
             </div>
             <div class="date-picker-placeholder" id="todayDate"></div>
         </div>
@@ -81,18 +165,23 @@
         <div class="card-panel">
             <div class="input-group">
                 <input type="text" id="patientName" placeholder="أدخل اسم المريض هنا..." onkeypress="handleEnter(event)">
-                <select id="patientCategory">
+                
+                <!-- اختيار القسم -->
+                <select id="patientCategory" onchange="handleCategoryChange()">
                     <option value="تغذية علاجية" selected>تغذية علاجية</option>
                     <option value="علاج طبيعي">علاج طبيعي</option>
                 </select>
+
+                <!-- اختيار كشف أو متابعة (يظهر فقط للتغذية العلاجية) -->
                 <select id="patientVisitType">
                     <option value="كشف" selected>كشف</option>
                     <option value="متابعة">متابعة</option>
                 </select>
+
                 <button class="btn-add" onclick="addPatient()"><i class="fa-solid fa-plus"></i> إضافة للجدول</button>
             </div>
             <div id="admin-patient-list">
-                <div style="text-align:center; padding: 20px; opacity:0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال...</div>
+                <div style="text-align:center; padding: 20px; opacity:0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال بالسيرفر اللحظي...</div>
             </div>
         </div>
 
@@ -100,127 +189,285 @@
             <button class="btn-open-display" onclick="openDisplayWindow()"><i class="fa-solid fa-desktop"></i> شاشة المرضى</button>
             <button class="btn-open-display btn-open-doctor" onclick="openDoctorWindow()"><i class="fa-solid fa-user-doctor"></i> شاشة الطبيب</button>
         </div>
+
+        <div class="zoom-controls">
+            <span>تكبير شاشة المرضى:</span>
+            <button class="zoom-btn" onclick="changeZoom(0.1)"><i class="fa-solid fa-plus"></i></button>
+            <span class="zoom-level-text" id="zoomLevelText">100%</span>
+            <button class="zoom-btn" onclick="changeZoom(-0.1)"><i class="fa-solid fa-minus"></i></button>
+        </div>
     </div>
 
+    <!-- شاشة العرض للمرضى -->
     <div id="display-view">
         <div id="zoom-wrapper">
+            <div class="display-header">
+                <img id="displayModeLogo" src="Logo-Dr-Aya.webp" class="display-logo" onerror="this.style.display='none'">
+            </div>
             <div class="patient-list-display" id="display-patient-list"></div>
         </div>
     </div>
 
+    <!-- شاشة الطبيب -->
     <div id="doctor-view" class="container">
         <div class="header-section">
-            <h1><i class="fa-solid fa-user-doctor"></i> شاشة الطبيب</h1>
+            <div>
+                <h1><i class="fa-solid fa-user-doctor"></i> شاشة الطبيب</h1>
+                <div class="header-subtitle">متابعة حية لقائمة الانتظار بالخارج</div>
+            </div>
+            <div class="doc-status-indicator" id="docSyncIndicator">
+                <i class="fa-solid fa-bolt" style="color:#ffeb3b;"></i> متصل لحظياً
+            </div>
         </div>
         <div class="card-panel">
-            <div id="doctor-patient-list"></div>
+            <div id="doctor-patient-list">
+                <div style="text-align:center; padding: 20px; opacity:0.5;"><i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال بالسيرفر اللحظي...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        const FIREBASE_DB_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/";
+        // --- الروابط المركزية ---
+        const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbzYqOapiXLj08hR7FH00KeGeFkMt1ZTai9ap0phHx89s5ofQ5-x3-h_P2MXsUE_PuDd/exec"; 
+        const FIREBASE_DB_URL = "https://clinic-dr-aya-khattab-default-rtdb.firebaseio.com/"; 
+
         let firebaseDB = null;
         if (FIREBASE_DB_URL) {
             firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
             firebaseDB = firebase.database();
         }
 
-        let globalPatientsList = [];
+        // المتغيرات الشاملة (Central State)
+        let globalPatientsList = []; 
+        let currentlyDisplayedPatients = [];
+        let currentZoom = parseFloat(localStorage.getItem('clinic_zoom')) || 1.0;
 
         function getTodayKey() {
             const today = new Date();
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
+        // إظهار/إخفاء خانة (كشف / متابعة) بحيث تنطبق على التغذية العلاجية فقط
+        function handleCategoryChange() {
+            const category = document.getElementById('patientCategory').value;
+            const visitTypeSelect = document.getElementById('patientVisitType');
+            if (category === 'تغذية علاجية') {
+                visitTypeSelect.style.display = 'block';
+            } else {
+                visitTypeSelect.style.display = 'none';
+            }
+        }
+
+        // توليد شارات القسم ونوع الزيارة
         function getPatientBadgesHTML(p) {
             const category = p.category || 'تغذية علاجية';
+            let html = '';
             if (category === 'تغذية علاجية') {
                 const vType = p.visitType || 'كشف';
-                return `<span class="badge-tag badge-nutrition">تغذية علاجية</span><span class="badge-tag ${vType === 'متابعة' ? 'badge-motabaa' : 'badge-kashf'}">${vType}</span>`;
+                const vClass = vType === 'متابعة' ? 'badge-motabaa' : 'badge-kashf';
+                html += `<span class="badge-tag badge-nutrition"><i class="fa-solid fa-apple-whole"></i> تغذية علاجية</span>`;
+                html += `<span class="badge-tag ${vClass}">${vType}</span>`;
+            } else if (category === 'علاج طبيعي') {
+                html += `<span class="badge-tag badge-physio"><i class="fa-solid fa-person-walking"></i> علاج طبيعي</span>`;
             }
-            return `<span class="badge-tag badge-physio">علاج طبيعي</span>`;
+            return html;
         }
 
+        // --- واجهة المستخدم (UI) والـ Modals ---
+        let modalResolve = null;
+        function showCustomModal({ type, title, message, defaultValue = '', isDanger = false, icon = 'fa-circle-question' }) {
+            return new Promise((resolve) => {
+                document.getElementById('custom-modal-title').innerText = title;
+                document.getElementById('custom-modal-message').innerText = message;
+                document.getElementById('custom-modal-icon').innerHTML = `<i class="fa-solid ${icon}"></i>`;
+                const box = document.getElementById('custom-modal-box');
+                const inputEl = document.getElementById('custom-modal-input');
+                
+                if(isDanger) box.classList.add('danger-modal'); else box.classList.remove('danger-modal');
+                if(type === 'prompt') { inputEl.style.display = 'block'; inputEl.value = defaultValue; setTimeout(() => inputEl.focus(), 100); } 
+                else { inputEl.style.display = 'none'; }
+                
+                document.getElementById('custom-modal-overlay').style.display = 'flex';
+                modalResolve = resolve;
+            });
+        }
+        function closeModal(value) { document.getElementById('custom-modal-overlay').style.display = 'none'; if (modalResolve) { modalResolve(value); modalResolve = null; } }
+        document.getElementById('custom-modal-cancel').onclick = () => closeModal(null);
+        document.getElementById('custom-modal-confirm').onclick = () => { const input = document.getElementById('custom-modal-input'); if (input.style.display !== 'none') closeModal(input.value); else closeModal(true); };
+        document.getElementById('custom-modal-input').addEventListener('keyup', function(e) { if (e.key === 'Enter') closeModal(this.value); });
+
+        function applyThemeToLogo(theme) { const logo = document.getElementById('displayModeLogo'); if(logo) logo.src = theme === 'dark' ? 'Logo-Dr-Aya-W.webp' : 'Logo-Dr-Aya.webp'; }
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const currentSavedTheme = localStorage.getItem('clinic_queue_theme') || 'light';
+        if (currentSavedTheme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); if(toggleSwitch) toggleSwitch.checked = true; }
+        if(toggleSwitch) { toggleSwitch.addEventListener('change', (e) => { const newTheme = e.target.checked ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('clinic_queue_theme', newTheme); applyThemeToLogo(newTheme); }); }
+
+        function changeZoom(amount) { currentZoom += amount; if(currentZoom < 0.5) currentZoom = 0.5; if(currentZoom > 1.5) currentZoom = 1.5; localStorage.setItem('clinic_zoom', currentZoom); updateZoomUI(); }
+        function updateZoomUI() { const zText = document.getElementById('zoomLevelText'); if(zText) zText.innerText = Math.round(currentZoom * 100) + '%'; const zw = document.getElementById('zoom-wrapper'); if(zw) zw.style.transform = `scale(${currentZoom})`; }
+
+        function openPatientCardSearch(name) { localStorage.setItem('clinic_auto_search_name', name); window.open('cards.html', '_blank'); }
+        function openDisplayWindow() { window.open(window.location.pathname + '?view=display', '_blank'); }
+        function openDoctorWindow() { window.open(window.location.pathname + '?view=doctor', '_blank'); }
+
+        // --- منطق البيانات المتزامنة (Firebase Master) ---
         function syncChanges(newPatientsList) {
             const today = getTodayKey();
+            // 1. التحديث اللحظي لجميع الأجهزة عبر Firebase
             if (firebaseDB) firebaseDB.ref(`daily_queues/${today}`).set(newPatientsList);
+            // 2. الأرشفة في جوجل شيت
+            if (GOOGLE_APP_URL) {
+                fetch(GOOGLE_APP_URL, { 
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify({
+                        date: today,
+                        patients: newPatientsList.map(p => ({
+                            name: p.name,
+                            category: p.category || 'تغذية علاجية',
+                            visitType: (p.category === 'علاج طبيعي') ? '-' : (p.visitType || 'كشف'),
+                            entered: Boolean(p.entered)
+                        }))
+                    }) 
+                }).catch(e => console.log(e));
+            }
         }
 
+        // إضافة مريض يدوياً من داخل clinic.html
         function addPatient() {
             const input = document.getElementById('patientName');
             const category = document.getElementById('patientCategory').value;
             const visitType = (category === 'تغذية علاجية') ? document.getElementById('patientVisitType').value : '-';
             const name = input.value.trim();
             if (name) {
-                globalPatientsList.push({ id: Date.now().toString(), name, category, visitType, entered: false });
+                globalPatientsList.push({
+                    id: Date.now() + Math.random().toString(36).substring(7),
+                    name: name,
+                    category: category,
+                    visitType: visitType,
+                    entered: false
+                });
                 syncChanges(globalPatientsList);
                 input.value = '';
             }
         }
 
         function handleEnter(e) { if (e.key === 'Enter') addPatient(); }
+        async function deletePatient(index) { const isConfirmed = await showCustomModal({ type: 'confirm', title: 'تأكيد الحذف', message: 'متأكد من مسح المريض؟', isDanger: true, icon: 'fa-trash-can' }); if(isConfirmed === true) { globalPatientsList.splice(index, 1); syncChanges(globalPatientsList); } }
+        async function editPatient(index) { const newName = await showCustomModal({ type: 'prompt', title: 'تعديل الاسم', message: 'تعديل:', defaultValue: globalPatientsList[index].name, icon: 'fa-pen-to-square' }); if (newName && newName.trim() !== "") { globalPatientsList[index].name = newName.trim(); syncChanges(globalPatientsList); } }
+        function movePatient(index, dir) { if (dir === 'up' && index > 0) { [globalPatientsList[index], globalPatientsList[index - 1]] = [globalPatientsList[index - 1], globalPatientsList[index]]; } else if (dir === 'down' && index < globalPatientsList.length - 1) { [globalPatientsList[index], globalPatientsList[index + 1]] = [globalPatientsList[index + 1], globalPatientsList[index]]; } syncChanges(globalPatientsList); }
         function togglePatientEntered(index) { globalPatientsList[index].entered = !globalPatientsList[index].entered; syncChanges(globalPatientsList); }
-        function deletePatient(index) { globalPatientsList.splice(index, 1); syncChanges(globalPatientsList); }
 
+        // --- دوال العرض للواجهات المختلفة ---
         function renderAdminView(patients) {
             const listContainer = document.getElementById('admin-patient-list');
+            document.getElementById('statKashf').innerText = patients.length;
             if (patients.length === 0) { listContainer.innerHTML = '<div style="text-align:center; padding: 20px; opacity:0.5;">لا يوجد مرضى حالياً.</div>'; return; }
+            
             let html = '';
             patients.forEach((p, index) => {
-                html += `<div class="patient-item-admin ${p.entered ? 'entered' : ''}">
-                    <div class="patient-name-container">
-                        <span class="num-circle">${index + 1}</span>
-                        <span class="clickable-name">${p.name}</span>
-                        ${getPatientBadgesHTML(p)}
-                    </div>
-                    <div class="action-btns">
-                        <button onclick="togglePatientEntered(${index})">${p.entered ? 'تراجع' : 'دخل'}</button>
-                        <button onclick="deletePatient(${index})" style="color:var(--danger)">حذف</button>
-                    </div>
-                </div>`;
+                const isEntered = p.entered;
+                const rowClass = isEntered ? 'patient-item-admin entered' : 'patient-item-admin';
+                const actionBtn = isEntered ? `<button class="btn-undo" onclick="togglePatientEntered(${index})"><i class="fa-solid fa-rotate-left"></i> تراجع</button>` : `<button class="btn-enter" onclick="togglePatientEntered(${index})"><i class="fa-solid fa-check-circle"></i> دخل</button>`;
+                html += `
+                    <div class="${rowClass}">
+                        <div class="patient-name-container">
+                            <span class="num-circle"><span>${index + 1}</span></span> 
+                            <span class="clickable-name" onclick="openPatientCardSearch('${p.name}')">${p.name} <i class="fa-solid fa-magnifying-glass"></i></span>
+                            ${getPatientBadgesHTML(p)}
+                        </div>
+                        <div class="action-btns">
+                            ${actionBtn}
+                            <button onclick="movePatient(${index}, 'up')" ${isEntered ? 'disabled style="opacity:0.5"' : ''}><i class="fa-solid fa-arrow-up"></i></button>
+                            <button onclick="movePatient(${index}, 'down')" ${isEntered ? 'disabled style="opacity:0.5"' : ''}><i class="fa-solid fa-arrow-down"></i></button>
+                            <button onclick="editPatient(${index})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-delete" onclick="deletePatient(${index})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`;
             });
             listContainer.innerHTML = html;
         }
 
         function renderDoctorView(patients) {
             const listContainer = document.getElementById('doctor-patient-list');
-            listContainer.innerHTML = patients.map((p, index) => `
-                <div class="patient-item-admin">
-                    <div class="patient-name-container"><span class="num-circle">${index + 1}</span> <strong>${p.name}</strong> ${getPatientBadgesHTML(p)}</div>
-                    <div>${p.entered ? 'منتهي' : 'انتظار'}</div>
-                </div>`).join('');
+            if (patients.length === 0) { listContainer.innerHTML = '<div style="text-align:center; padding: 30px; opacity:0.5;">لا يوجد مرضى في القائمة لليوم: ' + getTodayKey() + '</div>'; return; }
+
+            let lastEnteredIndex = -1;
+            patients.forEach((p, i) => { if(p.entered) lastEnteredIndex = i; });
+
+            let html = '';
+            patients.forEach((p, i) => {
+                const isEntered = p.entered;
+                let rowClass = 'patient-item-admin';
+                let iconHTML = '';
+                if (isEntered) {
+                    if (i === lastEnteredIndex) { rowClass += ' current-inside'; iconHTML = `<span style="color:var(--primary-blue); font-weight:bold;"><i class="fa-solid fa-user-doctor"></i> بالداخل</span>`; } 
+                    else { rowClass += ' entered'; iconHTML = `<span style="color:var(--primary-green); font-weight:bold;"><i class="fa-solid fa-check-double"></i> انتهى</span>`; }
+                } else { iconHTML = `<span style="color:var(--text-dark); opacity:0.8;"><i class="fa-regular fa-clock"></i> انتظار</span>`; }
+
+                html += `
+                    <div class="${rowClass}" style="padding: 20px;">
+                        <div class="patient-name-container">
+                            <span class="num-circle"><span>${i + 1}</span></span> 
+                            <span class="clickable-name" onclick="openPatientCardSearch('${p.name}')">${p.name} <i class="fa-solid fa-magnifying-glass"></i></span>
+                            ${getPatientBadgesHTML(p)}
+                        </div>
+                        <div>${iconHTML}</div>
+                    </div>`;
+            });
+            listContainer.innerHTML = html;
+            document.getElementById('docSyncIndicator').innerHTML = '<i class="fa-solid fa-circle-check" style="color:#ffffff;"></i> متصل لحظياً';
         }
 
         function renderDisplayView(patients) {
             const listContainer = document.getElementById('display-patient-list');
-            const waiting = patients.filter(p => !p.entered).slice(0, 5);
-            listContainer.innerHTML = waiting.map((p, index) => `
-                <div class="patient-card ${index === 0 ? 'active-patient' : ''}">
-                    <div class="patient-number">${index + 1}</div>
-                    <div>${p.name}</div>
-                </div>`).join('');
+            const waitingPatients = patients.filter(p => !p.entered).slice(0, 10);
+            
+            const disappeared = currentlyDisplayedPatients.filter(oldP => !waitingPatients.find(newP => newP.id === oldP.id));
+            disappeared.forEach(dp => { const el = document.getElementById(`patient-${dp.id}`); if (el) el.classList.add('exiting'); });
+
+            setTimeout(() => {
+                let html = '';
+                waitingPatients.forEach((p, index) => {
+                    const isNew = !currentlyDisplayedPatients.find(cp => cp.id === p.id);
+                    const activeClass = index === 0 ? 'active-patient' : '';
+                    const enteringClass = isNew ? 'entering' : '';
+                    html += `
+                        <div class="patient-card ${activeClass} ${enteringClass}" id="patient-${p.id}">
+                            <div class="patient-number"><span>${index + 1}</span></div>
+                            <div>${p.name}</div>
+                        </div>`;
+                });
+                listContainer.innerHTML = html;
+                currentlyDisplayedPatients = waitingPatients.map(p => ({id: p.id}));
+            }, disappeared.length > 0 ? 300 : 0);
         }
 
-        function openDisplayWindow() { window.open(window.location.pathname + '?view=display', '_blank'); }
-        function openDoctorWindow() { window.open(window.location.pathname + '?view=doctor', '_blank'); }
-
+        // --- دالة التشغيل الرئيسية ---
         function init() {
+            applyThemeToLogo(currentSavedTheme); updateZoomUI();
             const today = getTodayKey();
-            document.getElementById('todayDate').innerText = today;
+            const dateEl = document.getElementById('todayDate'); if(dateEl) dateEl.innerText = today;
             const view = new URLSearchParams(window.location.search).get('view');
-            if (view === 'display') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'none'; document.getElementById('display-view').style.display = 'block'; }
+
+            // ترتيب الشاشات بناءً على الرابط
+            if (view === 'display') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'none'; document.getElementById('display-view').style.display = 'block'; document.body.classList.add('is-display-view'); } 
             else if (view === 'doctor') { document.getElementById('admin-view').style.display = 'none'; document.getElementById('display-view').style.display = 'none'; document.getElementById('doctor-view').style.display = 'block'; }
 
+            // المركزية اللحظية: كل الأجهزة بتسمع من فايربيز بشكل مستمر
             if (firebaseDB) {
                 firebaseDB.ref(`daily_queues/${today}`).on('value', (snapshot) => {
                     const rawVal = snapshot.val();
                     globalPatientsList = rawVal ? (Array.isArray(rawVal) ? rawVal : Object.values(rawVal)) : [];
+                    
+                    // تحديث الشاشة المفتوحة أياً كانت (ريسبشن - دكتور - عرض)
                     if (view === 'display') renderDisplayView(globalPatientsList);
                     else if (view === 'doctor') renderDoctorView(globalPatientsList);
                     else renderAdminView(globalPatientsList);
                 });
+            } else {
+                alert("لم يتم الاتصال بالسيرفر المركزي!");
             }
         }
+        
         init();
     </script>
 </body>
