@@ -475,6 +475,7 @@
 
     <!-- 1. استدعاء الهيدر وعناصر الأنيميشن من الملف الخارجي -->
     <div id="header-placeholder"></div>
+<main>
 
     <section class="hero">
         <div class="hero-group">
@@ -973,6 +974,7 @@
 
     <!-- 2. استدعاء الفوتر وزر الواتساب من الملف الخارجي -->
     <div id="footer-placeholder"></div>
+    </section>
 
     <!-- 3. كود الجافاسكريبت الموحد للاستدعاء والأنيميشن -->
     <script>
@@ -985,6 +987,7 @@
         })();
 
         // دالة سحب الملفات الخارجية
+        // دالة سحب الملفات الخارجية
         function loadComponent(url, placeholderId) {
             fetch(url)
                 .then(response => response.text())
@@ -996,6 +999,11 @@
                     
                     container.querySelectorAll('[data-en]').forEach(el => {
                         el.innerHTML = el.getAttribute(`data-${currentLang}`);
+                    });
+
+                    container.querySelectorAll('a.whatsapp-float-btn').forEach(a => a.setAttribute('aria-label', 'WhatsApp'));
+                    container.querySelectorAll('a.social-card, a.contact-card').forEach((a, i) => {
+                        if (!a.getAttribute('aria-label')) a.setAttribute('aria-label', a.textContent.trim() || ('Social Link ' + (i + 1)));
                     });
 
                     if(placeholderId === 'header-placeholder') {
