@@ -246,20 +246,38 @@
         .print-header h1 { color: var(--primary-blue); font-size: 32px; margin: 0; font-weight: 900;}
         .print-header p { color: #2c3e50; font-size: 16px; margin: 5px 0; font-weight: 700;}
         
+        /* إعدادات الطباعة لاحتواء الهيدر وجدول الـ 7 أيام في صفحة واحدة بالضبط (1 Sheet) */
+        @page {
+            size: A4 landscape;
+            margin: 6mm;
+        }
         @media print {
-            body { background: white; padding: 0; margin: 0; }
-            .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay { display: none !important; }
-            .container { max-width: 100%; padding: 0; margin: 0; }
-            .card-panel { box-shadow: none; border: none; padding: 0; margin: 0; background: white;}
-            .card-panel h2 { display: none; }
-            .print-header { display: block; border-bottom: 3px solid var(--primary-green); padding-bottom: 15px; margin-bottom: 20px;}
-            .diet-table th { background-color: var(--primary-blue) !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            html, body { background: white !important; padding: 0 !important; margin: 0 !important; height: auto !important; }
+            .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay, #toast { display: none !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .card-panel { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; background: white !important; }
+            .card-panel h2 { display: none !important; }
+            
+            .print-header { 
+                display: flex !important; justify-content: space-between; align-items: center;
+                border-bottom: 2px solid var(--primary-green); padding-bottom: 6px; margin-bottom: 8px;
+            }
+            .print-header h1 { color: var(--primary-blue) !important; font-size: 20px !important; margin: 0 !important; font-weight: 900;}
+            .print-header p { color: #2c3e50 !important; font-size: 13px !important; margin: 0 !important; padding: 0 !important; border: none !important; font-weight: 700;}
+            
+            .diet-table-wrapper { overflow: visible !important; box-shadow: none !important; }
+            .diet-table { border: 1.5px solid #000 !important; min-width: 100% !important; width: 100% !important; page-break-inside: auto !important; }
+            .diet-table tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            .diet-table th, .diet-table td { border: 1px solid #444 !important; padding: 4px 6px !important; font-size: 11px !important; line-height: 1.35 !important; }
+            .diet-table th { background-color: var(--primary-blue) !important; color: white !important; font-size: 12px !important; padding: 6px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .diet-table th.kcal-col-header { background-color: var(--primary-green) !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .diet-table td:first-child { background: #f8fbfd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: var(--primary-blue) !important;}
-            .diet-table td.day-kcal-cell { background: #f4faeb !important; color: #2c3e50 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .diet-table td:first-child { background: #f8fbfd !important; color: var(--primary-blue) !important; font-size: 13px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .diet-table td.day-kcal-cell { background: #f4faeb !important; color: #2c3e50 !important; font-size: 13px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .diet-table td.day-kcal-cell span { font-size: 9.5px !important; color: #333 !important; }
             .diet-table td { color: #000 !important; }
-            .diet-table { border: 2px solid #000; page-break-inside: avoid; min-width: 100%;}
-            .diet-table th, .diet-table td { border: 1px solid #000; padding: 8px; font-size: 12px;}
+            .meal-item { margin-bottom: 2px !important; padding-right: 10px !important; }
+            .meal-item::before { font-size: 13px !important; top: -1px !important; }
+            .meal-item-kcal { font-size: 9.5px !important; }
         }
     </style>
 </head>
@@ -362,11 +380,12 @@
         <div class="card-panel" id="resultPanel" style="display: none;">
             
             <div class="print-header">
-                <h1>عيادة د. آية خطاب</h1>
-                <p>استشاري التغذية العلاجية والسمنة والنحافة</p>
-                <p style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                    اسم المريض: <strong id="printPatientName">_________</strong> | 
-                    التاريخ: <strong id="printDate">_________</strong> | 
+                <div>
+                    <h1>عيادة د. آية خطاب <span style="font-size: 13px; color: #2c3e50; font-weight: 700;">— استشاري التغذية العلاجية والسمنة والنحافة</span></h1>
+                </div>
+                <p>
+                    اسم المريض: <strong id="printPatientName">_________</strong> &nbsp;|&nbsp; 
+                    التاريخ: <strong id="printDate">_________</strong> &nbsp;|&nbsp; 
                     السعرات المستهدفة: <strong id="printCalories">_________</strong> kcal
                 </p>
             </div>
@@ -898,7 +917,6 @@
             ]
         };
 
-        // دالة تقسم إجمالي حصص اليوم على الـ 4 وجبات بدقة رياضية بحيث مجموع الـ 4 وجبات = الإجمالي بالمللي
         function splitServingsExact(totalServings, weights) {
             if (totalServings <= 0) return [0, 0, 0, 0];
             let raw = weights.map(w => totalServings * w);
@@ -915,7 +933,6 @@
             return result;
         }
 
-        // بناء محتوى الوجبة بالعربي الواضح حسب نوع الوجبة (فطار B، سناك S، غداء L، عشاء D)
         function buildMealObject(servingsArr, mealKey = 'L') {
             const categories = ['starch', 'meat', 'veg', 'fruit', 'milk', 'fat'];
             let items = [];
@@ -1023,32 +1040,26 @@
             document.getElementById('printDate').innerText = document.getElementById('dietDate').value;
             document.getElementById('printPatientName').innerText = selectedPatientName || typedName || 'بدون اسم';
 
-            // حساب الجرامات المستهدفة وفق معادلة ADA الرسمية
             let targetCarbGrams = (kcal * (carbP / 100)) / 4;
             let targetProGrams = (kcal * (proP / 100)) / 4;
             let targetFatGrams = (kcal * (fatP / 100)) / 9;
 
-            // الحصص الأساسية الثابتة يومياً (ألبان + خضروات + فاكهة) متناسبة مع حجم السعرات
             let milkTotal = kcal < 1200 ? 1 : 2;
             let vegTotal = kcal < 1200 ? 2 : 3;
             let fruitTotal = kcal < 1300 ? 2 : 3;
 
-            // خصم الكارب القادم من الألبان والخضار والفاكهة لحساب حصص النشويات (15g كارب للحصة)
             let fixedCarb = (milkTotal * 12) + (vegTotal * 5) + (fruitTotal * 15);
             let remCarb = Math.max(0, targetCarbGrams - fixedCarb);
             let starchTotal = Math.max(1, Math.round(remCarb / 15));
 
-            // خصم البروتين القادم من الألبان والخضار والنشويات لحساب حصص اللحوم (7g بروتين للحصة)
             let fixedPro = (milkTotal * 8) + (vegTotal * 2) + (starchTotal * 3);
             let remPro = Math.max(0, targetProGrams - fixedPro);
             let meatTotal = Math.max(1, Math.round(remPro / 7));
 
-            // خصم الدهون القادمة من اللحوم والألبان لحساب حصص الدهون المضافة (5g دهون للحصة)
             let fixedFat = (milkTotal * 2) + (meatTotal * 3.5);
             let remFat = Math.max(0, targetFatGrams - fixedFat);
             let fatTotal = Math.max(0, Math.round(remFat / 5));
 
-            // معايرة ذكية (Auto-Calibration) لضمان أن مجموع سعرات الحصص يساوي السعرات المطلوبة (kcal) بالضبط
             let estTotalKcal = () => (starchTotal * 80) + (meatTotal * 60) + (vegTotal * 25) + (fruitTotal * 60) + (milkTotal * 100) + (fatTotal * 45);
             
             let guard = 0;
@@ -1066,7 +1077,6 @@
                 guard++;
             }
 
-            // توزيع الحصص بدقة 100% على الـ 4 وجبات بدون أي تقريب زائد (B, S, L, D)
             let starchSplit = splitServingsExact(starchTotal, [0.30, 0.05, 0.40, 0.25]);
             let meatSplit   = splitServingsExact(meatTotal,   [0.25, 0.00, 0.50, 0.25]);
             let vegSplit    = splitServingsExact(vegTotal,    [0.00, 0.00, 0.65, 0.35]);
