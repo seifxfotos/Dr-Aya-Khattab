@@ -243,6 +243,143 @@
         .toast.error { background: var(--danger); }
 
         .print-header { display: none; }
+
+        /* ========================================================
+           إعدادات الطباعة والـ PDF (صفحة واحدة، خلفية بيضاء، بدون حواف المتصفح)
+           ======================================================== */
+        @page {
+            size: landscape;
+            margin: 0 !important;
+        }
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-sizing: border-box !important;
+            }
+            html, body, body.dark-mode {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 6mm 10mm !important;
+                width: 100% !important;
+                height: auto !important;
+                zoom: 0.82;
+            }
+            .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay, #toast {
+                display: none !important;
+            }
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .card-panel, body.dark-mode .card-panel {
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .card-panel h2 { display: none !important; }
+
+            .print-header {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                border-bottom: 2.5px solid #8CC63F !important;
+                padding-bottom: 5px !important;
+                margin-bottom: 7px !important;
+                background: #ffffff !important;
+            }
+            .print-header h1 {
+                color: #0093D0 !important;
+                font-size: 21px !important;
+                font-weight: 900 !important;
+                margin: 0 !important;
+            }
+            .print-header p {
+                color: #000000 !important;
+                font-size: 15px !important;
+                font-weight: 800 !important;
+                margin: 0 !important;
+            }
+
+            .diet-table-wrapper {
+                overflow: visible !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .diet-table {
+                width: 100% !important;
+                min-width: 100% !important;
+                border-collapse: collapse !important;
+                border: 2px solid #000000 !important;
+                background: #ffffff !important;
+                page-break-inside: avoid !important;
+            }
+            .diet-table tr {
+                page-break-inside: avoid !important;
+                background: #ffffff !important;
+            }
+            .diet-table th, body.dark-mode .diet-table th {
+                background-color: #0093D0 !important;
+                color: #ffffff !important;
+                border: 1px solid #222222 !important;
+                padding: 4px 6px !important;
+                font-size: 13px !important;
+                font-weight: 800 !important;
+            }
+            .diet-table th.kcal-col-header, body.dark-mode .diet-table th.kcal-col-header {
+                background-color: #8CC63F !important;
+                color: #ffffff !important;
+            }
+            .diet-table td, body.dark-mode .diet-table td {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #333333 !important;
+                padding: 3px 6px !important;
+                font-size: 11px !important;
+                line-height: 1.24 !important;
+                font-weight: 700 !important;
+                vertical-align: middle !important;
+            }
+            .diet-table td:first-child, body.dark-mode .diet-table td:first-child {
+                background-color: #f0f8fc !important;
+                color: #0093D0 !important;
+                font-size: 13.5px !important;
+                font-weight: 900 !important;
+                text-align: center !important;
+            }
+            .diet-table td.day-kcal-cell, body.dark-mode .diet-table td.day-kcal-cell {
+                background-color: #f4faeb !important;
+                color: #1e3a00 !important;
+                font-size: 14px !important;
+                font-weight: 900 !important;
+                text-align: center !important;
+            }
+            .diet-table td.day-kcal-cell span {
+                color: #333333 !important;
+                font-size: 9px !important;
+            }
+            .meal-item {
+                margin-bottom: 1px !important;
+                padding-right: 10px !important;
+                color: #000000 !important;
+            }
+            .meal-item::before {
+                font-size: 12px !important;
+                top: -1px !important;
+                color: #8CC63F !important;
+            }
+            .meal-item-kcal {
+                font-size: 9.5px !important;
+                color: #0077a8 !important;
+                font-weight: 800 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -343,6 +480,7 @@
         <!-- Result Panel -->
         <div class="card-panel" id="resultPanel" style="display: none;">
             
+            <!-- هيدر الطباعة: د. آية خطاب + اسم المريض والتاريخ فقط -->
             <div class="print-header">
                 <h1>د. آية خطاب</h1>
                 <p>
@@ -1145,7 +1283,7 @@
         }
 
         // ==========================================
-        // 8. Save & Isolated 1-Page Clean Print Function
+        // 8. Save & Print Functions
         // ==========================================
         function saveDietToFirebase() {
             const typedName = unifiedInput.value.trim();
@@ -1217,188 +1355,27 @@
             }
         }
 
-        // طباعة ذكية معزولة في صفحة واحدة بيضاء ناصعة بدون أي روابط أو عنوان تاب أو وضع ليلي
         function prepareAndPrint() {
             const pName = selectedPatientName || unifiedInput.value.trim() || '_________';
             const pDate = document.getElementById('dietDate').value || '_________';
-            const tableRowsHtml = document.getElementById('dietTableBody').innerHTML;
 
-            let printIframe = document.getElementById('cleanPrintIframe');
-            if (!printIframe) {
-                printIframe = document.createElement('iframe');
-                printIframe.id = 'cleanPrintIframe';
-                printIframe.style.position = 'fixed';
-                printIframe.style.right = '0';
-                printIframe.style.bottom = '0';
-                printIframe.style.width = '0';
-                printIframe.style.height = '0';
-                printIframe.style.border = '0';
-                document.body.appendChild(printIframe);
-            }
+            document.getElementById('printPatientName').innerText = pName;
+            document.getElementById('printDate').innerText = pDate;
 
-            const doc = printIframe.contentWindow.document;
-            doc.open();
-            doc.write(`<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>&nbsp;</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: A4 landscape;
-            margin: 0mm;
-        }
-        * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffffff !important;
-            color: #000000 !important;
-            font-family: 'Cairo', sans-serif;
-        }
-        .print-page {
-            width: 100%;
-            padding: 8mm 10mm 6mm 10mm;
-            background: #ffffff !important;
-        }
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2.5px solid #8CC63F;
-            padding-bottom: 5px;
-            margin-bottom: 8px;
-        }
-        .header-bar h1 {
-            margin: 0;
-            color: #0093D0;
-            font-size: 21px;
-            font-weight: 900;
-        }
-        .header-bar .meta {
-            margin: 0;
-            color: #111111;
-            font-size: 14.5px;
-            font-weight: 800;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            border: 2px solid #222222;
-            background: #ffffff !important;
-        }
-        th, td {
-            border: 1px solid #333333;
-            padding: 4px 6px;
-            vertical-align: middle;
-        }
-        th {
-            background-color: #0093D0 !important;
-            color: #ffffff !important;
-            font-size: 12.5px;
-            font-weight: 800;
-            text-align: center;
-            width: 19.5%;
-        }
-        th:first-child { width: 9%; }
-        th.kcal-col-header {
-            width: 13%;
-            background-color: #8CC63F !important;
-            color: #ffffff !important;
-        }
-        td {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            font-size: 10.5px;
-            font-weight: 700;
-            line-height: 1.25;
-        }
-        td:first-child {
-            background-color: #f0f8fc !important;
-            color: #0093D0 !important;
-            font-size: 13px;
-            font-weight: 900;
-            text-align: center;
-        }
-        td.day-kcal-cell {
-            background-color: #f4faeb !important;
-            color: #1e3a00 !important;
-            font-size: 13.5px;
-            font-weight: 900;
-            text-align: center;
-        }
-        td.day-kcal-cell span {
-            display: block;
-            font-size: 9px;
-            color: #333333 !important;
-            font-weight: 700;
-        }
-        .meal-item {
-            margin-bottom: 1.5px;
-            position: relative;
-            padding-right: 10px;
-            color: #000000 !important;
-        }
-        .meal-item::before {
-            content: "•";
-            color: #8CC63F;
-            position: absolute;
-            right: 0;
-            font-weight: bold;
-            font-size: 13px;
-            top: -1px;
-        }
-        .meal-item-kcal {
-            font-size: 9.5px;
-            color: #0077a8 !important;
-            font-weight: 800;
-        }
-    </style>
-</head>
-<body>
-    <div class="print-page">
-        <div class="header-bar">
-            <h1>د. آية خطاب</h1>
-            <div class="meta">
-                اسم المريض: <strong>${pName}</strong> &nbsp;&nbsp;|&nbsp;&nbsp; التاريخ: <strong>${pDate}</strong>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>اليوم</th>
-                    <th>الإفطار</th>
-                    <th>سناك</th>
-                    <th>الغداء</th>
-                    <th>العشاء</th>
-                    <th class="kcal-col-header">إجمالي سعرات اليوم</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${tableRowsHtml}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>`);
-            doc.close();
+            const wasDark = document.body.classList.contains('dark-mode');
+            if (wasDark) document.body.classList.remove('dark-mode');
 
             const originalTitle = document.title;
-            document.title = " ";
+            document.title = "\u00A0";
 
-            setTimeout(() => {
-                printIframe.contentWindow.focus();
-                printIframe.contentWindow.print();
-                setTimeout(() => { document.title = originalTitle; }, 500);
-            }, 350);
+            window.print();
+
+            const restoreAfterPrint = () => {
+                document.title = originalTitle;
+                if (wasDark) document.body.classList.add('dark-mode');
+                window.removeEventListener('afterprint', restoreAfterPrint);
+            };
+            window.addEventListener('afterprint', restoreAfterPrint);
         }
 
         function showToast(msg, type = "success") {
