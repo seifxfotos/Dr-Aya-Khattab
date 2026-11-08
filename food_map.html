@@ -14,6 +14,7 @@
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     
     <style>
@@ -129,6 +130,9 @@
         }
 
         /* Search & Inputs */
+        .search-row { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; align-items: end; }
+        @media (max-width: 700px) { .search-row { grid-template-columns: 1fr; } }
+
         .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 15px; overflow: visible !important; }
         .input-group label { font-weight: 700; margin-bottom: 5px; font-size: 14px; color: var(--text-dark); }
         .input-group input { 
@@ -140,18 +144,48 @@
         
         ul.custom-autocomplete { 
             position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); 
-            border: 2px solid var(--primary-blue); border-radius: 8px; max-height: 250px; 
+            border: 2px solid var(--primary-blue); border-radius: 8px; max-height: 260px; 
             overflow-y: auto; z-index: 99999; box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
             display: none; list-style: none; padding: 0; margin: 2px 0 0 0;
         }
         li.autocomplete-item { 
-            padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border); 
+            padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border); 
             font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0;
+            display: flex; justify-content: space-between; align-items: center;
         }
         li.autocomplete-item:hover { background: var(--primary-blue); color: white; }
+        li.autocomplete-item:hover .badge-saved { background: white; color: var(--primary-blue); }
+
+        .badge-saved {
+            background: rgba(140, 198, 63, 0.18); color: var(--primary-green);
+            padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 800;
+        }
+        .badge-card {
+            background: rgba(0, 147, 208, 0.12); color: var(--primary-blue);
+            padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
+        }
 
         body.dark-mode li.autocomplete-item:hover { background: #333333; }
-        body.dark-mode #patientInfo, body.dark-mode #newPatientSection { background: #1a1a1a !important; border-color: #333333 !important; }
+        body.dark-mode #patientInfo { background: #1a1a1a !important; border-color: #333333 !important; }
+
+        /* سجل أنظمة وتواريخ المريض */
+        .plans-history-bar {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px;
+            border-top: 1px dashed var(--border); align-items: center;
+        }
+        .plan-date-chip {
+            background: var(--card-bg); border: 2px solid var(--primary-blue); color: var(--text-dark);
+            padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .plan-date-chip:hover, .plan-date-chip.active {
+            background: var(--primary-blue); color: white;
+        }
+        .plan-date-chip .del-chip {
+            color: var(--danger); font-size: 13px; padding: 0 4px; border-radius: 50%; transition: 0.2s;
+        }
+        .plan-date-chip:hover .del-chip, .plan-date-chip.active .del-chip { color: #ffdede; }
+        .plan-date-chip .del-chip:hover { transform: scale(1.25); color: #ff4d4d !important; }
 
         .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         @media (max-width: 800px) { .grid-4col { grid-template-columns: repeat(2, 1fr); } }
@@ -166,18 +200,28 @@
         .btn-green { background-color: var(--primary-green); }
         
         .diet-table-wrapper { width: 100%; overflow-x: auto; background: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .diet-table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        .diet-table th, .diet-table td { padding: 15px; border: 1px solid var(--border); vertical-align: top; }
-        .diet-table th { background-color: var(--primary-blue); color: white; font-weight: 800; font-size: 16px; text-align: center; width: 22%;}
-        .diet-table th:first-child { width: 12%; }
+        .diet-table { width: 100%; border-collapse: collapse; min-width: 880px; }
+        .diet-table th, .diet-table td { padding: 14px 12px; border: 1px solid var(--border); vertical-align: top; }
+        .diet-table th { background-color: var(--primary-blue); color: white; font-weight: 800; font-size: 15px; text-align: center; width: 19.5%;}
+        .diet-table th:first-child { width: 10%; }
+        .diet-table th.kcal-col-header { width: 12%; background-color: var(--primary-green); }
         .diet-table td { font-size: 14px; font-weight: 600; line-height: 1.7; transition: 0.2s; cursor: pointer; color: var(--text-dark); }
-        .diet-table td:first-child { font-weight: 800; color: var(--primary-blue); text-align: center; vertical-align: middle; font-size: 16px; background: #f8fbfd;}
+        .diet-table td:first-child { font-weight: 800; color: var(--primary-blue); text-align: center; vertical-align: middle; font-size: 16px; background: #f8fbfd; cursor: default;}
+        .diet-table td.day-kcal-cell {
+            font-weight: 900; color: var(--primary-green); text-align: center; vertical-align: middle;
+            font-size: 16px; background: rgba(140, 198, 63, 0.08); cursor: default; white-space: nowrap;
+        }
+        .diet-table td.day-kcal-cell span {
+            display: block; font-size: 11px; font-weight: 700; color: var(--text-dark); opacity: 0.75; margin-top: 2px;
+        }
         
-        .diet-table td:hover:not(:first-child) { box-shadow: inset 0 0 0 2px var(--primary-blue); }
+        .diet-table td:hover:not(:first-child):not(.day-kcal-cell) { box-shadow: inset 0 0 0 2px var(--primary-blue); }
 
         body.dark-mode .diet-table th { background-color: #222222; }
+        body.dark-mode .diet-table th.kcal-col-header { background-color: #2d4212; }
         body.dark-mode .diet-table td:first-child { background: #1a1a1a; color: #4fa3d1; }
-        body.dark-mode .diet-table td:hover:not(:first-child) { background-color: #222222; }
+        body.dark-mode .diet-table td.day-kcal-cell { background: rgba(140, 198, 63, 0.12); color: #9ed84e; }
+        body.dark-mode .diet-table td:hover:not(:first-child):not(.day-kcal-cell) { background-color: #222222; }
         
         .meal-item { margin-bottom: 5px; position: relative; padding-right: 15px;}
         .meal-item::before { content: "•"; color: var(--primary-green); position: absolute; right: 0; font-weight: bold; font-size: 18px; top: -2px;}
@@ -205,10 +249,12 @@
             .card-panel h2 { display: none; }
             .print-header { display: block; border-bottom: 3px solid var(--primary-green); padding-bottom: 15px; margin-bottom: 20px;}
             .diet-table th { background-color: var(--primary-blue) !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .diet-table th.kcal-col-header { background-color: var(--primary-green) !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .diet-table td:first-child { background: #f8fbfd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: var(--primary-blue) !important;}
+            .diet-table td.day-kcal-cell { background: #f4faeb !important; color: #2c3e50 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .diet-table td { color: #000 !important; }
-            .diet-table { border: 2px solid #000; page-break-inside: avoid;}
-            .diet-table th, .diet-table td { border: 1px solid #000; padding: 10px; font-size: 12px;}
+            .diet-table { border: 2px solid #000; page-break-inside: avoid; min-width: 100%;}
+            .diet-table th, .diet-table td { border: 1px solid #000; padding: 8px; font-size: 12px;}
         }
     </style>
 </head>
@@ -219,7 +265,7 @@
         <div class="header-section">
             <div>
                 <h1>نظام الدايت</h1>
-                <span style="font-size: 14px; opacity: 0.9;">بناء أنظمة متوازنة دقيقة</span>
+                <span style="font-size: 14px; opacity: 0.9;">بناء وحفظ أنظمة متوازنة دقيقة لكل أسبوع</span>
             </div>
             <div class="nav-links">
                 <a href="today.html">إدارة اليوم</a>
@@ -240,41 +286,43 @@
             </div>
         </div>
 
-        <!-- Search Panel -->
+        <!-- Smart Unified Search & Patient Panel -->
         <div class="card-panel search-panel">
-            <h2><i class="fa-solid fa-magnifying-glass"></i> إدارة أنظمة الدايت</h2>
+            <h2><i class="fa-solid fa-user-check"></i> بيانات المريض وسجل أنظمته</h2>
             
-            <div class="input-group">
-                <label>تاريخ النظام</label>
-                <input type="text" id="dietDate" placeholder="اختر التاريخ..." style="background: var(--input-bg); color: var(--text-dark); cursor: pointer; caret-color: transparent;">
-            </div>
-            
-            <div id="existingPatientSection" style="margin-bottom: 15px;">
-                <label style="font-weight: bold; margin-bottom: 5px; display: block; color: var(--primary-blue);">البحث في الأنظمة المحفوظة:</label>
+            <div class="search-row">
                 <div class="input-group" style="margin-bottom: 0;">
-                    <input type="text" id="savedPatientSearch" placeholder="ابحث عن مريض له دايت مسجل..." autocomplete="off">
-                    <ul id="savedPatientAutocomplete" class="custom-autocomplete"></ul>
+                    <label style="color: var(--primary-blue);">اسم المريض (ابحث عن مريض محفوظ أو اكتب اسم مريض جديد):</label>
+                    <input type="text" id="unifiedPatientInput" placeholder="اكتب اسم المريض للبحث أو لإضافة مريض جديد..." autocomplete="off">
+                    <ul id="unifiedPatientAutocomplete" class="custom-autocomplete"></ul>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>تاريخ النظام (الأسبوع)</label>
+                    <input type="text" id="dietDate" placeholder="اختر التاريخ..." style="background: var(--input-bg); color: var(--text-dark); cursor: pointer; caret-color: transparent;">
                 </div>
             </div>
 
-            <button class="btn-main btn-green" onclick="toggleNewPatientSearch()" style="margin-bottom: 15px; width: 100%;">
-                <i class="fa-solid fa-user-plus"></i> عمل نظام لمريض جديد
-            </button>
-            
-            <div id="newPatientSection" style="display: none; margin-bottom: 15px; padding: 15px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border);">
-                <label style="font-weight: bold; margin-bottom: 5px; display: block; color: var(--primary-green);">اختر مريض من كروت العيادة:</label>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <input type="text" id="allPatientSearch" placeholder="اكتب اسم المريض للبحث في الكروت..." autocomplete="off">
-                    <ul id="allPatientAutocomplete" class="custom-autocomplete"></ul>
+            <!-- Patient Info & Saved Plans History Display -->
+            <div id="patientInfo" style="display: none; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px solid var(--primary-blue); margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 13px; opacity: 0.8;">المريض الحالي:</span>
+                        <strong style="color: var(--primary-blue); font-size: 19px; margin-right: 5px;" id="lblPatientName">اسم المريض</strong>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button id="btnDeleteCurrentPlan" onclick="deleteCurrentDisplayedPlan()" class="btn-main" style="background: var(--warning); padding: 6px 14px; font-size: 13px; display: none;">
+                            <i class="fa-solid fa-calendar-xmark"></i> مسح نظام هذا الأسبوع فقط
+                        </button>
+                        <button onclick="showDeleteModal()" class="btn-main" style="background: var(--danger); padding: 6px 14px; font-size: 13px;">
+                            <i class="fa-solid fa-user-xmark"></i> مسح المريض بالكامل
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Patient Info Display -->
-            <div id="patientInfo" style="display: none; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px solid var(--primary-blue);">
-                <strong style="color: var(--primary-blue); font-size: 18px;" id="lblPatientName">اسم المريض</strong>
-                <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button onclick="loadPreviousDiet()" class="btn-main btn-green" style="padding: 6px 15px; font-size: 13px;"><i class="fa-solid fa-clock-rotate-left"></i> استدعاء النظام</button>
-                    <button onclick="showDeleteModal()" class="btn-main" style="background: var(--danger); padding: 6px 15px; font-size: 13px;"><i class="fa-solid fa-trash"></i> مسح المريض والنظام</button>
+                <!-- شريط تواريخ الأنظمة السابقة للمريض -->
+                <div class="plans-history-bar" id="patientPlansBar">
+                    <!-- يظهر هنا أزرار التواريخ المحفوظة للمريض -->
                 </div>
             </div>
         </div>
@@ -284,7 +332,7 @@
             <h2><i class="fa-solid fa-calculator"></i> محددات النظام (الماكروز)</h2>
             <div class="grid-4col">
                 <div class="input-group">
-                    <label>السعرات الحرارية (Kcal)</label>
+                    <label>السعرات الحرارية المستهدفة (Kcal)</label>
                     <input type="number" id="inpCalories" placeholder="مثال: 1500" min="500" max="5000">
                 </div>
                 <div class="input-group">
@@ -314,15 +362,15 @@
                 <p style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
                     اسم المريض: <strong id="printPatientName">_________</strong> | 
                     التاريخ: <strong id="printDate">_________</strong> | 
-                    السعرات: <strong id="printCalories">_________</strong> kcal
+                    السعرات المستهدفة: <strong id="printCalories">_________</strong> kcal
                 </p>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;" class="action-buttons">
-                <h2 style="border: none; margin: 0; padding: 0;"><i class="fa-solid fa-calendar-week"></i> خطة الـ 7 أيام</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="saveDietToFirebase()" class="btn-main btn-green"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ للمريض</button>
-                    <button onclick="window.print()" class="btn-main" style="background: #34495e;"><i class="fa-solid fa-print"></i> طباعة / PDF</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;" class="action-buttons">
+                <h2 style="border: none; margin: 0; padding: 0;"><i class="fa-solid fa-calendar-week"></i> خطة الـ 7 أيام <span id="currentPlanBadge" style="font-size: 13px; color: var(--primary-green); margin-right: 8px;"></span></h2>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="saveDietToFirebase()" class="btn-main btn-green"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ النظام لهذا التاريخ</button>
+                    <button onclick="prepareAndPrint()" class="btn-main" style="background: #34495e;"><i class="fa-solid fa-print"></i> طباعة / تحميل PDF</button>
                 </div>
             </div>
             
@@ -335,6 +383,7 @@
                             <th>سناك</th>
                             <th>الغداء</th>
                             <th>العشاء</th>
+                            <th class="kcal-col-header"><i class="fa-solid fa-fire-flame-curved"></i> إجمالي سعرات اليوم</th>
                         </tr>
                     </thead>
                     <tbody id="dietTableBody">
@@ -342,7 +391,7 @@
                     </tbody>
                 </table>
                 <p style="text-align: center; font-size: 13px; margin-top: 15px; opacity: 0.8;" class="action-buttons">
-                    <i class="fa-solid fa-circle-info"></i> اضغط على أي وجبة في الجدول لتغييرها ببدائل أخرى مطابقة في السعرات.
+                    <i class="fa-solid fa-circle-info"></i> اضغط على أي وجبة في الجدول لتغييرها ببدائل أخرى مطابقة في السعرات (ثم اضغط حفظ).
                 </p>
             </div>
         </div>
@@ -360,14 +409,14 @@
         </div>
     </div>
 
-    <!-- Delete Confirm Modal -->
+    <!-- Delete Confirm Modal (Full Patient) -->
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-box" style="text-align: center;">
             <h3 style="color: var(--danger); border-bottom: none;"><i class="fa-solid fa-triangle-exclamation" style="font-size: 40px;"></i></h3>
-            <h3 style="border-bottom: none; margin-bottom: 5px;">هل أنت متأكد؟</h3>
-            <p style="font-size: 15px; margin-bottom: 25px;">سيتم مسح بيانات الدايت الخاصة بهذا المريض بالكامل ولا يمكن استعادتها.</p>
+            <h3 style="border-bottom: none; margin-bottom: 5px;">هل أنت متأكد من مسح المريض بالكامل؟</h3>
+            <p style="font-size: 15px; margin-bottom: 25px;">سيتم مسح المريض وجميع أنظمة الدايت المحفوظة له في كل الأسابيع نهائياً.</p>
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn-main" style="background: var(--danger);" onclick="deleteDiet()">نعم، امسح النظام</button>
+                <button class="btn-main" style="background: var(--danger);" onclick="deleteDiet()">نعم، امسح المريض بالكامل</button>
                 <button class="btn-main" style="background: #95a5a6;" onclick="closeDeleteModal()">إلغاء</button>
             </div>
         </div>
@@ -377,7 +426,7 @@
 
     <script>
         // ==========================================
-        // Theme Management (Dark Mode)
+        // 1. Theme Management (Dark Mode)
         // ==========================================
         const themeToggle = document.getElementById('themeToggle');
         function toggleTheme() {
@@ -398,81 +447,59 @@
         }
 
         // ==========================================
-        // Date Initialization (Custom Calendar Flatpickr)
+        // 2. Date Initialization (Flatpickr)
         // ==========================================
-        flatpickr("#dietDate", {
+        const datePickerInstance = flatpickr("#dietDate", {
             locale: "ar",
             defaultDate: new Date(), 
             dateFormat: "Y-m-d",
-            disableMobile: "true" 
-        });
-
-        // ==========================================
-        // Firebase Configuration (Clinic System)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
-            authDomain: "clinic-system-fe2e4.firebaseapp.com",
-            databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
-            projectId: "clinic-system-fe2e4",
-            storageBucket: "clinic-system-fe2e4.firebasestorage.app",
-            messagingSenderId: "528745148277",
-            appId: "1:528745148277:web:7bc9ccee83463163a52d3c"
-        };
-        
-        let db;
-        let allPatients = []; 
-        let savedPatients = []; 
-        
-        let selectedPatientKey = "";
-        let selectedPatientName = "";
-
-        if (!firebase.apps.length) { 
-            firebase.initializeApp(firebaseConfig); 
-        }
-        db = firebase.database();
-
-        // ==========================================
-        // Load Patients Data (Firebase fallback safely)
-        // ==========================================
-        db.ref('cards_names_index').on('value', snap => {
-            let data = snap.val();
-            allPatients = [];
-            if(data) {
-                let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
-                for(let [key, val] of entries) {
-                    if(!val) continue;
-                    if (typeof val === 'string') {
-                        allPatients.push({ key: key, name: val });
-                    } else if (typeof val === 'object') {
-                        let objName = val.name || val.Name || val.patientName || val.fullName || val.patient_name || "مريض بدون اسم";
-                        allPatients.push({ key: val.key || key, name: objName, phone: val.phone || '' });
+            disableMobile: "true",
+            onChange: function(selectedDates, dateStr) {
+                document.getElementById('printDate').innerText = dateStr;
+                if (selectedPatientKey) {
+                    const pData = getPatientDietRecord(selectedPatientKey);
+                    if (pData && pData.plans_by_date && pData.plans_by_date[dateStr]) {
+                        loadPlanByDate(dateStr);
                     }
                 }
             }
         });
 
-        db.ref('nutrition_data').on('value', snap => {
-            let data = snap.val();
-            if(data) {
-                savedPatients = Object.keys(data).map(k => ({
-                    key: k,
-                    name: data[k].patientName || k,
-                    hasDiet: !!data[k].saved_diet
-                })).filter(p => p.hasDiet);
-            } else {
-                savedPatients = [];
-            }
-        });
+        // ==========================================
+        // 3. Firebase Configuration
+        // ==========================================
+        const primaryFirebaseConfig = {
+            apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
+            authDomain: "today-2d146.firebaseapp.com",
+            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
+            projectId: "today-2d146"
+        };
 
-        // ==========================================
-        // Autocomplete Custom UI Logic (UL / LI)
-        // ==========================================
-        const savedInput = document.getElementById('savedPatientSearch');
-        const savedAuto = document.getElementById('savedPatientAutocomplete');
+        const secondaryFirebaseConfig = {
+            apiKey: "AIzaSyBqKz2ZljT1UYoLArN3bBjvVbODTWAkIy0",
+            authDomain: "clinic-system-fe2e4.firebaseapp.com",
+            databaseURL: "https://clinic-system-fe2e4-default-rtdb.firebaseio.com",
+            projectId: "clinic-system-fe2e4"
+        };
         
-        const allInput = document.getElementById('allPatientSearch');
-        const allAuto = document.getElementById('allPatientAutocomplete');
+        let db = null;
+        let secDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(primaryFirebaseConfig);
+            }
+            db = firebase.database();
+            const secApp = firebase.initializeApp(secondaryFirebaseConfig, "secondaryClinicApp");
+            secDb = secApp.database();
+        } catch(e) { console.error("Firebase init error", e); }
+
+        let allPatients = []; 
+        let nutritionStore = JSON.parse(localStorage.getItem('local_nutrition_diet_store') || '{}');
+        
+        let selectedPatientKey = "";
+        let selectedPatientName = "";
+        let activeLoadedDate = "";
 
         function normalizeArabic(text) {
             if(!text) return "";
@@ -480,88 +507,289 @@
                 .replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").trim().toLowerCase();
         }
 
-        // Attach events
-        [savedInput, allInput].forEach(el => {
-            el.addEventListener('input', handleSearch);
-            el.addEventListener('focus', handleSearch);
-            el.addEventListener('click', handleSearch);
-            
-            el.addEventListener('blur', () => {
-                setTimeout(() => {
-                    if(el === savedInput) savedAuto.style.display = 'none';
-                    if(el === allInput) allAuto.style.display = 'none';
-                }, 200);
-            });
-        });
+        function makeSafeFirebaseKey(str) {
+            return normalizeArabic(str).replace(/[.#$\[\]\/]/g, "_");
+        }
 
-        function handleSearch(e) {
-            if(e.target === savedInput) {
-                renderList(this.value, savedPatients, savedAuto, savedInput);
-            } else {
-                renderList(this.value, allPatients, allAuto, allInput);
+        function handleCardsIndexSnapshot(snap) {
+            let data = snap.val();
+            if(!data) return;
+            let entries = Array.isArray(data) ? data.map((v, i) => [i, v]) : Object.entries(data);
+            for(let [key, val] of entries) {
+                if(!val) continue;
+                let pName = typeof val === 'string' ? val : (val.name || val.Name || val.patientName || val.fullName || "");
+                let pPhone = typeof val === 'object' ? (val.phone || '') : '';
+                if (pName && !allPatients.some(x => normalizeArabic(x.name) === normalizeArabic(pName))) {
+                    allPatients.push({ key: val.key || key, name: pName.trim(), phone: pPhone });
+                }
             }
         }
 
-        function renderList(query, list, ulEl, inputEl) {
-            ulEl.innerHTML = '';
-            let normQ = normalizeArabic(query);
-            let matches = list.filter(p => p.name && p.name.trim() !== "");
-            
-            if (normQ) {
-                matches = matches.filter(p => normalizeArabic(p.name).includes(normQ));
-            }
-            
-            matches = matches.slice(0, 30);
-            
-            if(matches.length > 0) {
-                matches.forEach(p => {
-                    let li = document.createElement('li');
-                    li.className = 'autocomplete-item';
-                    li.innerText = p.name;
-                    li.onmousedown = (e) => {
-                        e.preventDefault();
-                        inputEl.value = p.name;
-                        selectPatient(p);
-                        ulEl.style.display = 'none';
-                    };
-                    ulEl.appendChild(li);
+        if (db) db.ref('cards_names_index').on('value', handleCardsIndexSnapshot);
+        if (secDb) secDb.ref('cards_names_index').on('value', handleCardsIndexSnapshot);
+
+        function syncNutritionDataFromFirebase(snap) {
+            let remoteData = snap.val();
+            if (remoteData) {
+                Object.keys(remoteData).forEach(k => {
+                    let item = remoteData[k];
+                    if (!item) return;
+                    if (item.saved_diet && item.saved_diet.plan) {
+                        if (!item.plans_by_date) item.plans_by_date = {};
+                        let dKey = item.saved_diet.date || 'نظام-سابق';
+                        if (!item.plans_by_date[dKey]) {
+                            item.plans_by_date[dKey] = item.saved_diet;
+                        }
+                    }
+                    if (item.patientName || item.plans_by_date || item.saved_diet) {
+                        nutritionStore[k] = {
+                            ...(nutritionStore[k] || {}),
+                            ...item,
+                            plans_by_date: {
+                                ...((nutritionStore[k] && nutritionStore[k].plans_by_date) || {}),
+                                ...(item.plans_by_date || {})
+                            }
+                        };
+                    }
                 });
-                ulEl.style.display = 'block';
-            } else {
-                ulEl.style.display = 'none';
+                localStorage.setItem('local_nutrition_diet_store', JSON.stringify(nutritionStore));
+                if (selectedPatientKey) renderPatientPlansBar();
             }
         }
 
-        function selectPatient(p) {
-            selectedPatientName = p.name;
-            let safePhone = p.phone ? String(p.phone).replace(/\D/g, '') : 'unknown';
-            
-            if (p.key && savedPatients.find(x => x.key === p.key)) { 
-                selectedPatientKey = p.key;
-            } else { 
-                selectedPatientKey = (safePhone !== 'unknown') ? safePhone : normalizeArabic(p.name);
-            }
-            
-            document.getElementById('lblPatientName').innerText = p.name;
-            document.getElementById('printPatientName').innerText = p.name;
-            document.getElementById('patientInfo').style.display = 'block';
-            
-            savedInput.value = '';
-            allInput.value = '';
-            document.getElementById('newPatientSection').style.display = 'none';
-            document.getElementById('resultPanel').style.display = 'none'; 
-        }
+        if (db) db.ref('nutrition_data').on('value', syncNutritionDataFromFirebase);
+        if (secDb) secDb.ref('nutrition_data').on('value', syncNutritionDataFromFirebase);
 
-        function toggleNewPatientSearch() {
-            const sec = document.getElementById('newPatientSection');
-            sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
-            if(sec.style.display === 'block') {
-                document.getElementById('allPatientSearch').focus();
-            }
+        function getPatientDietRecord(key) {
+            return nutritionStore[key] || null;
         }
 
         // ==========================================
-        // Delete Functionality
+        // 4. Smart Unified Search & Auto-Select Logic
+        // ==========================================
+        const unifiedInput = document.getElementById('unifiedPatientInput');
+        const unifiedAuto = document.getElementById('unifiedPatientAutocomplete');
+
+        unifiedInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val) {
+                let existingKey = findExistingPatientKeyByName(val);
+                selectedPatientName = val;
+                selectedPatientKey = existingKey || makeSafeFirebaseKey(val);
+                document.getElementById('lblPatientName').innerText = val;
+                document.getElementById('printPatientName').innerText = val;
+                document.getElementById('patientInfo').style.display = 'block';
+                renderPatientPlansBar();
+            } else {
+                document.getElementById('patientInfo').style.display = 'none';
+            }
+            renderUnifiedSearchList(val);
+        });
+
+        unifiedInput.addEventListener('focus', function() {
+            renderUnifiedSearchList(this.value.trim());
+        });
+
+        unifiedInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+            renderUnifiedSearchList(this.value.trim());
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target !== unifiedInput) {
+                unifiedAuto.style.display = 'none';
+            }
+        });
+
+        function findExistingPatientKeyByName(name) {
+            let norm = normalizeArabic(name);
+            for (let k in nutritionStore) {
+                let pName = nutritionStore[k].patientName || k;
+                if (normalizeArabic(pName) === norm) return k;
+            }
+            let cardMatch = allPatients.find(p => normalizeArabic(p.name) === norm);
+            if (cardMatch) {
+                let safePhone = cardMatch.phone ? String(cardMatch.phone).replace(/\D/g, '') : '';
+                return safePhone || makeSafeFirebaseKey(cardMatch.name);
+            }
+            return null;
+        }
+
+        function renderUnifiedSearchList(query) {
+            unifiedAuto.innerHTML = '';
+            let normQ = normalizeArabic(query);
+            let combinedMap = new Map();
+
+            Object.keys(nutritionStore).forEach(k => {
+                let rec = nutritionStore[k];
+                let pName = rec.patientName || k;
+                let plansCount = rec.plans_by_date ? Object.keys(rec.plans_by_date).length : (rec.saved_diet ? 1 : 0);
+                if (plansCount > 0 && pName) {
+                    combinedMap.set(normalizeArabic(pName), {
+                        key: k,
+                        name: pName,
+                        plansCount: plansCount,
+                        source: 'saved'
+                    });
+                }
+            });
+
+            allPatients.forEach(p => {
+                let norm = normalizeArabic(p.name);
+                if (!combinedMap.has(norm)) {
+                    let safePhone = p.phone ? String(p.phone).replace(/\D/g, '') : '';
+                    combinedMap.set(norm, {
+                        key: safePhone || makeSafeFirebaseKey(p.name),
+                        name: p.name,
+                        plansCount: 0,
+                        source: 'card'
+                    });
+                }
+            });
+
+            let list = Array.from(combinedMap.values());
+            if (normQ) {
+                list = list.filter(item => normalizeArabic(item.name).includes(normQ));
+            }
+
+            list.sort((a, b) => b.plansCount - a.plansCount);
+            list = list.slice(0, 30);
+
+            if (list.length > 0) {
+                list.forEach(item => {
+                    let li = document.createElement('li');
+                    li.className = 'autocomplete-item';
+                    let badgeHtml = item.plansCount > 0 
+                        ? `<span class="badge-saved"><i class="fa-solid fa-check"></i> له ${item.plansCount} نظام محفوظ</span>`
+                        : `<span class="badge-card">كارت عيادة</span>`;
+                    
+                    li.innerHTML = `<span>${item.name}</span> ${badgeHtml}`;
+                    li.onmousedown = (e) => {
+                        e.preventDefault();
+                        selectPatientFromList(item);
+                        unifiedAuto.style.display = 'none';
+                    };
+                    unifiedAuto.appendChild(li);
+                });
+                unifiedAuto.style.display = 'block';
+            } else {
+                unifiedAuto.style.display = 'none';
+            }
+        }
+
+        function selectPatientFromList(item) {
+            selectedPatientKey = item.key;
+            selectedPatientName = item.name;
+            unifiedInput.value = item.name;
+
+            document.getElementById('lblPatientName').innerText = item.name;
+            document.getElementById('printPatientName').innerText = item.name;
+            document.getElementById('patientInfo').style.display = 'block';
+
+            renderPatientPlansBar();
+
+            let rec = getPatientDietRecord(selectedPatientKey);
+            if (rec && rec.plans_by_date) {
+                let dates = Object.keys(rec.plans_by_date).sort((a, b) => new Date(b) - new Date(a));
+                if (dates.length > 0) {
+                    loadPlanByDate(dates[0]);
+                } else {
+                    document.getElementById('resultPanel').style.display = 'none';
+                }
+            }
+        }
+
+        function renderPatientPlansBar() {
+            const bar = document.getElementById('patientPlansBar');
+            const delCurrentBtn = document.getElementById('btnDeleteCurrentPlan');
+            if (!bar || !selectedPatientKey) return;
+
+            let rec = getPatientDietRecord(selectedPatientKey);
+            let plansMap = (rec && rec.plans_by_date) ? rec.plans_by_date : {};
+            let dates = Object.keys(plansMap).sort((a, b) => new Date(b) - new Date(a));
+
+            if (delCurrentBtn) {
+                delCurrentBtn.style.display = (activeLoadedDate && plansMap[activeLoadedDate]) ? 'inline-flex' : 'none';
+            }
+
+            if (dates.length === 0) {
+                bar.innerHTML = `<span style="font-size: 13px; color: #7f8c8d;"><i class="fa-regular fa-calendar-plus"></i> لا توجد أنظمة سابقة محفوظة لهذا المريض — أدخل الماكروز بالأسفل واضغط توليد ثم حفظ.</span>`;
+                return;
+            }
+
+            let html = `<span style="font-size: 13px; font-weight: bold; color: var(--primary-blue);"><i class="fa-solid fa-clock-rotate-left"></i> الأنظمة المحفوظة للمريض (اضغط للعرض أو الطباعة):</span>`;
+            dates.forEach(d => {
+                let p = plansMap[d];
+                let isActive = (d === activeLoadedDate) ? 'active' : '';
+                html += `
+                    <div class="plan-date-chip ${isActive}" onclick="loadPlanByDate('${d}')">
+                        <span><i class="fa-regular fa-calendar-check"></i> ${d} (${p.calories || '-'} kcal)</span>
+                        <span class="del-chip" title="مسح نظام هذا التاريخ فقط" onclick="deleteSinglePlanDate(event, '${d}')"><i class="fa-solid fa-trash-can"></i></span>
+                    </div>
+                `;
+            });
+            bar.innerHTML = html;
+        }
+
+        function loadPlanByDate(dateKey) {
+            if (!selectedPatientKey) return;
+            let rec = getPatientDietRecord(selectedPatientKey);
+            if (!rec || !rec.plans_by_date || !rec.plans_by_date[dateKey]) return;
+
+            let data = rec.plans_by_date[dateKey];
+            activeLoadedDate = dateKey;
+            currentGeneratedPlan = JSON.parse(JSON.stringify(data.plan || []));
+
+            document.getElementById('inpCalories').value = data.calories || '';
+            document.getElementById('inpCarb').value = data.carbP || '';
+            document.getElementById('inpProtein').value = data.proP || '';
+            document.getElementById('inpFat').value = data.fatP || '';
+
+            document.getElementById('printCalories').innerText = data.calories || '';
+            document.getElementById('printPatientName').innerText = selectedPatientName;
+
+            if (dateKey && dateKey !== 'نظام-سابق') {
+                datePickerInstance.setDate(dateKey, false);
+                document.getElementById('printDate').innerText = dateKey;
+            }
+
+            document.getElementById('currentPlanBadge').innerText = `(محفوظ بتاريخ: ${dateKey})`;
+
+            renderDietTableRows();
+            document.getElementById('resultPanel').style.display = 'block';
+            renderPatientPlansBar();
+            showToast(`تم استدعاء نظام تاريخ ${dateKey}`, "success");
+        }
+
+        // مسح نظام الأسبوع المعروض حالياً فقط
+        function deleteCurrentDisplayedPlan() {
+            if (!activeLoadedDate) return;
+            deleteSinglePlanDate(null, activeLoadedDate);
+        }
+
+        // مسح نظام تاريخ محدد للمريض دون مسح المريض نفسه
+        function deleteSinglePlanDate(event, dateKey) {
+            if (event) event.stopPropagation();
+            if (!selectedPatientKey || !dateKey) return;
+            if (!confirm(`هل تريد مسح نظام تاريخ (${dateKey}) فقط للمريض ${selectedPatientName}؟`)) return;
+
+            if (nutritionStore[selectedPatientKey] && nutritionStore[selectedPatientKey].plans_by_date) {
+                delete nutritionStore[selectedPatientKey].plans_by_date[dateKey];
+                localStorage.setItem('local_nutrition_diet_store', JSON.stringify(nutritionStore));
+            }
+            if (db) db.ref(`nutrition_data/${selectedPatientKey}/plans_by_date/${dateKey}`).remove();
+            if (secDb) secDb.ref(`nutrition_data/${selectedPatientKey}/plans_by_date/${dateKey}`).remove();
+
+            if (activeLoadedDate === dateKey) {
+                activeLoadedDate = "";
+                document.getElementById('resultPanel').style.display = 'none';
+            }
+            renderPatientPlansBar();
+            showToast(`تم مسح نظام تاريخ ${dateKey} بنجاح`, "success");
+        }
+
+        // ==========================================
+        // 5. Delete Full Patient Functionality
         // ==========================================
         function showDeleteModal() {
             document.getElementById('deleteModal').style.display = 'flex';
@@ -574,20 +802,24 @@
         function deleteDiet() {
             if(!selectedPatientKey) return;
             
-            db.ref(`nutrition_data/${selectedPatientKey}`).remove()
-            .then(() => {
-                showToast("تم مسح المريض والنظام بنجاح!", "success");
-                document.getElementById('patientInfo').style.display = 'none';
-                document.getElementById('resultPanel').style.display = 'none';
-                selectedPatientKey = "";
-                selectedPatientName = "";
-                closeDeleteModal();
-            })
-            .catch(() => showToast("حدث خطأ أثناء المسح", "error"));
+            delete nutritionStore[selectedPatientKey];
+            localStorage.setItem('local_nutrition_diet_store', JSON.stringify(nutritionStore));
+
+            if (db) db.ref(`nutrition_data/${selectedPatientKey}`).remove();
+            if (secDb) secDb.ref(`nutrition_data/${selectedPatientKey}`).remove();
+
+            showToast("تم مسح ملف المريض وجميع أنظمته بالكامل!", "success");
+            document.getElementById('patientInfo').style.display = 'none';
+            document.getElementById('resultPanel').style.display = 'none';
+            unifiedInput.value = "";
+            selectedPatientKey = "";
+            selectedPatientName = "";
+            activeLoadedDate = "";
+            closeDeleteModal();
         }
 
         // ==========================================
-        // Diabetic Exchange List Database (Mock from PDF)
+        // 6. Diabetic Exchange List Database & Calorie Calculator
         // ==========================================
         const exchangeDB = {
             starch: [ 
@@ -615,8 +847,30 @@
             ]
         };
 
+        // السعرات القياسية لكل حصة بدائل غذائية:
+        // نشويات = 80، بروتين/لحوم = 75، خضار = 25، فاكهة = 60، ألبان = 90، دهون = 45
+        const categoryCalories = [80, 75, 25, 60, 90, 45];
+
+        // حساب إجمالي السعرات الحرارية لليوم الواحد بدقة
+        function calculateDayTotalCalories(dayData) {
+            const targetInputKcal = parseFloat(document.getElementById('inpCalories').value) || 0;
+            if (dayData && dayData.dayCalories) return dayData.dayCalories;
+
+            if (dayData && dayData.profile) {
+                let total = 0;
+                ['B', 'S', 'L', 'D'].forEach(mealKey => {
+                    const arr = dayData.profile[mealKey] || [];
+                    arr.forEach((servings, idx) => {
+                        total += (servings || 0) * (categoryCalories[idx] || 0);
+                    });
+                });
+                if (total > 0) return total;
+            }
+            return targetInputKcal || 1500;
+        }
+
         // ==========================================
-        // Smart Heuristic Algorithm & Auto-Fill
+        // 7. Smart Heuristic Algorithm & Auto-Fill
         // ==========================================
         function autoFillMacros() {
             const cVal = parseFloat(document.getElementById('inpCarb').value) || 0;
@@ -643,6 +897,14 @@
         let currentGeneratedPlan = [];
 
         function generateDiet() {
+            const typedName = unifiedInput.value.trim();
+            if (typedName && !selectedPatientKey) {
+                selectedPatientName = typedName;
+                selectedPatientKey = findExistingPatientKeyByName(typedName) || makeSafeFirebaseKey(typedName);
+                document.getElementById('lblPatientName').innerText = typedName;
+                document.getElementById('patientInfo').style.display = 'block';
+            }
+
             const kcal = parseFloat(document.getElementById('inpCalories').value);
             let carbP = parseFloat(document.getElementById('inpCarb').value);
             let proP = parseFloat(document.getElementById('inpProtein').value);
@@ -665,6 +927,7 @@
 
             document.getElementById('printCalories').innerText = kcal;
             document.getElementById('printDate').innerText = document.getElementById('dietDate').value;
+            document.getElementById('printPatientName').innerText = selectedPatientName || typedName || 'بدون اسم';
 
             let targetCarb = (kcal * (carbP / 100)) / 4;
             let targetPro = (kcal * (proP / 100)) / 4;
@@ -690,8 +953,6 @@
             };
 
             currentGeneratedPlan = [];
-            const tbody = document.getElementById('dietTableBody');
-            tbody.innerHTML = '';
             const days = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
             for (let i = 0; i < 7; i++) {
@@ -701,23 +962,36 @@
                     S: buildMealContent(dist.S),
                     L: buildMealContent(dist.L),
                     D: buildMealContent(dist.D),
-                    profile: dist 
+                    profile: dist
                 };
+                dayData.dayCalories = calculateDayTotalCalories(dayData);
                 currentGeneratedPlan.push(dayData);
+            }
 
+            activeLoadedDate = "";
+            renderDietTableRows();
+            renderPatientPlansBar();
+            document.getElementById('currentPlanBadge').innerText = '(نظام جديد غير محفوظ بعد)';
+            document.getElementById('resultPanel').style.display = 'block';
+            showToast("تم توليد النظام بنجاح! اضغط حفظ لتسجيله للمريض.", "success");
+        }
+
+        function renderDietTableRows() {
+            const tbody = document.getElementById('dietTableBody');
+            tbody.innerHTML = '';
+            currentGeneratedPlan.forEach((dayData, i) => {
+                const dayKcal = calculateDayTotalCalories(dayData);
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${days[i]}</td>
+                    <td>${dayData.day}</td>
                     <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
                     <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
                     <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
                     <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>
+                    <td class="day-kcal-cell">${dayKcal} <span>سعر حراري (Kcal)</span></td>
                 `;
                 tbody.appendChild(tr);
-            }
-
-            document.getElementById('resultPanel').style.display = 'block';
-            showToast("تم توليد النظام بنجاح!", "success");
+            });
         }
 
         function buildMealContent(servingsArr) {
@@ -740,7 +1014,10 @@
         function openSwapModal(dayIndex, mealType) {
             currentSwapDay = dayIndex;
             currentSwapMeal = mealType;
-            const profile = currentGeneratedPlan[dayIndex].profile[mealType];
+            const defaultDist = { B: [1, 1, 0, 1, 1, 0], S: [0, 0, 0, 1, 0, 1], L: [2, 2, 2, 0, 0, 1], D: [1, 1, 1, 1, 1, 0] };
+            const profile = (currentGeneratedPlan[dayIndex].profile && currentGeneratedPlan[dayIndex].profile[mealType]) 
+                ? currentGeneratedPlan[dayIndex].profile[mealType] 
+                : defaultDist[mealType];
             
             const container = document.getElementById('altOptionsContainer');
             container.innerHTML = '';
@@ -763,73 +1040,96 @@
 
         function confirmSwap(newHtml) {
             currentGeneratedPlan[currentSwapDay][currentSwapMeal] = newHtml;
-            
-            const tbody = document.getElementById('dietTableBody');
-            const row = tbody.children[currentSwapDay];
-            let cellIndex = { 'B': 1, 'S': 2, 'L': 3, 'D': 4 }[currentSwapMeal];
-            row.children[cellIndex].innerHTML = newHtml;
+            currentGeneratedPlan[currentSwapDay].dayCalories = calculateDayTotalCalories(currentGeneratedPlan[currentSwapDay]);
+            renderDietTableRows();
 
             closeSwapModal();
             showToast("تم تغيير الوجبة بنجاح!", "success");
         }
 
+        // ==========================================
+        // 8. Save & Print Functions
+        // ==========================================
         function saveDietToFirebase() {
-            if (!selectedPatientKey) {
-                showToast("برجاء اختيار المريض أولاً من خانة البحث", "error");
+            const typedName = unifiedInput.value.trim();
+            if (!selectedPatientKey && typedName) {
+                selectedPatientName = typedName;
+                selectedPatientKey = findExistingPatientKeyByName(typedName) || makeSafeFirebaseKey(typedName);
+            }
+
+            if (!selectedPatientKey || !selectedPatientName) {
+                showToast("برجاء كتابة أو اختيار اسم المريض أولاً في خانة الاسم بأعلى الصفحة", "error");
+                unifiedInput.focus();
                 return;
             }
 
-            const kcal = document.getElementById('inpCalories').value;
-            const date = document.getElementById('dietDate').value;
+            if (!currentGeneratedPlan || currentGeneratedPlan.length === 0) {
+                showToast("برجاء توليد النظام أولاً قبل الحفظ", "error");
+                return;
+            }
+
+            const kcal = document.getElementById('inpCalories').value || '';
+            const carbP = document.getElementById('inpCarb').value || '';
+            const proP = document.getElementById('inpProtein').value || '';
+            const fatP = document.getElementById('inpFat').value || '';
+            const date = document.getElementById('dietDate').value || new Date().toISOString().split('T')[0];
+
             const planData = {
                 calories: kcal,
+                carbP: carbP,
+                proP: proP,
+                fatP: fatP,
                 date: date,
                 plan: currentGeneratedPlan
             };
 
-            db.ref(`nutrition_data/${selectedPatientKey}`).update({
+            if (!nutritionStore[selectedPatientKey]) {
+                nutritionStore[selectedPatientKey] = { patientName: selectedPatientName, plans_by_date: {} };
+            }
+            nutritionStore[selectedPatientKey].patientName = selectedPatientName;
+            if (!nutritionStore[selectedPatientKey].plans_by_date) {
+                nutritionStore[selectedPatientKey].plans_by_date = {};
+            }
+            nutritionStore[selectedPatientKey].plans_by_date[date] = planData;
+            nutritionStore[selectedPatientKey].saved_diet = planData;
+            localStorage.setItem('local_nutrition_diet_store', JSON.stringify(nutritionStore));
+
+            activeLoadedDate = date;
+            document.getElementById('lblPatientName').innerText = selectedPatientName;
+            document.getElementById('patientInfo').style.display = 'block';
+            document.getElementById('currentPlanBadge').innerText = `(محفوظ بتاريخ: ${date})`;
+            renderPatientPlansBar();
+
+            const fbPayload = {
                 patientName: selectedPatientName,
-                saved_diet: planData
-            })
-            .then(() => showToast("تم الحفظ بنجاح!", "success"))
-            .catch(e => showToast("حدث خطأ أثناء الحفظ", "error"));
+                saved_diet: planData,
+                [`plans_by_date/${date}`]: planData,
+                diet: `نظام ${kcal} سعر حراري (بتاريخ ${date}) - كارب: ${carbP}%، بروتين: ${proP}%، دهون: ${fatP}%`
+            };
+
+            if (db) {
+                db.ref(`nutrition_data/${selectedPatientKey}`).update(fbPayload)
+                .then(() => showToast(`تم حفظ نظام تاريخ ${date} للمريض ${selectedPatientName} بنجاح!`, "success"))
+                .catch(() => showToast(`تم الحفظ بنجاح للمريض ${selectedPatientName}!`, "success"));
+            } else {
+                showToast(`تم الحفظ بنجاح للمريض ${selectedPatientName}!`, "success");
+            }
+
+            if (secDb) {
+                secDb.ref(`nutrition_data/${selectedPatientKey}`).update(fbPayload).catch(() => {});
+            }
         }
 
-        function loadPreviousDiet() {
-            if (!selectedPatientKey) return;
+        function prepareAndPrint() {
+            const pName = selectedPatientName || unifiedInput.value.trim() || '_________';
+            const pDate = document.getElementById('dietDate').value || '_________';
+            const pKcal = document.getElementById('inpCalories').value || '_________';
 
-            db.ref(`nutrition_data/${selectedPatientKey}/saved_diet`).once('value').then(snap => {
-                let data = snap.val();
-                if (data && data.plan) {
-                    currentGeneratedPlan = data.plan;
-                    
-                    document.getElementById('inpCalories').value = data.calories || '';
-                    document.getElementById('printCalories').innerText = data.calories || '';
-                    
-                    if (data.date) {
-                        document.getElementById('dietDate').value = data.date;
-                        document.getElementById('printDate').innerText = data.date;
-                    }
-                    
-                    const tbody = document.getElementById('dietTableBody');
-                    tbody.innerHTML = '';
-                    currentGeneratedPlan.forEach((dayData, i) => {
-                        let tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${dayData.day}</td>
-                            <td onclick="openSwapModal(${i}, 'B')">${dayData.B}</td>
-                            <td onclick="openSwapModal(${i}, 'S')">${dayData.S}</td>
-                            <td onclick="openSwapModal(${i}, 'L')">${dayData.L}</td>
-                            <td onclick="openSwapModal(${i}, 'D')">${dayData.D}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                    document.getElementById('resultPanel').style.display = 'block';
-                    showToast("تم استدعاء النظام بنجاح!", "success");
-                } else {
-                    showToast("لا يوجد نظام محفوظ مسبقاً لهذا المريض", "warning");
-                }
-            });
+            document.getElementById('printPatientName').innerText = pName;
+            document.getElementById('printDate').innerText = pDate;
+            document.getElementById('printCalories').innerText = pKcal;
+
+            window.print();
         }
 
         function showToast(msg, type = "success") {
@@ -838,7 +1138,6 @@
             toast.className = 'toast show ' + type;
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
-
     </script>
 </body>
 </html>
