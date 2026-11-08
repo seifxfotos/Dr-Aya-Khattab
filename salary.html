@@ -91,6 +91,7 @@
         .btn-save { background: var(--primary-green); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px;}
         .btn-remove-staff { background: var(--danger); color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
         .btn-add-row { background: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; width: 100%;}
+        .month-badge { background: rgba(0, 147, 208, 0.12); color: var(--primary-blue); padding: 3px 10px; border-radius: 15px; font-size: 13px; font-weight: bold; margin-right: 6px; }
     </style>
 </head>
 <body>
@@ -119,14 +120,14 @@
                     </label>
                 </div>
                 <h1><i class="fa-solid fa-sack-dollar"></i> إدارة الرواتب والحسابات</h1>
-                <p>اختر الشهر لعرض الرواتب المستحقة (لا يتم حساب الحالات قبل تاريخ تعيين الموظف)</p>
+                <p>اختر الشهر لعرض الرواتب المستحقة (لكل شهر إعدادات أسعار مستقلة حتى لا تتغير رواتب الشهور السابقة)</p>
                 
                 <div class="controls-wrapper">
                     <div class="month-selector-container">
                         <label for="monthSelector"><i class="fa-regular fa-calendar-days"></i> رواتب شهر:</label>
-                        <input type="month" id="monthSelector" class="month-input" onchange="calculateAllSalaries()">
+                        <input type="month" id="monthSelector" class="month-input" onchange="onMonthChanged()">
                     </div>
-                    <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة وتنظيف الكاش</button>
+                    <button class="btn-sync-refresh" onclick="forceSyncRefresh()"><i class="fa-solid fa-rotate"></i> مزامنة وتحديث البيانات</button>
                 </div>
             </div>
 
@@ -177,8 +178,8 @@
                 <button class="btn-close" onclick="closeModal('editStaffModal')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="editStaffFormContainer"></div>
-            <button class="btn-add-row" onclick="addNewStaffRow()"><i class="fa-solid fa-plus"></i> إضافة شخص جديد</button>
-            <button class="btn-save" onclick="saveStaffConfig()"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
+            <button class="btn-add-row" onclick="addNewStaffRow()"><i class="fa-solid fa-plus"></i> إضافة شخص جديد لهذا الشهر</button>
+            <button class="btn-save" onclick="saveStaffConfig()"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات لهذا الشهر فقط</button>
         </div>
     </div>
 
@@ -201,12 +202,10 @@
         let appInitialized = false;
 
         firebase.auth().onAuthStateChanged((user) => {
-            // السماح فقط لحساب الدكتورة بالدخول
             if (!user || user.email !== 'dr@clinic.com') {
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
                 
-                // طرد أي مستخدم آخر يحاول الدخول للصفحة
                 if (user && user.email !== 'dr@clinic.com') {
                     alert('عفواً، هذه الصفحة مخصصة للمدير (د. آية) فقط للخصوصية.');
                     firebase.auth().signOut().then(() => {
@@ -238,7 +237,6 @@
             btn.disabled = true;
             err.style.display = "none";
 
-            // تثبيت البريد الخاص بالدكتورة أوتوماتيكياً
             firebase.auth().signInWithEmailAndPassword('dr@clinic.com', pass)
                 .then(() => {
                     btn.innerHTML = "دخول <i class='fa-solid fa-arrow-left'></i>";
@@ -251,27 +249,47 @@
                 });
         }
 
-        // --- الإعدادات الافتراضية للرواتب (شاملة 10 جنيه لكل جلسة للرسيبشن) ---
-        const DEFAULT_CONFIG = {
-            doctors: [
-                { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30, startDate: '' },
-                { id: 'doc2', name: 'منال', code: 'م', sessionPrice: 30, startDate: '' }
-            ],
-            reception: [
-                { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10, galsaPrice: 10, startDate: '2026-10-06' }
-            ]
-        };
-
-        let staffConfig = JSON.parse(localStorage.getItem('clinic_salary_config')) || DEFAULT_CONFIG;
-        // ضمان وجود galsaPrice = 10 حتى لو كانت الإعدادات محفوظة قديماً في المتصفح
-        if (staffConfig.reception) {
-            staffConfig.reception.forEach(rec => {
-                if (rec.galsaPrice === undefined) rec.galsaPrice = 10;
-            });
+        // --- نظام الإعدادات المستقلة لكل شهر ---
+        // دالة ترجع الإعداد الافتراضي حسب الشهر (شهر 10 وما قبله الجلسة بـ 0، ومن شهر 11 الجلسة بـ 10)
+        function getDefaultConfigForMonth(monthStr) {
+            const isAfterNov2026 = !monthStr || monthStr >= '2026-11';
+            return {
+                doctors: [
+                    { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30, startDate: '' },
+                    { id: 'doc2', name: 'منال', code: 'م', sessionPrice: 30, startDate: '' }
+                ],
+                reception: [
+                    { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10, galsaPrice: isAfterNov2026 ? 10 : 0, startDate: '2026-10-06' }
+                ]
+            };
         }
 
+        // خريطة تحفظ إعدادات كل شهر بشكل منفصل تماماً: { '2026-10': {...}, '2026-11': {...} }
+        let monthlyConfigs = JSON.parse(localStorage.getItem('clinic_monthly_salary_configs') || '{}');
+        let staffConfig = getDefaultConfigForMonth('2026-11');
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
+
+        // جلب الإعداد الخاص بالشهر المختار (أو نسخه من أقرب شهر سابق له إذا كان شهراً جديداً)
+        function getConfigForMonth(monthStr) {
+            if (monthlyConfigs[monthStr]) {
+                return JSON.parse(JSON.stringify(monthlyConfigs[monthStr]));
+            }
+            // لو شهر جديد بعد 11، نبحث عن آخر شهر قبله محفوظ لنسخ أسعاره كنقطة بداية
+            const savedMonths = Object.keys(monthlyConfigs).sort();
+            const previousMonths = savedMonths.filter(m => m < monthStr && m >= '2026-11');
+            if (previousMonths.length > 0) {
+                const lastMonth = previousMonths[previousMonths.length - 1];
+                return JSON.parse(JSON.stringify(monthlyConfigs[lastMonth]));
+            }
+            return getDefaultConfigForMonth(monthStr);
+        }
+
+        function onMonthChanged() {
+            const selectedMonth = document.getElementById('monthSelector').value;
+            staffConfig = getConfigForMonth(selectedMonth);
+            calculateAllSalaries();
+        }
 
         function cleanExactMatchString(text) {
             if (!text) return "";
@@ -289,7 +307,9 @@
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
+            const currentMonth = `${yyyy}-${mm}`;
+            document.getElementById('monthSelector').value = currentMonth;
+            staffConfig = getConfigForMonth(currentMonth);
         }
 
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
@@ -310,12 +330,18 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...`;
             btn.disabled = true;
 
-            localStorage.removeItem('clinic_salary_config');
-            staffConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-            
             if (db) {
-                db.ref('clinic_days').once('value').then((snapshot) => {
-                    allClinicDaysData = snapshot.val() || {};
+                Promise.all([
+                    db.ref('clinic_days').once('value'),
+                    db.ref('clinic_salary_configs_by_month').once('value')
+                ]).then(([daysSnap, configsSnap]) => {
+                    allClinicDaysData = daysSnap.val() || {};
+                    if (configsSnap.val()) {
+                        monthlyConfigs = configsSnap.val();
+                        localStorage.setItem('clinic_monthly_salary_configs', JSON.stringify(monthlyConfigs));
+                    }
+                    const selectedMonth = document.getElementById('monthSelector').value;
+                    staffConfig = getConfigForMonth(selectedMonth);
                     calculateAllSalaries();
                     setTimeout(() => {
                         btn.innerHTML = originalIcon;
@@ -331,8 +357,23 @@
 
         function startDataListener() {
             if (!db) { alert('خطأ في الاتصال بقاعدة البيانات'); return; }
+            
+            // الاستماع لإعدادات الشهور المحفوظة على Firebase
+            db.ref('clinic_salary_configs_by_month').on('value', (snap) => {
+                if (snap.val()) {
+                    monthlyConfigs = snap.val();
+                    localStorage.setItem('clinic_monthly_salary_configs', JSON.stringify(monthlyConfigs));
+                    const selectedMonth = document.getElementById('monthSelector').value;
+                    staffConfig = getConfigForMonth(selectedMonth);
+                    calculateAllSalaries();
+                }
+            });
+
+            // الاستماع لبيانات الأيام
             db.ref('clinic_days').on('value', (snapshot) => {
                 allClinicDaysData = snapshot.val() || {};
+                const selectedMonth = document.getElementById('monthSelector').value;
+                staffConfig = getConfigForMonth(selectedMonth);
                 calculateAllSalaries();
             });
         }
@@ -398,8 +439,8 @@
 
                 staffConfig.reception.forEach(rec => {
                     if (rec.startDate && dateStr < rec.startDate) return;
-                    let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 10;
-                    if (dayKashfCount > 0 || dayMotabaaCount > 0 || dayGalsaCount > 0) {
+                    let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 0;
+                    if (dayKashfCount > 0 || dayMotabaaCount > 0 || (dayGalsaCount > 0 && gPrice > 0)) {
                         let dailyTotal = (dayKashfCount * rec.kashfPrice) + (dayMotabaaCount * rec.motabaaPrice) + (dayGalsaCount * gPrice);
                         receptionCalc[rec.id].days[dateStr] = { kashf: dayKashfCount, motabaa: dayMotabaaCount, galsa: dayGalsaCount, dailyTotal: dailyTotal };
                         receptionCalc[rec.id].total += dailyTotal;
@@ -439,7 +480,7 @@
 
             staffConfig.reception.forEach(rec => {
                 let data = receptionCalc[rec.id];
-                let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 10;
+                let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 0;
                 recList.innerHTML += `
                     <div class="staff-card" onclick='openReportModal("reception", ${JSON.stringify(data)})'>
                         <div class="staff-info">
@@ -489,8 +530,10 @@
 
         function openEditModal(type) {
             currentEditMode = type;
+            const selectedMonth = document.getElementById('monthSelector').value;
             document.getElementById('editStaffModal').style.display = 'flex';
-            document.getElementById('editModalTitle').innerText = type === 'doctors' ? 'إعدادات الأطباء' : 'إعدادات الرسيبشن';
+            const titleText = type === 'doctors' ? 'إعدادات الأطباء لشهر' : 'إعدادات الرسيبشن لشهر';
+            document.getElementById('editModalTitle').innerHTML = `${titleText} <span class="month-badge">${selectedMonth}</span>`;
             renderEditForm();
         }
 
@@ -541,6 +584,7 @@
         }
 
         function saveStaffConfig() {
+            const selectedMonth = document.getElementById('monthSelector').value;
             const list = staffConfig[currentEditMode];
             if (currentEditMode === 'doctors') {
                 list.forEach((doc, idx) => {
@@ -559,7 +603,14 @@
                 });
             }
             
-            localStorage.setItem('clinic_salary_config', JSON.stringify(staffConfig));
+            // حفظ الإعدادات للشهر المختار فقط دون المساس بأي شهر سابق
+            monthlyConfigs[selectedMonth] = JSON.parse(JSON.stringify(staffConfig));
+            localStorage.setItem('clinic_monthly_salary_configs', JSON.stringify(monthlyConfigs));
+            
+            if (db) {
+                db.ref('clinic_salary_configs_by_month/' + selectedMonth).set(monthlyConfigs[selectedMonth]);
+            }
+
             closeModal('editStaffModal');
             calculateAllSalaries(); 
         }
