@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- مكاتب Firebase (تم إضافة مكتبة الحوث للحماية) -->
+    <!-- مكاتب Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -86,7 +86,7 @@
         .report-total-row { font-weight: 800; background: rgba(0,147,208,0.1) !important; font-size: 16px; color: var(--primary-blue);}
 
         .staff-form-row { display: grid; grid-template-columns: 1fr 0.8fr 1fr 1fr 0.5fr; gap: 8px; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px dashed var(--border); border-radius: 8px;}
-        .rec-form-row { grid-template-columns: 1fr 0.8fr 0.8fr 1fr 0.5fr; }
+        .rec-form-row { grid-template-columns: 1fr 0.7fr 0.7fr 0.7fr 1fr 0.4fr; }
         .staff-form-row input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cairo'; background: var(--input-bg); color: var(--text-dark); width: 100%; box-sizing: border-box; font-size: 12px;}
         .btn-save { background: var(--primary-green); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px;}
         .btn-remove-staff { background: var(--danger); color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
@@ -251,18 +251,25 @@
                 });
         }
 
-        // --- الإعدادات الافتراضية للرواتب ---
+        // --- الإعدادات الافتراضية للرواتب (شاملة 10 جنيه لكل جلسة للرسيبشن) ---
         const DEFAULT_CONFIG = {
             doctors: [
                 { id: 'doc1', name: 'ياسمين', code: 'ي', sessionPrice: 30, startDate: '' },
                 { id: 'doc2', name: 'منال', code: 'م', sessionPrice: 30, startDate: '' }
             ],
             reception: [
-                { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10, startDate: '2026-10-06' }
+                { id: 'rec1', name: 'آلاء', kashfPrice: 20, motabaaPrice: 10, galsaPrice: 10, startDate: '2026-10-06' }
             ]
         };
 
         let staffConfig = JSON.parse(localStorage.getItem('clinic_salary_config')) || DEFAULT_CONFIG;
+        // ضمان وجود galsaPrice = 10 حتى لو كانت الإعدادات محفوظة قديماً في المتصفح
+        if (staffConfig.reception) {
+            staffConfig.reception.forEach(rec => {
+                if (rec.galsaPrice === undefined) rec.galsaPrice = 10;
+            });
+        }
+
         let allClinicDaysData = {}; 
         let currentEditMode = ''; 
 
@@ -304,6 +311,7 @@
             btn.disabled = true;
 
             localStorage.removeItem('clinic_salary_config');
+            staffConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
             
             if (db) {
                 db.ref('clinic_days').once('value').then((snapshot) => {
@@ -352,6 +360,7 @@
                 
                 let dayKashfCount = 0;
                 let dayMotabaaCount = 0;
+                let dayGalsaCount = 0;
                 let dayDoctorSessions = {};
 
                 sched.forEach(patient => {
@@ -367,6 +376,7 @@
                     if (paymentStatus === 'تم الدفع' && amountPaid >= 50) {
                         if (typeNorm === 'كشف') dayKashfCount++;
                         if (typeNorm === 'متابعه') dayMotabaaCount++; 
+                        if (typeNorm === 'جلسه') dayGalsaCount++; 
                     }
 
                     if (docNorm) { 
@@ -388,9 +398,10 @@
 
                 staffConfig.reception.forEach(rec => {
                     if (rec.startDate && dateStr < rec.startDate) return;
-                    if (dayKashfCount > 0 || dayMotabaaCount > 0) {
-                        let dailyTotal = (dayKashfCount * rec.kashfPrice) + (dayMotabaaCount * rec.motabaaPrice);
-                        receptionCalc[rec.id].days[dateStr] = { kashf: dayKashfCount, motabaa: dayMotabaaCount, dailyTotal: dailyTotal };
+                    let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 10;
+                    if (dayKashfCount > 0 || dayMotabaaCount > 0 || dayGalsaCount > 0) {
+                        let dailyTotal = (dayKashfCount * rec.kashfPrice) + (dayMotabaaCount * rec.motabaaPrice) + (dayGalsaCount * gPrice);
+                        receptionCalc[rec.id].days[dateStr] = { kashf: dayKashfCount, motabaa: dayMotabaaCount, galsa: dayGalsaCount, dailyTotal: dailyTotal };
                         receptionCalc[rec.id].total += dailyTotal;
                     }
                 });
@@ -428,11 +439,12 @@
 
             staffConfig.reception.forEach(rec => {
                 let data = receptionCalc[rec.id];
+                let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 10;
                 recList.innerHTML += `
                     <div class="staff-card" onclick='openReportModal("reception", ${JSON.stringify(data)})'>
                         <div class="staff-info">
                             <h3>${rec.name}</h3>
-                            <p>كشف: ${rec.kashfPrice} | متابعة: ${rec.motabaaPrice} ${rec.startDate ? `| بدأت: ${rec.startDate}` : ''}</p>
+                            <p>كشف: ${rec.kashfPrice} | متابعة: ${rec.motabaaPrice} | جلسة: ${gPrice} ${rec.startDate ? `| بدأت: ${rec.startDate}` : ''}</p>
                         </div>
                         <div class="staff-total">${data.total} ج.م</div>
                     </div>`;
@@ -457,15 +469,15 @@
                     tbody.innerHTML += `<tr><td>${date}</td><td>${d.sessions}</td><td style="color:var(--primary-green); font-weight:bold;">${d.dailyTotal} ج.م</td></tr>`;
                 });
             } else {
-                thead.innerHTML = `<tr><th>التاريخ</th><th>كشوفات</th><th>متابعات</th><th>راتب اليوم</th></tr>`;
-                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; opacity:0.6;">لا توجد حالات مسجلة في هذا الشهر.</td></tr>`;
+                thead.innerHTML = `<tr><th>التاريخ</th><th>كشوفات</th><th>متابعات</th><th>جلسات</th><th>راتب اليوم</th></tr>`;
+                if(sortedDates.length === 0) tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; opacity:0.6;">لا توجد حالات مسجلة في هذا الشهر.</td></tr>`;
                 sortedDates.forEach(date => {
                     let d = data.days[date];
-                    tbody.innerHTML += `<tr><td>${date}</td><td>${d.kashf}</td><td>${d.motabaa}</td><td style="color:var(--primary-green); font-weight:bold;">${d.dailyTotal} ج.م</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${date}</td><td>${d.kashf}</td><td>${d.motabaa}</td><td>${d.galsa || 0}</td><td style="color:var(--primary-green); font-weight:bold;">${d.dailyTotal} ج.م</td></tr>`;
                 });
             }
 
-            let colSpan = type === 'doctor' ? 2 : 3;
+            let colSpan = type === 'doctor' ? 2 : 4;
             if(sortedDates.length > 0) {
                 tbody.innerHTML += `
                     <tr class="report-total-row">
@@ -500,11 +512,13 @@
                 });
             } else {
                 list.forEach((rec, idx) => {
+                    let gPrice = rec.galsaPrice !== undefined ? rec.galsaPrice : 10;
                     container.innerHTML += `
                         <div class="staff-form-row rec-form-row">
                             <div><label style="font-size:11px">الاسم:</label><input type="text" value="${rec.name}" id="${currentEditMode}-name-${idx}"></div>
                             <div><label style="font-size:11px">سعر الكشف:</label><input type="number" value="${rec.kashfPrice}" id="${currentEditMode}-kprice-${idx}"></div>
                             <div><label style="font-size:11px">سعر المتابعة:</label><input type="number" value="${rec.motabaaPrice}" id="${currentEditMode}-mprice-${idx}"></div>
+                            <div><label style="font-size:11px">سعر الجلسة:</label><input type="number" value="${gPrice}" id="${currentEditMode}-gprice-${idx}"></div>
                             <div><label style="font-size:11px">تاريخ البدء:</label><input type="date" value="${rec.startDate || ''}" id="${currentEditMode}-date-${idx}"></div>
                             <div style="text-align:center"><br><button class="btn-remove-staff" onclick="removeStaffRow(${idx})"><i class="fa-solid fa-trash"></i></button></div>
                         </div>`;
@@ -516,7 +530,7 @@
             if (currentEditMode === 'doctors') {
                 staffConfig.doctors.push({ id: 'doc' + Date.now(), name: '', code: '', sessionPrice: 0, startDate: '' });
             } else {
-                staffConfig.reception.push({ id: 'rec' + Date.now(), name: '', kashfPrice: 0, motabaaPrice: 0, startDate: '' });
+                staffConfig.reception.push({ id: 'rec' + Date.now(), name: '', kashfPrice: 0, motabaaPrice: 0, galsaPrice: 10, startDate: '' });
             }
             renderEditForm();
         }
@@ -540,6 +554,7 @@
                     rec.name = document.getElementById(`${currentEditMode}-name-${idx}`).value.trim();
                     rec.kashfPrice = parseFloat(document.getElementById(`${currentEditMode}-kprice-${idx}`).value) || 0;
                     rec.motabaaPrice = parseFloat(document.getElementById(`${currentEditMode}-mprice-${idx}`).value) || 0;
+                    rec.galsaPrice = parseFloat(document.getElementById(`${currentEditMode}-gprice-${idx}`).value) || 0;
                     rec.startDate = document.getElementById(`${currentEditMode}-date-${idx}`).value;
                 });
             }
