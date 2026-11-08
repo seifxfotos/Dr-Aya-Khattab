@@ -247,7 +247,7 @@
         .print-header { display: none; }
 
         /* ========================================================
-           إعدادات الطباعة والـ PDF (لوجو الدكتورة + خط أكبر + ملء الصفحة الواحدة بالكامل)
+           إعدادات الطباعة والـ PDF (صفحة واحدة مستحيل تنقسم + اللوجو + خط واضح وكبير)
            ======================================================== */
         @page {
             size: landscape;
@@ -263,10 +263,10 @@
                 background-color: #ffffff !important;
                 color: #000000 !important;
                 margin: 0 !important;
-                padding: 5mm 9mm !important;
+                padding: 4mm 8mm !important;
                 width: 100% !important;
                 height: auto !important;
-                zoom: 0.87;
+                zoom: 0.84;
             }
             .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay, #toast {
                 display: none !important;
@@ -283,6 +283,8 @@
                 box-shadow: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
             .card-panel h2 { display: none !important; }
 
@@ -291,19 +293,21 @@
                 justify-content: space-between !important;
                 align-items: center !important;
                 border-bottom: 2.5px solid #8CC63F !important;
-                padding-bottom: 6px !important;
-                margin-bottom: 8px !important;
+                padding-bottom: 4px !important;
+                margin-bottom: 6px !important;
                 background: #ffffff !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
             }
             .print-header .print-logo {
-                height: 52px !important;
+                height: 42px !important;
                 width: auto !important;
                 object-fit: contain !important;
                 display: block !important;
             }
             .print-header p {
                 color: #000000 !important;
-                font-size: 16px !important;
+                font-size: 15.5px !important;
                 font-weight: 800 !important;
                 margin: 0 !important;
             }
@@ -313,6 +317,8 @@
                 background: #ffffff !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
+                page-break-before: avoid !important;
+                break-before: avoid !important;
             }
             .diet-table {
                 width: 100% !important;
@@ -320,18 +326,20 @@
                 border-collapse: collapse !important;
                 border: 2px solid #000000 !important;
                 background: #ffffff !important;
-                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+                break-before: avoid !important;
             }
             .diet-table tr {
                 page-break-inside: avoid !important;
+                break-inside: avoid !important;
                 background: #ffffff !important;
             }
             .diet-table th, body.dark-mode .diet-table th {
                 background-color: #0093D0 !important;
                 color: #ffffff !important;
                 border: 1px solid #222222 !important;
-                padding: 6px 8px !important;
-                font-size: 14px !important;
+                padding: 4.5px 7px !important;
+                font-size: 13.5px !important;
                 font-weight: 800 !important;
             }
             .diet-table th.kcal-col-header, body.dark-mode .diet-table th.kcal-col-header {
@@ -342,42 +350,42 @@
                 background-color: #ffffff !important;
                 color: #000000 !important;
                 border: 1px solid #333333 !important;
-                padding: 5.5px 8px !important;
-                font-size: 12px !important;
-                line-height: 1.32 !important;
+                padding: 4px 7px !important;
+                font-size: 11.5px !important;
+                line-height: 1.27 !important;
                 font-weight: 700 !important;
                 vertical-align: middle !important;
             }
             .diet-table td:first-child, body.dark-mode .diet-table td:first-child {
                 background-color: #f0f8fc !important;
                 color: #0093D0 !important;
-                font-size: 15px !important;
+                font-size: 14.5px !important;
                 font-weight: 900 !important;
                 text-align: center !important;
             }
             .diet-table td.day-kcal-cell, body.dark-mode .diet-table td.day-kcal-cell {
                 background-color: #f4faeb !important;
                 color: #1e3a00 !important;
-                font-size: 15.5px !important;
+                font-size: 15px !important;
                 font-weight: 900 !important;
                 text-align: center !important;
             }
             .diet-table td.day-kcal-cell span {
                 color: #333333 !important;
-                font-size: 10px !important;
+                font-size: 9.5px !important;
             }
             .meal-item {
-                margin-bottom: 2px !important;
-                padding-right: 11px !important;
+                margin-bottom: 1.5px !important;
+                padding-right: 10px !important;
                 color: #000000 !important;
             }
             .meal-item::before {
-                font-size: 13.5px !important;
+                font-size: 13px !important;
                 top: -1px !important;
                 color: #8CC63F !important;
             }
             .meal-item-kcal {
-                font-size: 10.5px !important;
+                font-size: 10px !important;
                 color: #0077a8 !important;
                 font-weight: 800 !important;
             }
