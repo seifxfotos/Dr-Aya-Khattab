@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الدايت - د. آية خطاب</title>
+    <!-- تحميل اللوجو مسبقاً ليظهر فوراً عند الطباعة -->
+    <link rel="preload" as="image" href="Logo-Dr-Aya.webp">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -245,7 +247,7 @@
         .print-header { display: none; }
 
         /* ========================================================
-           إعدادات الطباعة والـ PDF (صفحة واحدة، خلفية بيضاء، بدون حواف المتصفح)
+           إعدادات الطباعة والـ PDF (لوجو الدكتورة + خط أكبر + ملء الصفحة الواحدة بالكامل)
            ======================================================== */
         @page {
             size: landscape;
@@ -261,10 +263,10 @@
                 background-color: #ffffff !important;
                 color: #000000 !important;
                 margin: 0 !important;
-                padding: 6mm 10mm !important;
+                padding: 5mm 9mm !important;
                 width: 100% !important;
                 height: auto !important;
-                zoom: 0.82;
+                zoom: 0.87;
             }
             .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay, #toast {
                 display: none !important;
@@ -289,19 +291,19 @@
                 justify-content: space-between !important;
                 align-items: center !important;
                 border-bottom: 2.5px solid #8CC63F !important;
-                padding-bottom: 5px !important;
-                margin-bottom: 7px !important;
+                padding-bottom: 6px !important;
+                margin-bottom: 8px !important;
                 background: #ffffff !important;
             }
-            .print-header h1 {
-                color: #0093D0 !important;
-                font-size: 21px !important;
-                font-weight: 900 !important;
-                margin: 0 !important;
+            .print-header .print-logo {
+                height: 52px !important;
+                width: auto !important;
+                object-fit: contain !important;
+                display: block !important;
             }
             .print-header p {
                 color: #000000 !important;
-                font-size: 15px !important;
+                font-size: 16px !important;
                 font-weight: 800 !important;
                 margin: 0 !important;
             }
@@ -328,8 +330,8 @@
                 background-color: #0093D0 !important;
                 color: #ffffff !important;
                 border: 1px solid #222222 !important;
-                padding: 4px 6px !important;
-                font-size: 13px !important;
+                padding: 6px 8px !important;
+                font-size: 14px !important;
                 font-weight: 800 !important;
             }
             .diet-table th.kcal-col-header, body.dark-mode .diet-table th.kcal-col-header {
@@ -340,42 +342,42 @@
                 background-color: #ffffff !important;
                 color: #000000 !important;
                 border: 1px solid #333333 !important;
-                padding: 3px 6px !important;
-                font-size: 11px !important;
-                line-height: 1.24 !important;
+                padding: 5.5px 8px !important;
+                font-size: 12px !important;
+                line-height: 1.32 !important;
                 font-weight: 700 !important;
                 vertical-align: middle !important;
             }
             .diet-table td:first-child, body.dark-mode .diet-table td:first-child {
                 background-color: #f0f8fc !important;
                 color: #0093D0 !important;
-                font-size: 13.5px !important;
+                font-size: 15px !important;
                 font-weight: 900 !important;
                 text-align: center !important;
             }
             .diet-table td.day-kcal-cell, body.dark-mode .diet-table td.day-kcal-cell {
                 background-color: #f4faeb !important;
                 color: #1e3a00 !important;
-                font-size: 14px !important;
+                font-size: 15.5px !important;
                 font-weight: 900 !important;
                 text-align: center !important;
             }
             .diet-table td.day-kcal-cell span {
                 color: #333333 !important;
-                font-size: 9px !important;
+                font-size: 10px !important;
             }
             .meal-item {
-                margin-bottom: 1px !important;
-                padding-right: 10px !important;
+                margin-bottom: 2px !important;
+                padding-right: 11px !important;
                 color: #000000 !important;
             }
             .meal-item::before {
-                font-size: 12px !important;
+                font-size: 13.5px !important;
                 top: -1px !important;
                 color: #8CC63F !important;
             }
             .meal-item-kcal {
-                font-size: 9.5px !important;
+                font-size: 10.5px !important;
                 color: #0077a8 !important;
                 font-weight: 800 !important;
             }
@@ -480,9 +482,9 @@
         <!-- Result Panel -->
         <div class="card-panel" id="resultPanel" style="display: none;">
             
-            <!-- هيدر الطباعة: د. آية خطاب + اسم المريض والتاريخ فقط -->
+            <!-- هيدر الطباعة: لوجو الدكتورة Logo-Dr-Aya.webp + اسم المريض والتاريخ فقط -->
             <div class="print-header">
-                <h1>د. آية خطاب</h1>
+                <img src="Logo-Dr-Aya.webp" alt="د. آية خطاب" class="print-logo">
                 <p>
                     اسم المريض: <strong id="printPatientName">_________</strong> &nbsp;&nbsp;|&nbsp;&nbsp; 
                     التاريخ: <strong id="printDate">_________</strong>
@@ -1362,20 +1364,12 @@
             document.getElementById('printPatientName').innerText = pName;
             document.getElementById('printDate').innerText = pDate;
 
-            const wasDark = document.body.classList.contains('dark-mode');
-            if (wasDark) document.body.classList.remove('dark-mode');
-
             const originalTitle = document.title;
             document.title = "\u00A0";
 
             window.print();
 
-            const restoreAfterPrint = () => {
-                document.title = originalTitle;
-                if (wasDark) document.body.classList.add('dark-mode');
-                window.removeEventListener('afterprint', restoreAfterPrint);
-            };
-            window.addEventListener('afterprint', restoreAfterPrint);
+            document.title = originalTitle;
         }
 
         function showToast(msg, type = "success") {
