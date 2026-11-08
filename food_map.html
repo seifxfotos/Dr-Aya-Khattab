@@ -246,41 +246,63 @@
         .print-header h1 { color: var(--primary-blue); font-size: 32px; margin: 0; font-weight: 900;}
         .print-header p { color: #2c3e50; font-size: 16px; margin: 5px 0; font-weight: 700;}
         
-        /* إعدادات الطباعة الذكية لاحتواء الهيدر والـ 7 أيام كاملة في صفحة واحدة فقط (1 Sheet of paper) */
+        /* إعدادات الطباعة: إخفاء روابط المتصفح نهائياً + ملء الصفحة الواحدة بالكامل بخط كبير وواضح */
         @page {
             size: A4 landscape;
-            margin: 4mm 6mm;
+            margin: 0mm;
         }
         @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
             html, body { 
-                background: white !important; padding: 0 !important; margin: 0 !important; 
-                height: auto !important; zoom: 0.78; 
+                background: white !important; width: 297mm !important; height: 209mm !important;
+                padding: 4mm 6mm !important; margin: 0 !important; overflow: hidden !important;
             }
             .header-section, .search-panel, .calculator-panel, .action-buttons, .modal-overlay, #toast { display: none !important; }
-            .container { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
-            .card-panel { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; background: white !important; }
+            .container { max-width: 100% !important; width: 100% !important; height: 100% !important; padding: 0 !important; margin: 0 !important; display: flex !important; flex-direction: column !important; }
+            .card-panel#resultPanel { 
+                box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; 
+                background: white !important; width: 100% !important; height: 100% !important;
+                display: flex !important; flex-direction: column !important;
+            }
             .card-panel h2 { display: none !important; }
             
             .print-header { 
-                display: flex !important; justify-content: space-between; align-items: center;
-                border-bottom: 2px solid var(--primary-green); padding-bottom: 4px; margin-bottom: 6px;
+                display: flex !important; justify-content: space-between !important; align-items: center !important;
+                border-bottom: 2.5px solid var(--primary-green) !important; padding-bottom: 4px !important; margin-bottom: 5px !important;
+                flex-shrink: 0 !important;
             }
-            .print-header h1 { color: var(--primary-blue) !important; font-size: 18px !important; margin: 0 !important; font-weight: 900;}
-            .print-header p { color: #2c3e50 !important; font-size: 12.5px !important; margin: 0 !important; padding: 0 !important; border: none !important; font-weight: 700;}
+            .print-header h1 { color: var(--primary-blue) !important; font-size: 20px !important; margin: 0 !important; font-weight: 900 !important;}
+            .print-header p { color: #111 !important; font-size: 14.5px !important; margin: 0 !important; padding: 0 !important; border: none !important; font-weight: 800 !important;}
             
-            .diet-table-wrapper { overflow: visible !important; box-shadow: none !important; }
-            .diet-table { border: 1.5px solid #000 !important; min-width: 100% !important; width: 100% !important; page-break-inside: avoid !important; }
-            .diet-table tr { page-break-inside: avoid !important; }
-            .diet-table th, .diet-table td { border: 1px solid #444 !important; padding: 3px 5px !important; font-size: 10.5px !important; line-height: 1.25 !important; }
-            .diet-table th { background-color: var(--primary-blue) !important; color: white !important; font-size: 11.5px !important; padding: 4px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .diet-table th.kcal-col-header { background-color: var(--primary-green) !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .diet-table td:first-child { background: #f8fbfd !important; color: var(--primary-blue) !important; font-size: 12px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .diet-table td.day-kcal-cell { background: #f4faeb !important; color: #2c3e50 !important; font-size: 12px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .diet-table td.day-kcal-cell span { font-size: 9px !important; color: #333 !important; }
-            .diet-table td { color: #000 !important; }
-            .meal-item { margin-bottom: 1px !important; padding-right: 9px !important; }
-            .meal-item::before { font-size: 12px !important; top: -1px !important; }
-            .meal-item-kcal { font-size: 9px !important; }
+            .diet-table-wrapper { overflow: visible !important; box-shadow: none !important; flex: 1 !important; display: flex !important; flex-direction: column !important; height: 100% !important; }
+            .diet-table { 
+                border: 2px solid #000 !important; min-width: 100% !important; width: 100% !important; 
+                height: 100% !important; table-layout: fixed !important; border-collapse: collapse !important;
+            }
+            .diet-table th { 
+                background-color: var(--primary-blue) !important; color: white !important; 
+                font-size: 13.5px !important; font-weight: 900 !important; padding: 5px 6px !important; 
+                border: 1.5px solid #222 !important; height: 28px !important;
+            }
+            .diet-table th:first-child { width: 8% !important; }
+            .diet-table th.kcal-col-header { width: 11% !important; background-color: var(--primary-green) !important; color: white !important; }
+            .diet-table td { 
+                border: 1px solid #333 !important; padding: 4px 7px !important; 
+                font-size: 11.5px !important; line-height: 1.28 !important; font-weight: 700 !important; 
+                color: #000 !important; vertical-align: middle !important;
+            }
+            .diet-table td:first-child { 
+                background: #f0f7fb !important; color: var(--primary-blue) !important; 
+                font-size: 14px !important; font-weight: 900 !important; text-align: center !important;
+            }
+            .diet-table td.day-kcal-cell { 
+                background: #f4faeb !important; color: #1e3a00 !important; 
+                font-size: 14.5px !important; font-weight: 900 !important; text-align: center !important;
+            }
+            .diet-table td.day-kcal-cell span { font-size: 9.5px !important; color: #333 !important; font-weight: 700 !important; }
+            .meal-item { margin-bottom: 1.5px !important; padding-right: 10px !important; }
+            .meal-item::before { font-size: 13px !important; top: -1px !important; }
+            .meal-item-kcal { font-size: 10px !important; font-weight: 800 !important; color: #006b99 !important; }
         }
     </style>
 </head>
@@ -382,14 +404,15 @@
         <!-- Result Panel -->
         <div class="card-panel" id="resultPanel" style="display: none;">
             
+            <!-- هيدر الطباعة: اسم الدكتورة + اسم المريض والتاريخ فقط كما طلبت -->
             <div class="print-header">
                 <div>
                     <h1>عيادة د. آية خطاب <span style="font-size: 13px; color: #2c3e50; font-weight: 700;">— استشاري التغذية العلاجية والسمنة والنحافة</span></h1>
                 </div>
                 <p>
-                    اسم المريض: <strong id="printPatientName">_________</strong> &nbsp;|&nbsp; 
-                    التاريخ: <strong id="printDate">_________</strong> &nbsp;|&nbsp; 
-                    السعرات المستهدفة: <strong id="printCalories">_________</strong> kcal
+                    اسم المريض: <strong id="printPatientName">_________</strong> &nbsp;&nbsp;|&nbsp;&nbsp; 
+                    التاريخ: <strong id="printDate">_________</strong>
+                    <span id="printCalories" style="display:none;"></span>
                 </p>
             </div>
 
@@ -844,7 +867,7 @@
         }
 
         // ==========================================
-        // 6. قاعدة بيانات الأطعمة بصياغة عربية طبيعية ومفهومة للمريض (بدون أرقام مضروبة أو كسور)
+        // 6. قاعدة بيانات الأطعمة بصياغة عربية طبيعية ومفهومة للمريض
         // ==========================================
         function formatBread(n) {
             if (n === 1) return "نص رغيف عيش بلدي";
@@ -869,7 +892,7 @@
                 { kcal: 80, format: (n) => n === 1 ? "نص كوباية ذرة حلوة أو بليلة" : "كوباية ذرة حلوة أو بليلة" },
                 { kcal: 80, format: (n) => `${n * 2} شريحة شابورة دايت أو بقسماط سن` }
             ],
-            // 2. البروتينات واللحوم (مقسمة لفطار/عشاء وغداء عشان متطلعش أرقام بيض كبيرة غير منطقية)
+            // 2. البروتينات واللحوم
             meat: [
                 { kcal: 75, mealTypes: ['B', 'D'], format: (n) => n === 1 ? "بيضة مسلوقة" : (n === 2 ? "بيضتين مسلوقين" : `بيضتين مسلوقين + قطعة جبنة قريش (${(n-2)*50} جم)`) },
                 { kcal: 55, mealTypes: ['B', 'D'], format: (n) => n === 1 ? "قطعة جبنة قريش (50 جم)" : (n === 2 ? "قطعة جبنة قريش (100 جم)" : `طبق جبنة قريش (100 جم) + ${n-2} بيضة مسلوقة`) },
