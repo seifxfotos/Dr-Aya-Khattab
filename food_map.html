@@ -269,8 +269,8 @@
         <!-- Header -->
         <div class="header-section">
             <div>
-                <h1>نظام الدايت (ADA Exchange System)</h1>
-                <span style="font-size: 14px; opacity: 0.9;">بناء وحفظ أنظمة غذائية دقيقة 100% وفق جداول البدائل الغذائية العالمية</span>
+                <h1>نظام الدايت</h1>
+                <span style="font-size: 14px; opacity: 0.9;">بناء وحفظ أنظمة متوازنة دقيقة لكل أسبوع</span>
             </div>
             <div class="nav-links">
                 <a href="today.html">إدارة اليوم</a>
@@ -405,7 +405,7 @@
     <!-- Swap Modal -->
     <div id="swapModal" class="modal-overlay">
         <div class="modal-box">
-            <h3><i class="fa-solid fa-shuffle"></i> بدائل الوجبة (وفق جداول ADA الرسمية)</h3>
+            <h3><i class="fa-solid fa-shuffle"></i> بدائل الوجبة</h3>
             <p style="font-size: 14px; margin-bottom: 15px;">اختر أي بديل وسيتم تحديث سعرات الوجبة وإجمالي اليوم فوراً:</p>
             <div id="altOptionsContainer">
                 <!-- Options injected via JS -->
@@ -822,118 +822,117 @@
         }
 
         // ==========================================
-        // 6. Official ADA Diabetic Exchange Database (100% Exact from PDF)
+        // 6. قاعدة بيانات الأطعمة بصياغة عربية طبيعية ومفهومة للمريض (بدون أرقام مضروبة أو كسور)
         // ==========================================
+        function formatBread(n) {
+            if (n === 1) return "نص رغيف عيش بلدي";
+            if (n === 2) return "رغيف عيش بلدي";
+            if (n === 3) return "رغيف ونص عيش بلدي";
+            if (n === 4) return "رغيفين عيش بلدي";
+            return (n % 2 === 0) ? `${n / 2} أرغفة عيش بلدي` : `${Math.floor(n / 2)} رغيف ونص عيش بلدي`;
+        }
+
         const exchangeDB = {
-            // I. Starch/Bread List (Page 1, 2, 3, 14): 15g Carb, 3g Protein, 0-1g Fat = 80 Calories
+            // 1. النشويات (الحصة الواحدة = 80 سعر حراري)
             starch: [
-                { name: "1/2 رغيف عيش بلدي أو بيتا (Pita 6 in)", kcal: 80 },
-                { name: "شريحة توست أسمر أو قمح كامل (1 oz)", kcal: 80 },
-                { name: "1/2 كوب شوفان مطبوخ (3 ملاعق جاف)", kcal: 80 },
-                { name: "1/3 كوب أرز أبيض أو بني مطبوخ", kcal: 80 },
-                { name: "1/2 كوب مكرونة مسلوقة (Pasta)", kcal: 80 },
-                { name: "1/2 كوب برغل أو فريك مطبوخ", kcal: 80 },
-                { name: "بطاطس مشوية أو مسلوقة صغيرة (3 oz)", kcal: 80 },
-                { name: "1/2 كوب بطاطس مهروسة (Mashed)", kcal: 80 },
-                { name: "1/3 كوب بطاطا حلوة (Sweet Potato)", kcal: 80 },
-                { name: "1/3 كوب عدس أو فول أو فاصوليا مطبوخة", kcal: 80 },
-                { name: "1/2 كوب ذرة حلوة أو بسلة خضراء", kcal: 80 },
-                { name: "3 أكواب فشار بدون دهون (Popcorn)", kcal: 80 },
-                { name: "2 إلى 4 شرائح شابورة/كراكرز قمح كامل (Wasa)", kcal: 80 }
+                { kcal: 80, format: formatBread },
+                { kcal: 80, format: (n) => n === 1 ? "شريحة توست أسمر" : (n === 2 ? "شريحتين توست أسمر" : `${n} شرائح توست أسمر`) },
+                { kcal: 80, format: (n) => `${n * 3} معالق شوفان` },
+                { kcal: 80, format: (n) => `${n * 3} معالق أرز مسلوق` },
+                { kcal: 80, format: (n) => n === 1 ? "نص كوباية مكرونة مسلوقة" : (n === 2 ? "كوباية مكرونة مسلوقة" : `${n * 4} معالق مكرونة مسلوقة`) },
+                { kcal: 80, format: (n) => n === 1 ? "حبة بطاطس مسلوقة أو مشوية متوسطة" : (n === 2 ? "حبتين بطاطس مسلوقة أو مشوية" : `${n} حبات بطاطس مشوية`) },
+                { kcal: 80, format: (n) => n === 1 ? "ثمرة بطاطا حلوة مشوية صغيرة" : (n === 2 ? "ثمرة بطاطا حلوة مشوية كبيرة" : `${n} ثمرات بطاطا حلوة`) },
+                { kcal: 80, format: (n) => `${n * 4} معالق فول مدمس (بدون زيت)` },
+                { kcal: 80, format: (n) => n === 1 ? "طبق شوربة عدس صغير" : "طبق شوربة عدس متوسط" },
+                { kcal: 80, format: (n) => n === 1 ? "نص كوباية ذرة حلوة أو بليلة" : "كوباية ذرة حلوة أو بليلة" },
+                { kcal: 80, format: (n) => `${n * 2} شريحة شابورة دايت أو بقسماط سن` }
             ],
-            // II. Meat List (Page 1, 4, 5): Very Lean (35 kcal), Lean (55 kcal), Medium-Fat (75 kcal), High-Fat (100 kcal)
+            // 2. البروتينات واللحوم (مقسمة لفطار/عشاء وغداء عشان متطلعش أرقام بيض كبيرة غير منطقية)
             meat: [
-                { name: "3 بياض بيض مسلوق (Very Lean)", kcal: 35 },
-                { name: "1/4 كوب جبنة قريش (Cottage Cheese)", kcal: 55 },
-                { name: "1/4 كوب تونة مصفاة بالماء (Canned in water)", kcal: 55 },
-                { name: "شريحة صدر دجاج أو رومي بدون جلد (1 oz / 30g)", kcal: 55 },
-                { name: "شريحة سمك مشوي أو فيليه (1 oz / 30g)", kcal: 55 },
-                { name: "شريحة لحم بقري أحمر صافي مشوي (1 oz / 30g)", kcal: 55 },
-                { name: "2 سمكة سردين متوسطة أو 60 جم جمبري", kcal: 55 },
-                { name: "بيضة كاملة مسلوقة (Medium-Fat)", kcal: 75 },
-                { name: "شريحة جبنة موتزاريلا أو 1/4 كوب ريكوتا", kcal: 75 },
-                { name: "شريحة لحم مفروم أو ستيك مشوي (1 oz / 30g)", kcal: 75 },
-                { name: "شريحة كبدة مشوية (1 oz / 30g)", kcal: 75 },
-                { name: "شريحة جبنة شيدر أو رومي (1 oz / High-Fat)", kcal: 100 }
+                { kcal: 75, mealTypes: ['B', 'D'], format: (n) => n === 1 ? "بيضة مسلوقة" : (n === 2 ? "بيضتين مسلوقين" : `بيضتين مسلوقين + قطعة جبنة قريش (${(n-2)*50} جم)`) },
+                { kcal: 55, mealTypes: ['B', 'D'], format: (n) => n === 1 ? "قطعة جبنة قريش (50 جم)" : (n === 2 ? "قطعة جبنة قريش (100 جم)" : `طبق جبنة قريش (100 جم) + ${n-2} بيضة مسلوقة`) },
+                { kcal: 35, mealTypes: ['B', 'D'], format: (n) => n <= 2 ? `${n * 3} بياض بيض مسلوق` : `4 بياض بيض مسلوق + قطعة جبنة قريش (${(n-1)*40} جم)` },
+                { kcal: 75, mealTypes: ['B', 'D'], format: (n) => n === 1 ? "شريحة جبنة لايت أو موتزاريلا" : (n === 2 ? "شريحتين جبنة لايت" : `شريحتين جبنة لايت + ${n-2} بيضة مسلوقة`) },
+                { kcal: 55, mealTypes: ['L', 'D'], format: (n) => n <= 3 ? "علبة تونة متصفية من الزيت" : "علبة تونة كبيرة متصفية + بيضة مسلوقة" },
+                { kcal: 55, mealTypes: ['L', 'D'], format: (n) => n <= 3 ? `قطعة صدور فراخ مشوية (${n * 30} جم)` : `ربع فرخة مشوية (صدر - ${n * 30} جم)` },
+                { kcal: 55, mealTypes: ['L', 'D'], format: (n) => n <= 3 ? `سمكة مشوية متوسطة (${n * 35} جم)` : `سمكتين مشويين أو فيليه مشوي (${n * 35} جم)` },
+                { kcal: 55, mealTypes: ['L', 'D'], format: (n) => n <= 3 ? `قطعة لحمة حمراء مشوية أو مسلوقة (${n * 30} جم)` : `قطعتين لحمة مشوية أو مسلوقة (${n * 30} جم)` },
+                { kcal: 75, mealTypes: ['L'], format: (n) => `شريحة كفتة أو ستيك مشوي (${n * 30} جم)` }
             ],
-            // III. Vegetable List (Page 1, 6): 5g Carb, 2g Protein = 25 Calories (1 cup raw or 1/2 cup cooked)
+            // 3. الخضروات (الحصة = 25 سعر حراري)
             veg: [
-                { name: "1 كوب سلطة خضراء طازجة مشكلة", kcal: 25 },
-                { name: "1/2 كوب بروكلي مطبوخ بالبخار", kcal: 25 },
-                { name: "1/2 كوب سبانخ مطبوخة", kcal: 25 },
-                { name: "1/2 كوب كوسة مطبوخة", kcal: 25 },
-                { name: "1/2 كوب فاصوليا خضراء أو بامية", kcal: 25 },
-                { name: "1/2 كوب قرنبيط أو كرنب مطبوخ", kcal: 25 },
-                { name: "1/2 كوب مشروم أو باذنجان مشوي", kcal: 25 },
-                { name: "ثمرة طماطم كبيرة أو كوب جزر وفلفل أخضر", kcal: 25 }
+                { kcal: 25, format: (n) => n === 1 ? "طبق سلطة خضراء متوسط" : "طبق سلطة خضراء كبير" },
+                { kcal: 25, format: (n) => n === 1 ? "نص كوباية خضار سوتيه أو بروكلي" : "طبق خضار سوتيه مشكل" },
+                { kcal: 25, format: (n) => n === 1 ? "نص كوباية كوسة أو فاصوليا خضراء مطبوخة" : "طبق كوسة أو فاصوليا خضراء مطبوخة" },
+                { kcal: 25, format: (n) => n === 1 ? "نص كوباية سبانخ أو بامية مطبوخة" : "طبق سبانخ أو بامية مطبوخة" },
+                { kcal: 25, format: (n) => "شرائح خيار وطماطم وفلفل أخضر طازج" }
             ],
-            // IV. Fruit List (Page 1, 7, 8): 15g Carb = 60 Calories
+            // 4. الفواكه (الحصة = 60 سعر حراري)
             fruit: [
-                { name: "ثمرة تفاح متوسطة", kcal: 60 },
-                { name: "1/2 موزة متوسطة (9 بوصة)", kcal: 60 },
-                { name: "ثمرة برتقال متوسطة أو 2 يوسفي", kcal: 60 },
-                { name: "1 و 1/4 كوب فراولة طازجة كاملة", kcal: 60 },
-                { name: "1 و 1/4 كوب مكعبات بطيخ", kcal: 60 },
-                { name: "1 كوب مكعبات كنتالوب (شمام)", kcal: 60 },
-                { name: "15 حبة عنب صغير", kcal: 60 },
-                { name: "ثمرة كيوي كبيرة أو ثمرة خوخ", kcal: 60 },
-                { name: "1/2 ثمرة مانجو صغيرة أو 1/2 رمانة", kcal: 60 },
-                { name: "2.5 حبة تمر متوسط أو 2 تين طازج", kcal: 60 },
-                { name: "ثمرة كمثرى صغيرة أو 4 أنصاف مشمش", kcal: 60 }
+                { kcal: 60, format: (n) => n === 1 ? "ثمرة تفاح متوسطة" : (n === 2 ? "ثمرتين تفاح" : `${n} ثمرات تفاح`) },
+                { kcal: 60, format: (n) => n === 1 ? "ثمرة برتقال أو ثمرتين يوسفي" : (n === 2 ? "ثمرتين برتقال" : `${n} ثمرات برتقال`) },
+                { kcal: 60, format: (n) => n === 1 ? "نص موزة متوسطة" : (n === 2 ? "موزة كاملة" : "موزة ونص") },
+                { kcal: 60, format: (n) => n === 1 ? "كوباية فراولة طازجة" : "طبق فراولة طازجة" },
+                { kcal: 60, format: (n) => n === 1 ? "شريحة بطيخ أو كنتالوب" : "شريحتين بطيخ أو كنتالوب" },
+                { kcal: 60, format: (n) => n === 1 ? "ثمرة كيوي أو خوخ" : "ثمرتين كيوي أو خوخ" },
+                { kcal: 60, format: (n) => n === 1 ? "3 تمرات" : `${n * 3} تمرات` },
+                { kcal: 60, format: (n) => n === 1 ? "ثمرة جوافة أو كمثرى" : "ثمرتين جوافة أو كمثرى" }
             ],
-            // V. Milk List (Page 1, 8, 9): Skim (90 kcal), Low-fat 2% (120 kcal), Whole (150 kcal)
+            // 5. الألبان (خالي الدسم 90، قليل الدسم 120)
             milk: [
-                { name: "1 كوب حليب خالي الدسم (Skim Milk)", kcal: 90 },
-                { name: "علبة زبادي خالي الدسم (8 oz / 225g)", kcal: 90 },
-                { name: "1 كوب لبن رايب خالي الدسم (Buttermilk)", kcal: 90 },
-                { name: "1 كوب حليب قليل الدسم 2% (Low-Fat)", kcal: 120 },
-                { name: "علبة زبادي قليل الدسم (Low-Fat Yogurt)", kcal: 120 },
-                { name: "1 كوب حليب كامل الدسم (Whole Milk)", kcal: 150 }
+                { kcal: 90, format: (n) => n === 1 ? "كوباية لبن خالي الدسم" : `${n} كوباية لبن خالي الدسم` },
+                { kcal: 90, format: (n) => n === 1 ? "علبة زبادي لايت أو خالي الدسم" : "علبتين زبادي لايت" },
+                { kcal: 90, format: (n) => n === 1 ? "كوباية لبن رايب لايت" : `${n} كوباية لبن رايب لايت` },
+                { kcal: 120, format: (n) => n === 1 ? "كوباية لبن نصف دسم" : `${n} كوباية لبن نصف دسم` },
+                { kcal: 120, format: (n) => n === 1 ? "علبة زبادي بلدي أو قليل الدسم" : "علبتين زبادي قليل الدسم" }
             ],
-            // VI. Fat List (Page 1, 9, 10): 5g Fat = 45 Calories
+            // 6. الدهون الصحية (الحصة = 45 سعر حراري)
             fat: [
-                { name: "1 ملعقة صغيرة زيت زيتون أو ذرة أو عباد شمس", kcal: 45 },
-                { name: "6 حبات لوز محمص جاف (Almonds)", kcal: 45 },
-                { name: "10 حبات فول سوداني كبيرة أو 20 صغيرة", kcal: 45 },
-                { name: "2 حبة عين جمل كاملة (Walnuts)", kcal: 45 },
-                { name: "1 ملعقة كبيرة كاجو أو لب عباد الشمس", kcal: 45 },
-                { name: "1/8 ثمرة أفوكادو متوسطة", kcal: 45 },
-                { name: "10 حبات زيتون صغير أو 5 كبير", kcal: 45 },
-                { name: "1 ملعقة صغيرة زبدة طبيعية أو مايونيز", kcal: 45 },
-                { name: "1 ملعقة كبيرة جبنة كريمي أو قشطة خفيفة", kcal: 45 }
+                { kcal: 45, format: (n) => n === 1 ? "معلقة صغيرة زيت زيتون" : (n === 2 ? "معلقتين صغيرين زيت زيتون" : "معلقة كبيرة زيت زيتون") },
+                { kcal: 45, format: (n) => `${n * 6} حبات لوز ني` },
+                { kcal: 45, format: (n) => `${n * 10} حبات فول سوداني` },
+                { kcal: 45, format: (n) => `${n * 2} حبة عين جمل` },
+                { kcal: 45, format: (n) => n === 1 ? "معلقة صغيرة طحينة" : "معلقة كبيرة طحينة" },
+                { kcal: 45, format: (n) => n === 1 ? "5 حبات زيتون" : "10 حبات زيتون" },
+                { kcal: 45, format: (n) => n === 1 ? "معلقة صغيرة زبدة طبيعية" : "معلقتين صغيرين زبدة طبيعية" }
             ]
         };
 
-        // دالة تقسم إجمالي حصص اليوم على الـ 4 وجبات بدقة رياضية بحيث مجموع الـ 4 وجبات = الإجمالي بالمللي دون زيادة
+        // دالة تقسم إجمالي حصص اليوم على الـ 4 وجبات بدقة رياضية بحيث مجموع الـ 4 وجبات = الإجمالي بالمللي
         function splitServingsExact(totalServings, weights) {
             if (totalServings <= 0) return [0, 0, 0, 0];
             let raw = weights.map(w => totalServings * w);
-            letChange = raw.map(x => Math.floor(x));
-            let currentSum = letChange.reduce((a, b) => a + b, 0);
+            let result = raw.map(x => Math.floor(x));
+            let currentSum = result.reduce((a, b) => a + b, 0);
             let remainder = Math.round(totalServings - currentSum);
 
             let fractions = raw.map((x, idx) => ({ idx, frac: x - Math.floor(x) }))
                                .sort((a, b) => b.frac - a.frac);
 
             for (let i = 0; i < remainder; i++) {
-                letChange[fractions[i % 4].idx]++;
+                result[fractions[i % 4].idx]++;
             }
-            return letChange;
+            return result;
         }
 
-        // بناء محتوى الوجبة وإرجاع الـ HTML + السعرات الحقيقية للأصناف المختارة
-        function buildMealObject(servingsArr) {
+        // بناء محتوى الوجبة بالعربي الواضح حسب نوع الوجبة (فطار B، سناك S، غداء L، عشاء D)
+        function buildMealObject(servingsArr, mealKey = 'L') {
             const categories = ['starch', 'meat', 'veg', 'fruit', 'milk', 'fat'];
             let items = [];
             let mealKcal = 0;
             
             servingsArr.forEach((amount, index) => {
                 if (amount > 0) {
-                    let catDb = exchangeDB[categories[index]];
-                    let chosen = catDb[Math.floor(Math.random() * catDb.length)];
+                    let catName = categories[index];
+                    let catDb = exchangeDB[catName];
+                    let filteredDb = catDb.filter(item => !item.mealTypes || item.mealTypes.includes(mealKey));
+                    if (filteredDb.length === 0) filteredDb = catDb;
+
+                    let chosen = filteredDb[Math.floor(Math.random() * filteredDb.length)];
                     let itemTotalKcal = amount * chosen.kcal;
                     mealKcal += itemTotalKcal;
-                    items.push(`<div class="meal-item" data-kcal="${itemTotalKcal}">${amount}x ${chosen.name} <span class="meal-item-kcal">(${itemTotalKcal} kcal)</span></div>`);
+                    let readableText = chosen.format(amount);
+                    items.push(`<div class="meal-item" data-kcal="${itemTotalKcal}">${readableText} <span class="meal-item-kcal">(${itemTotalKcal} سعر)</span></div>`);
                 }
             });
 
@@ -943,7 +942,6 @@
             };
         }
 
-        // استخراج مجموع سعرات الوجبة من الـ HTML الخاص بها
         function extractMealKcalFromHtml(htmlStr) {
             if (!htmlStr) return 0;
             let total = 0;
@@ -955,7 +953,6 @@
             return total;
         }
 
-        // حساب إجمالي سعرات اليوم الواحد بدقة من مجموع وجباته الأربع الفعلية
         function calculateDayTotalCalories(dayData) {
             if (!dayData) return 0;
             let sum = 0;
@@ -1032,9 +1029,9 @@
             let targetFatGrams = (kcal * (fatP / 100)) / 9;
 
             // الحصص الأساسية الثابتة يومياً (ألبان + خضروات + فاكهة) متناسبة مع حجم السعرات
-            let milkTotal = kcal < 1200 ? 1 : 2;          // 12g C, 8g P, 2g F per serving
-            let vegTotal = kcal < 1200 ? 2 : 3;           // 5g C, 2g P per serving
-            let fruitTotal = kcal < 1300 ? 2 : 3;         // 15g C per serving
+            let milkTotal = kcal < 1200 ? 1 : 2;
+            let vegTotal = kcal < 1200 ? 2 : 3;
+            let fruitTotal = kcal < 1300 ? 2 : 3;
 
             // خصم الكارب القادم من الألبان والخضار والفاكهة لحساب حصص النشويات (15g كارب للحصة)
             let fixedCarb = (milkTotal * 12) + (vegTotal * 5) + (fruitTotal * 15);
@@ -1052,8 +1049,7 @@
             let fatTotal = Math.max(0, Math.round(remFat / 5));
 
             // معايرة ذكية (Auto-Calibration) لضمان أن مجموع سعرات الحصص يساوي السعرات المطلوبة (kcal) بالضبط
-            // متوسط السعرات في جدول ADA: نشويات=80، لحوم=65، خضار=25، فاكهة=60، ألبان=105، دهون=45
-            let estTotalKcal = () => (starchTotal * 80) + (meatTotal * 65) + (vegTotal * 25) + (fruitTotal * 60) + (milkTotal * 105) + (fatTotal * 45);
+            let estTotalKcal = () => (starchTotal * 80) + (meatTotal * 60) + (vegTotal * 25) + (fruitTotal * 60) + (milkTotal * 100) + (fatTotal * 45);
             
             let guard = 0;
             while (estTotalKcal() > kcal + 45 && guard < 40) {
@@ -1089,15 +1085,14 @@
             const days = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
             for (let i = 0; i < 7; i++) {
-                // توليد أصناف اليوم مع انتقاء ذكي يجعل إجمالي اليوم قريباً جداً من الـ kcal المستهدف
                 let bestDayObj = null;
                 let smallestDiff = Infinity;
 
                 for (let attempt = 0; attempt < 8; attempt++) {
-                    let bObj = buildMealObject(dist.B);
-                    let sObj = buildMealObject(dist.S);
-                    let lObj = buildMealObject(dist.L);
-                    let dObj = buildMealObject(dist.D);
+                    let bObj = buildMealObject(dist.B, 'B');
+                    let sObj = buildMealObject(dist.S, 'S');
+                    let lObj = buildMealObject(dist.L, 'L');
+                    let dObj = buildMealObject(dist.D, 'D');
                     let totalDay = bObj.kcal + sObj.kcal + lObj.kcal + dObj.kcal;
                     let diff = Math.abs(totalDay - kcal);
 
@@ -1122,7 +1117,7 @@
             renderPatientPlansBar();
             document.getElementById('currentPlanBadge').innerText = '(نظام جديد غير محفوظ بعد)';
             document.getElementById('resultPanel').style.display = 'block';
-            showToast("تم توليد النظام بدقة وفق جداول ADA العالمية!", "success");
+            showToast("تم توليد النظام بدقة وبصياغة واضحة!", "success");
         }
 
         function renderDietTableRows() {
@@ -1159,10 +1154,10 @@
             container.innerHTML = '';
 
             for (let i = 0; i < 3; i++) {
-                let mealObj = buildMealObject(profile);
+                let mealObj = buildMealObject(profile, mealType);
                 let div = document.createElement('div');
                 div.className = 'alt-option';
-                div.innerHTML = `<div class="alt-kcal-badge"><i class="fa-solid fa-fire-flame-curved"></i> إجمالي الوجبة: ${mealObj.kcal} kcal</div>` + mealObj.html;
+                div.innerHTML = `<div class="alt-kcal-badge"><i class="fa-solid fa-fire-flame-curved"></i> إجمالي الوجبة: ${mealObj.kcal} سعر حراري</div>` + mealObj.html;
                 div.onclick = () => confirmSwap(mealObj.html);
                 container.appendChild(div);
             }
@@ -1180,7 +1175,7 @@
             renderDietTableRows();
 
             closeSwapModal();
-            showToast(`تم تحديث الوجبة وتعديل إجمالي سعرات اليوم إلى ${currentGeneratedPlan[currentSwapDay].dayCalories} kcal!`, "success");
+            showToast(`تم تحديث الوجبة وتعديل إجمالي سعرات اليوم إلى ${currentGeneratedPlan[currentSwapDay].dayCalories} سعر حراري!`, "success");
         }
 
         // ==========================================
