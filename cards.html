@@ -6,70 +6,58 @@
     <title>استمارة مريض - عيادة د. آية خطاب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- مكاتب مساعدة -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-    <!-- مكاتب فايربيز -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
-
     <style>
-        :root {
-            --primary-blue: #0093D0; --primary-green: #8CC63F; --body-bg: #f0f4f8;
-            --sheet-bg: #ffffff; --text-main: #111111; --text-muted: #666666;
-            --border-light: #cccccc; --border-dash: #999999; --table-th-bg: #eaf5fa;
-            --table-idx-bg: #f9f9f9; --focus-bg: #f4fbf0;
-        }
-
-        body.dark-mode {
-            --body-bg: #121212; --sheet-bg: #1e1e1e; --text-main: #f0f0f0;
-            --text-muted: #aaaaaa; --border-light: #444444; --border-dash: #666666;
-            --table-th-bg: #2a2a2a; --table-idx-bg: #252525; --focus-bg: #2c3e20;
-        }
-
+        :root { --primary-blue: #0093D0; --primary-green: #8CC63F; --body-bg: #f0f4f8; --sheet-bg: #ffffff; --text-main: #111111; --text-muted: #666666; --border-light: #cccccc; --border-dash: #999999; --table-th-bg: #eaf5fa; --table-idx-bg: #f9f9f9; --focus-bg: #f4fbf0; --danger: #e74c3c; }
+        body.dark-mode { --body-bg: #121212; --sheet-bg: #1e1e1e; --text-main: #f0f0f0; --text-muted: #aaaaaa; --border-light: #444444; --border-dash: #666666; --table-th-bg: #2a2a2a; --table-idx-bg: #252525; --focus-bg: #2c3e20; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--body-bg); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s ease; }
-        
         .app-toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--sheet-bg); color: var(--text-main); padding: 12px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999999; display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 16px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-bottom: 4px solid var(--primary-blue); }
         .app-toast.show { top: 30px; }
         .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); }
         .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
-
         .save-status-badge { position: fixed; bottom: 20px; left: 20px; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--sheet-bg); color: var(--text-muted); transition: 0.3s; border: 1px solid var(--border-light);}
         .save-status-badge.saving { border-color: #f39c12; color: #f39c12; }
         .save-status-badge.saved { border-color: var(--primary-green); color: var(--primary-green); }
         .save-status-badge.unsaved { border-color: var(--danger); color: var(--danger); }
-
-        .controls { background: var(--sheet-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 4px solid var(--primary-green); }
+        .controls { background: var(--sheet-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin: 0 auto 15px auto; max-width: 1130px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 4px solid var(--primary-green); }
         .controls input { background: var(--sheet-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; flex-grow: 1; font-size: 15px; font-family: 'Cairo'; outline: none; transition: 0.3s;}
         .controls input:focus { border-color: var(--primary-blue); }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 15px; font-family: 'Cairo'; color: white; transition: 0.3s; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
-        
-        .btn-search { background-color: var(--primary-blue); }
-        .btn-search:hover { filter: brightness(0.9); }
-        .btn-new { background-color: var(--primary-green); }
-        .btn-new:hover { filter: brightness(0.9); }
-        .btn-delete { background-color: #e74c3c; } 
-        .btn-delete:hover { filter: brightness(0.8); }
-        .btn-pdf { background-color: #9b59b6; }
-        .btn-print { background-color: #e67e22; }
-        .btn-save { background-color: #27ae60; color: white;} 
-        .btn-save:hover { background-color: #2ecc71;}
-        .btn-merge { background-color: #f39c12; color: white; }
-        .btn-merge:hover { background-color: #e67e22; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 14.5px; font-family: 'Cairo'; color: white; transition: 0.3s; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
+        .btn-search { background-color: var(--primary-blue); } .btn-new { background-color: var(--primary-green); }
+        .btn-delete { background-color: #e74c3c; } .btn-pdf { background-color: #9b59b6; }
+        .btn-print { background-color: #e67e22; } .btn-save { background-color: #27ae60; } .btn-merge { background-color: #f39c12; }
+        .btn:hover { filter: brightness(0.92); }
 
-        .paper-sheet { background-color: var(--sheet-bg); max-width: 1100px; margin: 0 auto; padding: 25px 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 2px solid var(--primary-blue); border-top: 10px solid var(--primary-green); margin-bottom: 20px; }
+        /* شريط الفلتر والفرز بالأيام ونوع الكرت */
+        .filter-sort-bar { background: var(--sheet-bg); max-width: 1130px; margin: 0 auto 18px auto; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-right: 5px solid var(--primary-blue); display: flex; flex-direction: column; gap: 12px; }
+        .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .filter-label { font-weight: 800; font-size: 14px; color: var(--primary-blue); min-width: 115px; display: flex; align-items: center; gap: 6px; }
+        .filter-pill { padding: 5px 14px; border-radius: 20px; border: 1.5px solid var(--border-light); background: var(--table-idx-bg); color: var(--text-main); font-family: 'Cairo'; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .filter-pill:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+        .filter-pill.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+        .filter-pill.dept-nut.active { background: #e67e22; border-color: #e67e22; }
+        .filter-pill.dept-phy.active { background: #27ae60; border-color: #27ae60; }
+        .filtered-results-panel { background: var(--sheet-bg); max-width: 1130px; margin: 0 auto 22px auto; padding: 18px 20px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.1); border-top: 4px solid var(--primary-blue); display: none; }
+        .filtered-results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .filtered-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; max-height: 350px; overflow-y: auto; padding: 4px; }
+        .filtered-card-item { border: 1.5px solid var(--border-light); border-radius: 8px; padding: 12px 14px; cursor: pointer; background: var(--table-idx-bg); transition: 0.2s; display: flex; flex-direction: column; gap: 5px; }
+        .filtered-card-item:hover { border-color: var(--primary-green); background: var(--focus-bg); transform: translateY(-2px); }
+        .filtered-card-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .filtered-card-name { font-weight: 800; font-size: 15.5px; color: var(--primary-blue); }
+        .dept-tag { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 12px; color: #fff; white-space: nowrap; }
+        .dept-tag.nut { background: #e67e22; } .dept-tag.phy { background: #27ae60; }
+        .filtered-card-meta { font-size: 12.5px; color: var(--text-muted); font-weight: 600; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
+
+        .paper-sheet { background-color: var(--sheet-bg); max-width: 1100px; margin: 0 auto 20px auto; padding: 25px 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 2px solid var(--primary-blue); border-top: 10px solid var(--primary-green); }
         .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .clinic-qr img { width: 70px; object-fit: contain; }
-        .clinic-logo img { width: 180px; object-fit: contain; }
+        .clinic-qr img { width: 70px; object-fit: contain; } .clinic-logo img { width: 180px; object-fit: contain; }
         body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: #fff; padding: 5px; border-radius: 8px; }
-
         .card-type-select { font-size: 18px; font-weight: 800; color: var(--primary-blue); border: 2px dashed var(--primary-green); background: var(--focus-bg); padding: 5px 15px; border-radius: 8px; font-family: 'Cairo'; outline: none; cursor: pointer; text-align: center; }
-        .card-type-select:hover { filter: brightness(0.95); }
-
         .sheet-body { display: flex; gap: 30px; width: 100%; }
         .info-section { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
         .row { display: flex; gap: 20px; width: 100%; }
@@ -77,523 +65,381 @@
         .input-group label { font-weight: 700; white-space: nowrap; color: var(--primary-blue); font-size: 16px; margin: 0; }
         .input-group input { flex: 1; border: none; border-bottom: 2px dashed var(--border-dash); background: transparent; font-size: 16px; padding: 0 5px 2px 5px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; direction: rtl;}
         .input-group input:focus { border-bottom-color: var(--primary-green); }
-        
         .eng-label { direction: ltr !important; display: inline-block; unicode-bidi: isolate; }
         .input-group input.eng-text { direction: ltr; text-align: left; }
-
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
         .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 16px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; min-height: 75px; resize: vertical; direction: ltr; text-align: left;}
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
-
         .table-section { flex: 1; display: flex; flex-direction: column; }
         table { width: 100%; border-collapse: collapse; border: 2px solid var(--primary-blue); background: var(--sheet-bg); }
         th, td { border: 1px solid var(--border-light); text-align: center; height: 36px; padding: 0; position: relative;}
         th { background-color: var(--table-th-bg); color: var(--primary-blue); font-size: 16px; padding: 5px; }
         td input { width: 100%; height: 100%; border: none; text-align: center; font-size: 16px; font-weight: 700; font-family: 'Cairo'; background: transparent; color: var(--text-main); outline: none; box-sizing: border-box;}
         td input:focus { background-color: var(--focus-bg); }
-
         .n-parts-wrapper input { width: 28% !important; border-bottom: 1px dotted var(--border-dash) !important; height: 80% !important; background: transparent !important; }
-        .n-parts-wrapper input:focus { border-bottom-color: var(--primary-green) !important; background: var(--focus-bg) !important; }
-
         .date-cell-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
         .inline-date-btn { position: absolute; background: #f39c12; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 13px; font-weight: 700; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; white-space: nowrap; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
-        .inline-date-btn:hover { background: #e67e22; transform: scale(1.05); }
         .date-input:focus + .inline-date-btn, .date-input:not(:placeholder-shown) + .inline-date-btn { display: none !important; }
-
-        .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 25px; border-radius: 12px; text-align: center; background: var(--sheet-bg); transition: 0.3s;}
+        .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 25px; border-radius: 12px; text-align: center; background: var(--sheet-bg); }
         .upload-section h4 { margin: 0 0 15px 0; color: var(--primary-blue); font-size: 18px; }
         .file-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; justify-content: center;}
-        
-        .file-item { position: relative; width: 140px; height: 140px; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #f9f9f9; transition: 0.3s;}
-        .file-item img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: 0.3s; }
-        
-        .file-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.75); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; backdrop-filter: blur(2px); transition: 0.3s; opacity: 0; transform: translateY(10px); z-index: 20;}
-        .file-item:hover .file-actions { opacity: 1; transform: translateY(0); }
-        .file-item:hover img { transform: scale(1.08); }
-        
-        .file-actions a, .file-actions button { color: white; text-decoration: none; font-size: 18px; background: none; border: none; cursor: pointer; transition: 0.2s; padding: 0 10px;}
-        .file-actions a:hover, .file-actions button:hover { color: var(--primary-green); transform: scale(1.2); }
-        
-        .file-item .del-btn { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: 0.2s; z-index: 10;}
-        .file-item .del-btn:hover { background: #c0392b; transform: scale(1.15); }
-        
+        .file-item { position: relative; width: 140px; height: 140px; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary-blue); background: #f9f9f9; }
+        .file-item img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+        .file-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.75); display: flex; justify-content: space-around; align-items: center; padding: 8px 0; opacity: 0; transition: 0.3s; z-index: 20;}
+        .file-item:hover .file-actions { opacity: 1; }
+        .file-actions a, .file-actions button { color: white; text-decoration: none; font-size: 18px; background: none; border: none; cursor: pointer; padding: 0 10px;}
+        .file-item .del-btn { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 10;}
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background-color: var(--sheet-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border-top: 5px solid var(--primary-green); max-height: 80vh; overflow-y: auto; }
         .patient-option { padding: 15px; border: 1px solid var(--border-light); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
         .patient-option:hover { border-color: var(--primary-green); background-color: var(--focus-bg); }
         .patient-name { font-weight: bold; color: var(--primary-blue); font-size: 18px; margin-bottom: 5px;}
-
         .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #2c3e50; padding: 5px; border-radius: 30px; border: 2px solid #1a252f; box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
         .theme-switch { display: inline-block; height: 26px; position: relative; width: 56px; }
         .theme-switch input { display:none; }
         .slider { background-color: transparent; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;}
-        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 22px; left: 3px; position: absolute; transition: .4s; width: 22px; border-radius: 50%; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 22px; left: 3px; position: absolute; transition: .4s; width: 22px; border-radius: 50%; z-index: 2; }
         input:checked + .slider:before { transform: translateX(28px); }
-        .icon { font-size: 14px; z-index: 1; }
-
         @media print {
-            @page { margin: 0; }
-            body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
-
-            .no-print, .controls, .theme-switch-wrapper, .save-status-badge, .inline-date-btn,
-            iframe, .chat-toggle-btn, #chatBox, #chat-widget-container, .upload-section { display: none !important; } 
-            
+            @page { margin: 0; } body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
+            .no-print, .controls, .filter-sort-bar, .filtered-results-panel, .theme-switch-wrapper, .save-status-badge, .inline-date-btn, iframe, .chat-toggle-btn, #chatBox, #chat-widget-container, .upload-section { display: none !important; } 
             .paper-sheet { background-color: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important;}
-            .clinic-logo img, .clinic-qr img { background-color: transparent !important; padding: 0 !important; }
-            
             table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
             th, td { border: 1px solid #000000 !important; position: static !important; }
             th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important; }
             td input { color: #000000 !important; font-weight: bold !important; background-color: transparent !important;}
-            
             .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
-            .input-group input.eng-text { direction: ltr !important; text-align: left !important; }
-            .input-group-textarea textarea { direction: ltr !important; text-align: left !important; border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; }
-            
-            .card-type-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
+            .input-group-textarea textarea { border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; }
+            .card-type-select { appearance: none; border: none !important; background: transparent !important; color: #000 !important; }
             .n-parts-wrapper input { border: none !important; }
-
             .sheet-body { flex-direction: row !important; }
-            .dynamic-card:not(:first-child) { page-break-before: always !important; }
-            .medical-sheet { page-break-before: always !important; margin-top: 20px !important; }
+            .dynamic-card:not(:first-child), .medical-sheet { page-break-before: always !important; }
             .empty-notes { display: none !important; }
         }
-
         .force-light-mode { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
-        .force-light-mode .input-group label { color: #0093D0 !important; }
-        .force-light-mode .table-section table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
-        .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #ffffff !important; border: 1px solid #000000 !important; position: static !important; }
-        .force-light-mode th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important;}
-        
-        .force-light-mode .card-type-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none !important; background: transparent !important; color: #000 !important; font-weight: bold !important; outline: none; box-shadow: none;}
-        .force-light-mode .n-parts-wrapper input { border: none !important; }
-
-        .force-light-mode .dynamic-card:not(:first-child) { page-break-before: always !important; margin-top: 30px !important; }
-        .force-light-mode .medical-sheet { page-break-before: always !important; margin-top: 30px !important; }
-        .force-light-mode .medical-notes { background-image: repeating-linear-gradient(transparent, transparent 39px, #eee 40px) !important; color: #000000 !important;}
+        .force-light-mode .table-section table { border: 2px solid #000 !important; }
+        .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #fff !important; border: 1px solid #000 !important; }
+        .force-light-mode th { background-color: #eee !important; color: #000 !important; }
+        .force-light-mode .card-type-select { appearance: none; border: none !important; background: transparent !important; color: #000 !important; }
+        .force-light-mode .dynamic-card:not(:first-child), .force-light-mode .medical-sheet { page-break-before: always !important; }
         .force-light-mode .empty-notes { display: none !important; }
     </style>
 </head>
 <body>
+    <datalist id="ws_options"><option value="عادي"></option><option value="شد فقرات"></option><option value="شوك"></option><option value="تصريف"></option></datalist>
+    <div id="saveStatusBadge" class="save-status-badge saved no-print"><i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span></div>
+    <div id="appToast" class="app-toast no-print"><i id="toastIcon" class="fa-solid fa-check-circle"></i><span id="toastMessage"></span></div>
+    <div class="theme-switch-wrapper no-print" dir="ltr"><label class="theme-switch"><input type="checkbox" id="themeSwitch" onchange="toggleTheme(this)"><div class="slider"><span class="icon" style="color: #f1c40f;">☀️</span></div></label></div>
 
-    <datalist id="ws_options">
-        <option value="عادي"></option>
-        <option value="شوك"></option>
-        <option value="تصريف"></option>
-    </datalist>
-
-    <div id="saveStatusBadge" class="save-status-badge saved no-print">
-        <i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>
-    </div>
-
-    <div id="appToast" class="app-toast no-print">
-        <i id="toastIcon" class="fa-solid fa-check-circle"></i>
-        <span id="toastMessage"></span>
-    </div>
-
-    <div class="theme-switch-wrapper no-print" dir="ltr">
-        <label class="theme-switch">
-            <input type="checkbox" id="themeSwitch" onchange="toggleTheme(this)">
-            <div class="slider">
-                <span class="icon" style="color: #f1c40f;">☀️</span>
-            </div>
-        </label>
-    </div>
-
-    <div id="patientModal" class="modal no-print">
-        <div class="modal-content">
-            <h2 style="color: var(--primary-blue); margin-top: 0;">نتائج البحث</h2>
-            <div id="patientList"></div>
-            <button class="btn" style="background-color: #e74c3c; width: 100%; justify-content: center; margin-top: 15px;" onclick="closeModal()">إغلاق</button>
-        </div>
-    </div>
-
-    <div id="customConfirmModal" class="modal no-print" style="z-index: 999999;">
-        <div class="modal-content" style="max-width: 400px; text-align: center; border-top-color: var(--danger);">
-            <h2 id="confirmTitle" style="color: var(--danger); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;"></h2>
-            <p id="confirmMessage" style="color: var(--text-main); margin-bottom: 25px; font-size: 16px; font-weight: 600; line-height: 1.6;"></p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="confirmBtnYes" class="btn" style="flex: 1; justify-content: center; background: var(--danger);">نعم</button>
-                <button onclick="closeConfirmModal()" class="btn" style="flex: 1; background-color: var(--border-dash); justify-content: center;">إلغاء</button>
-            </div>
-        </div>
-    </div>
+    <div id="patientModal" class="modal no-print"><div class="modal-content"><h2 style="color: var(--primary-blue); margin-top: 0;">نتائج البحث</h2><div id="patientList"></div><button class="btn" style="background-color: #e74c3c; width: 100%; justify-content: center; margin-top: 15px;" onclick="closeModal()">إغلاق</button></div></div>
+    <div id="customConfirmModal" class="modal no-print" style="z-index: 999999;"><div class="modal-content" style="max-width: 400px; text-align: center; border-top-color: var(--danger);"><h2 id="confirmTitle" style="color: var(--danger); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;"></h2><p id="confirmMessage" style="color: var(--text-main); margin-bottom: 25px; font-size: 16px; font-weight: 600;"></p><div style="display: flex; gap: 10px; justify-content: center;"><button id="confirmBtnYes" class="btn" style="flex: 1; justify-content: center; background: var(--danger);">نعم</button><button onclick="closeConfirmModal()" class="btn" style="flex: 1; background-color: var(--border-dash); justify-content: center;">إلغاء</button></div></div></div>
 
     <div class="controls no-print">
-        <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل...">
+        <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل..." onkeyup="if(event.key==='Enter') searchPatient()">
         <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
-        <!-- الزرار الجديد المضاف للتنظيف -->
-        <button class="btn btn-merge" onclick="mergeDuplicateCards()" style="background-color: #f39c12; color: white;"><i class="fa-solid fa-broom"></i> تنظيف التكرارات</button>
+        <button class="btn btn-merge" onclick="mergeDuplicateCards()"><i class="fa-solid fa-broom"></i> تنظيف التكرارات</button>
         <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
         <button class="btn btn-save" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
         <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف</button>
     </div>
 
-    <div id="cardsRenderContainer">
-        <!-- سيتم رسم الكروت هنا بواسطة الجافاسكريبت بناءً على الـ State -->
+    <!-- شريط الفرز والفلترة بأيام الأسبوع ونوع الكرت -->
+    <div class="filter-sort-bar no-print">
+        <div class="filter-row">
+            <div class="filter-label"><i class="fa-solid fa-layer-group"></i> نوع الكرت:</div>
+            <button class="filter-pill active" data-dept="all" onclick="setFilterDept('all', this)">الكل</button>
+            <button class="filter-pill dept-nut" data-dept="تغذية علاجية" onclick="setFilterDept('تغذية علاجية', this)">🥗 تغذية علاجية</button>
+            <button class="filter-pill dept-phy" data-dept="علاج طبيعي" onclick="setFilterDept('علاج طبيعي', this)">🦴 علاج طبيعي</button>
+        </div>
+        <div class="filter-row">
+            <div class="filter-label"><i class="fa-solid fa-calendar-week"></i> أيام الحضور:</div>
+            <button class="filter-pill active" data-day="all" onclick="setFilterDay('all', this)">كل الأيام</button>
+            <button class="filter-pill" data-day="6" onclick="setFilterDay('6', this)">السبت</button>
+            <button class="filter-pill" data-day="0" onclick="setFilterDay('0', this)">الأحد</button>
+            <button class="filter-pill" data-day="1" onclick="setFilterDay('1', this)">الإثنين</button>
+            <button class="filter-pill" data-day="2" onclick="setFilterDay('2', this)">الثلاثاء</button>
+            <button class="filter-pill" data-day="3" onclick="setFilterDay('3', this)">الأربعاء</button>
+            <button class="filter-pill" data-day="4" onclick="setFilterDay('4', this)">الخميس</button>
+            <button class="filter-pill" data-day="5" onclick="setFilterDay('5', this)">الجمعة</button>
+        </div>
     </div>
 
+    <div id="filteredResultsPanel" class="filtered-results-panel no-print">
+        <div class="filtered-results-header">
+            <div style="font-weight: 800; font-size: 16px; color: var(--primary-blue);">
+                <i class="fa-solid fa-users-viewfinder"></i> <span id="filteredResultsTitle">نتائج الفرز</span>
+                <span id="filteredResultsCount" style="background: var(--primary-green); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 13px; margin-right: 8px;">0</span>
+            </div>
+            <button class="btn" style="background: #95a5a6; padding: 5px 14px; font-size: 13px;" onclick="closeFilteredPanel()"><i class="fa-solid fa-xmark"></i> إخفاء القائمة</button>
+        </div>
+        <div id="filteredResultsGrid" class="filtered-grid"></div>
+    </div>
+
+    <div id="cardsRenderContainer"></div>
+
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI",
-            authDomain: "today-2d146.firebaseapp.com",
-            databaseURL: "https://today-2d146-default-rtdb.firebaseio.com",
-            projectId: "today-2d146",
-            storageBucket: "today-2d146.firebasestorage.app",
-            messagingSenderId: "742225764525",
-            appId: "1:742225764525:web:c2d49bdb5357d441a86624"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyB5pEukP78Y_bOPcTiPwvOej0zaGePwTeI", authDomain: "today-2d146.firebaseapp.com", databaseURL: "https://today-2d146-default-rtdb.firebaseio.com", projectId: "today-2d146", storageBucket: "today-2d146.firebasestorage.app", messagingSenderId: "742225764525", appId: "1:742225764525:web:c2d49bdb5357d441a86624" };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const storage = firebase.storage();
         const db = firebase.database(); 
-
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
-        let currentPatient = {
-            name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-            sessions: Array(12).fill({d: '', ws: '', n: ''}),
-            files: [],
-            cardTypes: {} 
-        };
-
-        let lastSavedStateString = "";
-        let saveTimeout = null;
-        let confirmActionCallback = null;
-        let showMedicalSheetFlag = false; 
-        let indexedKey = null; 
+        let currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
+        let lastSavedStateString = "", saveTimeout = null, confirmActionCallback = null, showMedicalSheetFlag = false, indexedKey = null, globalSearchResults = [];
+        let activeFilterDept = 'all', activeFilterDay = 'all', filteredPatientsList = [];
+        const DAY_NAMES_AR = { 0: 'الأحد', 1: 'الإثنين', 2: 'الثلاثاء', 3: 'الأربعاء', 4: 'الخميس', 5: 'الجمعة', 6: 'السبت' };
+        const PHYSIO_KEYWORDS = ['عادي', 'شوك', 'تصريف', 'شد فقرات', 'شوك ويف', 'تصريف ليمفاوي', 'موجات', 'ليزر', 'كهرباء', 'أخري', 'جلسة'];
 
         localforage.config({ name: 'ClinicApp', storeName: 'patients_cache' });
 
         window.addEventListener('DOMContentLoaded', async () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeSwitch').checked = true;
-            }
-            if(!currentPatient.cardTypes) currentPatient.cardTypes = {};
-            if(!currentPatient.cardTypes[0]) currentPatient.cardTypes[0] = 'تغذية علاجية';
-            
-            renderPatientToDOM(); 
+            if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); document.getElementById('themeSwitch').checked = true; }
+            renderPatientToDOM();
+            await syncAutoBookingsFromFirebaseToLocalCache();
             silentPreFetchAll();
-
             const autoSearch = localStorage.getItem('clinic_auto_search_name');
-            if (autoSearch) {
-                document.getElementById('searchName').value = autoSearch;
-                setTimeout(() => searchPatient(), 500);
-                localStorage.removeItem('clinic_auto_search_name');
-            }
+            if (autoSearch) { document.getElementById('searchName').value = autoSearch; setTimeout(() => searchPatient(), 500); localStorage.removeItem('clinic_auto_search_name'); }
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); forceSave(); } });
+        });
 
-            document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                    e.preventDefault();
-                    forceSave();
+        function normalizeSessionsArray(sessionsRaw) {
+            let tempArr = [];
+            if (sessionsRaw) {
+                if (Array.isArray(sessionsRaw)) tempArr = sessionsRaw.map(s => s ? { d: s.d || '', ws: s.ws || '', n: s.n || '' } : { d: '', ws: '', n: '' });
+                else if (typeof sessionsRaw === 'object') Object.keys(sessionsRaw).forEach(k => { if (!isNaN(parseInt(k))) { let s = sessionsRaw[k]; tempArr[parseInt(k)] = s ? { d: s.d || '', ws: s.ws || '', n: s.n || '' } : { d: '', ws: '', n: '' }; } });
+            }
+            for (let i = 0; i < tempArr.length; i++) if (!tempArr[i]) tempArr[i] = { d: '', ws: '', n: '' };
+            return tempArr;
+        }
+
+        function detectCardTypesMap(sessionsArr, existingCardTypes) {
+            let typesMap = { ...(existingCardTypes || {}) };
+            let numCards = Math.max(1, Math.ceil((sessionsArr.length || 12) / 12));
+            for (let c = 0; c < numCards; c++) {
+                let cardSessions = sessionsArr.slice(c * 12, (c + 1) * 12);
+                let isPhysio = false, isNutrition = false;
+                cardSessions.forEach(s => {
+                    if (!s || (!s.d && !s.ws && !s.n)) return;
+                    let wsStr = String(s.ws || '').trim(), nStr = String(s.n || '').trim();
+                    if (PHYSIO_KEYWORDS.some(kw => wsStr.includes(kw))) isPhysio = true;
+                    if (/[0-9]+(\s*[\-\/\\]\s*[0-9]+)+/.test(nStr)) isNutrition = true;
+                });
+                if (isPhysio) typesMap[c] = 'علاج طبيعي';
+                else if (isNutrition) typesMap[c] = 'تغذية علاجية';
+                else if (!typesMap[c]) typesMap[c] = 'تغذية علاجية';
+            }
+            return typesMap;
+        }
+
+        function analyzePatientCard(patient) {
+            let sessions = normalizeSessionsArray(patient.sessions);
+            let cardTypes = detectCardTypesMap(sessions, patient.cardTypes);
+            let deptsSet = new Set();
+            let numCards = Math.max(1, Math.ceil(sessions.length / 12));
+            for (let c = 0; c < numCards; c++) {
+                let slice = sessions.slice(c * 12, (c + 1) * 12);
+                if (slice.some(s => s && (s.d || s.ws || s.n)) || c === 0) deptsSet.add(cardTypes[c] || 'تغذية علاجية');
+            }
+            let isMonthFirstShort = false, defaultYear = new Date().getFullYear();
+            sessions.forEach(s => {
+                if (!s || !s.d) return;
+                let parts = convertToEnglishNumbers(String(s.d).trim()).split(/[\/\-\.\s]+/).filter(Boolean).map(Number);
+                if (parts.length === 3) {
+                    if (parts[0] > 1900) defaultYear = parts[0];
+                    else if (parts[2] > 1900) defaultYear = parts[2];
+                    else if (parts[2] >= 20 && parts[2] <= 99) defaultYear = 2000 + parts[2];
+                } else if (parts.length === 2 && parts[0] >= 1 && parts[0] <= 12 && parts[1] > 12 && parts[1] <= 31) isMonthFirstShort = true;
+            });
+            let daysCountMap = {}, lastTimestamp = 0, lastDateDisplay = '';
+            sessions.forEach(s => {
+                if (!s || !s.d) return;
+                let rawD = convertToEnglishNumbers(String(s.d).trim());
+                let parts = rawD.split(/[\/\-\.\s]+/).filter(Boolean).map(Number);
+                let day = null, month = null, year = defaultYear;
+                if (parts.length === 3 && parts.every(n => !isNaN(n))) {
+                    if (parts[0] > 1900) { year = parts[0]; month = parts[1]; day = parts[2]; }
+                    else { year = parts[2] < 100 ? (2000 + parts[2]) : parts[2]; if (parts[0] > 12) { day = parts[0]; month = parts[1]; } else if (parts[1] > 12) { month = parts[0]; day = parts[1]; } else { day = parts[0]; month = parts[1]; } }
+                } else if (parts.length === 2 && parts.every(n => !isNaN(n))) {
+                    if (parts[0] > 12 && parts[1] <= 12) { day = parts[0]; month = parts[1]; }
+                    else if (parts[1] > 12 && parts[0] <= 12) { month = parts[0]; day = parts[1]; }
+                    else if (isMonthFirstShort) { month = parts[0]; day = parts[1]; }
+                    else { day = parts[0]; month = parts[1]; }
+                }
+                if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2020 && year <= 2035) {
+                    let dt = new Date(year, month - 1, day);
+                    if (!isNaN(dt.getTime()) && dt.getMonth() === month - 1) {
+                        let dow = dt.getDay();
+                        daysCountMap[dow] = (daysCountMap[dow] || 0) + 1;
+                        if (dt.getTime() >= lastTimestamp) { lastTimestamp = dt.getTime(); lastDateDisplay = rawD; }
+                    }
                 }
             });
-        });
-
-        function getSafePhone(p) {
-            if(!p) return "unknown";
-            let eng = convertToEnglishNumbers(p);
-            return eng.replace(/\D/g, ''); 
+            return { depts: Array.from(deptsSet), daysCountMap, lastTimestamp, lastDateDisplay };
         }
 
-        function cardIndexKey(phone, name) {
-            let digits = convertToEnglishNumbers(String(phone || '')).replace(/\D/g, '');
-            let norm = normalizeArabicText(String(name || '')).replace(/\s+/g, ' ');
-            let h = 0;
-            for (let i = 0; i < norm.length; i++) { h = ((h << 5) - h + norm.charCodeAt(i)) | 0; }
-            return (digits || 'x') + '_' + Math.abs(h);
+        function applyAutoSessionToCardObject(cardObj, formattedDate, dateISO, wsValue, dept) {
+            if (!cardObj) return false;
+            cardObj.sessions = normalizeSessionsArray(cardObj.sessions);
+            if (cardObj.sessions.length === 0) cardObj.sessions = Array.from({ length: 12 }, () => ({ d: '', ws: '', n: '' }));
+            cardObj.cardTypes = detectCardTypesMap(cardObj.sessions, cardObj.cardTypes);
+            let cleanFmt = convertToEnglishNumbers(formattedDate), cleanISO = convertToEnglishNumbers(dateISO || '');
+            let existingIdx = cardObj.sessions.findIndex(s => s && s.d && (convertToEnglishNumbers(String(s.d).trim()) === cleanFmt || (cleanISO && convertToEnglishNumbers(String(s.d).trim()) === cleanISO)));
+            if (existingIdx !== -1) {
+                let changed = false;
+                if (wsValue && cardObj.sessions[existingIdx].ws !== wsValue) { cardObj.sessions[existingIdx].ws = wsValue; changed = true; }
+                let cIdx = Math.floor(existingIdx / 12);
+                if (dept && cardObj.cardTypes[cIdx] !== dept) { cardObj.cardTypes[cIdx] = dept; changed = true; }
+                return changed;
+            }
+            let numCards = Math.max(1, Math.ceil(cardObj.sessions.length / 12)), targetCardIdx = -1;
+            for (let c = numCards - 1; c >= 0; c--) {
+                let slice = cardObj.sessions.slice(c * 12, (c + 1) * 12);
+                if (slice.every(s => !s.d && !s.ws && !s.n) && c === 0) { cardObj.cardTypes[0] = dept || 'تغذية علاجية'; targetCardIdx = 0; break; }
+                if (cardObj.cardTypes[c] === dept && slice.some(s => !s.d && !s.ws && !s.n)) { targetCardIdx = c; break; }
+            }
+            if (targetCardIdx === -1) {
+                let lastFilledIdx = -1;
+                for (let i = cardObj.sessions.length - 1; i >= 0; i--) if (cardObj.sessions[i].d || cardObj.sessions[i].ws || cardObj.sessions[i].n) { lastFilledIdx = i; break; }
+                if (lastFilledIdx + 1 < cardObj.sessions.length) {
+                    let targetRow = lastFilledIdx + 1;
+                    cardObj.sessions[targetRow] = { d: formattedDate, ws: wsValue || '', n: cardObj.sessions[targetRow]?.n || '' };
+                    if (dept) cardObj.cardTypes[Math.floor(targetRow / 12)] = dept;
+                    return true;
+                } else {
+                    let newCardIdx = Math.ceil(cardObj.sessions.length / 12);
+                    for (let k = 0; k < 12; k++) cardObj.sessions.push({ d: '', ws: '', n: '' });
+                    cardObj.cardTypes[newCardIdx] = dept || 'تغذية علاجية';
+                    cardObj.sessions[newCardIdx * 12] = { d: formattedDate, ws: wsValue || '', n: '' };
+                    return true;
+                }
+            } else {
+                let start = targetCardIdx * 12, end = start + 12, lastInChunk = start - 1;
+                for (let i = end - 1; i >= start; i--) if (cardObj.sessions[i] && (cardObj.sessions[i].d || cardObj.sessions[i].ws || cardObj.sessions[i].n)) { lastInChunk = i; break; }
+                let targetRow = (lastInChunk + 1 < end) ? (lastInChunk + 1) : cardObj.sessions.findIndex((s, idx) => idx >= start && idx < end && !s.d && !s.ws && !s.n);
+                if (targetRow !== -1) { cardObj.sessions[targetRow] = { d: formattedDate, ws: wsValue || '', n: cardObj.sessions[targetRow]?.n || '' }; return true; }
+            }
+            return false;
         }
 
-        function seedCardsIndex(list) {
+        async function syncAutoBookingsFromFirebaseToLocalCache() {
             try {
-                if (!Array.isArray(list)) return;
-                let obj = {};
-                list.forEach(p => {
-                    if (p && p.name) obj[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') };
+                let snap = await db.ref('cards_auto_sync').once('value');
+                let allSynced = snap.val();
+                if (!allSynced) return;
+                let cache = await localforage.getItem('patients_cache') || [], cacheChanged = false;
+                Object.keys(allSynced).forEach(normKey => {
+                    let datesList = Object.values(allSynced[normKey] || {}).sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''));
+                    if (datesList.length === 0) return;
+                    let sampleName = datesList[0].name || '';
+                    let cardIdx = cache.findIndex(p => p && p.name && normalizeArabicText(p.name) === normalizeArabicText(sampleName));
+                    if (cardIdx !== -1) datesList.forEach(b => { if (applyAutoSessionToCardObject(cache[cardIdx], b.d, b.dateISO, b.ws, b.dept)) cacheChanged = true; });
                 });
-                if (Object.keys(obj).length === 0) return;
-                db.ref('cards_names_index').transaction(cur => cur ? undefined : obj);
-            } catch (e) { console.error('[فهرس الكروت] تعذر التعبئة:', e); }
+                if (cacheChanged) await localforage.setItem('patients_cache', cache);
+            } catch (e) {}
         }
 
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('appToast');
-            const icon = document.getElementById('toastIcon');
-            const msg = document.getElementById('toastMessage');
-            toast.className = `app-toast ${type}`;
-            if(type === 'success') icon.className = 'fa-solid fa-check-circle';
-            else if(type === 'error') icon.className = 'fa-solid fa-exclamation-circle';
-            else icon.className = 'fa-solid fa-info-circle';
-            msg.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
-
-        function showCustomConfirm(title, message, onConfirm, confirmText = "نعم، متأكد", confirmColor = "var(--danger)") {
-            document.getElementById('confirmTitle').innerHTML = title;
-            document.getElementById('confirmMessage').innerHTML = message;
-            let btnYes = document.getElementById('confirmBtnYes');
-            btnYes.innerHTML = confirmText;
-            btnYes.style.backgroundColor = confirmColor;
-            confirmActionCallback = onConfirm;
-            document.getElementById('customConfirmModal').style.display = "flex";
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('customConfirmModal').style.display = "none";
-            confirmActionCallback = null;
-        }
-
-        document.getElementById('confirmBtnYes').addEventListener('click', () => {
-            if(confirmActionCallback) confirmActionCallback();
-            closeConfirmModal();
-        });
-
-        function createNewPatient() {
-            currentPatient = {
-                name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '',
-                sessions: Array(12).fill({d: '', ws: '', n: ''}),
-                files: [],
-                cardTypes: {0: 'تغذية علاجية'}
-            };
-            lastSavedStateString = ""; 
-            indexedKey = null;
-            showMedicalSheetFlag = false; 
-            renderPatientToDOM();
-            showToast("تم فتح استمارة جديدة", "info");
-        }
-
-        window.syncCardNames = function() {
-            let n = document.getElementById('p_name') ? document.getElementById('p_name').value : '';
-            let p = document.getElementById('p_phone') ? document.getElementById('p_phone').value : '';
-            document.querySelectorAll('.extra-card-name').forEach(el => el.value = n);
-            document.querySelectorAll('.extra-card-phone').forEach(el => el.value = p);
+        window.setFilterDept = function(dept, btnEl) {
+            activeFilterDept = dept;
+            document.querySelectorAll('.filter-pill[data-dept]').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+            applyCardsFilter();
         };
-
-        window.updateCardType = function(cardIndex, newType) {
-            updateStateFromDOM(); 
-            currentPatient.cardTypes[cardIndex] = newType;
-            renderPatientToDOM();
-            handleInput();
+        window.setFilterDay = function(dayStr, btnEl) {
+            activeFilterDay = dayStr;
+            document.querySelectorAll('.filter-pill[data-day]').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+            applyCardsFilter();
         };
+        window.closeFilteredPanel = function() { document.getElementById('filteredResultsPanel').style.display = 'none'; };
+
+        async function applyCardsFilter() {
+            if (activeFilterDept === 'all' && activeFilterDay === 'all') { closeFilteredPanel(); return; }
+            let cache = await localforage.getItem('patients_cache') || [];
+            if (cache.length === 0) { showToast("جاري تحميل الكروت...", "info"); await silentPreFetchAll(); cache = await localforage.getItem('patients_cache') || []; }
+            let matches = [];
+            cache.forEach(p => {
+                if (!p || !p.name) return;
+                let analysis = analyzePatientCard(p);
+                if (activeFilterDept !== 'all' && !analysis.depts.includes(activeFilterDept)) return;
+                let dayVisitsCount = 0;
+                if (activeFilterDay !== 'all') { dayVisitsCount = analysis.daysCountMap[parseInt(activeFilterDay, 10)] || 0; if (dayVisitsCount === 0) return; }
+                matches.push({ patient: p, ...analysis, dayVisitsCount });
+            });
+            matches.sort((a, b) => (activeFilterDay !== 'all' && b.dayVisitsCount !== a.dayVisitsCount) ? (b.dayVisitsCount - a.dayVisitsCount) : (b.lastTimestamp - a.lastTimestamp));
+            filteredPatientsList = matches.map(m => m.patient);
+            document.getElementById('filteredResultsTitle').innerText = `مرضى (${activeFilterDept === 'all' ? 'كل الأقسام' : activeFilterDept} - ${activeFilterDay === 'all' ? 'كل الأيام' : 'يوم ' + DAY_NAMES_AR[activeFilterDay]})`;
+            document.getElementById('filteredResultsCount').innerText = `${matches.length} مريض`;
+            const grid = document.getElementById('filteredResultsGrid');
+            grid.innerHTML = matches.length === 0 ? `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-muted);font-weight:700;">لا توجد كروت مطابقة لهذا الفلتر حالياً.</div>` : matches.map((item, idx) => {
+                let deptTags = item.depts.map(d => `<span class="dept-tag ${d === 'علاج طبيعي' ? 'phy' : 'nut'}">${d}</span>`).join(' ');
+                let daysSummary = Object.keys(item.daysCountMap).sort((a, b) => item.daysCountMap[b] - item.daysCountMap[a]).map(dk => `${DAY_NAMES_AR[dk]} (${item.daysCountMap[dk]})`).join(' ، ');
+                return `<div class="filtered-card-item" onclick="selectFilteredPatient(${idx})"><div class="filtered-card-top"><span class="filtered-card-name">${escapeHtml(item.patient.name)}</span><div>${deptTags}</div></div><div class="filtered-card-meta"><span><i class="fa-solid fa-phone"></i> ${escapeHtml(item.patient.phone || 'بدون رقم')}</span>${item.lastDateDisplay ? `<span>آخر زيارة: ${escapeHtml(item.lastDateDisplay)}</span>` : ''}</div>${daysSummary ? `<div style="font-size:11.5px;color:var(--primary-green);font-weight:700;"><i class="fa-solid fa-calendar-check"></i> ${daysSummary}</div>` : ''}</div>`;
+            }).join('');
+            document.getElementById('filteredResultsPanel').style.display = 'block';
+        }
+        window.selectFilteredPatient = function(idx) { if (filteredPatientsList[idx]) { loadPatientData(filteredPatientsList[idx]); document.getElementById('cardsRenderContainer').scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
+
+        function getSafePhone(p) { return p ? convertToEnglishNumbers(p).replace(/\D/g, '') || "unknown" : "unknown"; }
+        function cardIndexKey(phone, name) { let d = convertToEnglishNumbers(String(phone || '')).replace(/\D/g, ''), norm = normalizeArabicText(String(name || '')).replace(/\s+/g, ' '), h = 0; for (let i = 0; i < norm.length; i++) h = ((h << 5) - h + norm.charCodeAt(i)) | 0; return (d || 'x') + '_' + Math.abs(h); }
+        function seedCardsIndex(list) { try { if (!Array.isArray(list)) return; let obj = {}; list.forEach(p => { if (p && p.name) obj[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') }; }); if (Object.keys(obj).length > 0) db.ref('cards_names_index').transaction(cur => cur ? undefined : obj); } catch (e) {} }
+        function showToast(message, type = 'success') { const t = document.getElementById('appToast'), ic = document.getElementById('toastIcon'); t.className = `app-toast ${type}`; ic.className = type === 'success' ? 'fa-solid fa-check-circle' : (type === 'error' ? 'fa-solid fa-exclamation-circle' : 'fa-solid fa-info-circle'); document.getElementById('toastMessage').innerText = message; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        function showCustomConfirm(title, message, onConfirm, confirmText = "نعم، متأكد", confirmColor = "var(--danger)") { document.getElementById('confirmTitle').innerHTML = title; document.getElementById('confirmMessage').innerHTML = message; let b = document.getElementById('confirmBtnYes'); b.innerHTML = confirmText; b.style.backgroundColor = confirmColor; confirmActionCallback = onConfirm; document.getElementById('customConfirmModal').style.display = "flex"; }
+        function closeConfirmModal() { document.getElementById('customConfirmModal').style.display = "none"; confirmActionCallback = null; }
+        document.getElementById('confirmBtnYes').addEventListener('click', () => { if(confirmActionCallback) confirmActionCallback(); closeConfirmModal(); });
+
+        function createNewPatient() { currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} }; lastSavedStateString = ""; indexedKey = null; showMedicalSheetFlag = false; renderPatientToDOM(); showToast("تم فتح استمارة جديدة", "info"); }
+        window.syncCardNames = function() { let n = document.getElementById('p_name')?.value || '', p = document.getElementById('p_phone')?.value || ''; document.querySelectorAll('.extra-card-name').forEach(el => el.value = n); document.querySelectorAll('.extra-card-phone').forEach(el => el.value = p); };
+        window.updateCardType = function(cardIndex, newType) { updateStateFromDOM(); currentPatient.cardTypes[cardIndex] = newType; renderPatientToDOM(); handleInput(); };
 
         function renderPatientToDOM() {
             const container = document.getElementById('cardsRenderContainer');
-            let fullHtml = '';
-            
             let totalNeeded = Math.max(12, Math.ceil(currentPatient.sessions.length / 12) * 12);
-            while(currentPatient.sessions.length < totalNeeded) { currentPatient.sessions.push({d: '', ws: '', n: ''}); }
-            
-            let numCards = currentPatient.sessions.length / 12;
-
-            for(let c = 0; c < numCards; c++) {
-                fullHtml += buildCardHtml(c);
-            }
-
+            while(currentPatient.sessions.length < totalNeeded) currentPatient.sessions.push({d: '', ws: '', n: ''});
+            let numCards = currentPatient.sessions.length / 12, fullHtml = '';
+            for(let c = 0; c < numCards; c++) fullHtml += buildCardHtml(c);
             let hasNotes = currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '';
-            
             if (hasNotes || showMedicalSheetFlag) {
-                let emptyClass = (!currentPatient.medical_notes || currentPatient.medical_notes.trim() === '') ? 'empty-notes' : '';
-                fullHtml += `
-                    <div class="paper-sheet medical-sheet ${emptyClass}" id="medicalSheetWrapper" style="margin-top:20px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-green); padding-bottom:10px; margin-bottom: 10px;">
-                            <h3 style="color: var(--primary-blue); margin:0;">التشخيص والملاحظات الطبية</h3>
-                            <button class="btn btn-delete no-print" style="padding: 5px 10px; font-size: 13px;" onclick="removeMedicalSheet()"><i class="fa-solid fa-xmark"></i> إزالة الملف</button>
-                        </div>
-                        <textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea>
-                    </div>
-                `;
+                fullHtml += `<div class="paper-sheet medical-sheet ${!hasNotes ? 'empty-notes' : ''}" id="medicalSheetWrapper" style="margin-top:20px;"><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--primary-green);padding-bottom:10px;margin-bottom:10px;"><h3 style="color:var(--primary-blue);margin:0;">التشخيص والملاحظات الطبية</h3><button class="btn btn-delete no-print" style="padding:5px 10px;font-size:13px;" onclick="removeMedicalSheet()"><i class="fa-solid fa-xmark"></i> إزالة الملف</button></div><textarea id="p_medical_notes" class="medical-notes" oninput="handleInput()">${escapeHtml(currentPatient.medical_notes)}</textarea></div>`;
             }
-
-            let extraCardBtns = `<button class="btn btn-new" style="background: #27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>`;
-            if (currentPatient.sessions.length > 12) {
-                extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
-            }
-
-            fullHtml += `
-                <div class="no-print" style="max-width: 1100px; margin: 20px auto; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    ${extraCardBtns}
-                    ${!(hasNotes || showMedicalSheetFlag) ? `<button class="btn btn-medical" style="background: var(--primary-blue);" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>` : ''}
-                </div>
-            `;
-
-            fullHtml += `
-                <div class="paper-sheet upload-section no-print" style="max-width: 1100px; margin: 20px auto;">
-                    <h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4>
-                    <input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)">
-                    <button id="uploadBtn" class="btn btn-new" style="margin: 0 auto; padding: 10px 25px; font-size: 16px;" onclick="document.getElementById('fileUploader').click()">
-                        <i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع
-                    </button>
-                    <div class="file-list" id="filesListContainer"></div>
-                </div>
-            `;
-
+            let extraCardBtns = `<button class="btn btn-new" style="background:#27ae60;" onclick="addExtraCard()"><i class="fa-solid fa-plus-square"></i> إضافة كرت إضافي</button>`;
+            if (currentPatient.sessions.length > 12) extraCardBtns += `<button class="btn btn-delete" onclick="removeExtraCard()"><i class="fa-solid fa-minus-square"></i> إزالة الكرت الأخير</button>`;
+            fullHtml += `<div class="no-print" style="max-width:1100px;margin:20px auto;display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">${extraCardBtns}${!(hasNotes || showMedicalSheetFlag) ? `<button class="btn" style="background:var(--primary-blue);" onclick="addMedicalSheet()"><i class="fa-solid fa-notes-medical"></i> إضافة ملف طبي</button>` : ''}</div>`;
+            fullHtml += `<div class="paper-sheet upload-section no-print" style="max-width:1100px;margin:20px auto;"><h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4><input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)"><button id="uploadBtn" class="btn btn-new" style="margin:0 auto;padding:10px 25px;font-size:16px;" onclick="document.getElementById('fileUploader').click()"><i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع</button><div class="file-list" id="filesListContainer"></div></div>`;
             container.innerHTML = fullHtml;
             renderFilesList();
-            attachDoubleClickListener();
         }
 
-        window.addExtraCard = function() {
-            updateStateFromDOM(); 
-            for(let i=0; i<12; i++) {
-                currentPatient.sessions.push({d: '', ws: '', n: ''});
-            }
-            let newCardIndex = (currentPatient.sessions.length / 12) - 1;
-            let prevType = currentPatient.cardTypes[newCardIndex - 1] || 'تغذية علاجية';
-            currentPatient.cardTypes[newCardIndex] = prevType;
-            
-            renderPatientToDOM();
-            handleInput(); 
-            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
-        };
-
-        window.removeExtraCard = function() {
-            updateStateFromDOM();
-            if (currentPatient.sessions.length <= 12) return;
-            let last12 = currentPatient.sessions.slice(-12);
-            let hasData = last12.some(s => s.d || s.ws || s.n);
-            if (hasData) {
-                showCustomConfirm('<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير', 'الكرت الأخير جواه بيانات جلسات متسجلة، متأكد إنك عايز تمسحه؟', () => { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); });
-            } else { currentPatient.sessions.splice(-12); renderPatientToDOM(); handleInput(); }
-        };
-
-        window.addMedicalSheet = function() {
-            showMedicalSheetFlag = true; renderPatientToDOM();
-            setTimeout(() => { const notesEl = document.getElementById('p_medical_notes'); if(notesEl) { notesEl.focus(); window.scrollTo({ top: notesEl.offsetTop - 50, behavior: 'smooth' }); } }, 100);
-        };
-
-        window.removeMedicalSheet = function() {
-            updateStateFromDOM();
-            if (currentPatient.medical_notes && currentPatient.medical_notes.trim() !== '') {
-                showCustomConfirm('<i class="fa-solid fa-triangle-exclamation"></i> مسح الملف الطبي', 'الملف الطبي جواه كلام مكتوب، متأكد إنك عايز تمسحه وتلغيه خالص؟', () => { currentPatient.medical_notes = ''; showMedicalSheetFlag = false; renderPatientToDOM(); handleInput(); });
-            } else { currentPatient.medical_notes = ''; showMedicalSheetFlag = false; renderPatientToDOM(); handleInput(); }
-        };
-
-        window.setSpecificDate = function(idx) {
-            let today = new Date().toLocaleDateString('en-GB'); 
-            let input = document.getElementById(`d_${idx}`);
-            input.value = today;
-            let btn = input.nextElementSibling;
-            if(btn) btn.style.display = 'none';
-            
-            let wsInput = document.getElementById(`ws_${idx}`);
-            if(wsInput) wsInput.focus();
-            handleInput();
-        }
+        window.addExtraCard = function() { updateStateFromDOM(); for(let i=0;i<12;i++) currentPatient.sessions.push({d:'',ws:'',n:''}); let idx = (currentPatient.sessions.length/12)-1; currentPatient.cardTypes[idx] = currentPatient.cardTypes[idx-1] || 'تغذية علاجية'; renderPatientToDOM(); handleInput(); setTimeout(() => window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}), 100); };
+        window.removeExtraCard = function() { updateStateFromDOM(); if(currentPatient.sessions.length<=12) return; if(currentPatient.sessions.slice(-12).some(s=>s.d||s.ws||s.n)) showCustomConfirm('<i class="fa-solid fa-trash"></i> إزالة الكرت الأخير','الكرت الأخير جواه بيانات جلسات متسجلة، متأكد؟',()=>{currentPatient.sessions.splice(-12);renderPatientToDOM();handleInput();}); else {currentPatient.sessions.splice(-12);renderPatientToDOM();handleInput();} };
+        window.addMedicalSheet = function() { showMedicalSheetFlag = true; renderPatientToDOM(); setTimeout(()=>{const el=document.getElementById('p_medical_notes'); if(el){el.focus(); window.scrollTo({top:el.offsetTop-50,behavior:'smooth'});}},100); };
+        window.removeMedicalSheet = function() { updateStateFromDOM(); if(currentPatient.medical_notes && currentPatient.medical_notes.trim()!=='') showCustomConfirm('<i class="fa-solid fa-triangle-exclamation"></i> مسح الملف الطبي','متأكد إنك عايز تمسحه؟',()=>{currentPatient.medical_notes='';showMedicalSheetFlag=false;renderPatientToDOM();handleInput();}); else {currentPatient.medical_notes='';showMedicalSheetFlag=false;renderPatientToDOM();handleInput();} };
+        window.setSpecificDate = function(idx) { let input = document.getElementById(`d_${idx}`); input.value = new Date().toLocaleDateString('en-GB'); if(input.nextElementSibling) input.nextElementSibling.style.display='none'; document.getElementById(`ws_${idx}`)?.focus(); handleInput(); };
 
         function buildCardHtml(cardIndex) {
-            let isFirst = cardIndex === 0;
-            let cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
-            
-            let headerTitleHtml = `
-                <div style="flex-grow: 1; text-align: center;">
-                    <select class="card-type-select" onchange="updateCardType(${cardIndex}, this.value)">
-                        <option value="تغذية علاجية" ${cardType === 'تغذية علاجية' ? 'selected' : ''}>كرت تغذية علاجية ${!isFirst ? `(متابعة ${cardIndex + 1})` : ''}</option>
-                        <option value="علاج طبيعي" ${cardType === 'علاج طبيعي' ? 'selected' : ''}>كرت علاج طبيعي ${!isFirst ? `(متابعة ${cardIndex + 1})` : ''}</option>
-                    </select>
-                </div>
-            `;
-            
-            let infoSection = isFirst ? `
-                <div class="row">
-                    <div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput(); syncCardNames();"></div>
-                    <div class="input-group"><label>العنوان:</label><input type="text" id="p_address" value="${escapeHtml(currentPatient.address)}" oninput="handleInput()"></div>
-                </div>
-                <div class="row">
-                    <div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput(); syncCardNames();" dir="ltr" style="text-align:right;"></div>
-                    <div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div>
-                </div>
-                <div class="input-group" style="width: 50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div>
-                <div class="input-group"><label class="eng-label">Referred&nbsp;By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div>
-                <div class="input-group"><label class="eng-label">Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div>
-                <div class="input-group-textarea">
-                    <label class="eng-label">Treatment&nbsp;Protocol:</label>
-                    <textarea id="p_protocol" rows="3" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea>
-                </div>
-            ` : `
-                <div class="row">
-                    <div class="input-group"><label>الاسم:</label><input type="text" class="extra-card-name" value="${escapeHtml(currentPatient.name)}" readonly style="color:var(--text-muted)"></div>
-                    <div class="input-group"><label>الموبايل:</label><input type="text" class="extra-card-phone" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted)" dir="ltr" style="text-align:right;"></div>
-                </div>
-            `;
-
-            let tbodyHtml = '';
-            let startIdx = cardIndex * 12;
+            let isFirst = cardIndex === 0, cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
+            let headerTitleHtml = `<div style="flex-grow:1;text-align:center;"><select class="card-type-select" onchange="updateCardType(${cardIndex}, this.value)"><option value="تغذية علاجية" ${cardType==='تغذية علاجية'?'selected':''}>كرت تغذية علاجية ${!isFirst?`(متابعة ${cardIndex+1})`:''}</option><option value="علاج طبيعي" ${cardType==='علاج طبيعي'?'selected':''}>كرت علاج طبيعي ${!isFirst?`(متابعة ${cardIndex+1})`:''}</option></select></div>`;
+            let infoSection = isFirst ? `<div class="row"><div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput();syncCardNames();"></div><div class="input-group"><label>العنوان:</label><input type="text" id="p_address" value="${escapeHtml(currentPatient.address)}" oninput="handleInput()"></div></div><div class="row"><div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput();syncCardNames();" dir="ltr" style="text-align:right;"></div><div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div></div><div class="input-group" style="width:50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div><div class="input-group"><label class="eng-label">Referred&nbsp;By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div><div class="input-group"><label class="eng-label">Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div><div class="input-group-textarea"><label class="eng-label">Treatment&nbsp;Protocol:</label><textarea id="p_protocol" rows="3" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea></div>` : `<div class="row"><div class="input-group"><label>الاسم:</label><input type="text" class="extra-card-name" value="${escapeHtml(currentPatient.name)}" readonly style="color:var(--text-muted)"></div><div class="input-group"><label>الموبايل:</label><input type="text" class="extra-card-phone" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted);text-align:right;" dir="ltr"></div></div>`;
+            let tbodyHtml = '', startIdx = cardIndex * 12;
             for(let i = 0; i < 12; i++) {
-                let sIdx = startIdx + i;
-                let session = currentPatient.sessions[sIdx] || {d:'', ws:'', n:''};
-                
-                let dateBtnHtml = !session.d ? `<button class="inline-date-btn no-print" onclick="setSpecificDate(${sIdx})" tabindex="-1" title="تاريخ اليوم"><i class="fa-solid fa-calendar-day"></i> تاريخ اليوم</button>` : '';
-
-                let wsHtml = '';
-                let nHtml = '';
-
+                let sIdx = startIdx + i, s = currentPatient.sessions[sIdx] || {d:'',ws:'',n:''};
+                let dateBtn = !s.d ? `<button class="inline-date-btn no-print" onclick="setSpecificDate(${sIdx})" tabindex="-1"><i class="fa-solid fa-calendar-day"></i> تاريخ اليوم</button>` : '';
+                let wsHtml = '', nHtml = '';
                 if (cardType === 'تغذية علاجية') {
-                    wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" oninput="handleInput()">`;
-                    
-                    let nStr = String(session.n || '');
-                    let nParts = nStr.split('-');
-                    if(nParts.length === 1 && nStr.includes('/')) nParts = nStr.split('/');
-                    if(nParts.length === 1 && nStr.includes('\\')) nParts = nStr.split('\\');
-                    if(nParts.length === 1 && nStr.includes(' ')) nParts = nStr.split(' ');
-                    
-                    let n1 = nParts[0] ? nParts[0].trim() : '';
-                    let n2 = nParts[1] ? nParts[1].trim() : '';
-                    let n3 = nParts[2] ? nParts[2].trim() : '';
-
-                    nHtml = `
-                        <div class="n-parts-wrapper" style="display:flex; justify-content:center; align-items:center; direction:ltr; gap:2px; height:100%;">
-                            <input type="text" id="n1_${sIdx}" value="${escapeHtml(n1)}" oninput="handleInput()">
-                            <span style="font-weight:900; color:var(--primary-blue);">-</span>
-                            <input type="text" id="n2_${sIdx}" value="${escapeHtml(n2)}" oninput="handleInput()">
-                            <span style="font-weight:900; color:var(--primary-blue);">-</span>
-                            <input type="text" id="n3_${sIdx}" value="${escapeHtml(n3)}" oninput="handleInput()">
-                        </div>
-                    `;
+                    wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(s.ws)}" oninput="handleInput()">`;
+                    let nStr = String(s.n || ''), np = nStr.split(/[-\/\\\s]+/);
+                    nHtml = `<div class="n-parts-wrapper" style="display:flex;justify-content:center;align-items:center;direction:ltr;gap:2px;height:100%;"><input type="text" id="n1_${sIdx}" value="${escapeHtml(np[0]||'')}" oninput="handleInput()"><span style="font-weight:900;color:var(--primary-blue);">-</span><input type="text" id="n2_${sIdx}" value="${escapeHtml(np[1]||'')}" oninput="handleInput()"><span style="font-weight:900;color:var(--primary-blue);">-</span><input type="text" id="n3_${sIdx}" value="${escapeHtml(np[2]||'')}" oninput="handleInput()"></div>`;
                 } else {
-                    nHtml = `<input type="text" id="n_${sIdx}" value="${escapeHtml(session.n)}" oninput="handleInput()">`;
-                    wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(session.ws)}" list="ws_options" oninput="handleInput()" style="width:100%; height:100%; border:none; text-align:center; font-family:'Cairo'; font-weight:700; background:transparent; color:var(--text-main); outline:none; box-sizing:border-box;">`;
+                    nHtml = `<input type="text" id="n_${sIdx}" value="${escapeHtml(s.n)}" oninput="handleInput()">`;
+                    wsHtml = `<input type="text" id="ws_${sIdx}" value="${escapeHtml(s.ws)}" list="ws_options" oninput="handleInput()">`;
                 }
-
-                tbodyHtml += `
-                    <tr>
-                        <td style="font-weight:700; background:var(--table-idx-bg); color:var(--primary-blue);">${sIdx + 1}</td>
-                        <td>
-                            <div class="date-cell-wrapper">
-                                <input type="text" id="d_${sIdx}" class="date-input" value="${escapeHtml(session.d)}" placeholder=" " oninput="handleInput()" dir="ltr">
-                                ${dateBtnHtml}
-                            </div>
-                        </td>
-                        <td>${wsHtml}</td>
-                        <td>${nHtml}</td>
-                    </tr>
-                `;
+                tbodyHtml += `<tr><td style="font-weight:700;background:var(--table-idx-bg);color:var(--primary-blue);">${sIdx+1}</td><td><div class="date-cell-wrapper"><input type="text" id="d_${sIdx}" class="date-input" value="${escapeHtml(s.d)}" placeholder=" " oninput="handleInput()" dir="ltr">${dateBtn}</div></td><td>${wsHtml}</td><td>${nHtml}</td></tr>`;
             }
-
-            return `
-            <div class="paper-sheet dynamic-card">
-                <div class="sheet-header">
-                    <div class="clinic-qr"><img src="links-qr-code.svg" alt="QR" onerror="this.style.display='none'"></div>
-                    ${headerTitleHtml}
-                    <div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo" onerror="this.style.display='none'"></div>
-                </div>
-                <div class="sheet-body">
-                    <div class="info-section">
-                        ${infoSection}
-                    </div>
-                    <div class="table-section">
-                        <table>
-                            <thead><tr><th style="width:8%">#</th><th style="width:28%">D</th><th style="width:24%">W/S</th><th style="width:40%">N</th></tr></thead>
-                            <tbody>${tbodyHtml}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>`;
+            return `<div class="paper-sheet dynamic-card"><div class="sheet-header"><div class="clinic-qr"><img src="links-qr-code.svg" alt="QR" onerror="this.style.display='none'"></div>${headerTitleHtml}<div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo" onerror="this.style.display='none'"></div></div><div class="sheet-body"><div class="info-section">${infoSection}</div><div class="table-section"><table><thead><tr><th style="width:8%">#</th><th style="width:28%">D</th><th style="width:24%">W/S</th><th style="width:40%">N</th></tr></thead><tbody>${tbodyHtml}</tbody></table></div></div></div>`;
         }
 
         function updateStateFromDOM() {
@@ -607,380 +453,114 @@
                 currentPatient.diagnosis = document.getElementById('p_diagnosis').value;
                 currentPatient.protocol = document.getElementById('p_protocol').value;
             }
-            if(document.getElementById('p_medical_notes')) {
-                currentPatient.medical_notes = document.getElementById('p_medical_notes').value;
-            }
-
+            if(document.getElementById('p_medical_notes')) currentPatient.medical_notes = document.getElementById('p_medical_notes').value;
             for(let i=0; i<currentPatient.sessions.length; i++) {
-                let cardIndex = Math.floor(i / 12);
-                let cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
-
+                let ct = currentPatient.cardTypes[Math.floor(i/12)] || 'تغذية علاجية';
                 if(document.getElementById(`d_${i}`)) {
                     currentPatient.sessions[i].d = document.getElementById(`d_${i}`).value;
-                    
-                    if(cardType === 'تغذية علاجية') {
-                        let n1 = document.getElementById(`n1_${i}`).value.trim();
-                        let n2 = document.getElementById(`n2_${i}`).value.trim();
-                        let n3 = document.getElementById(`n3_${i}`).value.trim();
-                        if(n1 || n2 || n3) currentPatient.sessions[i].n = [n1, n2, n3].join('-');
-                        else currentPatient.sessions[i].n = '';
-                        
-                        currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
-                    } else {
-                        currentPatient.sessions[i].n = document.getElementById(`n_${i}`).value;
-                        currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
-                    }
+                    currentPatient.sessions[i].ws = document.getElementById(`ws_${i}`).value;
+                    if(ct === 'تغذية علاجية') {
+                        let a = document.getElementById(`n1_${i}`).value.trim(), b = document.getElementById(`n2_${i}`).value.trim(), c = document.getElementById(`n3_${i}`).value.trim();
+                        currentPatient.sessions[i].n = (a||b||c) ? [a,b,c].join('-') : '';
+                    } else currentPatient.sessions[i].n = document.getElementById(`n_${i}`).value;
                 }
             }
         }
 
-        function setSaveStatus(status) {
-            const badge = document.getElementById('saveStatusBadge');
-            badge.className = `save-status-badge ${status} no-print`;
-            if(status === 'saving') badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>';
-            else if(status === 'saved') badge.innerHTML = '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>';
-            else badge.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>';
-        }
-
-        function handleInput() {
-            setSaveStatus('unsaved');
-            
-            const notesEl = document.getElementById('p_medical_notes');
-            const wrapper = document.getElementById('medicalSheetWrapper');
-            if(notesEl && wrapper) {
-                if(notesEl.value.trim() === '') wrapper.classList.add('empty-notes');
-                else wrapper.classList.remove('empty-notes');
-            }
-
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => { forceSave(true); }, 5000);
-        }
-
+        function setSaveStatus(status) { const b = document.getElementById('saveStatusBadge'); b.className = `save-status-badge ${status} no-print`; b.innerHTML = status==='saving' ? '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>' : (status==='saved' ? '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>' : '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>'); }
+        function handleInput() { setSaveStatus('unsaved'); const ne = document.getElementById('p_medical_notes'), w = document.getElementById('medicalSheetWrapper'); if(ne && w) w.classList.toggle('empty-notes', ne.value.trim()===''); clearTimeout(saveTimeout); saveTimeout = setTimeout(() => forceSave(true), 5000); }
         function saveData() { forceSave(false); }
 
         async function forceSave(isSilent = false) {
             updateStateFromDOM();
-            
             let safePhoneVal = getSafePhone(currentPatient.phone);
-            
-            // حماية لمنع حفظ الأرقام الناقصة أو المتكررة أثناء الأوتو سيف
-            if(!currentPatient.name || safePhoneVal === "unknown" || safePhoneVal.length < 10) {
-                if(!isSilent) showToast("الاسم ورقم موبايل صحيح (10 أرقام على الأقل) مطلوبان للحفظ", "error");
-                setSaveStatus('unsaved');
-                return;
-            }
-            
+            if(!currentPatient.name || safePhoneVal === "unknown" || safePhoneVal.length < 10) { if(!isSilent) showToast("الاسم ورقم موبايل صحيح (10 أرقام على الأقل) مطلوبان للحفظ", "error"); setSaveStatus('unsaved'); return; }
             let currentStateStr = JSON.stringify(currentPatient);
-            if (currentStateStr === lastSavedStateString) {
-                if(!isSilent) showToast("الكرت ده محفوظ بالفعل ومفيش تعديلات جديدة!", "info");
-                return;
-            }
-
-            if (!isSilent && lastSavedStateString === "") {
-                let cache = await localforage.getItem('patients_cache') || [];
-                let found = cache.find(p => (p.phone && p.phone === currentPatient.phone) || (p.name && normalizeArabicText(p.name) === normalizeArabicText(currentPatient.name)));
-                
-                if (found && found.name !== currentPatient.name) {
-                    showCustomConfirm(
-                        '<i class="fa-solid fa-copy"></i> كرت مكرر!',
-                        'المريض ده مسجل عندنا قبل كده بنفس الاسم أو الرقم! تحب نفتح الكرت بتاعه بدل ما نسجل واحد جديد يكرر الداتا؟',
-                        () => { loadPatientData(found); },
-                        'افتح كرت المريض', 'var(--primary-blue)'
-                    );
-                    return; 
-                }
-            }
-
+            if (currentStateStr === lastSavedStateString) { if(!isSilent) showToast("الكرت ده محفوظ بالفعل!", "info"); return; }
             setSaveStatus('saving');
-            
             let cleanedSessions = [...currentPatient.sessions];
-            while(cleanedSessions.length > 0 && !cleanedSessions[cleanedSessions.length-1].d && !cleanedSessions[cleanedSessions.length-1].ws && !cleanedSessions[cleanedSessions.length-1].n) {
-                cleanedSessions.pop();
-            }
-
+            while(cleanedSessions.length > 0 && !cleanedSessions[cleanedSessions.length-1].d && !cleanedSessions[cleanedSessions.length-1].ws && !cleanedSessions[cleanedSessions.length-1].n) cleanedSessions.pop();
             let payload = { ...currentPatient, sessions: cleanedSessions };
-
             let cache = await localforage.getItem('patients_cache') || [];
             let idx = cache.findIndex(p => p.phone === payload.phone);
             if(idx > -1) cache[idx] = payload; else cache.push(payload);
             await localforage.setItem('patients_cache', cache);
-
             try {
                 let newKey = cardIndexKey(payload.phone, payload.name);
-                db.ref('cards_names_index/' + newKey).set({ name: payload.name, phone: String(payload.phone || '') })
-                    .catch(e => console.error('[فهرس الكروت] تعذر الحفظ:', e));
-                if (indexedKey && indexedKey !== newKey) {
-                    db.ref('cards_names_index/' + indexedKey).remove().catch(e => console.error('[فهرس الكروت] تعذر مسح القديم:', e));
-                }
+                db.ref('cards_names_index/' + newKey).set({ name: payload.name, phone: String(payload.phone || '') });
+                if (indexedKey && indexedKey !== newKey) db.ref('cards_names_index/' + indexedKey).remove();
                 indexedKey = newKey;
-            } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
-
+            } catch (e) {}
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-                
-                let safePhone = getSafePhone(currentPatient.phone);
-                if (safePhone !== "unknown" && currentPatient.files && currentPatient.files.length > 0) {
-                    await db.ref('patients_files_data/' + safePhone).set(currentPatient.files);
-                }
-
-                setSaveStatus('saved');
-                lastSavedStateString = currentStateStr; 
+                if (safePhoneVal !== "unknown" && currentPatient.files?.length > 0) await db.ref('patients_files_data/' + safePhoneVal).set(currentPatient.files);
+                setSaveStatus('saved'); lastSavedStateString = currentStateStr;
                 if(!isSilent) showToast("تم الحفظ بنجاح", "success");
-            } catch (e) {
-                setSaveStatus('unsaved');
-                if(!isSilent) showToast("خطأ في الاتصال، تم الحفظ محلياً", "info");
-            }
+            } catch (e) { setSaveStatus('unsaved'); if(!isSilent) showToast("تم الحفظ محلياً", "info"); }
         }
-        
-        // دالة تنظيف التكرارات الذكية
+
         window.mergeDuplicateCards = async function() {
             let cache = await localforage.getItem('patients_cache') || [];
             if (cache.length === 0) return showToast("لا توجد بيانات لفحصها!", "info");
-
             showToast("جاري فحص وتنظيف الكروت المتكررة...", "info");
-            
-            let toDelete = [];
-            let toUpdate = [];
-            let mergedCount = 0;
-
-            function normalizeArabicTextMerge(text) { return text ? text.toString().replace(/[\u064B-\u065F\u0640]/g, "").replace(/[أإآء]/g, "ا").replace(/[يىئ]/g, "ي").replace(/ة/g, "ه").replace(/عبد ال/g, "عبدال").replace(/ابو /g, "ابو").replace(/^(مدام|استاذ|استاذة|استاذه|دكتور|دكتورة|دكتوره|م|د|م\.|د\.)\s+/g, "").trim().toLowerCase() : ""; }
-            function isNameMatchMerge(n1, n2) {
-                if (!n1 || !n2) return false;
-                let norm1 = normalizeArabicTextMerge(n1); let norm2 = normalizeArabicTextMerge(n2);
-                if (norm1 === norm2) return true;
-                let parts1 = norm1.split(' ').filter(Boolean); let parts2 = norm2.split(' ').filter(Boolean);
-                if (parts1.length >= 2 && parts2.length >= 2) { if (parts1[0] === parts2[0] && parts1[1] === parts2[1]) return true; }
-                return false;
-            }
-
-            for (let i = 0; i < cache.length; i++) {
-                let p1 = cache[i];
-                if (!p1 || toDelete.includes(p1)) continue;
-
-                let safePhone1 = getSafePhone(p1.phone);
-
-                for (let j = i + 1; j < cache.length; j++) {
-                    let p2 = cache[j];
-                    if (!p2 || toDelete.includes(p2)) continue;
-
-                    let safePhone2 = getSafePhone(p2.phone);
-                    
-                    let isSamePerson = false;
-                    if (isNameMatchMerge(p1.name, p2.name)) {
-                        if (safePhone1 === safePhone2 && safePhone1 !== "unknown") isSamePerson = true;
-                        else if (safePhone1 !== 'unknown' && safePhone2 !== 'unknown' && (safePhone1.includes(safePhone2) || safePhone2.includes(safePhone1))) {
-                            isSamePerson = true;
-                        }
-                    }
-
-                    if (isSamePerson) {
-                        if (safePhone2.length > safePhone1.length) { p1.phone = p2.phone; safePhone1 = safePhone2; }
-                        if (!p1.address && p2.address) p1.address = p2.address;
-                        if (!p1.job && p2.job) p1.job = p2.job;
-                        if (!p1.age && p2.age) p1.age = p2.age;
-
-                        // حماية استرجاع الجلسات كمصفوفات قبل الدمج
-                        let p1Sess = []; let p2Sess = [];
-                        if (p1.sessions) { if (Array.isArray(p1.sessions)) p1Sess = p1.sessions; else if (typeof p1.sessions === 'object') Object.keys(p1.sessions).forEach(k => { if(!isNaN(parseInt(k))) p1Sess[parseInt(k)] = p1.sessions[k]; }); }
-                        if (p2.sessions) { if (Array.isArray(p2.sessions)) p2Sess = p2.sessions; else if (typeof p2.sessions === 'object') Object.keys(p2.sessions).forEach(k => { if(!isNaN(parseInt(k))) p2Sess[parseInt(k)] = p2.sessions[k]; }); }
-
-                        let p2SessionsFilter = p2Sess.filter(s => s && (s.d || s.ws || s.n));
-                        let p1SessionsFilter = p1Sess.filter(s => s && (s.d || s.ws || s.n));
-                        p1.sessions = p1SessionsFilter.concat(p2SessionsFilter);
-                        
-                        if (p2.medical_notes) {
-                            if (!p1.medical_notes) p1.medical_notes = p2.medical_notes;
-                            else if (!p1.medical_notes.includes(p2.medical_notes)) p1.medical_notes += "\n" + p2.medical_notes;
-                        }
-                        if (p2.files && p2.files.length > 0) {
-                            if (!p1.files) p1.files = [];
-                            p1.files = p1.files.concat(p2.files);
-                        }
-
-                        toDelete.push(p2);
-                        if (!toUpdate.includes(p1)) toUpdate.push(p1);
-                        mergedCount++;
+            let toDelete = [], toUpdate = [], mergedCount = 0;
+            function normM(t) { return t ? t.toString().replace(/[\u064B-\u065F\u0640]/g,"").replace(/[أإآء]/g,"ا").replace(/[يىئ]/g,"ي").replace(/ة/g,"ه").replace(/^(مدام|استاذ|استاذة|دكتور|دكتورة|د\.?)\s+/g,"").trim().toLowerCase() : ""; }
+            function matchM(a,b) { if(!a||!b) return false; let n1=normM(a), n2=normM(b); if(n1===n2) return true; let p1=n1.split(' ').filter(Boolean), p2=n2.split(' ').filter(Boolean); return p1.length>=2 && p2.length>=2 && p1[0]===p2[0] && p1[1]===p2[1]; }
+            for (let i=0;i<cache.length;i++) {
+                let p1 = cache[i]; if(!p1 || toDelete.includes(p1)) continue; let sp1 = getSafePhone(p1.phone);
+                for (let j=i+1;j<cache.length;j++) {
+                    let p2 = cache[j]; if(!p2 || toDelete.includes(p2)) continue; let sp2 = getSafePhone(p2.phone);
+                    if (matchM(p1.name, p2.name) && sp1!=="unknown" && sp2!=="unknown" && (sp1===sp2 || sp1.includes(sp2) || sp2.includes(sp1))) {
+                        if(sp2.length > sp1.length) { p1.phone = p2.phone; sp1 = sp2; }
+                        if(!p1.address && p2.address) p1.address = p2.address;
+                        p1.sessions = normalizeSessionsArray(p1.sessions).filter(s=>s.d||s.ws||s.n).concat(normalizeSessionsArray(p2.sessions).filter(s=>s.d||s.ws||s.n));
+                        if(p2.medical_notes && (!p1.medical_notes || !p1.medical_notes.includes(p2.medical_notes))) p1.medical_notes = (p1.medical_notes?p1.medical_notes+"\n":"")+p2.medical_notes;
+                        if(p2.files?.length) p1.files = (p1.files||[]).concat(p2.files);
+                        toDelete.push(p2); if(!toUpdate.includes(p1)) toUpdate.push(p1); mergedCount++;
                     }
                 }
             }
-
-            if (mergedCount === 0) return showToast("ممتاز! لا توجد كروت مكررة للمرضى.", "success");
-
+            if (mergedCount === 0) return showToast("لا توجد كروت مكررة.", "success");
             let newCache = cache.filter(p => !toDelete.includes(p));
-            await localforage.setItem('patients_cache', newCache);
-            seedCardsIndex(newCache, true); 
-
-            for (let p of toDelete) {
-                try { fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(p.phone) + "&name=" + encodeURIComponent(p.name), { method: 'GET', mode: 'no-cors' }); } catch(e) {}
-            }
-            for (let p of toUpdate) {
-                try { fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(p), mode: 'no-cors' }); } catch(e) {}
-            }
-            showToast(`تم تنظيف ودمج ${mergedCount} كارت متكرر بنجاح!`, "success");
-            setTimeout(() => { createNewPatient(); }, 1500);
+            await localforage.setItem('patients_cache', newCache); seedCardsIndex(newCache);
+            toDelete.forEach(p => { try { fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(p.phone) + "&name=" + encodeURIComponent(p.name), { method: 'GET', mode: 'no-cors' }); } catch(e) {} });
+            toUpdate.forEach(p => { try { fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(p), mode: 'no-cors' }); } catch(e) {} });
+            showToast(`تم دمج ${mergedCount} كارت متكرر بنجاح!`, "success"); setTimeout(() => createNewPatient(), 1500);
         };
 
         function exportToPDF() {
-            updateStateFromDOM();
-            if(!currentPatient.name) return showToast("يجب إدخال اسم المريض أولاً", "error");
+            updateStateFromDOM(); if(!currentPatient.name) return showToast("يجب إدخال اسم المريض أولاً", "error");
             showToast("جاري تجهيز الـ PDF...", "info");
-            
-            const chatContainers = document.querySelectorAll('iframe, .chat-toggle-btn');
-            chatContainers.forEach(el => el.style.display = 'none');
-            
-            document.body.classList.add('force-light-mode');
-            document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
-
-            const element = document.getElementById('cardsRenderContainer');
-            const opt = {
-                margin:       [5, 5, 5, 5],
-                filename:     `استمارة_${currentPatient.name}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
-                pagebreak:    { mode: ['css', 'legacy'] }
-            };
-            
-            html2pdf().set(opt).from(element).save().then(() => {
-                document.body.classList.remove('force-light-mode');
-                document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
-                chatContainers.forEach(el => el.style.display = '');
-                showToast("تم تحميل الملف بنجاح", "success");
-            });
-        }
-
-        function attachDoubleClickListener() {
-            document.querySelectorAll('.date-dblclick').forEach(input => {
-                input.addEventListener('dblclick', function() {
-                    if(!this.value) {
-                        this.value = new Date().toLocaleDateString('en-GB');
-                        handleInput();
-                    }
-                });
-            });
+            document.body.classList.add('force-light-mode'); document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+            html2pdf().set({ margin:[5,5,5,5], filename:`استمارة_${currentPatient.name}.pdf`, image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}, pagebreak:{mode:['css','legacy']} }).from(document.getElementById('cardsRenderContainer')).save().then(() => { document.body.classList.remove('force-light-mode'); document.querySelectorAll('.no-print').forEach(el => el.style.display = ''); showToast("تم تحميل الملف بنجاح", "success"); });
         }
 
         window.handleFileUpload = function(e) {
-            updateStateFromDOM();
-            const file = e.target.files[0];
-            if(!file) return;
-
-            let safePhone = getSafePhone(currentPatient.phone);
-            if(safePhone === "unknown" || safePhone === "") {
-                showToast("يجب إدخال رقم الموبايل أولاً قبل رفع أي مرفق!", "error");
-                e.target.value = '';
-                return;
-            }
-
-            const uploadBtn = document.getElementById('uploadBtn');
-            uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التجهيز...`;
-            uploadBtn.disabled = true;
-
+            updateStateFromDOM(); const file = e.target.files[0]; if(!file) return;
+            let safePhone = getSafePhone(currentPatient.phone); if(safePhone === "unknown") { showToast("أدخل رقم الموبايل أولاً!", "error"); e.target.value=''; return; }
+            const btn = document.getElementById('uploadBtn'); btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع...`; btn.disabled = true;
             let filePath = `patients_files/${safePhone}/${Date.now()}_${file.name}`;
-            const storageRef = storage.ref(filePath);
-            const uploadTask = storageRef.put(file);
-
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع (${Math.round(progress)}%)...`;
-                },
-                (error) => {
-                    showToast("فشل الرفع! يرجى التأكد من الإنترنت.", "error");
-                    uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
-                    uploadBtn.disabled = false;
-                    e.target.value = '';
-                },
-                () => {
-                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        if(!currentPatient.files) currentPatient.files = [];
-                        currentPatient.files.push({ url: downloadURL, name: file.name, path: filePath });
-                        
-                        db.ref('patients_files_data/' + safePhone).set(currentPatient.files).then(() => {
-                            renderFilesList();
-                            uploadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`;
-                            uploadBtn.disabled = false;
-                            e.target.value = '';
-                            forceSave(true);
-                            showToast("تم رفع الملف بنجاح وحفظه!", "success");
-                        });
-                    });
-                }
-            );
+            const task = storage.ref(filePath).put(file);
+            task.on('state_changed', snap => { btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> (${Math.round((snap.bytesTransferred/snap.totalBytes)*100)}%)`; }, () => { showToast("فشل الرفع!", "error"); btn.innerHTML = `<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`; btn.disabled = false; }, () => { task.snapshot.ref.getDownloadURL().then(url => { if(!currentPatient.files) currentPatient.files=[]; currentPatient.files.push({url,name:file.name,path:filePath}); db.ref('patients_files_data/'+safePhone).set(currentPatient.files).then(()=>{ renderFilesList(); btn.innerHTML=`<i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع`; btn.disabled=false; e.target.value=''; forceSave(true); showToast("تم الرفع!", "success"); }); }); });
         };
 
         window.renderFilesList = function() {
-            const container = document.getElementById('filesListContainer');
-            if(!container) return;
-            container.innerHTML = '';
-            if(currentPatient.files && currentPatient.files.length > 0) {
-                currentPatient.files.forEach((file, idx) => {
-                    let isImg = file.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-                    let iconHtml = isImg ? `<img src="${file.url}" onclick="window.open('${file.url}', '_blank')" title="تكبير الصورة">` 
-                                         : `<div style="height:100%; width:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#eee;" onclick="window.open('${file.url}', '_blank')"><i class="fa-solid fa-file-pdf fa-3x" style="color:#e74c3c;"></i></div>`;
-                    
-                    container.innerHTML += `
-                        <div class="file-item no-print">
-                            ${iconHtml}
-                            <button class="del-btn" onclick="deleteFile(${idx})" title="حذف المرفق"><i class="fa-solid fa-xmark"></i></button>
-                            <div class="file-actions">
-                                <a href="${file.url}" target="_blank" download title="تنزيل"><i class="fa-solid fa-download"></i></a>
-                                <button onclick="window.open('${file.url}', '_blank')" title="تكبير"><i class="fa-solid fa-expand"></i></button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                container.innerHTML = `<p style="color: var(--text-muted); width: 100%; text-align: center; font-weight: 600;">لا توجد مرفقات حتى الآن.</p>`;
-            }
+            const c = document.getElementById('filesListContainer'); if(!c) return;
+            c.innerHTML = (currentPatient.files?.length > 0) ? currentPatient.files.map((f,i) => `<div class="file-item no-print">${f.name.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? `<img src="${f.url}" onclick="window.open('${f.url}','_blank')">` : `<div style="height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#eee;" onclick="window.open('${f.url}','_blank')"><i class="fa-solid fa-file-pdf fa-3x" style="color:#e74c3c;"></i></div>`}<button class="del-btn" onclick="deleteFile(${i})"><i class="fa-solid fa-xmark"></i></button><div class="file-actions"><a href="${f.url}" target="_blank" download><i class="fa-solid fa-download"></i></a><button onclick="window.open('${f.url}','_blank')"><i class="fa-solid fa-expand"></i></button></div></div>`).join('') : `<p style="color:var(--text-muted);width:100%;text-align:center;font-weight:600;">لا توجد مرفقات حتى الآن.</p>`;
         };
-
-        window.deleteFile = function(idx) {
-            showCustomConfirm(
-                '<i class="fa-solid fa-trash-can"></i> حذف المرفق',
-                'هل أنت متأكد من مسح هذا الملف نهائياً؟',
-                () => {
-                    let fileToDelete = currentPatient.files[idx];
-                    currentPatient.files.splice(idx, 1);
-                    renderFilesList();
-                    handleInput();
-                    
-                    let safePhone = getSafePhone(currentPatient.phone);
-                    
-                    if (currentPatient.files.length > 0) {
-                        db.ref('patients_files_data/' + safePhone).set(currentPatient.files);
-                    } else {
-                        db.ref('patients_files_data/' + safePhone).remove();
-                    }
-
-                    if (fileToDelete.path) {
-                        storage.ref(fileToDelete.path).delete().catch(e => console.log("Storage delete error", e));
-                    }
-
-                    showToast("تم مسح المرفق بنجاح!", "success");
-                }
-            );
-        };
+        window.deleteFile = function(idx) { showCustomConfirm('<i class="fa-solid fa-trash-can"></i> حذف المرفق','متأكد من المسح نهائياً؟',()=>{ let f=currentPatient.files.splice(idx,1)[0]; renderFilesList(); handleInput(); let sp=getSafePhone(currentPatient.phone); currentPatient.files.length>0 ? db.ref('patients_files_data/'+sp).set(currentPatient.files) : db.ref('patients_files_data/'+sp).remove(); if(f.path) storage.ref(f.path).delete().catch(()=>{}); showToast("تم المسح!", "success"); }); };
 
         function deletePatient() {
-            let phone = currentPatient.phone; let name = currentPatient.name;
-            if(!name) { showToast("برجاء البحث عن المريض وعرض بياناته أولاً قبل الحذف!", "error"); return; }
-            showCustomConfirm('<i class="fa-solid fa-trash"></i> تأكيد الحذف', `هل أنت متأكد من مسح بيانات المريض (${name}) من قاعدة البيانات نهائياً؟`, async () => {
-                let cache = await localforage.getItem('patients_cache') || [];
-                cache = cache.filter(p => !(p.phone === phone && p.name === name));
+            let phone = currentPatient.phone, name = currentPatient.name;
+            if(!name) return showToast("ابحث عن المريض أولاً!", "error");
+            showCustomConfirm('<i class="fa-solid fa-trash"></i> تأكيد الحذف', `مسح المريض (${name}) نهائياً؟`, async () => {
+                let cache = (await localforage.getItem('patients_cache') || []).filter(p => !(p.phone===phone && p.name===name));
                 await localforage.setItem('patients_cache', cache);
-                
-                let safePhone = getSafePhone(phone);
-                db.ref('patients_files_data/' + safePhone).remove();
-
-                try {
-                    db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove().catch(e => console.error('[فهرس الكروت] تعذر المسح:', e));
-                    if (indexedKey) db.ref('cards_names_index/' + indexedKey).remove().catch(() => {});
-                } catch (e) { console.error('[فهرس الكروت] خطأ:', e); }
-
-                showToast("تم الحذف بنجاح!", "success");
-                createNewPatient();
-                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' }).catch(e => console.log("Cloud sync delayed"));
+                db.ref('patients_files_data/' + getSafePhone(phone)).remove();
+                db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove();
+                if (indexedKey) db.ref('cards_names_index/' + indexedKey).remove();
+                showToast("تم الحذف بنجاح!", "success"); createNewPatient();
+                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' }).catch(()=>{});
             });
         }
 
@@ -990,7 +570,8 @@
                 let data = await res.json();
                 if(data.status === 'found') {
                     await localforage.setItem('patients_cache', data.data);
-                    seedCardsIndex(data.data); // تعبئة الفهرس لأول مرة فقط لو فاضي
+                    await syncAutoBookingsFromFirebaseToLocalCache();
+                    seedCardsIndex(data.data);
                 }
             } catch(e) {}
         }
@@ -998,119 +579,69 @@
         async function searchPatient() {
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل!", "error");
-            
-            let searchInput = convertToEnglishNumbers(rawSearch);
-            let cleanSearchName = normalizeArabicText(searchInput);
-            
+            let searchInput = convertToEnglishNumbers(rawSearch), cleanSearchName = normalizeArabicText(searchInput);
             let cache = await localforage.getItem('patients_cache') || [];
-            let localResults = cache.filter(p => {
-                let pName = normalizeArabicText(p.name); let pPhone = p.phone ? p.phone : "";
-                return pName.includes(cleanSearchName) || pPhone.includes(searchInput);
-            });
-
+            let localResults = cache.filter(p => normalizeArabicText(p.name).includes(cleanSearchName) || (p.phone && p.phone.includes(searchInput)));
             if (localResults.length > 0) {
-                showToast(`تم العثور على ${localResults.length} نتيجة بحث ⚡`, "success");
+                showToast(`تم العثور على ${localResults.length} نتيجة ⚡`, "success");
                 if (localResults.length === 1) loadPatientData(localResults[0]);
                 else { globalSearchResults = localResults; renderMultiplePatientsList(localResults); }
-                return; 
+                return;
             }
-
-            let btn = document.querySelector('.btn-search');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري...';
-
+            let btn = document.querySelector('.btn-search'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري...';
             try {
-                let response = await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput));
-                let text = await response.text();
-                let res = JSON.parse(text);
-                
+                let res = JSON.parse(await (await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput))).text());
                 if(res.status === "found") {
-                    showToast(`تم العثور على ${res.data.length} نتيجة بحث!`, "success");
-                    res.data.forEach(newP => { let idx = cache.findIndex(p => p.phone === newP.phone); if(idx > -1) cache[idx] = newP; else cache.push(newP); });
+                    res.data.forEach(newP => { let i = cache.findIndex(p => p.phone === newP.phone); if(i > -1) cache[i] = newP; else cache.push(newP); });
                     await localforage.setItem('patients_cache', cache);
-                    
                     if (res.data.length === 1) loadPatientData(res.data[0]);
                     else { globalSearchResults = res.data; renderMultiplePatientsList(res.data); }
-                } else showToast("المريض غير موجود، يمكنك إدخال بياناته كملف جديد.", "error");
+                } else showToast("المريض غير موجود، يمكنك إدخاله كملف جديد.", "error");
             } catch(e) { showToast("تعذر الوصول لقاعدة البيانات.", "error"); }
             btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
         }
 
         function renderMultiplePatientsList(results) {
-            let listHtml = "";
-            results.forEach((patient, index) => {
-                listHtml += `<div class="patient-option" onclick="selectPatient(${index})"><div><div class="patient-name">${escapeHtml(patient.name)}</div><div class="patient-details">${escapeHtml(patient.phone) || "بدون رقم"}</div></div></div>`;
-            });
-            document.getElementById('patientList').innerHTML = listHtml;
+            document.getElementById('patientList').innerHTML = results.map((p, i) => `<div class="patient-option" onclick="selectPatient(${i})"><div><div class="patient-name">${escapeHtml(p.name)}</div><div class="patient-details">${escapeHtml(p.phone) || "بدون رقم"}</div></div></div>`).join('');
             document.getElementById('patientModal').style.display = "flex";
         }
-
         function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
 
         function loadPatientData(data) {
             currentPatient = { ...currentPatient, ...data };
-            
-            // 🚨 الحل الجذري والآمن 100% لمشكلة الأوبجكت بتاعت الفايربيز 🚨
-            let tempArr = [];
-            if (currentPatient.sessions) {
-                if (Array.isArray(currentPatient.sessions)) {
-                    tempArr = [...currentPatient.sessions];
-                } else if (typeof currentPatient.sessions === 'object') {
-                    Object.keys(currentPatient.sessions).forEach(k => {
-                        if (!isNaN(parseInt(k))) tempArr[parseInt(k)] = currentPatient.sessions[k];
-                    });
-                }
-            }
-            for (let i = 0; i < tempArr.length; i++) {
-                if (!tempArr[i]) tempArr[i] = {d: '', ws: '', n: ''};
-            }
-            currentPatient.sessions = tempArr;
-
+            currentPatient.sessions = normalizeSessionsArray(currentPatient.sessions);
             if(!currentPatient.files) currentPatient.files = [];
-            
+            currentPatient.cardTypes = detectCardTypesMap(currentPatient.sessions, currentPatient.cardTypes);
+
             if (currentPatient.phone) {
-                let safePhone = getSafePhone(currentPatient.phone);
-                db.ref('patients_files_data/' + safePhone).once('value').then(snap => {
-                    if (snap.exists()) {
-                        currentPatient.files = snap.val() || [];
-                    } else {
-                        currentPatient.files = [];
-                    }
+                db.ref('patients_files_data/' + getSafePhone(currentPatient.phone)).once('value').then(snap => {
+                    currentPatient.files = snap.exists() ? (snap.val() || []) : [];
                     renderFilesList();
-                }).catch(err => console.log("Files Fetch Error", err));
-            }
-            
-            currentPatient.cardTypes = {};
-            let numCards = Math.max(1, Math.ceil(currentPatient.sessions.length / 12));
-            
-            for(let c = 0; c < numCards; c++) {
-                let startIdx = c * 12;
-                let cardSessions = currentPatient.sessions.slice(startIdx, startIdx + 12);
-                
-                let isPhysio = false;
-                let isNutrition = false;
-
-                cardSessions.forEach(s => {
-                    if(!s || (!s.d && !s.ws && !s.n)) return;
-                    let wsStr = String(s.ws || '').trim();
-                    let nStr = String(s.n || '').trim();
-
-                    if (['عادي', 'شوك', 'تصريف', 'موجات', 'ليزر', 'كهرباء', 'أخري'].includes(wsStr)) isPhysio = true;
-                    if (/[0-9]+(\s*[\-\/\\]\s*[0-9]+)+/.test(nStr)) isNutrition = true;
-                });
-
-                if (!isPhysio && !isNutrition) {
-                    let filledN = cardSessions.filter(s => s && String(s.n).trim() !== '');
-                    let numsOnly = filledN.filter(s => s && /^[0-9\.\s]+$/.test(String(s.n).trim())).length;
-                    if (filledN.length > 0 && numsOnly >= filledN.length / 2) isNutrition = true;
-                }
-
-                if (isPhysio) currentPatient.cardTypes[c] = 'علاج طبيعي';
-                else currentPatient.cardTypes[c] = 'تغذية علاجية';
+                }).catch(()=>{});
             }
 
-            lastSavedStateString = JSON.stringify(currentPatient); 
+            // فحص الحجوزات الجديدة القادمة أوتوماتيك من today.html لهذا المريض وإضافتها للكرت فوراً
+            if (currentPatient.name) {
+                let normKey = normalizeArabicText(currentPatient.name);
+                db.ref('cards_auto_sync/' + normKey).once('value').then(snap => {
+                    let synced = snap.val();
+                    if (synced) {
+                        let changed = false;
+                        Object.values(synced).sort((a,b) => (a.dateISO||'').localeCompare(b.dateISO||'')).forEach(b => {
+                            if (applyAutoSessionToCardObject(currentPatient, b.d, b.dateISO, b.ws, b.dept)) changed = true;
+                        });
+                        if (changed) {
+                            renderPatientToDOM();
+                            forceSave(true);
+                            showToast("تم تحديث الكرت تلقائياً بحجز اليوم!", "success");
+                        }
+                    }
+                }).catch(()=>{});
+            }
+
+            lastSavedStateString = JSON.stringify(currentPatient);
             indexedKey = cardIndexKey(currentPatient.phone, currentPatient.name);
-            showMedicalSheetFlag = false; 
+            showMedicalSheetFlag = false;
             renderPatientToDOM();
             setSaveStatus('saved');
         }
