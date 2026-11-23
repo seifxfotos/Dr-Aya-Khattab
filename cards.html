@@ -17,20 +17,14 @@
         body.dark-mode { --body-bg: #121212; --sheet-bg: #1e1e1e; --text-main: #f0f0f0; --text-muted: #aaaaaa; --border-light: #444444; --border-dash: #666666; --table-th-bg: #2a2a2a; --table-idx-bg: #252525; --focus-bg: #2c3e20; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--body-bg); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s ease; }
         .app-toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--sheet-bg); color: var(--text-main); padding: 12px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999999; display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 16px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-bottom: 4px solid var(--primary-blue); }
-        .app-toast.show { top: 30px; }
-        .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); }
-        .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
-        .save-status-badge { position: fixed; bottom: 20px; left: 20px; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--sheet-bg); color: var(--text-muted); transition: 0.3s; border: 1px solid var(--border-light);}
-        .save-status-badge.saving { border-color: #f39c12; color: #f39c12; }
-        .save-status-badge.saved { border-color: var(--primary-green); color: var(--primary-green); }
-        .save-status-badge.unsaved { border-color: var(--danger); color: var(--danger); }
+        .app-toast.show { top: 30px; } .app-toast.success { border-bottom-color: var(--primary-green); color: var(--primary-green); } .app-toast.error { border-bottom-color: #e74c3c; color: #e74c3c; }
+        .save-status-badge { position: fixed; bottom: 20px; left: 20px; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--sheet-bg); color: var(--text-muted); border: 1px solid var(--border-light);}
+        .save-status-badge.saving { border-color: #f39c12; color: #f39c12; } .save-status-badge.saved { border-color: var(--primary-green); color: var(--primary-green); } .save-status-badge.unsaved { border-color: var(--danger); color: var(--danger); }
         .controls { background: var(--sheet-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin: 0 auto 15px auto; max-width: 1130px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 4px solid var(--primary-green); }
-        .controls input { background: var(--sheet-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; flex-grow: 1; font-size: 15px; font-family: 'Cairo'; outline: none; transition: 0.3s;}
+        .controls input { background: var(--sheet-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; flex-grow: 1; font-size: 15px; font-family: 'Cairo'; outline: none; }
         .controls input:focus { border-color: var(--primary-blue); }
         .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 14.5px; font-family: 'Cairo'; color: white; transition: 0.3s; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
-        .btn-search { background-color: var(--primary-blue); } .btn-new { background-color: var(--primary-green); }
-        .btn-delete { background-color: #e74c3c; } .btn-pdf { background-color: #9b59b6; }
-        .btn-print { background-color: #e67e22; } .btn-save { background-color: #27ae60; } .btn-merge { background-color: #f39c12; }
+        .btn-search { background-color: var(--primary-blue); } .btn-new { background-color: var(--primary-green); } .btn-delete { background-color: #e74c3c; } .btn-pdf { background-color: #9b59b6; } .btn-print { background-color: #e67e22; } .btn-save { background-color: #27ae60; } .btn-merge { background-color: #f39c12; }
         .btn:hover { filter: brightness(0.92); }
 
         /* شريط الفلتر والفرز بالأيام ونوع الكرت */
@@ -40,8 +34,7 @@
         .filter-pill { padding: 5px 14px; border-radius: 20px; border: 1.5px solid var(--border-light); background: var(--table-idx-bg); color: var(--text-main); font-family: 'Cairo'; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .filter-pill:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
         .filter-pill.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
-        .filter-pill.dept-nut.active { background: #e67e22; border-color: #e67e22; }
-        .filter-pill.dept-phy.active { background: #27ae60; border-color: #27ae60; }
+        .filter-pill.dept-nut.active { background: #e67e22; border-color: #e67e22; } .filter-pill.dept-phy.active { background: #27ae60; border-color: #27ae60; }
         .filtered-results-panel { background: var(--sheet-bg); max-width: 1130px; margin: 0 auto 22px auto; padding: 18px 20px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.1); border-top: 4px solid var(--primary-blue); display: none; }
         .filtered-results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .filtered-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; max-height: 350px; overflow-y: auto; padding: 4px; }
@@ -58,8 +51,8 @@
         .clinic-qr img { width: 70px; object-fit: contain; } .clinic-logo img { width: 180px; object-fit: contain; }
         body.dark-mode .clinic-logo img, body.dark-mode .clinic-qr img { background-color: #fff; padding: 5px; border-radius: 8px; }
         .card-type-select { font-size: 18px; font-weight: 800; color: var(--primary-blue); border: 2px dashed var(--primary-green); background: var(--focus-bg); padding: 5px 15px; border-radius: 8px; font-family: 'Cairo'; outline: none; cursor: pointer; text-align: center; }
-        .sheet-body { display: flex; gap: 30px; width: 100%; }
-        .info-section { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
+        .sheet-body { display: flex; gap: 30px; width: 100%; align-items: stretch; }
+        .info-section { flex: 1.2; display: flex; flex-direction: column; gap: 12px; }
         .row { display: flex; gap: 20px; width: 100%; }
         .input-group { display: flex; flex-direction: row; align-items: baseline; gap: 10px; width: 100%; }
         .input-group label { font-weight: 700; white-space: nowrap; color: var(--primary-blue); font-size: 16px; margin: 0; }
@@ -69,8 +62,22 @@
         .input-group input.eng-text { direction: ltr; text-align: left; }
         .input-group-textarea { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .input-group-textarea label { font-weight: 700; color: var(--primary-blue); font-size: 16px; }
-        .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 16px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; min-height: 75px; resize: vertical; direction: ltr; text-align: left;}
+        .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 15px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; height: 74px; resize: vertical; direction: ltr; text-align: left; box-sizing: border-box;}
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
+
+        /* --- صندوق الرسم البياني الصغير لتطور الوزن تحت Treatment Protocol --- */
+        .weight-chart-box {
+            width: 100%; height: 122px; border: 1.5px solid var(--border-light); border-radius: 10px;
+            background: var(--table-idx-bg); padding: 6px 10px 4px 10px; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-top: auto;
+        }
+        .weight-chart-header { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 800; color: var(--primary-blue); border-bottom: 1px dashed var(--border-light); padding-bottom: 3px; }
+        .weight-diff-badge { font-size: 11.5px; font-weight: 800; padding: 1px 9px; border-radius: 12px; color: #fff; background: var(--primary-blue); }
+        .weight-diff-badge.loss { background: #27ae60; }
+        .weight-diff-badge.gain { background: #e67e22; }
+        .weight-chart-svg-wrap { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .weight-chart-empty { font-size: 12px; color: var(--text-muted); font-weight: 600; text-align: center; }
+
         .table-section { flex: 1; display: flex; flex-direction: column; }
         table { width: 100%; border-collapse: collapse; border: 2px solid var(--primary-blue); background: var(--sheet-bg); }
         th, td { border: 1px solid var(--border-light); text-align: center; height: 36px; padding: 0; position: relative;}
@@ -79,7 +86,7 @@
         td input:focus { background-color: var(--focus-bg); }
         .n-parts-wrapper input { width: 28% !important; border-bottom: 1px dotted var(--border-dash) !important; height: 80% !important; background: transparent !important; }
         .date-cell-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-        .inline-date-btn { position: absolute; background: #f39c12; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 13px; font-weight: 700; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; white-space: nowrap; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
+        .inline-date-btn { position: absolute; background: #f39c12; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 13px; font-weight: 700; font-family: 'Cairo'; cursor: pointer; white-space: nowrap; z-index: 2; }
         .date-input:focus + .inline-date-btn, .date-input:not(:placeholder-shown) + .inline-date-btn { display: none !important; }
         .upload-section { margin-top: 20px; border: 2px dashed var(--border-light); padding: 25px; border-radius: 12px; text-align: center; background: var(--sheet-bg); }
         .upload-section h4 { margin: 0 0 15px 0; color: var(--primary-blue); font-size: 18px; }
@@ -101,16 +108,22 @@
         .slider { background-color: transparent; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;}
         .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 22px; left: 3px; position: absolute; transition: .4s; width: 22px; border-radius: 50%; z-index: 2; }
         input:checked + .slider:before { transform: translateX(28px); }
+
         @media print {
-            @page { margin: 0; } body { padding: 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
+            @page { margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { padding: 1.2cm 1.5cm; background-color: #ffffff !important; color: #000000 !important; }
             .no-print, .controls, .filter-sort-bar, .filtered-results-panel, .theme-switch-wrapper, .save-status-badge, .inline-date-btn, iframe, .chat-toggle-btn, #chatBox, #chat-widget-container, .upload-section { display: none !important; } 
-            .paper-sheet { background-color: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important;}
+            .paper-sheet { background-color: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 0 !important;}
             table { border-collapse: collapse !important; border: 2px solid #000000 !important; width: 100% !important; }
             th, td { border: 1px solid #000000 !important; position: static !important; }
             th { background-color: #eeeeee !important; color: #000000 !important; font-weight: 800 !important; }
             td input { color: #000000 !important; font-weight: bold !important; background-color: transparent !important;}
             .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
-            .input-group-textarea textarea { border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; }
+            .input-group-textarea textarea { border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; height: 74px !important; }
+            .weight-chart-box { background: #f8fbfd !important; border: 1.5px solid #0093D0 !important; height: 118px !important; }
+            .weight-chart-box.empty-chart { display: none !important; }
+            .weight-chart-box svg text { fill: #111111 !important; }
             .card-type-select { appearance: none; border: none !important; background: transparent !important; color: #000 !important; }
             .n-parts-wrapper input { border: none !important; }
             .sheet-body { flex-direction: row !important; }
@@ -120,6 +133,9 @@
         .force-light-mode { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
+        .force-light-mode .weight-chart-box { background: #f8fbfd !important; border: 1.5px solid #0093D0 !important; }
+        .force-light-mode .weight-chart-box.empty-chart { display: none !important; }
+        .force-light-mode .weight-chart-box svg text { fill: #111111 !important; }
         .force-light-mode .table-section table { border: 2px solid #000 !important; }
         .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #fff !important; border: 1px solid #000 !important; }
         .force-light-mode th { background-color: #eee !important; color: #000 !important; }
@@ -148,7 +164,6 @@
         <button class="btn btn-delete" onclick="deletePatient()"><i class="fa-solid fa-trash"></i> حذف</button>
     </div>
 
-    <!-- شريط الفرز والفلترة بأيام الأسبوع ونوع الكرت -->
     <div class="filter-sort-bar no-print">
         <div class="filter-row">
             <div class="filter-label"><i class="fa-solid fa-layer-group"></i> نوع الكرت:</div>
@@ -206,6 +221,109 @@
             if (autoSearch) { document.getElementById('searchName').value = autoSearch; setTimeout(() => searchPatient(), 500); localStorage.removeItem('clinic_auto_search_name'); }
             document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); forceSave(); } });
         });
+
+        // =========================================================================
+        // 0. محرك الرسم البياني الذكي لتطور الوزن (SVG مباشر وخفيف ومتوافق مع الطباعة)
+        // =========================================================================
+        function updateWeightChart(readFromDOM = false) {
+            const box = document.getElementById('weightChartBox');
+            if (!box) return;
+
+            let points = [];
+            let totalSessions = currentPatient.sessions.length;
+
+            for (let i = 0; i < totalSessions; i++) {
+                let cType = currentPatient.cardTypes[Math.floor(i / 12)] || 'تغذية علاجية';
+                if (cType !== 'تغذية علاجية') continue;
+
+                let rawWs = readFromDOM && document.getElementById(`ws_${i}`) ? document.getElementById(`ws_${i}`).value : (currentPatient.sessions[i]?.ws || '');
+                let rawD  = readFromDOM && document.getElementById(`d_${i}`)  ? document.getElementById(`d_${i}`).value  : (currentPatient.sessions[i]?.d  || '');
+
+                let engWs = convertToEnglishNumbers(String(rawWs)).replace(',', '.');
+                let numMatch = engWs.match(/\d+(\.\d+)?/);
+                if (numMatch) {
+                    let w = parseFloat(numMatch[0]);
+                    if (!isNaN(w) && w >= 20 && w <= 300) {
+                        let shortLbl = rawD ? convertToEnglishNumbers(String(rawD).trim()).replace(/\/20\d\d|-20\d\d/g, '') : `#${i + 1}`;
+                        points.push({ w, label: shortLbl, idx: i + 1 });
+                    }
+                }
+            }
+
+            if (points.length === 0) {
+                box.classList.add('empty-chart');
+                box.innerHTML = `
+                    <div class="weight-chart-header">
+                        <span><i class="fa-solid fa-chart-line"></i> تطور الوزن</span>
+                        <span style="font-size:11px; color:var(--text-muted); font-weight:600;">يظهر تلقائياً</span>
+                    </div>
+                    <div class="weight-chart-svg-wrap">
+                        <span class="weight-chart-empty">سجّل الأوزان في خانة (W/S) ليظهر الرسم البياني لتطور الوزن هنا</span>
+                    </div>`;
+                return;
+            }
+
+            box.classList.remove('empty-chart');
+            let firstW = points[0].w, lastW = points[points.length - 1].w;
+            let diff = +(lastW - firstW).toFixed(1);
+            let badgeHtml = '';
+            if (points.length === 1) {
+                badgeHtml = `<span class="weight-diff-badge">البداية: ${firstW} كجم</span>`;
+            } else if (diff < 0) {
+                badgeHtml = `<span class="weight-diff-badge loss">نزول: ${Math.abs(diff)} كجم (${firstW} ← ${lastW})</span>`;
+            } else if (diff > 0) {
+                badgeHtml = `<span class="weight-diff-badge gain">زيادة: +${diff} كجم (${firstW} ← ${lastW})</span>`;
+            } else {
+                badgeHtml = `<span class="weight-diff-badge">ثبات: ${lastW} كجم</span>`;
+            }
+
+            // عرض آخر 12 قراءة وزن في الرسم لتبقى الأرقام واضحة ومرتبة
+            let displayPts = points.length > 12 ? points.slice(-12) : points;
+            const W = 460, H = 86, padL = 26, padR = 26, padT = 18, padB = 18;
+            const plotW = W - padL - padR, plotH = H - padT - padB;
+            let vals = displayPts.map(p => p.w);
+            let minV = Math.min(...vals), maxV = Math.max(...vals);
+            if (maxV === minV) { minV -= 2; maxV += 2; } else { let r = maxV - minV; minV -= r * 0.18; maxV += r * 0.18; }
+
+            let coords = displayPts.map((pt, i) => {
+                let x = displayPts.length === 1 ? (W / 2) : (padL + (i / (displayPts.length - 1)) * plotW);
+                let y = padT + ((maxV - pt.w) / (maxV - minV)) * plotH;
+                return { x: +x.toFixed(1), y: +y.toFixed(1), w: pt.w, label: pt.label };
+            });
+
+            let polyPoints = coords.map(c => `${c.x},${c.y}`).join(' ');
+            let areaPath = coords.length > 1
+                ? `M ${coords[0].x},${H - padB} L ${coords.map(c => `${c.x},${c.y}`).join(' L ')} L ${coords[coords.length - 1].x},${H - padB} Z`
+                : '';
+
+            let dotsAndLabels = coords.map(c => `
+                <circle cx="${c.x}" cy="${c.y}" r="3.8" fill="#8CC63F" stroke="#ffffff" stroke-width="1.5" />
+                <text x="${c.x}" y="${c.y - 6}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--text-main)" font-family="Cairo, sans-serif">${c.w}</text>
+                <text x="${c.x}" y="${H - 4}" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--text-muted)" font-family="Cairo, sans-serif">${escapeHtml(c.label)}</text>
+            `).join('');
+
+            box.innerHTML = `
+                <div class="weight-chart-header">
+                    <span><i class="fa-solid fa-chart-line"></i> منحنى تطور الوزن</span>
+                    ${badgeHtml}
+                </div>
+                <div class="weight-chart-svg-wrap" dir="ltr">
+                    <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="overflow:visible;">
+                        <defs>
+                            <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#0093D0" stop-opacity="0.28" />
+                                <stop offset="100%" stop-color="#8CC63F" stop-opacity="0.03" />
+                            </linearGradient>
+                        </defs>
+                        <line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" />
+                        <line x1="${padL}" y1="${padT + plotH/2}" x2="${W - padR}" y2="${padT + plotH/2}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" />
+                        <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="var(--border-light)" stroke-width="1" />
+                        ${areaPath ? `<path d="${areaPath}" fill="url(#wtGrad)" />` : ''}
+                        ${coords.length > 1 ? `<polyline fill="none" stroke="#0093D0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="${polyPoints}" />` : ''}
+                        ${dotsAndLabels}
+                    </svg>
+                </div>`;
+        }
 
         function normalizeSessionsArray(sessionsRaw) {
             let tempArr = [];
@@ -329,32 +447,20 @@
         async function syncAutoBookingsFromFirebaseToLocalCache() {
             try {
                 let snap = await db.ref('cards_auto_sync').once('value');
-                let allSynced = snap.val();
-                if (!allSynced) return;
+                let allSynced = snap.val(); if (!allSynced) return;
                 let cache = await localforage.getItem('patients_cache') || [], cacheChanged = false;
                 Object.keys(allSynced).forEach(normKey => {
                     let datesList = Object.values(allSynced[normKey] || {}).sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''));
                     if (datesList.length === 0) return;
-                    let sampleName = datesList[0].name || '';
-                    let cardIdx = cache.findIndex(p => p && p.name && normalizeArabicText(p.name) === normalizeArabicText(sampleName));
+                    let cardIdx = cache.findIndex(p => p && p.name && normalizeArabicText(p.name) === normalizeArabicText(datesList[0].name || ''));
                     if (cardIdx !== -1) datesList.forEach(b => { if (applyAutoSessionToCardObject(cache[cardIdx], b.d, b.dateISO, b.ws, b.dept)) cacheChanged = true; });
                 });
                 if (cacheChanged) await localforage.setItem('patients_cache', cache);
             } catch (e) {}
         }
 
-        window.setFilterDept = function(dept, btnEl) {
-            activeFilterDept = dept;
-            document.querySelectorAll('.filter-pill[data-dept]').forEach(b => b.classList.remove('active'));
-            if (btnEl) btnEl.classList.add('active');
-            applyCardsFilter();
-        };
-        window.setFilterDay = function(dayStr, btnEl) {
-            activeFilterDay = dayStr;
-            document.querySelectorAll('.filter-pill[data-day]').forEach(b => b.classList.remove('active'));
-            if (btnEl) btnEl.classList.add('active');
-            applyCardsFilter();
-        };
+        window.setFilterDept = function(dept, btnEl) { activeFilterDept = dept; document.querySelectorAll('.filter-pill[data-dept]').forEach(b => b.classList.remove('active')); if (btnEl) btnEl.classList.add('active'); applyCardsFilter(); };
+        window.setFilterDay = function(dayStr, btnEl) { activeFilterDay = dayStr; document.querySelectorAll('.filter-pill[data-day]').forEach(b => b.classList.remove('active')); if (btnEl) btnEl.classList.add('active'); applyCardsFilter(); };
         window.closeFilteredPanel = function() { document.getElementById('filteredResultsPanel').style.display = 'none'; };
 
         async function applyCardsFilter() {
@@ -412,6 +518,7 @@
             fullHtml += `<div class="paper-sheet upload-section no-print" style="max-width:1100px;margin:20px auto;"><h4><i class="fa-solid fa-cloud-arrow-up"></i> مرفقات المريض (روشتات/تحاليل/صور)</h4><input type="file" id="fileUploader" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(event)"><button id="uploadBtn" class="btn btn-new" style="margin:0 auto;padding:10px 25px;font-size:16px;" onclick="document.getElementById('fileUploader').click()"><i class="fa-solid fa-file-arrow-up"></i> اختيار ملف للرفع</button><div class="file-list" id="filesListContainer"></div></div>`;
             container.innerHTML = fullHtml;
             renderFilesList();
+            updateWeightChart(false);
         }
 
         window.addExtraCard = function() { updateStateFromDOM(); for(let i=0;i<12;i++) currentPatient.sessions.push({d:'',ws:'',n:''}); let idx = (currentPatient.sessions.length/12)-1; currentPatient.cardTypes[idx] = currentPatient.cardTypes[idx-1] || 'تغذية علاجية'; renderPatientToDOM(); handleInput(); setTimeout(() => window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}), 100); };
@@ -423,7 +530,8 @@
         function buildCardHtml(cardIndex) {
             let isFirst = cardIndex === 0, cardType = currentPatient.cardTypes[cardIndex] || 'تغذية علاجية';
             let headerTitleHtml = `<div style="flex-grow:1;text-align:center;"><select class="card-type-select" onchange="updateCardType(${cardIndex}, this.value)"><option value="تغذية علاجية" ${cardType==='تغذية علاجية'?'selected':''}>كرت تغذية علاجية ${!isFirst?`(متابعة ${cardIndex+1})`:''}</option><option value="علاج طبيعي" ${cardType==='علاج طبيعي'?'selected':''}>كرت علاج طبيعي ${!isFirst?`(متابعة ${cardIndex+1})`:''}</option></select></div>`;
-            let infoSection = isFirst ? `<div class="row"><div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput();syncCardNames();"></div><div class="input-group"><label>العنوان:</label><input type="text" id="p_address" value="${escapeHtml(currentPatient.address)}" oninput="handleInput()"></div></div><div class="row"><div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput();syncCardNames();" dir="ltr" style="text-align:right;"></div><div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div></div><div class="input-group" style="width:50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div><div class="input-group"><label class="eng-label">Referred&nbsp;By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div><div class="input-group"><label class="eng-label">Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div><div class="input-group-textarea"><label class="eng-label">Treatment&nbsp;Protocol:</label><textarea id="p_protocol" rows="3" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea></div>` : `<div class="row"><div class="input-group"><label>الاسم:</label><input type="text" class="extra-card-name" value="${escapeHtml(currentPatient.name)}" readonly style="color:var(--text-muted)"></div><div class="input-group"><label>الموبايل:</label><input type="text" class="extra-card-phone" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted);text-align:right;" dir="ltr"></div></div>`;
+            let weightChartSlot = (isFirst && cardType === 'تغذية علاجية') ? `<div id="weightChartBox" class="weight-chart-box"></div>` : '';
+            let infoSection = isFirst ? `<div class="row"><div class="input-group"><label>الاسم:</label><input type="text" id="p_name" value="${escapeHtml(currentPatient.name)}" oninput="handleInput();syncCardNames();"></div><div class="input-group"><label>العنوان:</label><input type="text" id="p_address" value="${escapeHtml(currentPatient.address)}" oninput="handleInput()"></div></div><div class="row"><div class="input-group"><label>رقم الموبايل:</label><input type="tel" id="p_phone" value="${escapeHtml(currentPatient.phone)}" oninput="handleInput();syncCardNames();" dir="ltr" style="text-align:right;"></div><div class="input-group"><label>الوظيفة:</label><input type="text" id="p_job" value="${escapeHtml(currentPatient.job)}" oninput="handleInput()"></div></div><div class="input-group" style="width:50%;"><label>السن:</label><input type="number" id="p_age" value="${escapeHtml(currentPatient.age)}" oninput="handleInput()"></div><div class="input-group"><label class="eng-label">Referred&nbsp;By:</label><input type="text" id="p_referred" class="eng-text" value="${escapeHtml(currentPatient.referred)}" oninput="handleInput()"></div><div class="input-group"><label class="eng-label">Diagnosis:</label><input type="text" id="p_diagnosis" class="eng-text" value="${escapeHtml(currentPatient.diagnosis)}" oninput="handleInput()"></div><div class="input-group-textarea"><label class="eng-label">Treatment&nbsp;Protocol:</label><textarea id="p_protocol" rows="2" oninput="handleInput()">${escapeHtml(currentPatient.protocol)}</textarea></div>${weightChartSlot}` : `<div class="row"><div class="input-group"><label>الاسم:</label><input type="text" class="extra-card-name" value="${escapeHtml(currentPatient.name)}" readonly style="color:var(--text-muted)"></div><div class="input-group"><label>الموبايل:</label><input type="text" class="extra-card-phone" value="${escapeHtml(currentPatient.phone)}" readonly style="color:var(--text-muted);text-align:right;" dir="ltr"></div></div>`;
             let tbodyHtml = '', startIdx = cardIndex * 12;
             for(let i = 0; i < 12; i++) {
                 let sIdx = startIdx + i, s = currentPatient.sessions[sIdx] || {d:'',ws:'',n:''};
@@ -468,7 +576,14 @@
         }
 
         function setSaveStatus(status) { const b = document.getElementById('saveStatusBadge'); b.className = `save-status-badge ${status} no-print`; b.innerHTML = status==='saving' ? '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>' : (status==='saved' ? '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>' : '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>'); }
-        function handleInput() { setSaveStatus('unsaved'); const ne = document.getElementById('p_medical_notes'), w = document.getElementById('medicalSheetWrapper'); if(ne && w) w.classList.toggle('empty-notes', ne.value.trim()===''); clearTimeout(saveTimeout); saveTimeout = setTimeout(() => forceSave(true), 5000); }
+        function handleInput() {
+            setSaveStatus('unsaved');
+            const ne = document.getElementById('p_medical_notes'), w = document.getElementById('medicalSheetWrapper');
+            if(ne && w) w.classList.toggle('empty-notes', ne.value.trim()==='');
+            updateWeightChart(true);
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => forceSave(true), 5000);
+        }
         function saveData() { forceSave(false); }
 
         async function forceSave(isSilent = false) {
@@ -620,7 +735,6 @@
                 }).catch(()=>{});
             }
 
-            // فحص الحجوزات الجديدة القادمة أوتوماتيك من today.html لهذا المريض وإضافتها للكرت فوراً
             if (currentPatient.name) {
                 let normKey = normalizeArabicText(currentPatient.name);
                 db.ref('cards_auto_sync/' + normKey).once('value').then(snap => {
