@@ -65,16 +65,27 @@
         .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 15px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; height: 74px; resize: vertical; direction: ltr; text-align: left; box-sizing: border-box;}
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
 
-        /* --- صندوق الرسم البياني الصغير لتطور الوزن تحت Treatment Protocol --- */
+        /* --- صندوق الرسم البياني الصغير لتطور المقاسات (عمود N) + زر الإخفاء والإظهار --- */
         .weight-chart-box {
-            width: 100%; height: 122px; border: 1.5px solid var(--border-light); border-radius: 10px;
+            width: 100%; height: 124px; border: 1.5px solid var(--border-light); border-radius: 10px;
             background: var(--table-idx-bg); padding: 6px 10px 4px 10px; box-sizing: border-box;
             display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-top: auto;
         }
-        .weight-chart-header { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 800; color: var(--primary-blue); border-bottom: 1px dashed var(--border-light); padding-bottom: 3px; }
-        .weight-diff-badge { font-size: 11.5px; font-weight: 800; padding: 1px 9px; border-radius: 12px; color: #fff; background: var(--primary-blue); }
-        .weight-diff-badge.loss { background: #27ae60; }
-        .weight-diff-badge.gain { background: #e67e22; }
+        .weight-chart-box.chart-is-hidden {
+            height: auto; border-style: dashed; padding: 6px 10px; background: transparent;
+            align-items: center; justify-content: center;
+        }
+        .weight-chart-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--primary-blue); border-bottom: 1px dashed var(--border-light); padding-bottom: 3px; }
+        .chart-legend-mini { display: flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; color: var(--text-main); }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 3px; }
+        .chart-toggle-btn {
+            background: none; border: 1px solid var(--border-light); color: var(--text-muted);
+            border-radius: 6px; padding: 1px 8px; font-family: 'Cairo'; font-size: 11px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .chart-toggle-btn:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+        .weight-diff-badge { font-size: 10.5px; font-weight: 800; padding: 1px 8px; border-radius: 12px; color: #fff; background: var(--primary-blue); }
+        .weight-diff-badge.loss { background: #27ae60; } .weight-diff-badge.gain { background: #e67e22; }
         .weight-chart-svg-wrap { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .weight-chart-empty { font-size: 12px; color: var(--text-muted); font-weight: 600; text-align: center; }
 
@@ -121,9 +132,10 @@
             td input { color: #000000 !important; font-weight: bold !important; background-color: transparent !important;}
             .input-group input { border-bottom: 2px dotted #000000 !important; color: #000000 !important; background-color: #ffffff !important;}
             .input-group-textarea textarea { border: 2px dashed #000000 !important; color: #000000 !important; background-color: #ffffff !important; height: 74px !important; }
-            .weight-chart-box { background: #f8fbfd !important; border: 1.5px solid #0093D0 !important; height: 118px !important; }
-            .weight-chart-box.empty-chart { display: none !important; }
+            .weight-chart-box { background: #f8fbfd !important; border: 1.5px solid #0093D0 !important; height: 120px !important; }
+            .weight-chart-box.empty-chart, .weight-chart-box.chart-is-hidden { display: none !important; }
             .weight-chart-box svg text { fill: #111111 !important; }
+            .chart-legend-mini { color: #111111 !important; }
             .card-type-select { appearance: none; border: none !important; background: transparent !important; color: #000 !important; }
             .n-parts-wrapper input { border: none !important; }
             .sheet-body { flex-direction: row !important; }
@@ -134,8 +146,9 @@
         .force-light-mode .paper-sheet { background-color: #ffffff !important; border-color: #0093D0 !important; }
         .force-light-mode .input-group input, .force-light-mode .input-group-textarea textarea, .force-light-mode td input { background-color: #ffffff !important; color: #000000 !important; }
         .force-light-mode .weight-chart-box { background: #f8fbfd !important; border: 1.5px solid #0093D0 !important; }
-        .force-light-mode .weight-chart-box.empty-chart { display: none !important; }
+        .force-light-mode .weight-chart-box.empty-chart, .force-light-mode .weight-chart-box.chart-is-hidden { display: none !important; }
         .force-light-mode .weight-chart-box svg text { fill: #111111 !important; }
+        .force-light-mode .chart-legend-mini { color: #111111 !important; }
         .force-light-mode .table-section table { border: 2px solid #000 !important; }
         .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #fff !important; border: 1px solid #000 !important; }
         .force-light-mode th { background-color: #eee !important; color: #000 !important; }
@@ -207,6 +220,7 @@
         let currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
         let lastSavedStateString = "", saveTimeout = null, confirmActionCallback = null, showMedicalSheetFlag = false, indexedKey = null, globalSearchResults = [];
         let activeFilterDept = 'all', activeFilterDay = 'all', filteredPatientsList = [];
+        let isChartHidden = false;
         const DAY_NAMES_AR = { 0: 'الأحد', 1: 'الإثنين', 2: 'الثلاثاء', 3: 'الأربعاء', 4: 'الخميس', 5: 'الجمعة', 6: 'السبت' };
         const PHYSIO_KEYWORDS = ['عادي', 'شوك', 'تصريف', 'شد فقرات', 'شوك ويف', 'تصريف ليمفاوي', 'موجات', 'ليزر', 'كهرباء', 'أخري', 'جلسة'];
 
@@ -223,104 +237,183 @@
         });
 
         // =========================================================================
-        // 0. محرك الرسم البياني الذكي لتطور الوزن (SVG مباشر وخفيف ومتوافق مع الطباعة)
+        // 0. محرك الرسم البياني للأرقام المكتوبة في عمود N + زر الإخفاء والإظهار
         // =========================================================================
+        window.toggleWeightChart = function() {
+            isChartHidden = !isChartHidden;
+            updateWeightChart(true);
+        };
+
+        function parseNumVal(val) {
+            if (val === null || val === undefined) return null;
+            let eng = convertToEnglishNumbers(String(val).trim()).replace(',', '.');
+            let m = eng.match(/\d+(\.\d+)?/);
+            if (!m) return null;
+            let n = parseFloat(m[0]);
+            return (!isNaN(n) && n > 0) ? n : null;
+        }
+
         function updateWeightChart(readFromDOM = false) {
             const box = document.getElementById('weightChartBox');
             if (!box) return;
 
-            let points = [];
+            if (isChartHidden) {
+                box.className = 'weight-chart-box chart-is-hidden no-print';
+                box.innerHTML = `<button type="button" class="chart-toggle-btn" style="padding:4px 14px; font-size:12.5px; color:var(--primary-blue); border-color:var(--primary-blue);" onclick="toggleWeightChart()"><i class="fa-solid fa-chart-line"></i> إظهار الرسم البياني (N)</button>`;
+                return;
+            }
+
+            box.classList.remove('chart-is-hidden', 'no-print');
+
+            let rowsData = [];
             let totalSessions = currentPatient.sessions.length;
 
             for (let i = 0; i < totalSessions; i++) {
                 let cType = currentPatient.cardTypes[Math.floor(i / 12)] || 'تغذية علاجية';
                 if (cType !== 'تغذية علاجية') continue;
 
-                let rawWs = readFromDOM && document.getElementById(`ws_${i}`) ? document.getElementById(`ws_${i}`).value : (currentPatient.sessions[i]?.ws || '');
-                let rawD  = readFromDOM && document.getElementById(`d_${i}`)  ? document.getElementById(`d_${i}`).value  : (currentPatient.sessions[i]?.d  || '');
+                let n1 = null, n2 = null, n3 = null;
+                if (readFromDOM && document.getElementById(`n1_${i}`)) {
+                    n1 = parseNumVal(document.getElementById(`n1_${i}`).value);
+                    n2 = parseNumVal(document.getElementById(`n2_${i}`).value);
+                    n3 = parseNumVal(document.getElementById(`n3_${i}`).value);
+                } else {
+                    let rawN = String(currentPatient.sessions[i]?.n || '');
+                    let np = rawN.split(/[-\/\\\s]+/);
+                    n1 = parseNumVal(np[0]);
+                    n2 = parseNumVal(np[1]);
+                    n3 = parseNumVal(np[2]);
+                }
 
-                let engWs = convertToEnglishNumbers(String(rawWs)).replace(',', '.');
-                let numMatch = engWs.match(/\d+(\.\d+)?/);
-                if (numMatch) {
-                    let w = parseFloat(numMatch[0]);
-                    if (!isNaN(w) && w >= 20 && w <= 300) {
-                        let shortLbl = rawD ? convertToEnglishNumbers(String(rawD).trim()).replace(/\/20\d\d|-20\d\d/g, '') : `#${i + 1}`;
-                        points.push({ w, label: shortLbl, idx: i + 1 });
-                    }
+                if (n1 !== null || n2 !== null || n3 !== null) {
+                    let rawD = (readFromDOM && document.getElementById(`d_${i}`)) ? document.getElementById(`d_${i}`).value : (currentPatient.sessions[i]?.d || '');
+                    let shortLbl = rawD ? convertToEnglishNumbers(String(rawD).trim()).replace(/\/20\d\d|-20\d\d/g, '') : `#${i + 1}`;
+                    rowsData.push({ label: shortLbl, vals: [n1, n2, n3] });
                 }
             }
 
-            if (points.length === 0) {
+            const hideBtnHtml = `<button type="button" class="chart-toggle-btn no-print" onclick="toggleWeightChart()" title="إخفاء الجراف من الشاشة والطباعة"><i class="fa-solid fa-eye-slash"></i> إخفاء</button>`;
+
+            if (rowsData.length === 0) {
                 box.classList.add('empty-chart');
                 box.innerHTML = `
                     <div class="weight-chart-header">
-                        <span><i class="fa-solid fa-chart-line"></i> تطور الوزن</span>
-                        <span style="font-size:11px; color:var(--text-muted); font-weight:600;">يظهر تلقائياً</span>
+                        <span><i class="fa-solid fa-chart-line"></i> منحنى تطور المقاسات (N)</span>
+                        ${hideBtnHtml}
                     </div>
                     <div class="weight-chart-svg-wrap">
-                        <span class="weight-chart-empty">سجّل الأوزان في خانة (W/S) ليظهر الرسم البياني لتطور الوزن هنا</span>
+                        <span class="weight-chart-empty">سجّل الأرقام في خانة (N) ليظهر الرسم البياني تلقائياً هنا</span>
                     </div>`;
                 return;
             }
 
             box.classList.remove('empty-chart');
-            let firstW = points[0].w, lastW = points[points.length - 1].w;
-            let diff = +(lastW - firstW).toFixed(1);
-            let badgeHtml = '';
-            if (points.length === 1) {
-                badgeHtml = `<span class="weight-diff-badge">البداية: ${firstW} كجم</span>`;
-            } else if (diff < 0) {
-                badgeHtml = `<span class="weight-diff-badge loss">نزول: ${Math.abs(diff)} كجم (${firstW} ← ${lastW})</span>`;
-            } else if (diff > 0) {
-                badgeHtml = `<span class="weight-diff-badge gain">زيادة: +${diff} كجم (${firstW} ← ${lastW})</span>`;
-            } else {
-                badgeHtml = `<span class="weight-diff-badge">ثبات: ${lastW} كجم</span>`;
-            }
+            let displayRows = rowsData.length > 10 ? rowsData.slice(-10) : rowsData;
 
-            // عرض آخر 12 قراءة وزن في الرسم لتبقى الأرقام واضحة ومرتبة
-            let displayPts = points.length > 12 ? points.slice(-12) : points;
-            const W = 460, H = 86, padL = 26, padR = 26, padT = 18, padB = 18;
-            const plotW = W - padL - padR, plotH = H - padT - padB;
-            let vals = displayPts.map(p => p.w);
-            let minV = Math.min(...vals), maxV = Math.max(...vals);
-            if (maxV === minV) { minV -= 2; maxV += 2; } else { let r = maxV - minV; minV -= r * 0.18; maxV += r * 0.18; }
+            const colors = ['#0093D0', '#8CC63F', '#e67e22'];
+            const allNums = [];
+            const activeSeries = [false, false, false];
 
-            let coords = displayPts.map((pt, i) => {
-                let x = displayPts.length === 1 ? (W / 2) : (padL + (i / (displayPts.length - 1)) * plotW);
-                let y = padT + ((maxV - pt.w) / (maxV - minV)) * plotH;
-                return { x: +x.toFixed(1), y: +y.toFixed(1), w: pt.w, label: pt.label };
+            displayRows.forEach(r => {
+                r.vals.forEach((v, sIdx) => {
+                    if (v !== null) { allNums.push(v); activeSeries[sIdx] = true; }
+                });
             });
 
-            let polyPoints = coords.map(c => `${c.x},${c.y}`).join(' ');
-            let areaPath = coords.length > 1
-                ? `M ${coords[0].x},${H - padB} L ${coords.map(c => `${c.x},${c.y}`).join(' L ')} L ${coords[coords.length - 1].x},${H - padB} Z`
-                : '';
+            // حساب فرق مجموع المقاسات بين أول وآخر زيارة مسجلة
+            let diffBadgeHtml = '';
+            if (displayRows.length >= 2) {
+                let firstSum = 0, lastSum = 0;
+                for (let s = 0; s < 3; s++) {
+                    let f = displayRows[0].vals[s], l = displayRows[displayRows.length - 1].vals[s];
+                    if (f !== null && l !== null) { firstSum += f; lastSum += l; }
+                }
+                if (firstSum > 0 && lastSum > 0) {
+                    let diff = +(lastSum - firstSum).toFixed(1);
+                    if (diff < 0) diffBadgeHtml = `<span class="weight-diff-badge loss">فرق المقاسات: ${diff} سم</span>`;
+                    else if (diff > 0) diffBadgeHtml = `<span class="weight-diff-badge gain">فرق المقاسات: +${diff} سم</span>`;
+                    else diffBadgeHtml = `<span class="weight-diff-badge">ثبات المقاسات</span>`;
+                }
+            }
 
-            let dotsAndLabels = coords.map(c => `
-                <circle cx="${c.x}" cy="${c.y}" r="3.8" fill="#8CC63F" stroke="#ffffff" stroke-width="1.5" />
-                <text x="${c.x}" y="${c.y - 6}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--text-main)" font-family="Cairo, sans-serif">${c.w}</text>
-                <text x="${c.x}" y="${H - 4}" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--text-muted)" font-family="Cairo, sans-serif">${escapeHtml(c.label)}</text>
-            `).join('');
+            let legendHtml = `<div class="chart-legend-mini">`;
+            [0, 1, 2].forEach(s => {
+                if (activeSeries[s]) legendHtml += `<span><i class="legend-dot" style="background:${colors[s]};"></i>${s + 1}</span>`;
+            });
+            legendHtml += `</div>`;
+
+            const W = 460, H = 88, padL = 26, padR = 26, padT = 18, padB = 16;
+            const plotW = W - padL - padR, plotH = H - padT - padB;
+            let minV = Math.min(...allNums), maxV = Math.max(...allNums);
+            if (maxV === minV) { minV -= 5; maxV += 5; } else { let rng = maxV - minV; minV -= rng * 0.16; maxV += rng * 0.24; }
+
+            let linesSvg = '', dotsSvg = '', xLabelsSvg = '';
+
+            // حساب الإحداثيات لكل عمود مع منع تداخل الأرقام القريبة (مثل 125 و 126)
+            let colPoints = displayRows.map((r, i) => {
+                let x = displayRows.length === 1 ? (W / 2) : (padL + (i / (displayRows.length - 1)) * plotW);
+                x = +x.toFixed(1);
+                xLabelsSvg += `<text x="${x}" y="${H - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--text-muted)" font-family="Cairo, sans-serif">${escapeHtml(r.label)}</text>`;
+                let pts = [];
+                r.vals.forEach((v, sIdx) => {
+                    if (v !== null) {
+                        let y = +(padT + ((maxV - v) / (maxV - minV)) * plotH).toFixed(1);
+                        pts.push({ sIdx, x, y, v, color: colors[sIdx], labelY: y - 5, labelX: x });
+                    }
+                });
+                // ترتيب النقاط في نفس العمود رأسياً لتفادي تداخل النصوص
+                pts.sort((a, b) => a.y - b.y);
+                for (let k = 1; k < pts.length; k++) {
+                    if (Math.abs(pts[k].labelY - pts[k - 1].labelY) < 11) {
+                        pts[k - 1].labelY -= 4;
+                        pts[k].labelY += 10;
+                    }
+                }
+                return pts;
+            });
+
+            // رسم الخطوط الـ 3
+            for (let s = 0; s < 3; s++) {
+                let sPts = [];
+                colPoints.forEach(cPts => {
+                    let found = cPts.find(p => p.sIdx === s);
+                    if (found) sPts.push(found);
+                });
+                if (sPts.length > 1) {
+                    let polyStr = sPts.map(p => `${p.x},${p.y}`).join(' ');
+                    linesSvg += `<polyline fill="none" stroke="${colors[s]}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" points="${polyStr}" />`;
+                }
+            }
+
+            // رسم النقاط والأرقام
+            colPoints.forEach(cPts => {
+                cPts.forEach(p => {
+                    dotsSvg += `
+                        <circle cx="${p.x}" cy="${p.y}" r="3.3" fill="${p.color}" stroke="#ffffff" stroke-width="1.2" />
+                        <text x="${p.labelX}" y="${p.labelY}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${p.color}" font-family="Cairo, sans-serif">${p.v}</text>
+                    `;
+                });
+            });
 
             box.innerHTML = `
                 <div class="weight-chart-header">
-                    <span><i class="fa-solid fa-chart-line"></i> منحنى تطور الوزن</span>
-                    ${badgeHtml}
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span><i class="fa-solid fa-chart-line"></i> تطور المقاسات (N)</span>
+                        ${legendHtml}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        ${diffBadgeHtml}
+                        ${hideBtnHtml}
+                    </div>
                 </div>
                 <div class="weight-chart-svg-wrap" dir="ltr">
                     <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="overflow:visible;">
-                        <defs>
-                            <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="#0093D0" stop-opacity="0.28" />
-                                <stop offset="100%" stop-color="#8CC63F" stop-opacity="0.03" />
-                            </linearGradient>
-                        </defs>
                         <line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" />
                         <line x1="${padL}" y1="${padT + plotH/2}" x2="${W - padR}" y2="${padT + plotH/2}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" />
                         <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="var(--border-light)" stroke-width="1" />
-                        ${areaPath ? `<path d="${areaPath}" fill="url(#wtGrad)" />` : ''}
-                        ${coords.length > 1 ? `<polyline fill="none" stroke="#0093D0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="${polyPoints}" />` : ''}
-                        ${dotsAndLabels}
+                        ${linesSvg}
+                        ${dotsSvg}
+                        ${xLabelsSvg}
                     </svg>
                 </div>`;
         }
