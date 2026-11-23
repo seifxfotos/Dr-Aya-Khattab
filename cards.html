@@ -24,7 +24,7 @@
         .controls input { background: var(--sheet-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; flex-grow: 1; font-size: 15px; font-family: 'Cairo'; outline: none; }
         .controls input:focus { border-color: var(--primary-blue); }
         .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 14.5px; font-family: 'Cairo'; color: white; transition: 0.3s; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
-        .btn-search { background-color: var(--primary-blue); } .btn-new { background-color: var(--primary-green); } .btn-delete { background-color: #e74c3c; } .btn-pdf { background-color: #9b59b6; } .btn-print { background-color: #e67e22; } .btn-save { background-color: #27ae60; } .btn-merge { background-color: #f39c12; }
+        .btn-search { background-color: var(--primary-blue); } .btn-new { background-color: var(--primary-green); } .btn-delete { background-color: #e74c3c; } .btn-pdf { background-color: #9b59b6; } .btn-print { background-color: #e67e22; } .btn-save { background-color: #27ae60; }
         .btn:hover { filter: brightness(0.92); }
 
         /* شريط الفلتر والفرز بالأيام ونوع الكرت */
@@ -65,7 +65,7 @@
         .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 15px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; height: 74px; resize: vertical; direction: ltr; text-align: left; box-sizing: border-box;}
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
 
-        /* --- صندوق الرسم البياني الذكي لمقارنة المقاسات الـ 3 (الوسط وفوقه وتحته) --- */
+        /* --- صندوق الرسم البياني للمقاسات --- */
         .weight-chart-box {
             width: 100%; height: 126px; border: 1.5px solid var(--border-light); border-radius: 10px;
             background: var(--table-idx-bg); padding: 6px 10px 4px 10px; box-sizing: border-box;
@@ -114,7 +114,7 @@
         @media print {
             @page { margin: 0; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            html, body, body.dark-mode { padding: 1.2cm 1.5cm !important; background-color: #ffffff !important; color: #000000 !important; }
+            html, body, body.dark-mode { padding: 1cm 1.1cm !important; background-color: #ffffff !important; color: #000000 !important; }
             .no-print, .controls, .filter-sort-bar, .filtered-results-panel, .theme-switch-wrapper, .save-status-badge, .inline-date-btn, iframe, .chat-toggle-btn, #chatBox, #chat-widget-container, .upload-section { display: none !important; } 
             .paper-sheet, body.dark-mode .paper-sheet { background-color: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 0 !important;}
             table, body.dark-mode table, tr, body.dark-mode tr, td, body.dark-mode td { background-color: #ffffff !important; color: #000000 !important; border-collapse: collapse !important; }
@@ -130,8 +130,11 @@
             .weight-chart-box svg .meas-txt { fill: #111111 !important; }
             .weight-chart-box svg .date-txt { fill: #444444 !important; }
             .card-type-select, body.dark-mode .card-type-select { appearance: none; border: none !important; background: transparent !important; color: #000000 !important; }
-            .n-parts-wrapper input { border: none !important; }
-            .sheet-body { flex-direction: row !important; }
+            .n-parts-wrapper { gap: 0px !important; padding: 0 2px !important; }
+            .n-parts-wrapper input { border: none !important; font-size: 13px !important; width: 31% !important; padding: 0 !important; }
+            .sheet-body { flex-direction: row !important; gap: 18px !important; }
+            .info-section { flex: 1.05 !important; }
+            .table-section { flex: 1.18 !important; }
             .dynamic-card:not(:first-child), .medical-sheet { page-break-before: always !important; }
             .empty-notes { display: none !important; }
         }
@@ -145,6 +148,7 @@
         .force-light-mode .table-section th, .force-light-mode .table-section td { background-color: #fff !important; border: 1px solid #000 !important; color: #000 !important; }
         .force-light-mode th { background-color: #eee !important; color: #000 !important; }
         .force-light-mode .card-type-select { appearance: none; border: none !important; background: transparent !important; color: #000 !important; }
+        .force-light-mode .n-parts-wrapper input { border: none !important; font-size: 13px !important; width: 31% !important; padding: 0 !important; }
         .force-light-mode .dynamic-card:not(:first-child), .force-light-mode .medical-sheet { page-break-before: always !important; }
         .force-light-mode .empty-notes { display: none !important; }
     </style>
@@ -162,7 +166,6 @@
         <input type="text" id="searchName" placeholder="ابحث باسم المريض أو رقم الموبايل..." onkeyup="if(event.key==='Enter') searchPatient()">
         <button class="btn btn-search" onclick="searchPatient()"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
         <button class="btn btn-new" onclick="createNewPatient()"><i class="fa-solid fa-file-medical"></i> كرت جديد</button>
-        <button class="btn btn-merge" onclick="mergeDuplicateCards()"><i class="fa-solid fa-broom"></i> تنظيف التكرارات</button>
         <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الكرت</button>
         <button class="btn btn-save" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
@@ -173,8 +176,8 @@
         <div class="filter-row">
             <div class="filter-label"><i class="fa-solid fa-layer-group"></i> نوع الكرت:</div>
             <button class="filter-pill active" data-dept="all" onclick="setFilterDept('all', this)">الكل</button>
-            <button class="filter-pill dept-nut" data-dept="تغذية علاجية" onclick="setFilterDept('تغذية علاجية', this)">🥗 تغذية علاجية</button>
-            <button class="filter-pill dept-phy" data-dept="علاج طبيعي" onclick="setFilterDept('علاج طبيعي', this)">🦴 علاج طبيعي</button>
+            <button class="filter-pill dept-nut" data-dept="تغذية علاجية" onclick="setFilterDept('تغذية علاجية', this)">تغذية علاجية</button>
+            <button class="filter-pill dept-phy" data-dept="علاج طبيعي" onclick="setFilterDept('علاج طبيعي', this)">علاج طبيعي</button>
         </div>
         <div class="filter-row">
             <div class="filter-label"><i class="fa-solid fa-calendar-week"></i> أيام الحضور:</div>
@@ -229,7 +232,7 @@
         });
 
         // =========================================================================
-        // 0. محرك الرسم البياني الذكي لمقارنة الـ 3 مقاسات (فوق الوسط / الوسط / تحت الوسط) بين كل زيارة والتالية
+        // 0. محرك الرسم البياني الذكي للمقاسات
         // =========================================================================
         window.toggleWeightChart = function() {
             isChartHidden = !isChartHidden;
@@ -279,7 +282,6 @@
                 if (validNums.length > 0) {
                     let rawD = (readFromDOM && document.getElementById(`d_${i}`)) ? document.getElementById(`d_${i}`).value : (currentPatient.sessions[i]?.d || '');
                     let shortLbl = rawD ? convertToEnglishNumbers(String(rawD).trim()).replace(/\/20\d\d|-20\d\d/g, '') : `#${i + 1}`;
-                    // مجموع المقاسات الـ 3 للزيارة (مع موازنة لو مكتوب مقاسين فقط)
                     let score = validNums.reduce((a, b) => a + b, 0) * (3 / validNums.length);
                     let measText = [n1, n2, n3].filter(v => v !== null).join('-');
                     visits.push({ label: shortLbl, vals: [n1, n2, n3], score, measText });
@@ -292,11 +294,11 @@
                 box.classList.add('empty-chart');
                 box.innerHTML = `
                     <div class="weight-chart-header">
-                        <span><i class="fa-solid fa-chart-line"></i> تطور المقاسات (الوسط وفوقه وتحته)</span>
+                        <span><i class="fa-solid fa-chart-line"></i> المقاسات</span>
                         ${hideBtnHtml}
                     </div>
                     <div class="weight-chart-svg-wrap">
-                        <span class="weight-chart-empty">سجّل الـ 3 مقاسات في خانة (N) ليظهر منحنى التطور والفرق بين كل زيارة</span>
+                        <span class="weight-chart-empty">سجّل المقاسات في خانة (N) ليظهر الرسم البياني تلقائياً هنا</span>
                     </div>`;
                 return;
             }
@@ -304,7 +306,6 @@
             box.classList.remove('empty-chart');
             let displayVisits = visits.length > 7 ? visits.slice(-7) : visits;
 
-            // حساب فرق كل زيارة مقارنة بالزيارة التي قبلها مباشرة
             displayVisits.forEach((v, i) => {
                 if (i === 0) { v.stepDiff = null; return; }
                 let prev = displayVisits[i - 1], dSum = 0, matched = 0;
@@ -314,7 +315,6 @@
                 v.stepDiff = matched > 0 ? +dSum.toFixed(1) : +(v.score - prev.score).toFixed(1);
             });
 
-            // حساب الفرق الإجمالي من أول زيارة لآخر زيارة
             let totalBadgeHtml = '';
             if (displayVisits.length >= 2) {
                 let firstV = displayVisits[0], lastV = displayVisits[displayVisits.length - 1], tDiff = 0, mCnt = 0;
@@ -341,7 +341,6 @@
                 return { x: +x.toFixed(1), y: +y.toFixed(1), ...v };
             });
 
-            // رسم وصلات الخط: أخضر للنزول (أقل من المرة السابقة)، أحمر للزيادة، أزرق للثبات
             let segmentsSvg = '';
             for (let i = 1; i < pts.length; i++) {
                 let p1 = pts[i - 1], p2 = pts[i];
@@ -349,7 +348,6 @@
                 segmentsSvg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${segColor}" stroke-width="2.6" stroke-linecap="round" />`;
             }
 
-            // رسم النقاط + الـ 3 قياسات + فرق الأرقام مقارنة بالزيارة السابقة + التاريخ
             let pointsSvg = pts.map((p, i) => {
                 let dotColor = i === 0 ? '#0093D0' : (p.stepDiff < 0 ? '#27ae60' : (p.stepDiff > 0 ? '#e74c3c' : '#0093D0'));
                 let diffText = i === 0 ? '' : (p.stepDiff < 0 ? `${p.stepDiff}` : (p.stepDiff > 0 ? `+${p.stepDiff}` : `0`));
@@ -363,7 +361,7 @@
 
             box.innerHTML = `
                 <div class="weight-chart-header">
-                    <span><i class="fa-solid fa-chart-line"></i> تطور المقاسات (الوسط وفوقه وتحته)</span>
+                    <span><i class="fa-solid fa-chart-line"></i> المقاسات</span>
                     <div style="display:flex; align-items:center; gap:6px;">
                         ${totalBadgeHtml}
                         ${hideBtnHtml}
@@ -602,7 +600,7 @@
                 }
                 tbodyHtml += `<tr><td style="font-weight:700;background:var(--table-idx-bg);color:var(--primary-blue);">${sIdx+1}</td><td><div class="date-cell-wrapper"><input type="text" id="d_${sIdx}" class="date-input" value="${escapeHtml(s.d)}" placeholder=" " oninput="handleInput()" dir="ltr">${dateBtn}</div></td><td>${wsHtml}</td><td>${nHtml}</td></tr>`;
             }
-            return `<div class="paper-sheet dynamic-card"><div class="sheet-header"><div class="clinic-qr"><img src="links-qr-code.svg" alt="QR" onerror="this.style.display='none'"></div>${headerTitleHtml}<div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo" onerror="this.style.display='none'"></div></div><div class="sheet-body"><div class="info-section">${infoSection}</div><div class="table-section"><table><thead><tr><th style="width:8%">#</th><th style="width:28%">D</th><th style="width:24%">W/S</th><th style="width:40%">N</th></tr></thead><tbody>${tbodyHtml}</tbody></table></div></div></div>`;
+            return `<div class="paper-sheet dynamic-card"><div class="sheet-header"><div class="clinic-qr"><img src="links-qr-code.svg" alt="QR" onerror="this.style.display='none'"></div>${headerTitleHtml}<div class="clinic-logo"><img src="Logo-Dr-Aya.webp" alt="Logo" onerror="this.style.display='none'"></div></div><div class="sheet-body"><div class="info-section">${infoSection}</div><div class="table-section"><table><thead><tr><th style="width:8%">#</th><th style="width:26%">D</th><th style="width:22%">W/S</th><th style="width:44%">N</th></tr></thead><tbody>${tbodyHtml}</tbody></table></div></div></div>`;
         }
 
         function updateStateFromDOM() {
@@ -668,35 +666,6 @@
                 if(!isSilent) showToast("تم الحفظ بنجاح", "success");
             } catch (e) { setSaveStatus('unsaved'); if(!isSilent) showToast("تم الحفظ محلياً", "info"); }
         }
-
-        window.mergeDuplicateCards = async function() {
-            let cache = await localforage.getItem('patients_cache') || [];
-            if (cache.length === 0) return showToast("لا توجد بيانات لفحصها!", "info");
-            showToast("جاري فحص وتنظيف الكروت المتكررة...", "info");
-            let toDelete = [], toUpdate = [], mergedCount = 0;
-            function normM(t) { return t ? t.toString().replace(/[\u064B-\u065F\u0640]/g,"").replace(/[أإآء]/g,"ا").replace(/[يىئ]/g,"ي").replace(/ة/g,"ه").replace(/^(مدام|استاذ|استاذة|دكتور|دكتورة|د\.?)\s+/g,"").trim().toLowerCase() : ""; }
-            function matchM(a,b) { if(!a||!b) return false; let n1=normM(a), n2=normM(b); if(n1===n2) return true; let p1=n1.split(' ').filter(Boolean), p2=n2.split(' ').filter(Boolean); return p1.length>=2 && p2.length>=2 && p1[0]===p2[0] && p1[1]===p2[1]; }
-            for (let i=0;i<cache.length;i++) {
-                let p1 = cache[i]; if(!p1 || toDelete.includes(p1)) continue; let sp1 = getSafePhone(p1.phone);
-                for (let j=i+1;j<cache.length;j++) {
-                    let p2 = cache[j]; if(!p2 || toDelete.includes(p2)) continue; let sp2 = getSafePhone(p2.phone);
-                    if (matchM(p1.name, p2.name) && sp1!=="unknown" && sp2!=="unknown" && (sp1===sp2 || sp1.includes(sp2) || sp2.includes(sp1))) {
-                        if(sp2.length > sp1.length) { p1.phone = p2.phone; sp1 = sp2; }
-                        if(!p1.address && p2.address) p1.address = p2.address;
-                        p1.sessions = normalizeSessionsArray(p1.sessions).filter(s=>s.d||s.ws||s.n).concat(normalizeSessionsArray(p2.sessions).filter(s=>s.d||s.ws||s.n));
-                        if(p2.medical_notes && (!p1.medical_notes || !p1.medical_notes.includes(p2.medical_notes))) p1.medical_notes = (p1.medical_notes?p1.medical_notes+"\n":"")+p2.medical_notes;
-                        if(p2.files?.length) p1.files = (p1.files||[]).concat(p2.files);
-                        toDelete.push(p2); if(!toUpdate.includes(p1)) toUpdate.push(p1); mergedCount++;
-                    }
-                }
-            }
-            if (mergedCount === 0) return showToast("لا توجد كروت مكررة.", "success");
-            let newCache = cache.filter(p => !toDelete.includes(p));
-            await localforage.setItem('patients_cache', newCache); seedCardsIndex(newCache);
-            toDelete.forEach(p => { try { fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(p.phone) + "&name=" + encodeURIComponent(p.name), { method: 'GET', mode: 'no-cors' }); } catch(e) {} });
-            toUpdate.forEach(p => { try { fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(p), mode: 'no-cors' }); } catch(e) {} });
-            showToast(`تم دمج ${mergedCount} كارت متكرر بنجاح!`, "success"); setTimeout(() => createNewPatient(), 1500);
-        };
 
         function exportToPDF() {
             updateStateFromDOM(); if(!currentPatient.name) return showToast("يجب إدخال اسم المريض أولاً", "error");
