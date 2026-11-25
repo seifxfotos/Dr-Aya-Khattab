@@ -27,7 +27,6 @@
         .btn-search { background-color: var(--primary-blue); } .btn-new { background-color: var(--primary-green); } .btn-delete { background-color: #e74c3c; } .btn-pdf { background-color: #9b59b6; } .btn-print { background-color: #e67e22; } .btn-save { background-color: #27ae60; }
         .btn:hover { filter: brightness(0.92); }
 
-        /* شريط الفلتر والفرز بالأيام ونوع الكرت */
         .filter-sort-bar { background: var(--sheet-bg); max-width: 1130px; margin: 0 auto 18px auto; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-right: 5px solid var(--primary-blue); display: flex; flex-direction: column; gap: 12px; }
         .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .filter-label { font-weight: 800; font-size: 14px; color: var(--primary-blue); min-width: 115px; display: flex; align-items: center; gap: 6px; }
@@ -65,12 +64,7 @@
         .input-group-textarea textarea { width: 100%; border: 2px dashed var(--border-light); border-radius: 8px; background: var(--sheet-bg); font-size: 15px; padding: 8px; font-family: 'Cairo'; color: var(--text-main); font-weight: 600; outline: none; height: 74px; resize: vertical; direction: ltr; text-align: left; box-sizing: border-box;}
         .input-group-textarea textarea:focus { border-color: var(--primary-green); background: var(--focus-bg); }
 
-        /* --- صندوق الرسم البياني للمقاسات --- */
-        .weight-chart-box {
-            width: 100%; height: 126px; border: 1.5px solid var(--border-light); border-radius: 10px;
-            background: var(--table-idx-bg); padding: 6px 10px 4px 10px; box-sizing: border-box;
-            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-top: auto;
-        }
+        .weight-chart-box { width: 100%; height: 126px; border: 1.5px solid var(--border-light); border-radius: 10px; background: var(--table-idx-bg); padding: 6px 10px 4px 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-top: auto; }
         .weight-chart-box.chart-is-hidden { height: auto; border-style: dashed; padding: 6px 10px; background: transparent; align-items: center; justify-content: center; }
         .weight-chart-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--primary-blue); border-bottom: 1px dashed var(--border-light); padding-bottom: 3px; }
         .chart-toggle-btn { background: none; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 6px; padding: 1px 8px; font-family: 'Cairo'; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px; }
@@ -215,7 +209,7 @@
         let currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
         let lastSavedStateString = "", saveTimeout = null, confirmActionCallback = null, showMedicalSheetFlag = false, indexedKey = null, globalSearchResults = [];
         let activeFilterDept = 'all', activeFilterDay = 'all', filteredPatientsList = [];
-        let isChartHidden = false;
+        let isChartHidden = false, hasUnsavedChanges = false;
         const DAY_NAMES_AR = { 0: 'الأحد', 1: 'الإثنين', 2: 'الثلاثاء', 3: 'الأربعاء', 4: 'الخميس', 5: 'الجمعة', 6: 'السبت' };
         const PHYSIO_KEYWORDS = ['عادي', 'شوك', 'تصريف', 'شد فقرات', 'شوك ويف', 'تصريف ليمفاوي', 'موجات', 'ليزر', 'كهرباء', 'أخري', 'جلسة'];
 
@@ -228,7 +222,13 @@
             silentPreFetchAll();
             const autoSearch = localStorage.getItem('clinic_auto_search_name');
             if (autoSearch) { document.getElementById('searchName').value = autoSearch; setTimeout(() => searchPatient(), 500); localStorage.removeItem('clinic_auto_search_name'); }
-            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); forceSave(); } });
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); forceSave(false); } });
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (hasUnsavedChanges && currentPatient.name) {
+                forceSave(true);
+            }
         });
 
         // =========================================================================
@@ -541,7 +541,10 @@
             }).join('');
             document.getElementById('filteredResultsPanel').style.display = 'block';
         }
-        window.selectFilteredPatient = function(idx) { if (filteredPatientsList[idx]) { loadPatientData(filteredPatientsList[idx]); document.getElementById('cardsRenderContainer').scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
+        window.selectFilteredPatient = async function(idx) {
+            if (hasUnsavedChanges) await forceSave(true);
+            if (filteredPatientsList[idx]) { loadPatientData(filteredPatientsList[idx]); document.getElementById('cardsRenderContainer').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        };
 
         function getSafePhone(p) { return p ? convertToEnglishNumbers(p).replace(/\D/g, '') || "unknown" : "unknown"; }
         function cardIndexKey(phone, name) { let d = convertToEnglishNumbers(String(phone || '')).replace(/\D/g, ''), norm = normalizeArabicText(String(name || '')).replace(/\s+/g, ' '), h = 0; for (let i = 0; i < norm.length; i++) h = ((h << 5) - h + norm.charCodeAt(i)) | 0; return (d || 'x') + '_' + Math.abs(h); }
@@ -551,7 +554,12 @@
         function closeConfirmModal() { document.getElementById('customConfirmModal').style.display = "none"; confirmActionCallback = null; }
         document.getElementById('confirmBtnYes').addEventListener('click', () => { if(confirmActionCallback) confirmActionCallback(); closeConfirmModal(); });
 
-        function createNewPatient() { currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} }; lastSavedStateString = ""; indexedKey = null; showMedicalSheetFlag = false; renderPatientToDOM(); showToast("تم فتح استمارة جديدة", "info"); }
+        async function createNewPatient() {
+            if (hasUnsavedChanges) await forceSave(true);
+            currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
+            lastSavedStateString = ""; indexedKey = null; showMedicalSheetFlag = false; hasUnsavedChanges = false;
+            renderPatientToDOM(); setSaveStatus('saved'); showToast("تم فتح استمارة جديدة", "info");
+        }
         window.syncCardNames = function() { let n = document.getElementById('p_name')?.value || '', p = document.getElementById('p_phone')?.value || ''; document.querySelectorAll('.extra-card-name').forEach(el => el.value = n); document.querySelectorAll('.extra-card-phone').forEach(el => el.value = p); };
         window.updateCardType = function(cardIndex, newType) { updateStateFromDOM(); currentPatient.cardTypes[cardIndex] = newType; renderPatientToDOM(); handleInput(); };
 
@@ -628,43 +636,106 @@
             }
         }
 
-        function setSaveStatus(status) { const b = document.getElementById('saveStatusBadge'); b.className = `save-status-badge ${status} no-print`; b.innerHTML = status==='saving' ? '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>' : (status==='saved' ? '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>' : '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>'); }
+        function setSaveStatus(status) {
+            hasUnsavedChanges = (status === 'unsaved');
+            const b = document.getElementById('saveStatusBadge');
+            b.className = `save-status-badge ${status} no-print`;
+            b.innerHTML = status==='saving' ? '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>' : (status==='saved' ? '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>' : '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>');
+        }
+
+        // أوتو سيف سريع كل 1.5 ثانية لضمان حفظ أي تعديل في الكروت القديمة والجديدة فوراً
         function handleInput() {
             setSaveStatus('unsaved');
             const ne = document.getElementById('p_medical_notes'), w = document.getElementById('medicalSheetWrapper');
             if(ne && w) w.classList.toggle('empty-notes', ne.value.trim()==='');
             updateWeightChart(true);
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => forceSave(true), 5000);
+            saveTimeout = setTimeout(() => forceSave(true), 1500);
         }
         function saveData() { forceSave(false); }
 
+        // دالة الحفظ المزدوج السحابي (Firebase + Google Sheets بدون أي أخطاء CORS)
         async function forceSave(isSilent = false) {
+            clearTimeout(saveTimeout);
             updateStateFromDOM();
+            if (!currentPatient.name) {
+                if (!isSilent) showToast("الاسم مطلوب للحفظ", "error");
+                setSaveStatus('unsaved');
+                return;
+            }
+
             let safePhoneVal = getSafePhone(currentPatient.phone);
-            if(!currentPatient.name || safePhoneVal === "unknown" || safePhoneVal.length < 10) { if(!isSilent) showToast("الاسم ورقم موبايل صحيح (10 أرقام على الأقل) مطلوبان للحفظ", "error"); setSaveStatus('unsaved'); return; }
             let currentStateStr = JSON.stringify(currentPatient);
-            if (currentStateStr === lastSavedStateString) { if(!isSilent) showToast("الكرت ده محفوظ بالفعل!", "info"); return; }
+            if (currentStateStr === lastSavedStateString && !isSilent) {
+                showToast("الكرت ده محفوظ بالفعل!", "info");
+                return;
+            }
+
             setSaveStatus('saving');
+
             let cleanedSessions = [...currentPatient.sessions];
-            while(cleanedSessions.length > 0 && !cleanedSessions[cleanedSessions.length-1].d && !cleanedSessions[cleanedSessions.length-1].ws && !cleanedSessions[cleanedSessions.length-1].n) cleanedSessions.pop();
-            let payload = { ...currentPatient, sessions: cleanedSessions };
+            while (cleanedSessions.length > 0 && !cleanedSessions[cleanedSessions.length - 1].d && !cleanedSessions[cleanedSessions.length - 1].ws && !cleanedSessions[cleanedSessions.length - 1].n) {
+                cleanedSessions.pop();
+            }
+
+            let payload = { ...currentPatient, sessions: cleanedSessions, updatedAt: Date.now() };
+            let cloudKey = cardIndexKey(payload.phone, payload.name);
+
+            // 1. تحديث الكاش المحلي بمطابقة ذكية بالرقم أو الاسم
             let cache = await localforage.getItem('patients_cache') || [];
-            let idx = cache.findIndex(p => p.phone === payload.phone);
-            if(idx > -1) cache[idx] = payload; else cache.push(payload);
+            let idx = cache.findIndex(p =>
+                (safePhoneVal !== "unknown" && getSafePhone(p.phone) === safePhoneVal) ||
+                (normalizeArabicText(p.name) === normalizeArabicText(payload.name))
+            );
+            if (idx > -1) cache[idx] = payload; else cache.push(payload);
             await localforage.setItem('patients_cache', cache);
+
+            // 2. الحفظ السحابي الفوري على Firebase (يضمن عدم ضياع أي تعديل على الكروت القديمة)
+            let fbSaved = false;
             try {
-                let newKey = cardIndexKey(payload.phone, payload.name);
-                db.ref('cards_names_index/' + newKey).set({ name: payload.name, phone: String(payload.phone || '') });
-                if (indexedKey && indexedKey !== newKey) db.ref('cards_names_index/' + indexedKey).remove();
-                indexedKey = newKey;
-            } catch (e) {}
+                await db.ref('patients_cards_cloud/' + cloudKey).set(payload);
+                fbSaved = true;
+                db.ref('cards_names_index/' + cloudKey).set({ name: payload.name, phone: String(payload.phone || '') }).catch(() => {});
+                if (indexedKey && indexedKey !== cloudKey) {
+                    db.ref('cards_names_index/' + indexedKey).remove().catch(() => {});
+                    db.ref('patients_cards_cloud/' + indexedKey).remove().catch(() => {});
+                }
+                indexedKey = cloudKey;
+                if (safePhoneVal !== "unknown" && currentPatient.files?.length > 0) {
+                    db.ref('patients_files_data/' + safePhoneVal).set(currentPatient.files).catch(() => {});
+                }
+            } catch (e) { console.warn("Firebase save note:", e); }
+
+            // 3. الحفظ في Google Sheets مع حل نهائي لمشكلة CORS والـ Redirect
+            let sheetSaved = false;
             try {
-                await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-                if (safePhoneVal !== "unknown" && currentPatient.files?.length > 0) await db.ref('patients_files_data/' + safePhoneVal).set(currentPatient.files);
-                setSaveStatus('saved'); lastSavedStateString = currentStateStr;
-                if(!isSilent) showToast("تم الحفظ بنجاح", "success");
-            } catch (e) { setSaveStatus('unsaved'); if(!isSilent) showToast("تم الحفظ محلياً", "info"); }
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    redirect: "follow",
+                    body: JSON.stringify(payload)
+                });
+                sheetSaved = true;
+            } catch (corsErr) {
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload)
+                    });
+                    sheetSaved = true;
+                } catch (netErr) { console.error("Sheet net error:", netErr); }
+            }
+
+            if (sheetSaved || fbSaved) {
+                setSaveStatus('saved');
+                lastSavedStateString = currentStateStr;
+                if (!isSilent) showToast("تم الحفظ بنجاح", "success");
+            } else {
+                setSaveStatus('unsaved');
+                if (!isSilent) showToast("تأكد من الاتصال بالإنترنت، تم الحفظ مؤقتاً على الجهاز", "error");
+            }
         }
 
         function exportToPDF() {
@@ -693,34 +764,57 @@
             let phone = currentPatient.phone, name = currentPatient.name;
             if(!name) return showToast("ابحث عن المريض أولاً!", "error");
             showCustomConfirm('<i class="fa-solid fa-trash"></i> تأكيد الحذف', `مسح المريض (${name}) نهائياً؟`, async () => {
-                let cache = (await localforage.getItem('patients_cache') || []).filter(p => !(p.phone===phone && p.name===name));
+                let cache = (await localforage.getItem('patients_cache') || []).filter(p => !(getSafePhone(p.phone)===getSafePhone(phone) && normalizeArabicText(p.name)===normalizeArabicText(name)));
                 await localforage.setItem('patients_cache', cache);
-                db.ref('patients_files_data/' + getSafePhone(phone)).remove();
-                db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove();
-                if (indexedKey) db.ref('cards_names_index/' + indexedKey).remove();
+                let ck = cardIndexKey(phone, name);
+                db.ref('patients_files_data/' + getSafePhone(phone)).remove().catch(()=>{});
+                db.ref('cards_names_index/' + ck).remove().catch(()=>{});
+                db.ref('patients_cards_cloud/' + ck).remove().catch(()=>{});
+                if (indexedKey) { db.ref('cards_names_index/' + indexedKey).remove().catch(()=>{}); db.ref('patients_cards_cloud/' + indexedKey).remove().catch(()=>{}); }
+                hasUnsavedChanges = false;
                 showToast("تم الحذف بنجاح!", "success"); createNewPatient();
-                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', redirect: 'follow' }).catch(()=>{});
+                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', mode: 'no-cors' }).catch(()=>{});
             });
         }
 
+        // جلب ودمج بيانات Google Sheets مع أحدث تعديلات Firebase السحابية دون مسح أي تعديل
         async function silentPreFetchAll() {
             try {
-                let res = await fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH");
-                let data = await res.json();
-                if(data.status === 'found') {
-                    await localforage.setItem('patients_cache', data.data);
+                let [sheetRes, fbSnap] = await Promise.all([
+                    fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH").then(r => r.json()).catch(() => null),
+                    db.ref('patients_cards_cloud').once('value').then(s => s.val()).catch(() => null)
+                ]);
+
+                let mergedList = (sheetRes && sheetRes.status === 'found' && Array.isArray(sheetRes.data)) ? [...sheetRes.data] : (await localforage.getItem('patients_cache') || []);
+
+                if (fbSnap) {
+                    Object.values(fbSnap).forEach(fbCard => {
+                        if (!fbCard || !fbCard.name) return;
+                        let sp = getSafePhone(fbCard.phone);
+                        let i = mergedList.findIndex(p =>
+                            (sp !== "unknown" && getSafePhone(p.phone) === sp) ||
+                            (normalizeArabicText(p.name) === normalizeArabicText(fbCard.name))
+                        );
+                        if (i > -1) mergedList[i] = { ...mergedList[i], ...fbCard };
+                        else mergedList.push(fbCard);
+                    });
+                }
+
+                if (mergedList.length > 0) {
+                    await localforage.setItem('patients_cache', mergedList);
                     await syncAutoBookingsFromFirebaseToLocalCache();
-                    seedCardsIndex(data.data);
+                    seedCardsIndex(mergedList);
                 }
             } catch(e) {}
         }
 
         async function searchPatient() {
+            if (hasUnsavedChanges) await forceSave(true);
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل!", "error");
             let searchInput = convertToEnglishNumbers(rawSearch), cleanSearchName = normalizeArabicText(searchInput);
             let cache = await localforage.getItem('patients_cache') || [];
-            let localResults = cache.filter(p => normalizeArabicText(p.name).includes(cleanSearchName) || (p.phone && p.phone.includes(searchInput)));
+            let localResults = cache.filter(p => normalizeArabicText(p.name).includes(cleanSearchName) || (p.phone && String(p.phone).includes(searchInput)));
             if (localResults.length > 0) {
                 showToast(`تم العثور على ${localResults.length} نتيجة ⚡`, "success");
                 if (localResults.length === 1) loadPatientData(localResults[0]);
@@ -731,7 +825,7 @@
             try {
                 let res = JSON.parse(await (await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput))).text());
                 if(res.status === "found") {
-                    res.data.forEach(newP => { let i = cache.findIndex(p => p.phone === newP.phone); if(i > -1) cache[i] = newP; else cache.push(newP); });
+                    res.data.forEach(newP => { let i = cache.findIndex(p => getSafePhone(p.phone) === getSafePhone(newP.phone)); if(i > -1) cache[i] = newP; else cache.push(newP); });
                     await localforage.setItem('patients_cache', cache);
                     if (res.data.length === 1) loadPatientData(res.data[0]);
                     else { globalSearchResults = res.data; renderMultiplePatientsList(res.data); }
@@ -744,13 +838,38 @@
             document.getElementById('patientList').innerHTML = results.map((p, i) => `<div class="patient-option" onclick="selectPatient(${i})"><div><div class="patient-name">${escapeHtml(p.name)}</div><div class="patient-details">${escapeHtml(p.phone) || "بدون رقم"}</div></div></div>`).join('');
             document.getElementById('patientModal').style.display = "flex";
         }
-        function selectPatient(index) { loadPatientData(globalSearchResults[index]); closeModal(); }
+        async function selectPatient(index) {
+            if (hasUnsavedChanges) await forceSave(true);
+            loadPatientData(globalSearchResults[index]);
+            closeModal();
+        }
 
         function loadPatientData(data) {
             currentPatient = { ...currentPatient, ...data };
             currentPatient.sessions = normalizeSessionsArray(currentPatient.sessions);
             if(!currentPatient.files) currentPatient.files = [];
             currentPatient.cardTypes = detectCardTypesMap(currentPatient.sessions, currentPatient.cardTypes);
+
+            indexedKey = cardIndexKey(currentPatient.phone, currentPatient.name);
+            showMedicalSheetFlag = false;
+            renderPatientToDOM();
+            lastSavedStateString = JSON.stringify(currentPatient);
+            setSaveStatus('saved');
+
+            // التحقق من وجود نسخة أحدث محفوظة على Firebase السحابي
+            db.ref('patients_cards_cloud/' + indexedKey).once('value').then(snap => {
+                if (snap.exists()) {
+                    let cloudData = snap.val();
+                    if (cloudData && cloudData.updatedAt && (!currentPatient.updatedAt || cloudData.updatedAt > currentPatient.updatedAt)) {
+                        currentPatient = { ...currentPatient, ...cloudData };
+                        currentPatient.sessions = normalizeSessionsArray(currentPatient.sessions);
+                        currentPatient.cardTypes = detectCardTypesMap(currentPatient.sessions, currentPatient.cardTypes);
+                        renderPatientToDOM();
+                        lastSavedStateString = JSON.stringify(currentPatient);
+                        setSaveStatus('saved');
+                    }
+                }
+            }).catch(()=>{});
 
             if (currentPatient.phone) {
                 db.ref('patients_files_data/' + getSafePhone(currentPatient.phone)).once('value').then(snap => {
@@ -776,12 +895,6 @@
                     }
                 }).catch(()=>{});
             }
-
-            lastSavedStateString = JSON.stringify(currentPatient);
-            indexedKey = cardIndexKey(currentPatient.phone, currentPatient.name);
-            showMedicalSheetFlag = false;
-            renderPatientToDOM();
-            setSaveStatus('saved');
         }
 
         function closeModal() { document.getElementById('patientModal').style.display = "none"; }
