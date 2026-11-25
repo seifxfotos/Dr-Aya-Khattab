@@ -206,7 +206,12 @@
         const db = firebase.database(); 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWU9e5HfvncGRrzBcbyrsDZr9mbO5C2jAww733pgdstnC-43LFQWxkv4y5WHxjUOLQ/exec";
         
-        let currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
+        function blankPatient() {
+            return { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
+        }
+
+        let currentPatient = blankPatient();
+        let originalLoadedName = "", originalLoadedPhone = "";
         let lastSavedStateString = "", saveTimeout = null, confirmActionCallback = null, showMedicalSheetFlag = false, indexedKey = null, globalSearchResults = [];
         let activeFilterDept = 'all', activeFilterDay = 'all', filteredPatientsList = [];
         let isChartHidden = false, hasUnsavedChanges = false;
@@ -226,18 +231,58 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            if (hasUnsavedChanges && currentPatient.name) {
-                forceSave(true);
-            }
+            if (hasUnsavedChanges && currentPatient.name) forceSave(true);
         });
+
+        // دالة موحدة لمطابقة نفس المريض لمنع تكرار الكروت 100%
+        function isSamePatientCard(p1, p2) {
+            if (!p1 || !p2) return false;
+            let n1 = normalizeArabicText(p1.name), n2 = normalizeArabicText(p2.name);
+            let ph1 = getNormalizedPhoneDigits(p1.phone), ph2 = getNormalizedPhoneDigits(p2.phone);
+            if (ph1 && ph2 && ph1 === ph2) return true;
+            if (n1 && n2 && n1 === n2) return true;
+            return false;
+        }
+
+        // توحيد رقم الموبايل (آخر 10 أرقام) بحيث 01012345678 يطابق 1012345678 ولا يسبب تكرار أبداً
+        function getNormalizedPhoneDigits(p) {
+            if (!p) return "";
+            let digits = convertToEnglishNumbers(String(p)).replace(/\D/g, '');
+            if (digits.length >= 10) return digits.slice(-10);
+            return digits;
+        }
+
+        function countFilledSessions(card) {
+            return normalizeSessionsArray(card?.sessions).filter(s => s.d || s.ws || s.n).length;
+        }
+
+        // إزالة أي كروت مكررة مع الاحتفاظ بالنسخة الأحدث والأكثر اكتمالاً دائماً
+        function deduplicateCardsList(list) {
+            let unique = [];
+            (list || []).forEach(card => {
+                if (!card || !card.name) return;
+                let existingIdx = unique.findIndex(u => isSamePatientCard(u, card));
+                if (existingIdx === -1) {
+                    unique.push(card);
+                } else {
+                    let oldCard = unique[existingIdx];
+                    let oldTime = Number(oldCard.updatedAt || 0), newTime = Number(card.updatedAt || 0);
+                    if (newTime > oldTime) {
+                        unique[existingIdx] = { ...oldCard, ...card };
+                    } else if (newTime === oldTime) {
+                        if (countFilledSessions(card) >= countFilledSessions(oldCard)) {
+                            unique[existingIdx] = { ...oldCard, ...card };
+                        }
+                    }
+                }
+            });
+            return unique;
+        }
 
         // =========================================================================
         // 0. محرك الرسم البياني الذكي للمقاسات
         // =========================================================================
-        window.toggleWeightChart = function() {
-            isChartHidden = !isChartHidden;
-            updateWeightChart(true);
-        };
+        window.toggleWeightChart = function() { isChartHidden = !isChartHidden; updateWeightChart(true); };
 
         function parseNumVal(val) {
             if (val === null || val === undefined) return null;
@@ -251,131 +296,65 @@
         function updateWeightChart(readFromDOM = false) {
             const box = document.getElementById('weightChartBox');
             if (!box) return;
-
             if (isChartHidden) {
                 box.className = 'weight-chart-box chart-is-hidden no-print';
                 box.innerHTML = `<button type="button" class="chart-toggle-btn" style="padding:4px 14px; font-size:12.5px; color:var(--primary-blue); border-color:var(--primary-blue);" onclick="toggleWeightChart()"><i class="fa-solid fa-chart-line"></i> إظهار الرسم البياني للمقاسات</button>`;
                 return;
             }
-
             box.classList.remove('chart-is-hidden', 'no-print');
-
             let visits = [];
-            let totalSessions = currentPatient.sessions.length;
-
-            for (let i = 0; i < totalSessions; i++) {
-                let cType = currentPatient.cardTypes[Math.floor(i / 12)] || 'تغذية علاجية';
-                if (cType !== 'تغذية علاجية') continue;
-
+            for (let i = 0; i < currentPatient.sessions.length; i++) {
+                if ((currentPatient.cardTypes[Math.floor(i / 12)] || 'تغذية علاجية') !== 'تغذية علاجية') continue;
                 let n1 = null, n2 = null, n3 = null;
                 if (readFromDOM && document.getElementById(`n1_${i}`)) {
                     n1 = parseNumVal(document.getElementById(`n1_${i}`).value);
                     n2 = parseNumVal(document.getElementById(`n2_${i}`).value);
                     n3 = parseNumVal(document.getElementById(`n3_${i}`).value);
                 } else {
-                    let rawN = String(currentPatient.sessions[i]?.n || '');
-                    let np = rawN.split(/[-\/\\\s]+/);
+                    let np = String(currentPatient.sessions[i]?.n || '').split(/[-\/\\\s]+/);
                     n1 = parseNumVal(np[0]); n2 = parseNumVal(np[1]); n3 = parseNumVal(np[2]);
                 }
-
                 let validNums = [n1, n2, n3].filter(v => v !== null);
                 if (validNums.length > 0) {
                     let rawD = (readFromDOM && document.getElementById(`d_${i}`)) ? document.getElementById(`d_${i}`).value : (currentPatient.sessions[i]?.d || '');
                     let shortLbl = rawD ? convertToEnglishNumbers(String(rawD).trim()).replace(/\/20\d\d|-20\d\d/g, '') : `#${i + 1}`;
                     let score = validNums.reduce((a, b) => a + b, 0) * (3 / validNums.length);
-                    let measText = [n1, n2, n3].filter(v => v !== null).join('-');
-                    visits.push({ label: shortLbl, vals: [n1, n2, n3], score, measText });
+                    visits.push({ label: shortLbl, vals: [n1, n2, n3], score, measText: validNums.join('-') });
                 }
             }
-
-            const hideBtnHtml = `<button type="button" class="chart-toggle-btn no-print" onclick="toggleWeightChart()" title="إخفاء الجراف من الشاشة والطباعة"><i class="fa-solid fa-eye-slash"></i> إخفاء</button>`;
-
+            const hideBtnHtml = `<button type="button" class="chart-toggle-btn no-print" onclick="toggleWeightChart()"><i class="fa-solid fa-eye-slash"></i> إخفاء</button>`;
             if (visits.length === 0) {
                 box.classList.add('empty-chart');
-                box.innerHTML = `
-                    <div class="weight-chart-header">
-                        <span><i class="fa-solid fa-chart-line"></i> المقاسات</span>
-                        ${hideBtnHtml}
-                    </div>
-                    <div class="weight-chart-svg-wrap">
-                        <span class="weight-chart-empty">سجّل المقاسات في خانة (N) ليظهر الرسم البياني تلقائياً هنا</span>
-                    </div>`;
+                box.innerHTML = `<div class="weight-chart-header"><span><i class="fa-solid fa-chart-line"></i> المقاسات</span>${hideBtnHtml}</div><div class="weight-chart-svg-wrap"><span class="weight-chart-empty">سجّل المقاسات في خانة (N) ليظهر الرسم البياني تلقائياً هنا</span></div>`;
                 return;
             }
-
             box.classList.remove('empty-chart');
             let displayVisits = visits.length > 7 ? visits.slice(-7) : visits;
-
             displayVisits.forEach((v, i) => {
                 if (i === 0) { v.stepDiff = null; return; }
                 let prev = displayVisits[i - 1], dSum = 0, matched = 0;
-                for (let k = 0; k < 3; k++) {
-                    if (v.vals[k] !== null && prev.vals[k] !== null) { dSum += (v.vals[k] - prev.vals[k]); matched++; }
-                }
+                for (let k = 0; k < 3; k++) if (v.vals[k] !== null && prev.vals[k] !== null) { dSum += (v.vals[k] - prev.vals[k]); matched++; }
                 v.stepDiff = matched > 0 ? +dSum.toFixed(1) : +(v.score - prev.score).toFixed(1);
             });
-
-            let totalBadgeHtml = '';
+            let totalBadgeHtml = `<span class="weight-diff-badge">زيارة البداية</span>`;
             if (displayVisits.length >= 2) {
-                let firstV = displayVisits[0], lastV = displayVisits[displayVisits.length - 1], tDiff = 0, mCnt = 0;
-                for (let k = 0; k < 3; k++) {
-                    if (firstV.vals[k] !== null && lastV.vals[k] !== null) { tDiff += (lastV.vals[k] - firstV.vals[k]); mCnt++; }
-                }
-                tDiff = +(mCnt > 0 ? tDiff : (lastV.score - firstV.score)).toFixed(1);
-                if (tDiff < 0) totalBadgeHtml = `<span class="weight-diff-badge loss">إجمالي النزول: ${tDiff} سم</span>`;
-                else if (tDiff > 0) totalBadgeHtml = `<span class="weight-diff-badge gain">إجمالي الزيادة: +${tDiff} سم</span>`;
-                else totalBadgeHtml = `<span class="weight-diff-badge">ثبات المقاسات (0 سم)</span>`;
-            } else {
-                totalBadgeHtml = `<span class="weight-diff-badge">زيارة البداية</span>`;
+                let f = displayVisits[0], l = displayVisits[displayVisits.length - 1], td = 0, mc = 0;
+                for (let k = 0; k < 3; k++) if (f.vals[k] !== null && l.vals[k] !== null) { td += (l.vals[k] - f.vals[k]); mc++; }
+                td = +(mc > 0 ? td : (l.score - f.score)).toFixed(1);
+                totalBadgeHtml = td < 0 ? `<span class="weight-diff-badge loss">إجمالي النزول: ${td} سم</span>` : (td > 0 ? `<span class="weight-diff-badge gain">إجمالي الزيادة: +${td} سم</span>` : `<span class="weight-diff-badge">ثبات المقاسات (0 سم)</span>`);
             }
-
-            const W = 480, H = 92, padL = 36, padR = 36, padT = 28, padB = 18;
-            const plotW = W - padL - padR, plotH = H - padT - padB;
-            let scores = displayVisits.map(v => v.score);
-            let minS = Math.min(...scores), maxS = Math.max(...scores);
+            const W = 480, H = 92, padL = 36, padR = 36, padT = 28, padB = 18, plotW = W - padL - padR, plotH = H - padT - padB;
+            let scores = displayVisits.map(v => v.score), minS = Math.min(...scores), maxS = Math.max(...scores);
             if (maxS === minS) { minS -= 10; maxS += 10; } else { let rng = maxS - minS; minS -= rng * 0.18; maxS += rng * 0.18; }
-
-            let pts = displayVisits.map((v, i) => {
-                let x = displayVisits.length === 1 ? (W / 2) : (padL + (i / (displayVisits.length - 1)) * plotW);
-                let y = padT + ((maxS - v.score) / (maxS - minS)) * plotH;
-                return { x: +x.toFixed(1), y: +y.toFixed(1), ...v };
-            });
-
+            let pts = displayVisits.map((v, i) => ({ x: +(displayVisits.length === 1 ? (W / 2) : (padL + (i / (displayVisits.length - 1)) * plotW)).toFixed(1), y: +(padT + ((maxS - v.score) / (maxS - minS)) * plotH).toFixed(1), ...v }));
             let segmentsSvg = '';
-            for (let i = 1; i < pts.length; i++) {
-                let p1 = pts[i - 1], p2 = pts[i];
-                let segColor = p2.stepDiff < 0 ? '#27ae60' : (p2.stepDiff > 0 ? '#e74c3c' : '#0093D0');
-                segmentsSvg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${segColor}" stroke-width="2.6" stroke-linecap="round" />`;
-            }
-
+            for (let i = 1; i < pts.length; i++) segmentsSvg += `<line x1="${pts[i-1].x}" y1="${pts[i-1].y}" x2="${pts[i].x}" y2="${pts[i].y}" stroke="${pts[i].stepDiff<0?'#27ae60':(pts[i].stepDiff>0?'#e74c3c':'#0093D0')}" stroke-width="2.6" stroke-linecap="round" />`;
             let pointsSvg = pts.map((p, i) => {
-                let dotColor = i === 0 ? '#0093D0' : (p.stepDiff < 0 ? '#27ae60' : (p.stepDiff > 0 ? '#e74c3c' : '#0093D0'));
-                let diffText = i === 0 ? '' : (p.stepDiff < 0 ? `${p.stepDiff}` : (p.stepDiff > 0 ? `+${p.stepDiff}` : `0`));
-                return `
-                    <circle cx="${p.x}" cy="${p.y}" r="4" fill="${dotColor}" stroke="#ffffff" stroke-width="1.5" />
-                    <text class="meas-txt" x="${p.x}" y="${p.y - 16}" text-anchor="middle" font-size="8.2" font-weight="800" fill="var(--text-main)" font-family="Cairo, sans-serif">${p.measText}</text>
-                    ${diffText ? `<text x="${p.x}" y="${p.y - 6}" text-anchor="middle" font-size="9.5" font-weight="900" fill="${dotColor}" font-family="Cairo, sans-serif">(${diffText})</text>` : ''}
-                    <text class="date-txt" x="${p.x}" y="${H - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--text-muted)" font-family="Cairo, sans-serif">${escapeHtml(p.label)}</text>
-                `;
+                let c = i === 0 ? '#0093D0' : (p.stepDiff < 0 ? '#27ae60' : (p.stepDiff > 0 ? '#e74c3c' : '#0093D0'));
+                let dt = i === 0 ? '' : (p.stepDiff < 0 ? `${p.stepDiff}` : (p.stepDiff > 0 ? `+${p.stepDiff}` : `0`));
+                return `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${c}" stroke="#ffffff" stroke-width="1.5" /><text class="meas-txt" x="${p.x}" y="${p.y - 16}" text-anchor="middle" font-size="8.2" font-weight="800" fill="var(--text-main)" font-family="Cairo, sans-serif">${p.measText}</text>${dt?`<text x="${p.x}" y="${p.y - 6}" text-anchor="middle" font-size="9.5" font-weight="900" fill="${c}" font-family="Cairo, sans-serif">(${dt})</text>`:''}<text class="date-txt" x="${p.x}" y="${H - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--text-muted)" font-family="Cairo, sans-serif">${escapeHtml(p.label)}</text>`;
             }).join('');
-
-            box.innerHTML = `
-                <div class="weight-chart-header">
-                    <span><i class="fa-solid fa-chart-line"></i> المقاسات</span>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        ${totalBadgeHtml}
-                        ${hideBtnHtml}
-                    </div>
-                </div>
-                <div class="weight-chart-svg-wrap" dir="ltr">
-                    <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="overflow:visible;">
-                        <line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" />
-                        <line x1="${padL}" y1="${padT + plotH/2}" x2="${W - padR}" y2="${padT + plotH/2}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" />
-                        <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="var(--border-light)" stroke-width="1" />
-                        ${segmentsSvg}
-                        ${pointsSvg}
-                    </svg>
-                </div>`;
+            box.innerHTML = `<div class="weight-chart-header"><span><i class="fa-solid fa-chart-line"></i> المقاسات</span><div style="display:flex;align-items:center;gap:6px;">${totalBadgeHtml}${hideBtnHtml}</div></div><div class="weight-chart-svg-wrap" dir="ltr"><svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="overflow:visible;"><line x1="${padL}" y1="${padT}" x2="${W-padR}" y2="${padT}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" /><line x1="${padL}" y1="${padT+plotH/2}" x2="${W-padR}" y2="${padT+plotH/2}" stroke="var(--border-light)" stroke-dasharray="3,3" stroke-width="0.8" /><line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--border-light)" stroke-width="1" />${segmentsSvg}${pointsSvg}</svg></div>`;
         }
 
         function normalizeSessionsArray(sessionsRaw) {
@@ -392,8 +371,7 @@
             let typesMap = { ...(existingCardTypes || {}) };
             let numCards = Math.max(1, Math.ceil((sessionsArr.length || 12) / 12));
             for (let c = 0; c < numCards; c++) {
-                let cardSessions = sessionsArr.slice(c * 12, (c + 1) * 12);
-                let isPhysio = false, isNutrition = false;
+                let cardSessions = sessionsArr.slice(c * 12, (c + 1) * 12), isPhysio = false, isNutrition = false;
                 cardSessions.forEach(s => {
                     if (!s || (!s.d && !s.ws && !s.n)) return;
                     let wsStr = String(s.ws || '').trim(), nStr = String(s.n || '').trim();
@@ -408,29 +386,20 @@
         }
 
         function analyzePatientCard(patient) {
-            let sessions = normalizeSessionsArray(patient.sessions);
-            let cardTypes = detectCardTypesMap(sessions, patient.cardTypes);
-            let deptsSet = new Set();
+            let sessions = normalizeSessionsArray(patient.sessions), cardTypes = detectCardTypesMap(sessions, patient.cardTypes), deptsSet = new Set();
             let numCards = Math.max(1, Math.ceil(sessions.length / 12));
-            for (let c = 0; c < numCards; c++) {
-                let slice = sessions.slice(c * 12, (c + 1) * 12);
-                if (slice.some(s => s && (s.d || s.ws || s.n)) || c === 0) deptsSet.add(cardTypes[c] || 'تغذية علاجية');
-            }
+            for (let c = 0; c < numCards; c++) if (sessions.slice(c * 12, (c + 1) * 12).some(s => s && (s.d || s.ws || s.n)) || c === 0) deptsSet.add(cardTypes[c] || 'تغذية علاجية');
             let isMonthFirstShort = false, defaultYear = new Date().getFullYear();
             sessions.forEach(s => {
                 if (!s || !s.d) return;
                 let parts = convertToEnglishNumbers(String(s.d).trim()).split(/[\/\-\.\s]+/).filter(Boolean).map(Number);
-                if (parts.length === 3) {
-                    if (parts[0] > 1900) defaultYear = parts[0];
-                    else if (parts[2] > 1900) defaultYear = parts[2];
-                    else if (parts[2] >= 20 && parts[2] <= 99) defaultYear = 2000 + parts[2];
-                } else if (parts.length === 2 && parts[0] >= 1 && parts[0] <= 12 && parts[1] > 12 && parts[1] <= 31) isMonthFirstShort = true;
+                if (parts.length === 3) { if (parts[0] > 1900) defaultYear = parts[0]; else if (parts[2] > 1900) defaultYear = parts[2]; else if (parts[2] >= 20 && parts[2] <= 99) defaultYear = 2000 + parts[2]; }
+                else if (parts.length === 2 && parts[0] >= 1 && parts[0] <= 12 && parts[1] > 12 && parts[1] <= 31) isMonthFirstShort = true;
             });
             let daysCountMap = {}, lastTimestamp = 0, lastDateDisplay = '';
             sessions.forEach(s => {
                 if (!s || !s.d) return;
-                let rawD = convertToEnglishNumbers(String(s.d).trim());
-                let parts = rawD.split(/[\/\-\.\s]+/).filter(Boolean).map(Number);
+                let rawD = convertToEnglishNumbers(String(s.d).trim()), parts = rawD.split(/[\/\-\.\s]+/).filter(Boolean).map(Number);
                 let day = null, month = null, year = defaultYear;
                 if (parts.length === 3 && parts.every(n => !isNaN(n))) {
                     if (parts[0] > 1900) { year = parts[0]; month = parts[1]; day = parts[2]; }
@@ -444,8 +413,7 @@
                 if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2020 && year <= 2035) {
                     let dt = new Date(year, month - 1, day);
                     if (!isNaN(dt.getTime()) && dt.getMonth() === month - 1) {
-                        let dow = dt.getDay();
-                        daysCountMap[dow] = (daysCountMap[dow] || 0) + 1;
+                        daysCountMap[dt.getDay()] = (daysCountMap[dt.getDay()] || 0) + 1;
                         if (dt.getTime() >= lastTimestamp) { lastTimestamp = dt.getTime(); lastDateDisplay = rawD; }
                     }
                 }
@@ -477,22 +445,22 @@
                 let lastFilledIdx = -1;
                 for (let i = cardObj.sessions.length - 1; i >= 0; i--) if (cardObj.sessions[i].d || cardObj.sessions[i].ws || cardObj.sessions[i].n) { lastFilledIdx = i; break; }
                 if (lastFilledIdx + 1 < cardObj.sessions.length) {
-                    let targetRow = lastFilledIdx + 1;
-                    cardObj.sessions[targetRow] = { d: formattedDate, ws: wsValue || '', n: cardObj.sessions[targetRow]?.n || '' };
-                    if (dept) cardObj.cardTypes[Math.floor(targetRow / 12)] = dept;
+                    let tr = lastFilledIdx + 1;
+                    cardObj.sessions[tr] = { d: formattedDate, ws: wsValue || '', n: cardObj.sessions[tr]?.n || '' };
+                    if (dept) cardObj.cardTypes[Math.floor(tr / 12)] = dept;
                     return true;
                 } else {
-                    let newCardIdx = Math.ceil(cardObj.sessions.length / 12);
+                    let nc = Math.ceil(cardObj.sessions.length / 12);
                     for (let k = 0; k < 12; k++) cardObj.sessions.push({ d: '', ws: '', n: '' });
-                    cardObj.cardTypes[newCardIdx] = dept || 'تغذية علاجية';
-                    cardObj.sessions[newCardIdx * 12] = { d: formattedDate, ws: wsValue || '', n: '' };
+                    cardObj.cardTypes[nc] = dept || 'تغذية علاجية';
+                    cardObj.sessions[nc * 12] = { d: formattedDate, ws: wsValue || '', n: '' };
                     return true;
                 }
             } else {
-                let start = targetCardIdx * 12, end = start + 12, lastInChunk = start - 1;
-                for (let i = end - 1; i >= start; i--) if (cardObj.sessions[i] && (cardObj.sessions[i].d || cardObj.sessions[i].ws || cardObj.sessions[i].n)) { lastInChunk = i; break; }
-                let targetRow = (lastInChunk + 1 < end) ? (lastInChunk + 1) : cardObj.sessions.findIndex((s, idx) => idx >= start && idx < end && !s.d && !s.ws && !s.n);
-                if (targetRow !== -1) { cardObj.sessions[targetRow] = { d: formattedDate, ws: wsValue || '', n: cardObj.sessions[targetRow]?.n || '' }; return true; }
+                let start = targetCardIdx * 12, end = start + 12, lastIn = start - 1;
+                for (let i = end - 1; i >= start; i--) if (cardObj.sessions[i] && (cardObj.sessions[i].d || cardObj.sessions[i].ws || cardObj.sessions[i].n)) { lastIn = i; break; }
+                let tr = (lastIn + 1 < end) ? (lastIn + 1) : cardObj.sessions.findIndex((s, idx) => idx >= start && idx < end && !s.d && !s.ws && !s.n);
+                if (tr !== -1) { cardObj.sessions[tr] = { d: formattedDate, ws: wsValue || '', n: cardObj.sessions[tr]?.n || '' }; return true; }
             }
             return false;
         }
@@ -508,7 +476,7 @@
                     let cardIdx = cache.findIndex(p => p && p.name && normalizeArabicText(p.name) === normalizeArabicText(datesList[0].name || ''));
                     if (cardIdx !== -1) datesList.forEach(b => { if (applyAutoSessionToCardObject(cache[cardIdx], b.d, b.dateISO, b.ws, b.dept)) cacheChanged = true; });
                 });
-                if (cacheChanged) await localforage.setItem('patients_cache', cache);
+                if (cacheChanged) await localforage.setItem('patients_cache', deduplicateCardsList(cache));
             } catch (e) {}
         }
 
@@ -518,8 +486,8 @@
 
         async function applyCardsFilter() {
             if (activeFilterDept === 'all' && activeFilterDay === 'all') { closeFilteredPanel(); return; }
-            let cache = await localforage.getItem('patients_cache') || [];
-            if (cache.length === 0) { showToast("جاري تحميل الكروت...", "info"); await silentPreFetchAll(); cache = await localforage.getItem('patients_cache') || []; }
+            let cache = deduplicateCardsList(await localforage.getItem('patients_cache') || []);
+            if (cache.length === 0) { showToast("جاري تحميل الكروت...", "info"); await silentPreFetchAll(); cache = deduplicateCardsList(await localforage.getItem('patients_cache') || []); }
             let matches = [];
             cache.forEach(p => {
                 if (!p || !p.name) return;
@@ -541,13 +509,25 @@
             }).join('');
             document.getElementById('filteredResultsPanel').style.display = 'block';
         }
+
+        // سحب أحدث نسخة حية من الكاش/السحابة دائماً عند الضغط على أي مريض في القائمة (لا يفتح نسخة قديمة أبداً)
         window.selectFilteredPatient = async function(idx) {
             if (hasUnsavedChanges) await forceSave(true);
-            if (filteredPatientsList[idx]) { loadPatientData(filteredPatientsList[idx]); document.getElementById('cardsRenderContainer').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            let picked = filteredPatientsList[idx];
+            if (!picked) return;
+            let freshCache = await localforage.getItem('patients_cache') || [];
+            let freshCard = freshCache.find(p => isSamePatientCard(p, picked)) || picked;
+            loadPatientData(freshCard);
+            document.getElementById('cardsRenderContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
         };
 
         function getSafePhone(p) { return p ? convertToEnglishNumbers(p).replace(/\D/g, '') || "unknown" : "unknown"; }
-        function cardIndexKey(phone, name) { let d = convertToEnglishNumbers(String(phone || '')).replace(/\D/g, ''), norm = normalizeArabicText(String(name || '')).replace(/\s+/g, ' '), h = 0; for (let i = 0; i < norm.length; i++) h = ((h << 5) - h + norm.charCodeAt(i)) | 0; return (d || 'x') + '_' + Math.abs(h); }
+        // مفتاح ثابت فريد للمريض (الاسم المعياري) يمنع تكرار الكروت حتى لو تغيرت صيغة الرقم
+        function stableCloudKey(name) {
+            let norm = normalizeArabicText(String(name || '')).replace(/\s+/g, '_').replace(/[.#$\[\]\/]/g, '');
+            return norm || ('p_' + Date.now());
+        }
+        function cardIndexKey(phone, name) { let d = getNormalizedPhoneDigits(phone), norm = normalizeArabicText(String(name || '')).replace(/\s+/g, ' '), h = 0; for (let i = 0; i < norm.length; i++) h = ((h << 5) - h + norm.charCodeAt(i)) | 0; return (d || 'x') + '_' + Math.abs(h); }
         function seedCardsIndex(list) { try { if (!Array.isArray(list)) return; let obj = {}; list.forEach(p => { if (p && p.name) obj[cardIndexKey(p.phone, p.name)] = { name: String(p.name), phone: String(p.phone || '') }; }); if (Object.keys(obj).length > 0) db.ref('cards_names_index').transaction(cur => cur ? undefined : obj); } catch (e) {} }
         function showToast(message, type = 'success') { const t = document.getElementById('appToast'), ic = document.getElementById('toastIcon'); t.className = `app-toast ${type}`; ic.className = type === 'success' ? 'fa-solid fa-check-circle' : (type === 'error' ? 'fa-solid fa-exclamation-circle' : 'fa-solid fa-info-circle'); document.getElementById('toastMessage').innerText = message; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
         function showCustomConfirm(title, message, onConfirm, confirmText = "نعم، متأكد", confirmColor = "var(--danger)") { document.getElementById('confirmTitle').innerHTML = title; document.getElementById('confirmMessage').innerHTML = message; let b = document.getElementById('confirmBtnYes'); b.innerHTML = confirmText; b.style.backgroundColor = confirmColor; confirmActionCallback = onConfirm; document.getElementById('customConfirmModal').style.display = "flex"; }
@@ -556,7 +536,8 @@
 
         async function createNewPatient() {
             if (hasUnsavedChanges) await forceSave(true);
-            currentPatient = { name: '', address: '', phone: '', job: '', age: '', referred: '', diagnosis: '', protocol: '', medical_notes: '', sessions: Array.from({length: 12}, () => ({d: '', ws: '', n: ''})), files: [], cardTypes: {0: 'تغذية علاجية'} };
+            currentPatient = blankPatient();
+            originalLoadedName = ""; originalLoadedPhone = "";
             lastSavedStateString = ""; indexedKey = null; showMedicalSheetFlag = false; hasUnsavedChanges = false;
             renderPatientToDOM(); setSaveStatus('saved'); showToast("تم فتح استمارة جديدة", "info");
         }
@@ -643,7 +624,6 @@
             b.innerHTML = status==='saving' ? '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>' : (status==='saved' ? '<i class="fa-solid fa-cloud-check"></i> <span>محفوظ</span>' : '<i class="fa-solid fa-cloud-arrow-up"></i> <span>غير محفوظ</span>');
         }
 
-        // أوتو سيف سريع كل 1.5 ثانية لضمان حفظ أي تعديل في الكروت القديمة والجديدة فوراً
         function handleInput() {
             setSaveStatus('unsaved');
             const ne = document.getElementById('p_medical_notes'), w = document.getElementById('medicalSheetWrapper');
@@ -654,7 +634,7 @@
         }
         function saveData() { forceSave(false); }
 
-        // دالة الحفظ المزدوج السحابي (Firebase + Google Sheets بدون أي أخطاء CORS)
+        // الحفظ المزدوج المضمون في نفس الكرت دائماً بدون أي تكرار
         async function forceSave(isSilent = false) {
             clearTimeout(saveTimeout);
             updateStateFromDOM();
@@ -678,36 +658,71 @@
                 cleanedSessions.pop();
             }
 
-            let payload = { ...currentPatient, sessions: cleanedSessions, updatedAt: Date.now() };
-            let cloudKey = cardIndexKey(payload.phone, payload.name);
+            // تنظيف الأوبجكت من أي قيم undefined قبل الإرسال لفايربيس وجوجل شيت
+            let payload = JSON.parse(JSON.stringify({
+                name: currentPatient.name || '',
+                address: currentPatient.address || '',
+                phone: currentPatient.phone || '',
+                job: currentPatient.job || '',
+                age: currentPatient.age || '',
+                referred: currentPatient.referred || '',
+                diagnosis: currentPatient.diagnosis || '',
+                protocol: currentPatient.protocol || '',
+                medical_notes: currentPatient.medical_notes || '',
+                sessions: cleanedSessions,
+                files: currentPatient.files || [],
+                cardTypes: currentPatient.cardTypes || { 0: 'تغذية علاجية' },
+                updatedAt: Date.now()
+            }));
 
-            // 1. تحديث الكاش المحلي بمطابقة ذكية بالرقم أو الاسم
+            let oldRefObj = { name: originalLoadedName || payload.name, phone: originalLoadedPhone || payload.phone };
+
+            // 1. التحديث في نفس الكرت داخل الكاش المحلي (ومسح أي تكرار لنفس المريض فوراً)
             let cache = await localforage.getItem('patients_cache') || [];
-            let idx = cache.findIndex(p =>
-                (safePhoneVal !== "unknown" && getSafePhone(p.phone) === safePhoneVal) ||
-                (normalizeArabicText(p.name) === normalizeArabicText(payload.name))
-            );
-            if (idx > -1) cache[idx] = payload; else cache.push(payload);
+            let matchIdx = cache.findIndex(p => isSamePatientCard(p, oldRefObj) || isSamePatientCard(p, payload));
+            if (matchIdx > -1) {
+                cache[matchIdx] = payload;
+            } else {
+                cache.push(payload);
+            }
+            cache = deduplicateCardsList(cache);
             await localforage.setItem('patients_cache', cache);
 
-            // 2. الحفظ السحابي الفوري على Firebase (يضمن عدم ضياع أي تعديل على الكروت القديمة)
-            let fbSaved = false;
-            try {
-                await db.ref('patients_cards_cloud/' + cloudKey).set(payload);
-                fbSaved = true;
-                db.ref('cards_names_index/' + cloudKey).set({ name: payload.name, phone: String(payload.phone || '') }).catch(() => {});
-                if (indexedKey && indexedKey !== cloudKey) {
-                    db.ref('cards_names_index/' + indexedKey).remove().catch(() => {});
-                    db.ref('patients_cards_cloud/' + indexedKey).remove().catch(() => {});
-                }
-                indexedKey = cloudKey;
-                if (safePhoneVal !== "unknown" && currentPatient.files?.length > 0) {
-                    db.ref('patients_files_data/' + safePhoneVal).set(currentPatient.files).catch(() => {});
-                }
-            } catch (e) { console.warn("Firebase save note:", e); }
+            // تحديث النسخة في قوائم البحث والفلتر المفتوحة في الذاكرة أيضاً
+            filteredPatientsList = filteredPatientsList.map(p => (isSamePatientCard(p, oldRefObj) || isSamePatientCard(p, payload)) ? payload : p);
+            globalSearchResults = globalSearchResults.map(p => (isSamePatientCard(p, oldRefObj) || isSamePatientCard(p, payload)) ? payload : p);
 
-            // 3. الحفظ في Google Sheets مع حل نهائي لمشكلة CORS والـ Redirect
+            // 2. الحفظ السحابي على Firebase بمفتاح موحد للمريض لمنع التكرار تماماً
+            let fbKey = stableCloudKey(payload.name);
+            let oldFbKey = originalLoadedName ? stableCloudKey(originalLoadedName) : null;
+            let idxKey = cardIndexKey(payload.phone, payload.name);
+            let fbSaved = false;
+
+            try {
+                await db.ref('patients_cards_cloud/' + fbKey).set(payload);
+                fbSaved = true;
+                if (oldFbKey && oldFbKey !== fbKey) {
+                    db.ref('patients_cards_cloud/' + oldFbKey).remove().catch(() => {});
+                }
+                db.ref('cards_names_index/' + idxKey).set({ name: payload.name, phone: String(payload.phone || '') }).catch(() => {});
+                if (indexedKey && indexedKey !== idxKey) db.ref('cards_names_index/' + indexedKey).remove().catch(() => {});
+                indexedKey = idxKey;
+                if (safePhoneVal !== "unknown" && payload.files.length > 0) {
+                    db.ref('patients_files_data/' + safePhoneVal).set(payload.files).catch(() => {});
+                }
+            } catch (fbErr) {
+                console.error("Firebase Rules/Save Error:", fbErr);
+                if (!isSilent && String(fbErr).includes('PERMISSION_DENIED')) {
+                    showToast("مطلوب تفعيل صلاحية patients_cards_cloud في Firebase Rules!", "error");
+                }
+            }
+
+            // 3. الحفظ في Google Sheets (لو تغير الاسم أو الرقم نمسح القديم أولاً عشان ميعملش كرت مكرر في الشيت)
             let sheetSaved = false;
+            if (originalLoadedName && (normalizeArabicText(originalLoadedName) !== normalizeArabicText(payload.name) || (originalLoadedPhone && getNormalizedPhoneDigits(originalLoadedPhone) !== getNormalizedPhoneDigits(payload.phone)))) {
+                fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(originalLoadedPhone || '') + "&name=" + encodeURIComponent(originalLoadedName), { method: 'GET', mode: 'no-cors' }).catch(() => {});
+            }
+
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
@@ -725,16 +740,19 @@
                         body: JSON.stringify(payload)
                     });
                     sheetSaved = true;
-                } catch (netErr) { console.error("Sheet net error:", netErr); }
+                } catch (netErr) {}
             }
 
-            if (sheetSaved || fbSaved) {
+            originalLoadedName = payload.name;
+            originalLoadedPhone = payload.phone;
+
+            if (fbSaved || sheetSaved) {
                 setSaveStatus('saved');
-                lastSavedStateString = currentStateStr;
-                if (!isSilent) showToast("تم الحفظ بنجاح", "success");
+                lastSavedStateString = JSON.stringify(currentPatient);
+                if (!isSilent) showToast("تم الحفظ في نفس الكرت بنجاح", "success");
             } else {
                 setSaveStatus('unsaved');
-                if (!isSilent) showToast("تأكد من الاتصال بالإنترنت، تم الحفظ مؤقتاً على الجهاز", "error");
+                if (!isSilent) showToast("تأكد من الإنترنت، تم الحفظ محلياً مؤقتاً", "error");
             }
         }
 
@@ -764,42 +782,37 @@
             let phone = currentPatient.phone, name = currentPatient.name;
             if(!name) return showToast("ابحث عن المريض أولاً!", "error");
             showCustomConfirm('<i class="fa-solid fa-trash"></i> تأكيد الحذف', `مسح المريض (${name}) نهائياً؟`, async () => {
-                let cache = (await localforage.getItem('patients_cache') || []).filter(p => !(getSafePhone(p.phone)===getSafePhone(phone) && normalizeArabicText(p.name)===normalizeArabicText(name)));
+                let cache = (await localforage.getItem('patients_cache') || []).filter(p => !isSamePatientCard(p, { name, phone }));
                 await localforage.setItem('patients_cache', cache);
-                let ck = cardIndexKey(phone, name);
                 db.ref('patients_files_data/' + getSafePhone(phone)).remove().catch(()=>{});
-                db.ref('cards_names_index/' + ck).remove().catch(()=>{});
-                db.ref('patients_cards_cloud/' + ck).remove().catch(()=>{});
-                if (indexedKey) { db.ref('cards_names_index/' + indexedKey).remove().catch(()=>{}); db.ref('patients_cards_cloud/' + indexedKey).remove().catch(()=>{}); }
+                db.ref('cards_names_index/' + cardIndexKey(phone, name)).remove().catch(()=>{});
+                db.ref('patients_cards_cloud/' + stableCloudKey(name)).remove().catch(()=>{});
+                if (indexedKey) db.ref('cards_names_index/' + indexedKey).remove().catch(()=>{});
                 hasUnsavedChanges = false;
                 showToast("تم الحذف بنجاح!", "success"); createNewPatient();
                 fetch(SCRIPT_URL + "?action=delete&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name), { method: 'GET', mode: 'no-cors' }).catch(()=>{});
             });
         }
 
-        // جلب ودمج بيانات Google Sheets مع أحدث تعديلات Firebase السحابية دون مسح أي تعديل
+        // جلب ودمج البيانات (الشيت + Firebase + الكاش) بحيث الأحدث دائماً هو اللي يكسب وبدون تكرار
         async function silentPreFetchAll() {
             try {
+                let existingCache = await localforage.getItem('patients_cache') || [];
                 let [sheetRes, fbSnap] = await Promise.all([
                     fetch(SCRIPT_URL + "?query=ALL_DATA_FETCH").then(r => r.json()).catch(() => null),
                     db.ref('patients_cards_cloud').once('value').then(s => s.val()).catch(() => null)
                 ]);
 
-                let mergedList = (sheetRes && sheetRes.status === 'found' && Array.isArray(sheetRes.data)) ? [...sheetRes.data] : (await localforage.getItem('patients_cache') || []);
-
+                let allCombined = [];
+                if (sheetRes && sheetRes.status === 'found' && Array.isArray(sheetRes.data)) {
+                    allCombined = allCombined.concat(sheetRes.data);
+                }
+                allCombined = allCombined.concat(existingCache);
                 if (fbSnap) {
-                    Object.values(fbSnap).forEach(fbCard => {
-                        if (!fbCard || !fbCard.name) return;
-                        let sp = getSafePhone(fbCard.phone);
-                        let i = mergedList.findIndex(p =>
-                            (sp !== "unknown" && getSafePhone(p.phone) === sp) ||
-                            (normalizeArabicText(p.name) === normalizeArabicText(fbCard.name))
-                        );
-                        if (i > -1) mergedList[i] = { ...mergedList[i], ...fbCard };
-                        else mergedList.push(fbCard);
-                    });
+                    allCombined = allCombined.concat(Object.values(fbSnap));
                 }
 
+                let mergedList = deduplicateCardsList(allCombined);
                 if (mergedList.length > 0) {
                     await localforage.setItem('patients_cache', mergedList);
                     await syncAutoBookingsFromFirebaseToLocalCache();
@@ -813,7 +826,7 @@
             let rawSearch = document.getElementById('searchName').value.trim();
             if(!rawSearch) return showToast("برجاء إدخال اسم أو رقم موبايل!", "error");
             let searchInput = convertToEnglishNumbers(rawSearch), cleanSearchName = normalizeArabicText(searchInput);
-            let cache = await localforage.getItem('patients_cache') || [];
+            let cache = deduplicateCardsList(await localforage.getItem('patients_cache') || []);
             let localResults = cache.filter(p => normalizeArabicText(p.name).includes(cleanSearchName) || (p.phone && String(p.phone).includes(searchInput)));
             if (localResults.length > 0) {
                 showToast(`تم العثور على ${localResults.length} نتيجة ⚡`, "success");
@@ -825,10 +838,11 @@
             try {
                 let res = JSON.parse(await (await fetch(SCRIPT_URL + "?query=" + encodeURIComponent(searchInput))).text());
                 if(res.status === "found") {
-                    res.data.forEach(newP => { let i = cache.findIndex(p => getSafePhone(p.phone) === getSafePhone(newP.phone)); if(i > -1) cache[i] = newP; else cache.push(newP); });
-                    await localforage.setItem('patients_cache', cache);
-                    if (res.data.length === 1) loadPatientData(res.data[0]);
-                    else { globalSearchResults = res.data; renderMultiplePatientsList(res.data); }
+                    let dedupedRes = deduplicateCardsList(res.data);
+                    let updatedCache = deduplicateCardsList(cache.concat(dedupedRes));
+                    await localforage.setItem('patients_cache', updatedCache);
+                    if (dedupedRes.length === 1) loadPatientData(dedupedRes[0]);
+                    else { globalSearchResults = dedupedRes; renderMultiplePatientsList(dedupedRes); }
                 } else showToast("المريض غير موجود، يمكنك إدخاله كملف جديد.", "error");
             } catch(e) { showToast("تعذر الوصول لقاعدة البيانات.", "error"); }
             btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> بحث';
@@ -840,36 +854,45 @@
         }
         async function selectPatient(index) {
             if (hasUnsavedChanges) await forceSave(true);
-            loadPatientData(globalSearchResults[index]);
+            let picked = globalSearchResults[index];
+            let freshCache = await localforage.getItem('patients_cache') || [];
+            let freshCard = freshCache.find(p => isSamePatientCard(p, picked)) || picked;
+            loadPatientData(freshCard);
             closeModal();
         }
 
         function loadPatientData(data) {
-            currentPatient = { ...currentPatient, ...data };
+            // تصفير الكرت بالكامل قبل التحميل لمنع تداخل بيانات مريض سابق
+            currentPatient = { ...blankPatient(), ...JSON.parse(JSON.stringify(data || {})) };
             currentPatient.sessions = normalizeSessionsArray(currentPatient.sessions);
             if(!currentPatient.files) currentPatient.files = [];
             currentPatient.cardTypes = detectCardTypesMap(currentPatient.sessions, currentPatient.cardTypes);
 
+            originalLoadedName = currentPatient.name || "";
+            originalLoadedPhone = currentPatient.phone || "";
             indexedKey = cardIndexKey(currentPatient.phone, currentPatient.name);
             showMedicalSheetFlag = false;
             renderPatientToDOM();
             lastSavedStateString = JSON.stringify(currentPatient);
             setSaveStatus('saved');
 
-            // التحقق من وجود نسخة أحدث محفوظة على Firebase السحابي
-            db.ref('patients_cards_cloud/' + indexedKey).once('value').then(snap => {
-                if (snap.exists()) {
-                    let cloudData = snap.val();
-                    if (cloudData && cloudData.updatedAt && (!currentPatient.updatedAt || cloudData.updatedAt > currentPatient.updatedAt)) {
-                        currentPatient = { ...currentPatient, ...cloudData };
-                        currentPatient.sessions = normalizeSessionsArray(currentPatient.sessions);
-                        currentPatient.cardTypes = detectCardTypesMap(currentPatient.sessions, currentPatient.cardTypes);
-                        renderPatientToDOM();
-                        lastSavedStateString = JSON.stringify(currentPatient);
-                        setSaveStatus('saved');
+            // جلب النسخة الأحدث من Firebase السحابي لحظياً إن وُجدت
+            if (currentPatient.name) {
+                let fbKey = stableCloudKey(currentPatient.name);
+                db.ref('patients_cards_cloud/' + fbKey).once('value').then(snap => {
+                    if (snap.exists()) {
+                        let cloudData = snap.val();
+                        if (cloudData && Number(cloudData.updatedAt || 0) > Number(currentPatient.updatedAt || 0)) {
+                            currentPatient = { ...blankPatient(), ...cloudData };
+                            currentPatient.sessions = normalizeSessionsArray(currentPatient.sessions);
+                            currentPatient.cardTypes = detectCardTypesMap(currentPatient.sessions, currentPatient.cardTypes);
+                            renderPatientToDOM();
+                            lastSavedStateString = JSON.stringify(currentPatient);
+                            setSaveStatus('saved');
+                        }
                     }
-                }
-            }).catch(()=>{});
+                }).catch(()=>{});
+            }
 
             if (currentPatient.phone) {
                 db.ref('patients_files_data/' + getSafePhone(currentPatient.phone)).once('value').then(snap => {
